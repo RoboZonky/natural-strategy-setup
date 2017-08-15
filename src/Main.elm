@@ -5,33 +5,28 @@ import Data.Strategy exposing (..)
 import Types exposing (..)
 import View.StrategyForm as StrategyForm
 import View.ConfigPreview as ConfigPreview
-import Data.Strategy.Portfolio as Portfolio
 
 
 main : Program Never Model Msg
 main =
-    Html.program
-        { init =
-            ( SimpleStrategy Portfolio.Conservative
-            , Cmd.none
-            )
+    Html.beginnerProgram
+        { model = defaultSimpleStrategy
         , update = update
-        , subscriptions = \_ -> Sub.none
         , view = view
         }
 
 
-update : Msg -> Model -> ( Model, Cmd Msg )
+update : Msg -> Model -> Model
 update msg model =
     case msg of
         SimpleStrategySelected ->
-            ( defaultSimpleStrategy, Cmd.none )
+            defaultSimpleStrategy
 
         ComplexStrategySelected ->
-            ( defaultComplexStrategy, Cmd.none )
+            defaultComplexStrategy
 
         PortfolioChanged portfolio ->
-            ( setPortfolio portfolio model, Cmd.none )
+            setPortfolio portfolio model
 
         TargetPortfolioSizeChanged targetSizeStr ->
             let
@@ -43,7 +38,7 @@ update msg model =
                         Err error ->
                             Unbounded
             in
-                ( setTargetPortfolioSize targetSize model, Cmd.none )
+                setTargetPortfolioSize targetSize model
 
 
 view : Model -> Html Msg
