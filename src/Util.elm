@@ -15,3 +15,8 @@ orList itemToString list =
 
         r1 :: rest ->
             itemToString r1 ++ ", " ++ orList itemToString rest
+
+
+joinNonemptyLines : List String -> String
+joinNonemptyLines =
+    String.join "\n" << List.filter (not << String.isEmpty)

@@ -3,9 +3,11 @@ module Data.PortfolioShare
         ( PortfolioShare(..)
         , Share(..)
         , renderPortfoliShare
+        , renderPortfolioShares
         )
 
 import Data.Rating as Rating exposing (Rating)
+import Util
 
 
 type PortfolioShare
@@ -30,3 +32,15 @@ renderShare share =
 
         Range minPercent maxPercent ->
             toString minPercent ++ " až " ++ toString maxPercent
+
+
+renderPortfolioShares : List PortfolioShare -> String
+renderPortfolioShares shares =
+    case shares of
+        [] ->
+            ""
+
+        nonempty ->
+            Util.joinNonemptyLines <|
+                "\n- Úprava struktury portfolia"
+                    :: List.map renderPortfoliShare nonempty

@@ -2,12 +2,13 @@ module Data.Strategy exposing (..)
 
 import Data.BuyFilter exposing (BuyFilter(..))
 import Data.InvestmentShare as InvestmentShare exposing (InvestmentShare)
-import Data.InvestmentSize exposing (InvestmentSize(..))
+import Data.InvestmentSize as InvestmentSize exposing (InvestmentSize(..))
 import Data.Portfolio as Portfolio exposing (Portfolio)
-import Data.PortfolioShare exposing (PortfolioShare(..))
+import Data.PortfolioShare as PortfolioShare exposing (PortfolioShare(..), Share(..))
+import Data.Rating exposing (Rating(..))
 import Data.SellFilter exposing (SellFilter(..))
 import Data.TargetPortfolioSize as TargetPortfolioSize exposing (TargetPortfolioSize)
-import Data.InvestmentSize as InvestmentSize
+import Util
 
 
 type ParsedStrategy
@@ -38,7 +39,7 @@ defaultComplexStrategy =
             , defaultInvestmentSize = Amount 200
             , defaultInvestmentShare = InvestmentShare.Unbounded
             }
-        , portfolioShares = []
+        , portfolioShares = [ PortfolioShare A_Double_Star (Exact 50), PortfolioShare A_Star (Exact 30) ]
         , investmentSizes = []
         , buyFilters = []
         , sellFilters = []
@@ -79,11 +80,18 @@ renderParsedStrategy strategy =
         SimpleStrategy portfolioType ->
             Portfolio.renderPortfolio portfolioType
 
-        ComplexStrategy { generalSettings } ->
-            String.join "\n" <|
-                List.filter (not << String.isEmpty)
-                    [ "- Obecná nastavení"
-                    , Portfolio.renderPortfolio generalSettings.portfolio
-                    , TargetPortfolioSize.renderTargetPortfolioSize generalSettings.targetPortfolioSize
-                    , InvestmentSize.renderInvestmentSizeDefault generalSettings.defaultInvestmentSize
-                    ]
+        ComplexStrategy strategyParameters ->
+            Util.joinNonemptyLines
+                [ renderGeneralSettings strategyParameters.generalSettings
+                , PortfolioShare.renderPortfolioShares strategyParameters.portfolioShares
+                ]
+
+
+renderGeneralSettings : GeneralSettings -> String
+renderGeneralSettings generalSettings =
+    Util.joinNonemptyLines
+        [ "- Obecná nastavení"
+        , Portfolio.renderPortfolio generalSettings.portfolio
+        , TargetPortfolioSize.renderTargetPortfolioSize generalSettings.targetPortfolioSize
+        , InvestmentSize.renderInvestmentSizeDefault generalSettings.defaultInvestmentSize
+        ]
