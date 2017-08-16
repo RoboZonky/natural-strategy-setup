@@ -1,8 +1,8 @@
 module Data.Region
     exposing
         ( Region(..)
-        , RegionFilter(..)
-        , renderRegionFilter
+        , RegionCondition(..)
+        , renderRegionCondition
         )
 
 import Util
@@ -71,12 +71,12 @@ regionToString r =
             "Zlínský"
 
 
-type RegionFilter
+type RegionCondition
     = RegionList (List Region)
 
 
-renderRegionFilter : RegionFilter -> String
-renderRegionFilter (RegionList list) =
+renderRegionCondition : RegionCondition -> String
+renderRegionCondition (RegionList list) =
     "kraj klienta je " ++ renderRegionList list
 
 
