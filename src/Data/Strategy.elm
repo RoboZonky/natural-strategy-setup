@@ -100,26 +100,3 @@ renderParsedStrategy strategy =
                 , renderDefaultPortfolio generalSettings.portfolio
                 ]
                     ++ renderTargetPortfolioSize generalSettings.targetPortfolioSize
-
-
-type InvestmentSize
-    = Amount Int
-    | UpTo Int
-    | FromTo Int Int
-
-
-renderInvestmentSize : InvestmentSize -> String
-renderInvestmentSize investmentSize =
-    let
-        middle =
-            case investmentSize of
-                Amount amt ->
-                    toString amt
-
-                UpTo amt ->
-                    " až " ++ toString amt
-
-                FromTo from to ->
-                    toString from ++ " až " ++ toString to
-    in
-        "Běžná výše investice je" ++ middle ++ " Kč."

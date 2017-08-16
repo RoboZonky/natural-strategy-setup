@@ -3,6 +3,7 @@ module Data.Strategy.Rating
         ( Rating(..)
         , RatingCondition(..)
         , renderRatingCondition
+        , ratingToString
         )
 
 
