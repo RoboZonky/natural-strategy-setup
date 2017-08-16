@@ -6,6 +6,8 @@ module Data.Strategy.Rating
         , ratingToString
         )
 
+import Util
+
 
 type Rating
     = A_Double_Star
@@ -70,16 +72,5 @@ renderRatingCondition ratingCondition =
 
 
 renderRatingList : List Rating -> String
-renderRatingList rs =
-    case rs of
-        [] ->
-            "VYBERTE ASPOŇ JEDNU HODNOTU"
-
-        r :: [] ->
-            ratingToString r
-
-        r1 :: r2 :: [] ->
-            ratingToString r1 ++ " nebo " ++ ratingToString r2
-
-        r1 :: rest ->
-            ratingToString r1 ++ ", " ++ renderRatingList rest
+renderRatingList =
+    Util.orList ratingToString

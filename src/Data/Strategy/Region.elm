@@ -1,5 +1,7 @@
 module Data.Strategy.Region exposing (..)
 
+import Util
+
 
 type Region
     = PRAHA
@@ -74,16 +76,5 @@ renderRegionFilter (RegionList list) =
 
 
 renderRegionList : List Region -> String
-renderRegionList rs =
-    case rs of
-        [] ->
-            "VYBERTE ASPOŇ JEDNU HODNOTU"
-
-        r :: [] ->
-            regionToString r
-
-        r1 :: r2 :: [] ->
-            regionToString r1 ++ " nebo " ++ regionToString r2
-
-        r1 :: rest ->
-            regionToString r1 ++ ", " ++ renderRegionList rest
+renderRegionList =
+    Util.orList regionToString
