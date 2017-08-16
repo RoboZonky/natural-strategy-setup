@@ -32,14 +32,8 @@ renderInvestment (InvestmentPerRating rating investmentSize) =
 
 renderInvestments : List InvestmentPerRating -> String
 renderInvestments investments =
-    case investments of
-        [] ->
-            ""
-
-        nonempty ->
-            Util.joinNonemptyLines <|
-                "\n- Výše investice"
-                    :: List.map renderInvestment nonempty
+    Util.renderNonemptySection "\n- Výše investice" <|
+        List.map renderInvestment investments
 
 
 investmentSizeToString : Size -> String

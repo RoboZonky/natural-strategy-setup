@@ -36,11 +36,5 @@ renderShare share =
 
 renderPortfolioShares : List PortfolioShare -> String
 renderPortfolioShares shares =
-    case shares of
-        [] ->
-            ""
-
-        nonempty ->
-            Util.joinNonemptyLines <|
-                "\n- Úprava struktury portfolia"
-                    :: List.map renderPortfoliShare nonempty
+    Util.renderNonemptySection "\n- Úprava struktury portfolia" <|
+        List.map renderPortfoliShare shares

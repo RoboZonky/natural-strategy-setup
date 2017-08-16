@@ -20,3 +20,13 @@ orList itemToString list =
 joinNonemptyLines : List String -> String
 joinNonemptyLines =
     String.join "\n" << List.filter (not << String.isEmpty)
+
+
+renderNonemptySection : String -> List String -> String
+renderNonemptySection sectionTitle list =
+    case list of
+        [] ->
+            ""
+
+        nonempty ->
+            joinNonemptyLines <| sectionTitle :: nonempty
