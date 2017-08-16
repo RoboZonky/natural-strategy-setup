@@ -2,6 +2,7 @@ module Main exposing (..)
 
 import Html exposing (Html, text)
 import Data.Strategy exposing (..)
+import Data.TargetPortfolioSize exposing (..)
 import Types exposing (..)
 import View.StrategyForm as StrategyForm
 import View.ConfigPreview as ConfigPreview

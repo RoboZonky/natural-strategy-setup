@@ -1,10 +1,13 @@
 module Data.Strategy exposing (..)
 
-import Data.PortfolioShare exposing (PortfolioShare(..))
-import Data.InvestmentSize exposing (InvestmentSize(..))
 import Data.BuyFilter exposing (BuyFilter(..))
-import Data.SellFilter exposing (SellFilter(..))
+import Data.InvestmentShare as InvestmentShare exposing (InvestmentShare)
+import Data.InvestmentSize exposing (InvestmentSize(..))
 import Data.Portfolio as Portfolio exposing (Portfolio)
+import Data.PortfolioShare exposing (PortfolioShare(..))
+import Data.SellFilter exposing (SellFilter(..))
+import Data.TargetPortfolioSize as TargetPortfolioSize exposing (TargetPortfolioSize)
+import Data.InvestmentSize as InvestmentSize
 
 
 type ParsedStrategy
@@ -31,8 +34,9 @@ defaultComplexStrategy =
     ComplexStrategy
         { generalSettings =
             { portfolio = Portfolio.Conservative
-            , targetPortfolioSize = Unbounded
-            , investmentSize = Amount 200
+            , targetPortfolioSize = TargetPortfolioSize.Unbounded
+            , defaultInvestmentSize = Amount 200
+            , defaultInvestmentShare = InvestmentShare.Unbounded
             }
         , portfolioShares = []
         , investmentSizes = []
@@ -44,7 +48,8 @@ defaultComplexStrategy =
 type alias GeneralSettings =
     { portfolio : Portfolio
     , targetPortfolioSize : TargetPortfolioSize
-    , investmentSize : InvestmentSize
+    , defaultInvestmentSize : InvestmentSize
+    , defaultInvestmentShare : InvestmentShare
     }
 
 
@@ -58,11 +63,6 @@ setPortfolio portfolio strategy =
             ComplexStrategy { settings | generalSettings = { generalSettings | portfolio = portfolio } }
 
 
-type TargetPortfolioSize
-    = Unbounded
-    | Bounded Int
-
-
 setTargetPortfolioSize : TargetPortfolioSize -> ParsedStrategy -> ParsedStrategy
 setTargetPortfolioSize targetPortfolioSize strategy =
     case strategy of
@@ -73,16 +73,6 @@ setTargetPortfolioSize targetPortfolioSize strategy =
             simple
 
 
-renderTargetPortfolioSize : TargetPortfolioSize -> List String
-renderTargetPortfolioSize targetPortfolioSize =
-    case targetPortfolioSize of
-        Unbounded ->
-            []
-
-        Bounded maxBound ->
-            [ "Cílová zůstatková částka je " ++ toString maxBound ++ " Kč." ]
-
-
 renderParsedStrategy : ParsedStrategy -> String
 renderParsedStrategy strategy =
     case strategy of
@@ -91,7 +81,9 @@ renderParsedStrategy strategy =
 
         ComplexStrategy { generalSettings } ->
             String.join "\n" <|
-                [ "- Obecná nastavení"
-                , Portfolio.renderPortfolio generalSettings.portfolio
-                ]
-                    ++ renderTargetPortfolioSize generalSettings.targetPortfolioSize
+                List.filter (not << String.isEmpty)
+                    [ "- Obecná nastavení"
+                    , Portfolio.renderPortfolio generalSettings.portfolio
+                    , TargetPortfolioSize.renderTargetPortfolioSize generalSettings.targetPortfolioSize
+                    , InvestmentSize.renderInvestmentSizeDefault generalSettings.defaultInvestmentSize
+                    ]

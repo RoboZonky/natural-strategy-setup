@@ -1,6 +1,6 @@
 module View.TargetPortfolioSize exposing (..)
 
-import Data.Strategy exposing (TargetPortfolioSize(..))
+import Data.TargetPortfolioSize exposing (TargetPortfolioSize(..))
 import Html exposing (Html, input, label, text, div)
 import Html.Attributes as Attr exposing (checked, disabled, name, type_)
 import Html.Events exposing (onClick, onInput)

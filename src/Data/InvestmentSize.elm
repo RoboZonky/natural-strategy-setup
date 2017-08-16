@@ -28,7 +28,7 @@ investmentSizeToString : InvestmentSize -> String
 investmentSizeToString investmentSize =
     case investmentSize of
         Amount amt ->
-            toString amt
+            " " ++ toString amt
 
         UpTo amt ->
             " až " ++ toString amt
