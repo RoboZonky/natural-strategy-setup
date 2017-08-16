@@ -52,7 +52,7 @@ mainIncomeToString mainIncome =
             "bez zaměstnání"
 
         OTHER ->
-            "ostatní"
+            "jiné"
 
 
 renderIncomeCondition : IncomeCondition -> String

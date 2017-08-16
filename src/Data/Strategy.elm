@@ -1,11 +1,11 @@
 module Data.Strategy exposing (..)
 
 import Data.BuyFilter exposing (BuyFilter(..))
+import Data.Investment as Investment exposing (InvestmentPerRating(..), Size(..))
 import Data.InvestmentShare as InvestmentShare exposing (InvestmentShare)
-import Data.InvestmentSize as InvestmentSize exposing (InvestmentSize(..))
 import Data.Portfolio as Portfolio exposing (Portfolio)
 import Data.PortfolioShare as PortfolioShare exposing (PortfolioShare(..), Share(..))
-import Data.Rating exposing (Rating(..))
+import Data.Rating exposing (Rating(A_Double_Star), Rating(..))
 import Data.SellFilter exposing (SellFilter(..))
 import Data.TargetPortfolioSize as TargetPortfolioSize exposing (TargetPortfolioSize)
 import Util
@@ -19,7 +19,7 @@ type ParsedStrategy
 type alias ComplexStrategyParameters =
     { generalSettings : GeneralSettings
     , portfolioShares : List PortfolioShare
-    , investmentSizes : List InvestmentSize
+    , investmentPerRating : List InvestmentPerRating
     , buyFilters : List BuyFilter
     , sellFilters : List SellFilter
     }
@@ -40,7 +40,7 @@ defaultComplexStrategy =
             , defaultInvestmentShare = InvestmentShare.Unbounded
             }
         , portfolioShares = [ PortfolioShare A_Double_Star (Exact 50), PortfolioShare A_Star (Exact 30) ]
-        , investmentSizes = []
+        , investmentPerRating = [ InvestmentPerRating A_Double_Star (Amount 150), InvestmentPerRating B (FromTo 10 20), InvestmentPerRating D (UpTo 80) ]
         , buyFilters = []
         , sellFilters = []
         }
@@ -49,7 +49,7 @@ defaultComplexStrategy =
 type alias GeneralSettings =
     { portfolio : Portfolio
     , targetPortfolioSize : TargetPortfolioSize
-    , defaultInvestmentSize : InvestmentSize
+    , defaultInvestmentSize : Investment.Size
     , defaultInvestmentShare : InvestmentShare
     }
 
@@ -84,6 +84,7 @@ renderParsedStrategy strategy =
             Util.joinNonemptyLines
                 [ renderGeneralSettings strategyParameters.generalSettings
                 , PortfolioShare.renderPortfolioShares strategyParameters.portfolioShares
+                , Investment.renderInvestments strategyParameters.investmentPerRating
                 ]
 
 
@@ -93,5 +94,5 @@ renderGeneralSettings generalSettings =
         [ "- Obecná nastavení"
         , Portfolio.renderPortfolio generalSettings.portfolio
         , TargetPortfolioSize.renderTargetPortfolioSize generalSettings.targetPortfolioSize
-        , InvestmentSize.renderInvestmentSizeDefault generalSettings.defaultInvestmentSize
+        , Investment.renderDefaultInvestmentSize generalSettings.defaultInvestmentSize
         ]
