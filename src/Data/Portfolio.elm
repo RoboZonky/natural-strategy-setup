@@ -1,14 +1,20 @@
-module Data.Portfolio exposing (..)
+module Data.Portfolio
+    exposing
+        ( Portfolio(..)
+        , renderPortfolio
+        , fromString
+        , toString
+        )
 
 
-type DefaultPortfolio
+type Portfolio
     = Conservative
     | Balanced
     | Progressive
     | Empty
 
 
-toString : DefaultPortfolio -> String
+toString : Portfolio -> String
 toString pt =
     case pt of
         Conservative ->
@@ -24,7 +30,7 @@ toString pt =
             "prázdné"
 
 
-fromString : String -> DefaultPortfolio
+fromString : String -> Portfolio
 fromString str =
     case str of
         "Conservative" ->
@@ -38,3 +44,8 @@ fromString str =
 
         _ ->
             Empty
+
+
+renderPortfolio : Portfolio -> String
+renderPortfolio portfolio =
+    "Robot má udržovat " ++ toString portfolio ++ " portfolio."

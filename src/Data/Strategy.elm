@@ -4,11 +4,11 @@ import Data.PortfolioShare exposing (PortfolioShare(..))
 import Data.InvestmentSize exposing (InvestmentSize(..))
 import Data.BuyFilter exposing (BuyFilter(..))
 import Data.SellFilter exposing (SellFilter(..))
-import Data.Portfolio as Portfolio exposing (DefaultPortfolio)
+import Data.Portfolio as Portfolio exposing (Portfolio)
 
 
 type ParsedStrategy
-    = SimpleStrategy DefaultPortfolio
+    = SimpleStrategy Portfolio
     | ComplexStrategy ComplexStrategyParameters
 
 
@@ -42,13 +42,13 @@ defaultComplexStrategy =
 
 
 type alias GeneralSettings =
-    { portfolio : DefaultPortfolio
+    { portfolio : Portfolio
     , targetPortfolioSize : TargetPortfolioSize
     , investmentSize : InvestmentSize
     }
 
 
-setPortfolio : DefaultPortfolio -> ParsedStrategy -> ParsedStrategy
+setPortfolio : Portfolio -> ParsedStrategy -> ParsedStrategy
 setPortfolio portfolio strategy =
     case strategy of
         SimpleStrategy _ ->
@@ -56,11 +56,6 @@ setPortfolio portfolio strategy =
 
         ComplexStrategy ({ generalSettings } as settings) ->
             ComplexStrategy { settings | generalSettings = { generalSettings | portfolio = portfolio } }
-
-
-renderDefaultPortfolio : DefaultPortfolio -> String
-renderDefaultPortfolio portfolio =
-    "Robot má udržovat " ++ Portfolio.toString portfolio ++ " portfolio."
 
 
 type TargetPortfolioSize
@@ -92,11 +87,11 @@ renderParsedStrategy : ParsedStrategy -> String
 renderParsedStrategy strategy =
     case strategy of
         SimpleStrategy portfolioType ->
-            renderDefaultPortfolio portfolioType
+            Portfolio.renderPortfolio portfolioType
 
         ComplexStrategy { generalSettings } ->
             String.join "\n" <|
                 [ "- Obecná nastavení"
-                , renderDefaultPortfolio generalSettings.portfolio
+                , Portfolio.renderPortfolio generalSettings.portfolio
                 ]
                     ++ renderTargetPortfolioSize generalSettings.targetPortfolioSize

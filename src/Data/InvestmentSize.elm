@@ -16,16 +16,16 @@ type InvestmentSize
 
 renderInvestmentSizeDefault : InvestmentSize -> String
 renderInvestmentSizeDefault investmentSize =
-    "Běžná výše investice je" ++ renderInvestmentSize investmentSize ++ " Kč."
+    "Běžná výše investice je" ++ investmentSizeToString investmentSize ++ " Kč."
 
 
 renderInvestmentSizeOverride : Rating -> InvestmentSize -> String
 renderInvestmentSizeOverride rating investmentSize =
-    "Do úvěrů v ratingu " ++ ratingToString rating ++ " investovat " ++ renderInvestmentSize investmentSize
+    "Do úvěrů v ratingu " ++ ratingToString rating ++ " investovat " ++ investmentSizeToString investmentSize
 
 
-renderInvestmentSize : InvestmentSize -> String
-renderInvestmentSize investmentSize =
+investmentSizeToString : InvestmentSize -> String
+investmentSizeToString investmentSize =
     case investmentSize of
         Amount amt ->
             toString amt

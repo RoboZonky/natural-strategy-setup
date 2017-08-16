@@ -1,13 +1,13 @@
 module Types exposing (..)
 
 import Data.Strategy exposing (..)
-import Data.Portfolio as Portfolio
+import Data.Portfolio exposing (Portfolio)
 
 
 type Msg
     = SimpleStrategySelected
     | ComplexStrategySelected
-    | PortfolioChanged Portfolio.DefaultPortfolio
+    | PortfolioChanged Portfolio
     | TargetPortfolioSizeChanged String
 
 
