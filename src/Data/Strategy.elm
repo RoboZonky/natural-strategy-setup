@@ -1,10 +1,10 @@
 module Data.Strategy exposing (..)
 
-import Data.Strategy.PortfolioShare exposing (PortfolioShare(..))
-import Data.Strategy.InvestmentSize exposing (InvestmentSize(..))
-import Data.Strategy.BuyFilter exposing (BuyFilter(..))
-import Data.Strategy.SellFilter exposing (SellFilter(..))
-import Data.Strategy.Portfolio as Portfolio exposing (DefaultPortfolio)
+import Data.PortfolioShare exposing (PortfolioShare(..))
+import Data.InvestmentSize exposing (InvestmentSize(..))
+import Data.BuyFilter exposing (BuyFilter(..))
+import Data.SellFilter exposing (SellFilter(..))
+import Data.Portfolio as Portfolio exposing (DefaultPortfolio)
 
 
 type ParsedStrategy

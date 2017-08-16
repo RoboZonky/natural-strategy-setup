@@ -1,4 +1,4 @@
-module Data.Strategy.Rating
+module Data.Rating
     exposing
         ( Rating(..)
         , RatingCondition(..)

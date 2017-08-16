@@ -1,11 +1,11 @@
-module Data.Strategy.InvestmentSize
+module Data.InvestmentSize
     exposing
         ( InvestmentSize(..)
         , renderInvestmentSizeDefault
         , renderInvestmentSizeOverride
         )
 
-import Data.Strategy.Rating exposing (Rating, ratingToString)
+import Data.Rating exposing (Rating, ratingToString)
 
 
 type InvestmentSize

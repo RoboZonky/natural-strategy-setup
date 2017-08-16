@@ -1,7 +1,7 @@
 module View.StrategyForm exposing (..)
 
 import Data.Strategy exposing (..)
-import Data.Strategy.Portfolio as Portfolio exposing (DefaultPortfolio(..))
+import Data.Portfolio as Portfolio exposing (DefaultPortfolio(..))
 import Html exposing (Html, div, h2, input, label, option, select, text, textarea)
 import Html.Attributes as Attr exposing (checked, cols, disabled, height, name, rows, type_, value)
 import Html.Events exposing (onClick, onInput)

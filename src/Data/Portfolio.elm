@@ -1,4 +1,4 @@
-module Data.Strategy.Portfolio exposing (..)
+module Data.Portfolio exposing (..)
 
 
 type DefaultPortfolio

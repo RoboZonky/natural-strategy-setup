@@ -1,4 +1,9 @@
-module Data.Strategy.Region exposing (..)
+module Data.Region
+    exposing
+        ( Region(..)
+        , RegionFilter(..)
+        , renderRegionFilter
+        )
 
 import Util
 
