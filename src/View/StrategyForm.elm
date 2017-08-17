@@ -1,8 +1,12 @@
 module View.StrategyForm exposing (..)
 
-import Data.Strategy exposing (..)
+import Data.BuyFilter exposing (BuyFilter)
+import Data.Investment as Investment exposing (InvestmentPerRating)
 import Data.Portfolio as Portfolio exposing (Portfolio(..))
-import Html exposing (Html, div, h2, input, label, option, select, text, textarea)
+import Data.PortfolioShare as PortfolioShare exposing (PortfolioShare)
+import Data.SellFilter exposing (SellFilter)
+import Data.Strategy exposing (..)
+import Html exposing (Html, button, div, h2, input, label, option, select, text, textarea, ul)
 import Html.Attributes as Attr exposing (checked, cols, disabled, height, name, rows, type_, value)
 import Html.Events exposing (onClick, onInput)
 import Types exposing (..)
@@ -40,12 +44,83 @@ defaultPortfolioForm =
 
 
 complexStrategyFormView : ComplexStrategyParameters -> Html Msg
-complexStrategyFormView parameters =
+complexStrategyFormView params =
+    div []
+        [ generalSettingsForm params.generalSettings
+        , portfolioSharesForm params.portfolioShares
+        , investmentPerRatingForm params.investmentPerRating
+        , buyFiltersForm params.buyFilters
+        , sellFiltersForm params.sellFilters
+        ]
+
+
+generalSettingsForm : GeneralSettings -> Html Msg
+generalSettingsForm generalSettings =
     div []
         [ h2 [] [ text "Obecná nastavení" ]
         , defaultPortfolioForm
-        , View.TargetPortfolioSize.form parameters.generalSettings.targetPortfolioSize
+        , View.TargetPortfolioSize.form generalSettings.targetPortfolioSize
         ]
+
+
+portfolioSharesForm : List PortfolioShare -> Html Msg
+portfolioSharesForm portfolios =
+    div []
+        [ h2 [] [ text "Úprava struktury portfolia" ]
+        , listView portfolioView portfolios
+        , button [] [ text "Přidat podmínku" ]
+        ]
+
+
+portfolioView : PortfolioShare -> Html Msg
+portfolioView portfolioShare =
+    Html.li []
+        [ text <| PortfolioShare.renderPortfolioShare portfolioShare
+        , button [] [ text "Odebrat" ]
+        ]
+
+
+investmentPerRatingForm : List InvestmentPerRating -> Html Msg
+investmentPerRatingForm iprs =
+    div []
+        [ h2 [] [ text "Výše investice" ]
+        , listView investmentPerRatingView iprs
+        , button [] [ text "Přidat omezení" ]
+        ]
+
+
+investmentPerRatingView : InvestmentPerRating -> Html Msg
+investmentPerRatingView ipr =
+    Html.li []
+        [ text <| Investment.renderInvestment ipr
+        , button [] [ text "Odebrat" ]
+        ]
+
+
+buyFiltersForm : List BuyFilter -> Html Msg
+buyFiltersForm filters =
+    div []
+        [ h2 [] [ text "Filtrování tržiště" ]
+        , button [] [ text "Přidat filtr" ]
+        ]
+
+
+sellFiltersForm : List SellFilter -> Html Msg
+sellFiltersForm filters =
+    div []
+        [ h2 [] [ text "Prodej participací" ]
+        , button [] [ text "Přidat filtr" ]
+        ]
+
+
+listView : (a -> Html Msg) -> List a -> Html Msg
+listView itemView list =
+    case list of
+        [] ->
+            text "Bez úprav"
+
+        nonempty ->
+            ul [] <| List.map itemView nonempty
 
 
 defaultPortfolioSelect : Html Msg

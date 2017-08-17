@@ -4,6 +4,7 @@ module Data.Investment
         , Size(..)
         , renderDefaultInvestmentSize
         , renderInvestments
+        , renderInvestment
         )
 
 import Util
@@ -27,7 +28,7 @@ renderDefaultInvestmentSize investmentSize =
 
 renderInvestment : InvestmentPerRating -> String
 renderInvestment (InvestmentPerRating rating investmentSize) =
-    "Do úvěrů v ratingu " ++ ratingToString rating ++ " investovat " ++ investmentSizeToString investmentSize
+    "Do úvěrů v ratingu " ++ ratingToString rating ++ " investovat" ++ investmentSizeToString investmentSize ++ " Kč."
 
 
 renderInvestments : List InvestmentPerRating -> String
@@ -46,4 +47,4 @@ investmentSizeToString investmentSize =
             " až " ++ toString amt
 
         FromTo from to ->
-            toString from ++ " až " ++ toString to
+            " " ++ toString from ++ " až " ++ toString to

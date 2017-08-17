@@ -1,12 +1,14 @@
 module Data.Strategy exposing (..)
 
 import Data.BuyFilter exposing (BuyFilter(..))
+import Data.Confirmation as Confirmation exposing (Confirmation)
 import Data.Investment as Investment exposing (InvestmentPerRating(..), Size(..))
 import Data.InvestmentShare as InvestmentShare exposing (InvestmentShare)
 import Data.Portfolio as Portfolio exposing (Portfolio)
 import Data.PortfolioShare as PortfolioShare exposing (PortfolioShare(..), Share(..))
-import Data.Rating exposing (Rating(A_Double_Star), Rating(..))
+import Data.Rating exposing (Rating(..), Rating(A_Double_Star))
 import Data.SellFilter exposing (SellFilter(..))
+import Data.TargetBalance as TargetBalance exposing (TargetBalance)
 import Data.TargetPortfolioSize as TargetPortfolioSize exposing (TargetPortfolioSize)
 import Util
 
@@ -38,6 +40,8 @@ defaultComplexStrategy =
             , targetPortfolioSize = TargetPortfolioSize.Unbounded
             , defaultInvestmentSize = Amount 200
             , defaultInvestmentShare = InvestmentShare.Unbounded
+            , defaultTargetBalance = TargetBalance.Unspecified
+            , confirmationSettings = Confirmation.Disabled
             }
         , portfolioShares = [ PortfolioShare A_Double_Star (Exact 50), PortfolioShare A_Star (Exact 30) ]
         , investmentPerRating = [ InvestmentPerRating A_Double_Star (Amount 150), InvestmentPerRating B (FromTo 10 20), InvestmentPerRating D (UpTo 80) ]
@@ -51,6 +55,8 @@ type alias GeneralSettings =
     , targetPortfolioSize : TargetPortfolioSize
     , defaultInvestmentSize : Investment.Size
     , defaultInvestmentShare : InvestmentShare
+    , defaultTargetBalance : TargetBalance
+    , confirmationSettings : Confirmation
     }
 
 
@@ -95,4 +101,6 @@ renderGeneralSettings generalSettings =
         , Portfolio.renderPortfolio generalSettings.portfolio
         , TargetPortfolioSize.renderTargetPortfolioSize generalSettings.targetPortfolioSize
         , Investment.renderDefaultInvestmentSize generalSettings.defaultInvestmentSize
+        , TargetBalance.renderTargetBalance generalSettings.defaultTargetBalance
+        , Confirmation.renderConfirmation generalSettings.confirmationSettings
         ]

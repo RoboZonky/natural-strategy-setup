@@ -2,7 +2,7 @@ module Data.PortfolioShare
     exposing
         ( PortfolioShare(..)
         , Share(..)
-        , renderPortfoliShare
+        , renderPortfolioShare
         , renderPortfolioShares
         )
 
@@ -19,8 +19,8 @@ type Share
     | Range Int Int
 
 
-renderPortfoliShare : PortfolioShare -> String
-renderPortfoliShare (PortfolioShare rating share) =
+renderPortfolioShare : PortfolioShare -> String
+renderPortfolioShare (PortfolioShare rating share) =
     "Prostředky v ratingu " ++ Rating.ratingToString rating ++ " tvoří " ++ renderShare share ++ " % aktuální zůstatkové částky."
 
 
@@ -37,4 +37,4 @@ renderShare share =
 renderPortfolioShares : List PortfolioShare -> String
 renderPortfolioShares shares =
     Util.renderNonemptySection "\n- Úprava struktury portfolia" <|
-        List.map renderPortfoliShare shares
+        List.map renderPortfolioShare shares
