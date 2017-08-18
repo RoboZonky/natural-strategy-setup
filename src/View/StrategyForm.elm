@@ -3,14 +3,16 @@ module View.StrategyForm exposing (..)
 import Data.BuyFilter exposing (BuyFilter)
 import Data.Investment as Investment exposing (InvestmentPerRating)
 import Data.Portfolio as Portfolio exposing (Portfolio(..))
-import Data.PortfolioShare as PortfolioShare exposing (PortfolioShare)
+import Data.PortfolioShare as PortfolioShare exposing (PortfolioShare, PortfolioShares)
 import Data.SellFilter exposing (SellFilter)
 import Data.Strategy exposing (..)
-import Html exposing (Html, button, div, h2, input, label, option, select, text, textarea, ul)
+import Html exposing (Html, button, caption, div, h2, input, label, option, select, table, td, text, textarea, th, tr, ul)
 import Html.Attributes as Attr exposing (checked, cols, disabled, height, name, rows, type_, value)
 import Html.Events exposing (onClick, onInput)
 import Types exposing (..)
 import View.TargetPortfolioSize
+import EveryDict as Dict
+import Data.Rating exposing (ratingToString)
 
 
 view : Model -> Html Msg
@@ -58,17 +60,43 @@ generalSettingsForm : GeneralSettings -> Html Msg
 generalSettingsForm generalSettings =
     div []
         [ h2 [] [ text "Obecná nastavení" ]
-        , defaultPortfolioForm
         , View.TargetPortfolioSize.form generalSettings.targetPortfolioSize
         ]
 
 
-portfolioSharesForm : List PortfolioShare -> Html Msg
-portfolioSharesForm portfolios =
+portfolioSharesForm : PortfolioShares -> Html Msg
+portfolioSharesForm shares =
     div []
         [ h2 [] [ text "Úprava struktury portfolia" ]
-        , listView portfolioView portfolios
-        , button [] [ text "Přidat podmínku" ]
+        , defaultPortfolioForm
+        , ratingSharesTable shares
+        ]
+
+
+ratingSharesTable : PortfolioShares -> Html Msg
+ratingSharesTable shares =
+    let
+        rows =
+            List.map portfolioShareRow <| Dict.toList shares
+    in
+        table [] <|
+            [ caption []
+                [ text "Požadovaný podíl půjček v daném ratingu (v %)" ]
+            , tr []
+                [ th [] [ text "Rating" ]
+                , th [] [ text "min" ]
+                , th [] [ text "max" ]
+                ]
+            ]
+                ++ rows
+
+
+portfolioShareRow : PortfolioShare -> Html Msg
+portfolioShareRow ( rtg, ( mi, mx ) ) =
+    tr []
+        [ td [] [ text <| ratingToString rtg ]
+        , td [] [ text <| toString mi ]
+        , td [] [ text <| toString mx ]
         ]
 
 

@@ -1,40 +1,45 @@
 module Data.PortfolioShare
     exposing
-        ( PortfolioShare(..)
-        , Share(..)
+        ( PortfolioShares
+        , PortfolioShare
+        , Share
         , renderPortfolioShare
         , renderPortfolioShares
         )
 
 import Data.Rating as Rating exposing (Rating)
 import Util
+import EveryDict as Dict exposing (EveryDict)
+import Data.Rating exposing (Rating(..))
 
 
-type PortfolioShare
-    = PortfolioShare Rating Share
+type alias PortfolioShares =
+    EveryDict Rating ( Int, Int )
 
 
-type Share
-    = Exact Int
-    | Range Int Int
+type alias PortfolioShare =
+    ( Rating, Share )
+
+
+type alias Share =
+    ( Int, Int )
 
 
 renderPortfolioShare : PortfolioShare -> String
-renderPortfolioShare (PortfolioShare rating share) =
+renderPortfolioShare ( rating, share ) =
     "Prostředky v ratingu " ++ Rating.ratingToString rating ++ " tvoří " ++ renderShare share ++ " % aktuální zůstatkové částky."
 
 
 renderShare : Share -> String
-renderShare share =
-    case share of
-        Exact percentage ->
-            toString percentage
-
-        Range minPercent maxPercent ->
-            toString minPercent ++ " až " ++ toString maxPercent
+renderShare ( minPercent, maxPercent ) =
+    if minPercent == maxPercent then
+        toString minPercent
+    else
+        toString minPercent ++ " až " ++ toString maxPercent
 
 
-renderPortfolioShares : List PortfolioShare -> String
+renderPortfolioShares : PortfolioShares -> String
 renderPortfolioShares shares =
     Util.renderNonemptySection "\n- Úprava struktury portfolia" <|
-        List.map renderPortfolioShare shares
+        List.map renderPortfolioShare <|
+            Dict.toList shares

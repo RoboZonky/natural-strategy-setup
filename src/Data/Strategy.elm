@@ -4,8 +4,9 @@ import Data.BuyFilter exposing (BuyFilter(..))
 import Data.Confirmation as Confirmation exposing (Confirmation)
 import Data.Investment as Investment exposing (InvestmentPerRating(..), Size(..))
 import Data.InvestmentShare as InvestmentShare exposing (InvestmentShare)
-import Data.Portfolio as Portfolio exposing (Portfolio)
-import Data.PortfolioShare as PortfolioShare exposing (PortfolioShare(..), Share(..))
+import Data.Portfolio as Portfolio exposing (Portfolio(..))
+import Data.PortfolioShare as PortfolioShare exposing (PortfolioShares, PortfolioShare, Share)
+import Data.PortfolioShare.Predefined as PredefinedShares
 import Data.Rating exposing (Rating(..), Rating(A_Double_Star))
 import Data.SellFilter exposing (SellFilter(..))
 import Data.TargetBalance as TargetBalance exposing (TargetBalance)
@@ -20,7 +21,7 @@ type ParsedStrategy
 
 type alias ComplexStrategyParameters =
     { generalSettings : GeneralSettings
-    , portfolioShares : List PortfolioShare
+    , portfolioShares : PortfolioShares
     , investmentPerRating : List InvestmentPerRating
     , buyFilters : List BuyFilter
     , sellFilters : List SellFilter
@@ -43,7 +44,7 @@ defaultComplexStrategy =
             , defaultTargetBalance = TargetBalance.Unspecified
             , confirmationSettings = Confirmation.Disabled
             }
-        , portfolioShares = [ PortfolioShare A_Double_Star (Exact 50), PortfolioShare A_Star (Exact 30) ]
+        , portfolioShares = PredefinedShares.conservativeShares
         , investmentPerRating = [ InvestmentPerRating A_Double_Star (Amount 150), InvestmentPerRating B (FromTo 10 20), InvestmentPerRating D (UpTo 80) ]
         , buyFilters = []
         , sellFilters = []
@@ -62,12 +63,31 @@ type alias GeneralSettings =
 
 setPortfolio : Portfolio -> ParsedStrategy -> ParsedStrategy
 setPortfolio portfolio strategy =
-    case strategy of
-        SimpleStrategy _ ->
-            SimpleStrategy portfolio
+    let
+        portfolioShares =
+            case portfolio of
+                Conservative ->
+                    PredefinedShares.conservativeShares
 
-        ComplexStrategy ({ generalSettings } as settings) ->
-            ComplexStrategy { settings | generalSettings = { generalSettings | portfolio = portfolio } }
+                Balanced ->
+                    PredefinedShares.balancedShares
+
+                Progressive ->
+                    PredefinedShares.progressiveShares
+
+                Empty ->
+                    PredefinedShares.emptyShares
+    in
+        case strategy of
+            SimpleStrategy _ ->
+                SimpleStrategy portfolio
+
+            ComplexStrategy ({ generalSettings } as settings) ->
+                ComplexStrategy
+                    { settings
+                        | generalSettings = { generalSettings | portfolio = portfolio }
+                        , portfolioShares = portfolioShares
+                    }
 
 
 setTargetPortfolioSize : TargetPortfolioSize -> ParsedStrategy -> ParsedStrategy
