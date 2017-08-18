@@ -39,26 +39,40 @@ portfolioSharesForm portfolio shares =
 ratingSharesTable : Portfolio -> PortfolioShares -> Html Msg
 ratingSharesTable portfolio shares =
     let
-        rowRenderingFunction =
+        ( rowRenderingFunction, tableDescription ) =
             case portfolio of
                 Empty ->
-                    portfolioShareEditableRow
+                    ( portfolioShareEditableRow, "Nastavte" )
 
                 _ ->
-                    portfolioShareReadOnlyRow
+                    ( portfolioShareReadOnlyRow, "Následující tabulka ukazuje" )
 
-        rows =
-            List.map rowRenderingFunction <| Dict.toList shares
-    in
-        table [] <|
-            [ caption [] [ text "Požadovaný podíl aktualní zůstatkové částky investovaný do půjček v daném ratingu (v %)" ]
-            , tr []
+        headerRow =
+            tr []
                 [ th [] [ text "Rating" ]
                 , th [] [ text "min" ]
                 , th [] [ text "max" ]
                 ]
+
+        dataRows =
+            List.map rowRenderingFunction <| Dict.toList shares
+
+        sumOfShareMinimums =
+            Dict.foldr (\_ ( min, _ ) acc -> min + acc) 0 shares
+
+        validationErrors =
+            if sumOfShareMinimums /= 100 then
+                [ div [ style [ ( "color", "red" ) ] ]
+                    [ text <| "Součet minim musí být přesně 100% (teď je " ++ toString sumOfShareMinimums ++ "%)" ]
+                ]
+            else
+                []
+    in
+        div [] <|
+            [ text <| tableDescription ++ " požadovaný podíl aktuální zůstatkové částky investovaný do půjček v daném ratingu (v %)"
+            , table [] (headerRow :: dataRows)
             ]
-                ++ rows
+                ++ validationErrors
 
 
 portfolioShareReadOnlyRow : PortfolioShare -> Html Msg
@@ -75,9 +89,18 @@ portfolioShareEditableRow ( rtg, ( mi, mx ) ) =
     let
         inputCell val msg =
             input [ size 2, type_ "number", Attr.min "0", Attr.max "100", value (toString val), onInput msg ] []
+
+        validationError =
+            if mi > mx then
+                [ td [ style [ ( "color", "red" ), ( "border", "none" ) ] ]
+                    [ text "Minimum musí být menší nebo rovno než maximum" ]
+                ]
+            else
+                []
     in
-        tr []
+        tr [] <|
             [ td [] [ text <| Rating.ratingToString rtg ]
             , td [] [ inputCell mi (ChangePortfolioShareMin rtg) ]
             , td [] [ inputCell mx (ChangePortfolioShareMax rtg) ]
             ]
+                ++ validationError
