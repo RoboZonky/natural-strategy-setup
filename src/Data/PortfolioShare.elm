@@ -7,14 +7,14 @@ module Data.PortfolioShare
         , renderPortfolioShares
         )
 
-import Data.Rating as Rating exposing (Rating)
+import Data.Portfolio exposing (Portfolio(Empty))
+import Data.Rating as Rating exposing (Rating(..))
+import AllDict as Dict exposing (AllDict)
 import Util
-import EveryDict as Dict exposing (EveryDict)
-import Data.Rating exposing (Rating(..))
 
 
 type alias PortfolioShares =
-    EveryDict Rating ( Int, Int )
+    AllDict Rating ( Int, Int ) Int
 
 
 type alias PortfolioShare =
@@ -38,8 +38,14 @@ renderShare ( minPercent, maxPercent ) =
         toString minPercent ++ " až " ++ toString maxPercent
 
 
-renderPortfolioShares : PortfolioShares -> String
-renderPortfolioShares shares =
-    Util.renderNonemptySection "\n- Úprava struktury portfolia" <|
-        List.map renderPortfolioShare <|
-            Dict.toList shares
+renderPortfolioShares : Portfolio -> PortfolioShares -> String
+renderPortfolioShares portfolio shares =
+    case portfolio of
+        -- Only render this section when user "overrides" predefined DefaultPortfolios
+        Empty ->
+            Util.renderNonemptySection "\n- Úprava struktury portfolia" <|
+                List.map renderPortfolioShare <|
+                    Dict.toList shares
+
+        _ ->
+            ""

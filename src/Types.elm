@@ -1,7 +1,7 @@
 module Types exposing (..)
 
-import Data.Strategy exposing (..)
 import Data.Portfolio exposing (Portfolio)
+import Data.Rating exposing (Rating)
 
 
 type Msg
@@ -9,7 +9,5 @@ type Msg
     | ComplexStrategySelected
     | PortfolioChanged Portfolio
     | TargetPortfolioSizeChanged String
-
-
-type alias Model =
-    ParsedStrategy
+    | ChangePortfolioShareMin Rating String
+    | ChangePortfolioShareMax Rating String

@@ -4,6 +4,7 @@ module Data.Rating
         , RatingCondition(..)
         , renderRatingCondition
         , ratingToString
+        , hash
         )
 
 import Util
@@ -46,6 +47,40 @@ ratingToString r =
 
         D ->
             "D"
+
+
+
+-- TODO Elm 0.18 doesn't make it possible to use Union type values as keys in Dict
+-- As a workaround using eeue56/elm-all-dict which makes that possible, but requires explicit key hashing function
+-- Expecting this to be rectified in 0.19
+
+
+hash : Rating -> Int
+hash rating =
+    case rating of
+        A_Double_Star ->
+            0
+
+        A_Star ->
+            1
+
+        A_Double_Plus ->
+            2
+
+        A_Plus ->
+            3
+
+        A ->
+            4
+
+        B ->
+            5
+
+        C ->
+            6
+
+        D ->
+            7
 
 
 type RatingCondition

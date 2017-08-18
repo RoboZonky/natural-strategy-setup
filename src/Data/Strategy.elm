@@ -5,13 +5,14 @@ import Data.Confirmation as Confirmation exposing (Confirmation)
 import Data.Investment as Investment exposing (InvestmentPerRating(..), Size(..))
 import Data.InvestmentShare as InvestmentShare exposing (InvestmentShare)
 import Data.Portfolio as Portfolio exposing (Portfolio(..))
-import Data.PortfolioShare as PortfolioShare exposing (PortfolioShares, PortfolioShare, Share)
+import Data.PortfolioShare as PortfolioShare exposing (PortfolioShare, PortfolioShares, Share)
 import Data.PortfolioShare.Predefined as PredefinedShares
 import Data.Rating exposing (Rating(..), Rating(A_Double_Star))
 import Data.SellFilter exposing (SellFilter(..))
 import Data.TargetBalance as TargetBalance exposing (TargetBalance)
 import Data.TargetPortfolioSize as TargetPortfolioSize exposing (TargetPortfolioSize)
 import Util
+import AllDict as Dict
 
 
 type ParsedStrategy
@@ -91,13 +92,46 @@ setPortfolio portfolio strategy =
 
 
 setTargetPortfolioSize : TargetPortfolioSize -> ParsedStrategy -> ParsedStrategy
-setTargetPortfolioSize targetPortfolioSize strategy =
+setTargetPortfolioSize targetPortfolioSize =
+    let
+        sizeSetter ({ generalSettings } as settings) =
+            { settings | generalSettings = { generalSettings | targetPortfolioSize = targetPortfolioSize } }
+    in
+        modifyComplexStrategy sizeSetter
+
+
+modifyComplexStrategy : (ComplexStrategyParameters -> ComplexStrategyParameters) -> ParsedStrategy -> ParsedStrategy
+modifyComplexStrategy modifierFunction strategy =
     case strategy of
-        ComplexStrategy ({ generalSettings } as settings) ->
-            ComplexStrategy { settings | generalSettings = { generalSettings | targetPortfolioSize = targetPortfolioSize } }
+        ComplexStrategy params ->
+            ComplexStrategy (modifierFunction params)
 
         simple ->
             simple
+
+
+setPortfolioShareMin : Rating -> Int -> ParsedStrategy -> ParsedStrategy
+setPortfolioShareMin rtg newMin =
+    let
+        sharesUpdater =
+            Dict.update rtg (Maybe.map (\( mi, ma ) -> ( newMin, ma )))
+
+        strategyParamsUpdater params =
+            { params | portfolioShares = sharesUpdater params.portfolioShares }
+    in
+        modifyComplexStrategy strategyParamsUpdater
+
+
+setPortfolioShareMax : Rating -> Int -> ParsedStrategy -> ParsedStrategy
+setPortfolioShareMax rtg newMax =
+    let
+        sharesUpdater =
+            Dict.update rtg (Maybe.map (\( mi, ma ) -> ( mi, newMax )))
+
+        strategyParamsUpdater params =
+            { params | portfolioShares = sharesUpdater params.portfolioShares }
+    in
+        modifyComplexStrategy strategyParamsUpdater
 
 
 renderParsedStrategy : ParsedStrategy -> String
@@ -106,11 +140,11 @@ renderParsedStrategy strategy =
         SimpleStrategy portfolioType ->
             Portfolio.renderPortfolio portfolioType
 
-        ComplexStrategy strategyParameters ->
+        ComplexStrategy { generalSettings, portfolioShares, investmentPerRating } ->
             Util.joinNonemptyLines
-                [ renderGeneralSettings strategyParameters.generalSettings
-                , PortfolioShare.renderPortfolioShares strategyParameters.portfolioShares
-                , Investment.renderInvestments strategyParameters.investmentPerRating
+                [ renderGeneralSettings generalSettings
+                , PortfolioShare.renderPortfolioShares generalSettings.portfolio portfolioShares
+                , Investment.renderInvestments investmentPerRating
                 ]
 
 

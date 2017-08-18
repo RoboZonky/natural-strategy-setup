@@ -1,12 +1,12 @@
 module View.ConfigPreview exposing (view)
 
-import Data.Strategy as Strategy
+import Data.Strategy as Strategy exposing (ParsedStrategy)
 import Html exposing (Html, a, div, text, textarea)
 import Html.Attributes exposing (cols, downloadAs, href, readonly, rows, style, value, width)
 import Types exposing (..)
 
 
-view : Model -> Html Msg
+view : ParsedStrategy -> Html Msg
 view model =
     let
         strategyString =
