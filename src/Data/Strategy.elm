@@ -114,7 +114,7 @@ setPortfolioShareMin : Rating -> Int -> ParsedStrategy -> ParsedStrategy
 setPortfolioShareMin rtg newMin =
     let
         sharesUpdater =
-            Dict.update rtg (Maybe.map (\( mi, ma ) -> ( newMin, ma )))
+            Dict.update rtg (Maybe.map (\( mi, ma ) -> ( newMin, max ma newMin {- automatically bump ma when newMin exceeds it -} )))
 
         strategyParamsUpdater params =
             { params | portfolioShares = sharesUpdater params.portfolioShares }

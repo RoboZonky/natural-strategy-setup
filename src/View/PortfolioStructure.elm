@@ -50,8 +50,8 @@ ratingSharesTable portfolio shares =
         headerRow =
             tr []
                 [ th [] [ text "Rating" ]
-                , th [] [ text "min" ]
-                , th [] [ text "max" ]
+                , th [] [ text "minimálně" ]
+                , th [] [ text "maximálně" ]
                 ]
 
         dataRows =
