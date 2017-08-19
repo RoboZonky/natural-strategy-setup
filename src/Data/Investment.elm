@@ -3,16 +3,21 @@ module Data.Investment
         ( InvestmentPerRating(..)
         , Size(..)
         , renderDefaultInvestmentSize
-        , renderInvestments
         , renderInvestment
+        , renderInvestments
         )
 
-import Util
+import AllDict as Dict exposing (AllDict)
 import Data.Rating exposing (Rating, ratingToString)
+import Util
 
 
 type InvestmentPerRating
     = InvestmentPerRating Rating Size
+
+
+type alias InvestmentsPerRating =
+    AllDict Rating Size Int
 
 
 type Size

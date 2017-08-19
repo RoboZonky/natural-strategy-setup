@@ -43,9 +43,11 @@ renderPortfolioShares portfolio shares =
     case portfolio of
         -- Only render this section when user "overrides" predefined DefaultPortfolios
         Empty ->
-            Util.renderNonemptySection "\n- Úprava struktury portfolia" <|
-                List.map renderPortfolioShare <|
-                    Dict.toList shares
+            Dict.toList shares
+                -- Only render share in the config when maximum > 0
+                |> List.filter (\( _, ( _, mx ) ) -> mx > 0)
+                |> List.map renderPortfolioShare
+                |> Util.renderNonemptySection "\n- Úprava struktury portfolia"
 
         _ ->
             ""

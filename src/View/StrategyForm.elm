@@ -1,7 +1,6 @@
 module View.StrategyForm exposing (..)
 
 import Data.BuyFilter exposing (BuyFilter)
-import Data.Investment as Investment exposing (InvestmentPerRating)
 import Data.PortfolioShare as PortfolioShare exposing (PortfolioShare, PortfolioShares)
 import Data.SellFilter exposing (SellFilter)
 import Data.Strategy exposing (..)
@@ -11,6 +10,7 @@ import Html.Events exposing (onClick, onInput)
 import Types exposing (..)
 import View.TargetPortfolioSize
 import View.PortfolioStructure exposing (defaultPortfolioForm, portfolioSharesForm)
+import View.InvestmentForm as InvestmentForm
 
 
 view : ParsedStrategy -> Html Msg
@@ -43,7 +43,7 @@ complexStrategyFormView params =
     div []
         [ generalSettingsForm params.generalSettings
         , portfolioSharesForm params.generalSettings.portfolio params.portfolioShares
-        , investmentPerRatingForm params.investmentPerRating
+        , InvestmentForm.investmentForm params.investmentPerRating
         , buyFiltersForm params.buyFilters
         , sellFiltersForm params.sellFilters
         ]
@@ -61,23 +61,6 @@ portfolioView : PortfolioShare -> Html Msg
 portfolioView portfolioShare =
     Html.li []
         [ text <| PortfolioShare.renderPortfolioShare portfolioShare
-        , button [] [ text "Odebrat" ]
-        ]
-
-
-investmentPerRatingForm : List InvestmentPerRating -> Html Msg
-investmentPerRatingForm iprs =
-    div []
-        [ h2 [] [ text "Výše investice" ]
-        , listView investmentPerRatingView iprs
-        , button [] [ text "Přidat omezení" ]
-        ]
-
-
-investmentPerRatingView : InvestmentPerRating -> Html Msg
-investmentPerRatingView ipr =
-    Html.li []
-        [ text <| Investment.renderInvestment ipr
         , button [] [ text "Odebrat" ]
         ]
 
