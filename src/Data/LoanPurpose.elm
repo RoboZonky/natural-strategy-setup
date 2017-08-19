@@ -1,8 +1,8 @@
 module Data.LoanPurpose
     exposing
-        ( renderLoanPurposeCondition
-        , LoanPurpose(..)
+        ( LoanPurpose(..)
         , LoanPurposeCondition(..)
+        , renderLoanPurposeCondition
         )
 
 import Util

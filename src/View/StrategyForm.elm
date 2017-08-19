@@ -8,9 +8,9 @@ import Html exposing (Html, button, caption, div, h2, input, label, option, sele
 import Html.Attributes as Attr exposing (checked, cols, disabled, height, min, name, rows, size, type_, value)
 import Html.Events exposing (onClick, onInput)
 import Types exposing (..)
-import View.TargetPortfolioSize
-import View.PortfolioStructure exposing (defaultPortfolioForm, portfolioSharesForm)
 import View.InvestmentForm as InvestmentForm
+import View.PortfolioStructure exposing (defaultPortfolioForm, portfolioSharesForm)
+import View.TargetPortfolioSize
 
 
 view : ParsedStrategy -> Html Msg
@@ -24,18 +24,18 @@ view model =
                 ComplexStrategy params ->
                     ( False, complexStrategyFormView params )
     in
-        div []
-            [ h2 [] [ text "Konfigurace strategie" ]
-            , label []
-                [ input [ type_ "radio", name "strategyRadio", onClick SimpleStrategySelected, checked isSimple ] []
-                , text "Jednoduchá"
-                ]
-            , label []
-                [ input [ type_ "radio", name "strategyRadio", onClick ComplexStrategySelected, checked (not isSimple) ] []
-                , text "Pokročilá"
-                ]
-            , subform
+    div []
+        [ h2 [] [ text "Konfigurace strategie" ]
+        , label []
+            [ input [ type_ "radio", name "strategyRadio", onClick SimpleStrategySelected, checked isSimple ] []
+            , text "Jednoduchá"
             ]
+        , label []
+            [ input [ type_ "radio", name "strategyRadio", onClick ComplexStrategySelected, checked (not isSimple) ] []
+            , text "Pokročilá"
+            ]
+        , subform
+        ]
 
 
 complexStrategyFormView : ComplexStrategyParameters -> Html Msg

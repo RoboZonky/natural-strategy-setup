@@ -1,15 +1,15 @@
 module Data.PortfolioShare
     exposing
-        ( PortfolioShares
-        , PortfolioShare
+        ( PortfolioShare
+        , PortfolioShares
         , Share
         , renderPortfolioShare
         , renderPortfolioShares
         )
 
+import AllDict as Dict exposing (AllDict)
 import Data.Portfolio exposing (Portfolio(Empty))
 import Data.Rating as Rating exposing (Rating(..))
-import AllDict as Dict exposing (AllDict)
 import Util
 
 

@@ -12,20 +12,20 @@ view model =
         strategyString =
             Strategy.renderParsedStrategy model
     in
-        div [ style [ ( "position", "fixed" ), ( "right", "0" ), ( "top", "0" ), ( "width", "50%" ) ] ]
-            [ textarea
-                [ rows 50
-                , style [ ( "width", "100%" ) ]
-                , value strategyString
-                , readonly True
-                ]
-                []
-            , div []
-                [ text "Download "
-                , a
-                    [ href <| "data:text/plain;charset=utf-8," ++ strategyString
-                    , downloadAs <| "strategy.txt"
-                    ]
-                    [ text "strategy file" ]
-                ]
+    div [ style [ ( "position", "fixed" ), ( "right", "0" ), ( "top", "0" ), ( "width", "50%" ) ] ]
+        [ textarea
+            [ rows 50
+            , style [ ( "width", "100%" ) ]
+            , value strategyString
+            , readonly True
             ]
+            []
+        , div []
+            [ text "Download "
+            , a
+                [ href <| "data:text/plain;charset=utf-8," ++ strategyString
+                , downloadAs <| "strategy.txt"
+                ]
+                [ text "strategy file" ]
+            ]
+        ]

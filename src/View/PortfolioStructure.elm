@@ -1,12 +1,12 @@
-module View.PortfolioStructure exposing (portfolioSharesForm, defaultPortfolioForm)
+module View.PortfolioStructure exposing (defaultPortfolioForm, portfolioSharesForm)
 
-import Data.Portfolio as Portfolio exposing (Portfolio(..))
-import Data.PortfolioShare exposing (PortfolioShares, PortfolioShare)
 import AllDict as Dict
-import Html exposing (Html, div, h2, text, select, option, table, caption, tr, th, td, input)
-import Html.Attributes as Attr exposing (value, size, type_, style)
-import Html.Events exposing (onInput)
+import Data.Portfolio as Portfolio exposing (Portfolio(..))
+import Data.PortfolioShare exposing (PortfolioShare, PortfolioShares)
 import Data.Rating as Rating
+import Html exposing (Html, caption, div, h2, input, option, select, table, td, text, th, tr)
+import Html.Attributes as Attr exposing (size, style, type_, value)
+import Html.Events exposing (onInput)
 import Types exposing (..)
 
 
@@ -68,11 +68,11 @@ ratingSharesTable portfolio shares =
             else
                 []
     in
-        div [] <|
-            [ text <| tableDescription ++ " požadovaný podíl aktuální zůstatkové částky investovaný do půjček v daném ratingu (v %)"
-            , table [] (headerRow :: dataRows)
-            ]
-                ++ validationErrors
+    div [] <|
+        [ text <| tableDescription ++ " požadovaný podíl aktuální zůstatkové částky investovaný do půjček v daném ratingu (v %)"
+        , table [] (headerRow :: dataRows)
+        ]
+            ++ validationErrors
 
 
 portfolioShareReadOnlyRow : PortfolioShare -> Html Msg
@@ -98,9 +98,9 @@ portfolioShareEditableRow ( rtg, ( mi, mx ) ) =
             else
                 []
     in
-        tr [] <|
-            [ td [] [ text <| Rating.ratingToString rtg ]
-            , td [] [ inputCell mi (ChangePortfolioShareMin rtg) ]
-            , td [] [ inputCell mx (ChangePortfolioShareMax rtg) ]
-            ]
-                ++ validationError
+    tr [] <|
+        [ td [] [ text <| Rating.ratingToString rtg ]
+        , td [] [ inputCell mi (ChangePortfolioShareMin rtg) ]
+        , td [] [ inputCell mx (ChangePortfolioShareMax rtg) ]
+        ]
+            ++ validationError

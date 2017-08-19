@@ -1,8 +1,8 @@
 module Data.Portfolio
     exposing
         ( Portfolio(..)
-        , renderPortfolio
         , fromString
+        , renderPortfolio
         , toString
         )
 

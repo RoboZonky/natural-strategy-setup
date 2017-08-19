@@ -1,8 +1,8 @@
 module Data.MainIncome
     exposing
-        ( renderIncomeCondition
+        ( IncomeCondition(..)
         , MainIncome(..)
-        , IncomeCondition(..)
+        , renderIncomeCondition
         )
 
 import Util

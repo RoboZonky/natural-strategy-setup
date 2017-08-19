@@ -48,7 +48,7 @@ update msg model =
                 targetSize =
                     String.toInt targetSizeStr |> Result.map Bounded |> Result.withDefault Unbounded
             in
-                setTargetPortfolioSize targetSize model
+            setTargetPortfolioSize targetSize model
 
 
 view : Model -> Html Msg

@@ -2,9 +2,9 @@ module Data.Rating
     exposing
         ( Rating(..)
         , RatingCondition(..)
-        , renderRatingCondition
-        , ratingToString
         , hash
+        , ratingToString
+        , renderRatingCondition
         )
 
 import Util
@@ -103,7 +103,7 @@ renderRatingCondition ratingCondition =
                 WorseThan r ->
                     "horší než " ++ ratingToString r
     in
-        "rating je " ++ subExpr
+    "rating je " ++ subExpr
 
 
 renderRatingList : List Rating -> String
