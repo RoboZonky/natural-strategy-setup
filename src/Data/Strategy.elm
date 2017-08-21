@@ -1,8 +1,8 @@
 module Data.Strategy exposing (..)
 
-import AllDict as Dict
+import AllDict
 import Data.BuyFilter exposing (BuyFilter(..))
-import Data.Confirmation as Confirmation exposing (Confirmation)
+import Data.Confirmation as Confirmation exposing (ConfirmationSettings)
 import Data.Investment as Investment exposing (InvestmentPerRating(..), Size(..))
 import Data.InvestmentShare as InvestmentShare exposing (InvestmentShare)
 import Data.Portfolio as Portfolio exposing (Portfolio(..))
@@ -29,6 +29,16 @@ type alias ComplexStrategyParameters =
     }
 
 
+type alias GeneralSettings =
+    { portfolio : Portfolio
+    , targetPortfolioSize : TargetPortfolioSize
+    , defaultInvestmentSize : Investment.Size
+    , defaultInvestmentShare : InvestmentShare
+    , defaultTargetBalance : TargetBalance
+    , confirmationSettings : ConfirmationSettings
+    }
+
+
 defaultSimpleStrategy : ParsedStrategy
 defaultSimpleStrategy =
     SimpleStrategy Portfolio.Conservative
@@ -43,23 +53,13 @@ defaultComplexStrategy =
             , defaultInvestmentSize = Amount 200
             , defaultInvestmentShare = InvestmentShare.Unbounded
             , defaultTargetBalance = TargetBalance.Unspecified
-            , confirmationSettings = Confirmation.Disabled
+            , confirmationSettings = Confirmation.confirmationsDisabled
             }
         , portfolioShares = PredefinedShares.conservativeShares
         , investmentPerRating = [ InvestmentPerRating A_Double_Star (Amount 150), InvestmentPerRating B (FromTo 10 20), InvestmentPerRating D (UpTo 80) ]
         , buyFilters = []
         , sellFilters = []
         }
-
-
-type alias GeneralSettings =
-    { portfolio : Portfolio
-    , targetPortfolioSize : TargetPortfolioSize
-    , defaultInvestmentSize : Investment.Size
-    , defaultInvestmentShare : InvestmentShare
-    , defaultTargetBalance : TargetBalance
-    , confirmationSettings : Confirmation
-    }
 
 
 setPortfolio : Portfolio -> ParsedStrategy -> ParsedStrategy
@@ -100,6 +100,17 @@ setTargetPortfolioSize targetPortfolioSize =
     modifyComplexStrategy sizeSetter
 
 
+setNotification : Rating -> Bool -> ParsedStrategy -> ParsedStrategy
+setNotification rating isEnabled =
+    let
+        ratingSetter ({ generalSettings } as settings) =
+            { settings
+                | generalSettings = { generalSettings | confirmationSettings = AllDict.insert rating isEnabled generalSettings.confirmationSettings }
+            }
+    in
+    modifyComplexStrategy ratingSetter
+
+
 modifyComplexStrategy : (ComplexStrategyParameters -> ComplexStrategyParameters) -> ParsedStrategy -> ParsedStrategy
 modifyComplexStrategy modifierFunction strategy =
     case strategy of
@@ -114,7 +125,7 @@ setPortfolioShareMin : Rating -> Int -> ParsedStrategy -> ParsedStrategy
 setPortfolioShareMin rtg newMin =
     let
         sharesUpdater =
-            Dict.update rtg (Maybe.map (\( mi, ma ) -> ( newMin, max ma newMin {- automatically bump ma when newMin exceeds it -} )))
+            AllDict.update rtg (Maybe.map (\( mi, ma ) -> ( newMin, max ma newMin {- automatically bump ma when newMin exceeds it -} )))
 
         strategyParamsUpdater params =
             { params | portfolioShares = sharesUpdater params.portfolioShares }
@@ -126,7 +137,7 @@ setPortfolioShareMax : Rating -> Int -> ParsedStrategy -> ParsedStrategy
 setPortfolioShareMax rtg newMax =
     let
         sharesUpdater =
-            Dict.update rtg (Maybe.map (\( mi, ma ) -> ( mi, newMax )))
+            AllDict.update rtg (Maybe.map (\( mi, ma ) -> ( mi, newMax )))
 
         strategyParamsUpdater params =
             { params | portfolioShares = sharesUpdater params.portfolioShares }

@@ -11,3 +11,4 @@ type Msg
     | TargetPortfolioSizeChanged String
     | ChangePortfolioShareMin Rating String
     | ChangePortfolioShareMax Rating String
+    | ToggleNotificationOnRating Rating Bool

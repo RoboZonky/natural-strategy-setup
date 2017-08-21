@@ -2,11 +2,15 @@ module Data.Rating
     exposing
         ( Rating(..)
         , RatingCondition(..)
+        , determineRatingCondition
         , hash
         , ratingToString
         , renderRatingCondition
+        , ratingSatisfiesCondition
+        , allRatings
         )
 
+import List.Extra as List
 import Util
 
 
@@ -19,6 +23,11 @@ type Rating
     | B
     | C
     | D
+
+
+allRatings : List Rating
+allRatings =
+    [ A_Double_Star, A_Star, A_Double_Plus, A_Plus, A, B, C, D ]
 
 
 ratingToString : Rating -> String
@@ -59,28 +68,28 @@ hash : Rating -> Int
 hash rating =
     case rating of
         A_Double_Star ->
-            0
-
-        A_Star ->
             1
 
-        A_Double_Plus ->
+        A_Star ->
             2
 
-        A_Plus ->
+        A_Double_Plus ->
             3
 
-        A ->
+        A_Plus ->
             4
 
-        B ->
+        A ->
             5
 
-        C ->
+        B ->
             6
 
-        D ->
+        C ->
             7
+
+        D ->
+            8
 
 
 type RatingCondition
@@ -103,9 +112,45 @@ renderRatingCondition ratingCondition =
                 WorseThan r ->
                     "horší než " ++ ratingToString r
     in
-    "rating je " ++ subExpr
+        "rating je " ++ subExpr
 
 
 renderRatingList : List Rating -> String
 renderRatingList =
     Util.orList ratingToString
+
+
+determineRatingCondition : List Rating -> RatingCondition
+determineRatingCondition ratings =
+    let
+        sortedHashes =
+            List.sort <| List.map hash ratings
+
+        len =
+            List.length ratings
+
+        ratingCount =
+            8
+
+        allHashes =
+            List.range 1 ratingCount
+    in
+        if List.isPrefixOf sortedHashes allHashes && 0 < len && len < ratingCount then
+            BetterThan <| Maybe.withDefault A_Double_Star <| List.head <| List.drop len allRatings
+        else if List.isSuffixOf sortedHashes allHashes && 0 < len && len < ratingCount then
+            WorseThan <| Maybe.withDefault D <| List.last <| List.take (ratingCount - len) allRatings
+        else
+            RatingList ratings
+
+
+ratingSatisfiesCondition : RatingCondition -> Rating -> Bool
+ratingSatisfiesCondition condition rating =
+    case condition of
+        RatingList list ->
+            List.member rating list
+
+        BetterThan referenceRating ->
+            hash rating < hash referenceRating
+
+        WorseThan referenceRating ->
+            hash referenceRating < hash rating

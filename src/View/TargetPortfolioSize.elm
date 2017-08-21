@@ -1,7 +1,7 @@
 module View.TargetPortfolioSize exposing (..)
 
 import Data.TargetPortfolioSize exposing (TargetPortfolioSize(..))
-import Html exposing (Html, div, input, label, text)
+import Html exposing (Html, div, fieldset, input, label, legend, text)
 import Html.Attributes as Attr exposing (checked, disabled, name, type_)
 import Html.Events exposing (onClick, onInput)
 import Types exposing (..)
@@ -18,8 +18,8 @@ form targetPortfolioSize =
                 _ ->
                     False
     in
-    div []
-        [ text "Cílová zůstatková částka je "
+    fieldset []
+        [ legend [] [ text "Cílová zůstatková částka je " ]
         , label []
             [ input [ type_ "radio", name "portfolioSize", onClick (TargetPortfolioSizeChanged "undefined"), checked isUnbounded ] []
             , text " neomezená "

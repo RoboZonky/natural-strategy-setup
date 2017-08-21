@@ -50,6 +50,9 @@ update msg model =
             in
             setTargetPortfolioSize targetSize model
 
+        ToggleNotificationOnRating rating isEnabled ->
+            setNotification rating isEnabled model
+
 
 view : Model -> Html Msg
 view model =

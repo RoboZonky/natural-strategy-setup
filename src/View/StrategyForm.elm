@@ -8,8 +8,9 @@ import Html exposing (Html, button, caption, div, h2, input, label, option, sele
 import Html.Attributes as Attr exposing (checked, cols, disabled, height, min, name, rows, size, type_, value)
 import Html.Events exposing (onClick, onInput)
 import Types exposing (..)
+import View.Confirmation as Confirmation
 import View.InvestmentForm as InvestmentForm
-import View.PortfolioStructure exposing (defaultPortfolioForm, portfolioSharesForm)
+import View.PortfolioStructure as PortfolioStructure
 import View.TargetPortfolioSize
 
 
@@ -19,7 +20,7 @@ view model =
         ( isSimple, subform ) =
             case model of
                 SimpleStrategy defaultPortfolio ->
-                    ( True, defaultPortfolioForm )
+                    ( True, PortfolioStructure.defaultPortfolioForm )
 
                 ComplexStrategy params ->
                     ( False, complexStrategyFormView params )
@@ -42,7 +43,7 @@ complexStrategyFormView : ComplexStrategyParameters -> Html Msg
 complexStrategyFormView params =
     div []
         [ generalSettingsForm params.generalSettings
-        , portfolioSharesForm params.generalSettings.portfolio params.portfolioShares
+        , PortfolioStructure.portfolioSharesForm params.generalSettings.portfolio params.portfolioShares
         , InvestmentForm.investmentForm params.investmentPerRating
         , buyFiltersForm params.buyFilters
         , sellFiltersForm params.sellFilters
@@ -54,6 +55,7 @@ generalSettingsForm generalSettings =
     div []
         [ h2 [] [ text "Obecná nastavení" ]
         , View.TargetPortfolioSize.form generalSettings.targetPortfolioSize
+        , Confirmation.form generalSettings.confirmationSettings
         ]
 
 
