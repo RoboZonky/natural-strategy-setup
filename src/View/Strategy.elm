@@ -1,4 +1,4 @@
-module View.StrategyForm exposing (..)
+module View.Strategy exposing (..)
 
 import Data.BuyFilter exposing (BuyFilter)
 import Data.PortfolioShare as PortfolioShare exposing (PortfolioShare, PortfolioShares)
@@ -9,13 +9,13 @@ import Html.Attributes as Attr exposing (checked, cols, disabled, height, min, n
 import Html.Events exposing (onClick, onInput)
 import Types exposing (..)
 import View.Confirmation as Confirmation
-import View.InvestmentForm as InvestmentForm
+import View.Investment as Investment
 import View.PortfolioStructure as PortfolioStructure
 import View.TargetPortfolioSize
 
 
-view : ParsedStrategy -> Html Msg
-view model =
+form : ParsedStrategy -> Html Msg
+form model =
     let
         ( isSimple, subform ) =
             case model of
@@ -44,7 +44,7 @@ complexStrategyFormView params =
     div []
         [ generalSettingsForm params.generalSettings
         , PortfolioStructure.portfolioSharesForm params.generalSettings.portfolio params.portfolioShares
-        , InvestmentForm.investmentForm params.investmentPerRating
+        , Investment.investmentForm params.generalSettings.defaultInvestmentSize params.investmentSizeOverrides
         , buyFiltersForm params.buyFilters
         , sellFiltersForm params.sellFilters
         ]

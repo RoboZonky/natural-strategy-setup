@@ -5,7 +5,7 @@ import Data.TargetPortfolioSize exposing (..)
 import Html exposing (Html, text)
 import Types exposing (..)
 import View.ConfigPreview as ConfigPreview
-import View.StrategyForm as StrategyForm
+import View.Strategy as Strategy
 
 
 type alias Model =
@@ -53,10 +53,30 @@ update msg model =
         ToggleNotificationOnRating rating isEnabled ->
             setNotification rating isEnabled model
 
+        ChangeInvestmentMin rating newMinStr ->
+            String.toInt newMinStr
+                |> Result.map (\newMin -> setInvestmentMin rating newMin model)
+                |> Result.withDefault model
+
+        ChangeInvestmentMax rating newMaxStr ->
+            String.toInt newMaxStr
+                |> Result.map (\newMax -> setInvestmentMax rating newMax model)
+                |> Result.withDefault model
+
+        ChangeDefaultInvestmentMin newMinStr ->
+            String.toInt newMinStr
+                |> Result.map (\newMin -> setDefaultInvestmentMin newMin model)
+                |> Result.withDefault model
+
+        ChangeDefaultInvestmentMax newMaxStr ->
+            String.toInt newMaxStr
+                |> Result.map (\newMax -> setDefaultInvestmentMax newMax model)
+                |> Result.withDefault model
+
 
 view : Model -> Html Msg
 view model =
     Html.div []
-        [ StrategyForm.view model
+        [ Strategy.form model
         , ConfigPreview.view model
         ]

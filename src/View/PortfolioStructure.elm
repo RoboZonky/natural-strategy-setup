@@ -4,7 +4,7 @@ import AllDict as Dict
 import Data.Portfolio as Portfolio exposing (Portfolio(..))
 import Data.PortfolioShare exposing (PortfolioShare, PortfolioShares)
 import Data.Rating as Rating
-import Html exposing (Html, caption, div, h2, input, option, select, table, td, text, th, tr)
+import Html exposing (Html, caption, div, h2, input, option, p, select, table, td, text, th, tr)
 import Html.Attributes as Attr exposing (size, style, type_, value)
 import Html.Events exposing (onInput)
 import Types exposing (..)
@@ -68,7 +68,7 @@ ratingSharesTable portfolio shares =
             else
                 []
     in
-    div [] <|
+    p [] <|
         [ text <| tableDescription ++ " požadovaný podíl aktuální zůstatkové částky investovaný do půjček v daném ratingu (v %)"
         , table [] (headerRow :: dataRows)
         ]
