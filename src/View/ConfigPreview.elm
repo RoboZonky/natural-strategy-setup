@@ -1,5 +1,6 @@
 module View.ConfigPreview exposing (view)
 
+import Base64
 import Data.Strategy as Strategy exposing (StrategyConfiguration)
 import Html exposing (Html, a, div, text, textarea)
 import Html.Attributes exposing (cols, downloadAs, href, readonly, rows, style, value, width)
@@ -22,7 +23,7 @@ view model =
             []
         , div []
             [ a
-                [ href <| "data:text/plain;charset=utf-8," ++ strategyString
+                [ href <| "data:text/plain;charset=utf-8;base64," ++ Base64.encode strategyString
                 , downloadAs <| "strategy.txt"
                 ]
                 [ text "Stáhnout konfigurační soubor" ]
