@@ -5,8 +5,6 @@ import Data.PortfolioShare as PortfolioShare exposing (PortfolioShare, Portfolio
 import Data.SellFilter exposing (SellFilter)
 import Data.Strategy exposing (..)
 import Html exposing (Html, button, caption, div, h2, input, label, option, select, table, td, text, textarea, th, tr, ul)
-import Html.Attributes as Attr exposing (checked, cols, disabled, height, min, name, rows, size, type_, value)
-import Html.Events exposing (onClick, onInput)
 import Types exposing (..)
 import View.Confirmation as Confirmation
 import View.Investment as Investment
@@ -15,39 +13,22 @@ import View.PortfolioStructure as PortfolioStructure
 import View.TargetPortfolioSize as TargetPortfolioSize
 
 
-form : ParsedStrategy -> Html Msg
-form model =
-    let
-        ( isSimple, subform ) =
-            case model of
-                SimpleStrategy defaultPortfolio ->
-                    ( True, PortfolioStructure.defaultPortfolioForm )
-
-                ComplexStrategy params ->
-                    ( False, complexStrategyFormView params )
-    in
+form : StrategyConfiguration -> Html Msg
+form config =
     div []
         [ h2 [] [ text "Konfigurace strategie" ]
-        , label []
-            [ input [ type_ "radio", name "strategyRadio", onClick SimpleStrategySelected, checked isSimple ] []
-            , text "Jednoduchá"
-            ]
-        , label []
-            [ input [ type_ "radio", name "strategyRadio", onClick ComplexStrategySelected, checked (not isSimple) ] []
-            , text "Pokročilá"
-            ]
-        , subform
+        , strategyForm config
         ]
 
 
-complexStrategyFormView : ComplexStrategyParameters -> Html Msg
-complexStrategyFormView params =
+strategyForm : StrategyConfiguration -> Html Msg
+strategyForm { generalSettings, portfolioShares, investmentSizeOverrides, buyFilters, sellFilters } =
     div []
-        [ generalSettingsForm params.generalSettings
-        , PortfolioStructure.portfolioSharesForm params.generalSettings.portfolio params.portfolioShares
-        , Investment.investmentForm params.generalSettings.defaultInvestmentSize params.investmentSizeOverrides
-        , buyFiltersForm params.buyFilters
-        , sellFiltersForm params.sellFilters
+        [ generalSettingsForm generalSettings
+        , PortfolioStructure.portfolioSharesForm generalSettings.portfolio portfolioShares
+        , Investment.investmentForm generalSettings.defaultInvestmentSize investmentSizeOverrides
+        , buyFiltersForm buyFilters
+        , sellFiltersForm sellFilters
         ]
 
 

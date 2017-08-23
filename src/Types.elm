@@ -5,9 +5,7 @@ import Data.Rating exposing (Rating)
 
 
 type Msg
-    = SimpleStrategySelected
-    | ComplexStrategySelected
-    | PortfolioChanged Portfolio
+    = PortfolioChanged Portfolio
     | TargetPortfolioSizeChanged String
     | TargetPortfolioShareChanged String
     | ChangePortfolioShareMin Rating String

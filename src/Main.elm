@@ -10,13 +10,13 @@ import View.Strategy as Strategy
 
 
 type alias Model =
-    ParsedStrategy
+    StrategyConfiguration
 
 
 main : Program Never Model Msg
 main =
     Html.beginnerProgram
-        { model = defaultSimpleStrategy
+        { model = defaultStrategyConfiguration
         , update = update
         , view = view
         }
@@ -25,12 +25,6 @@ main =
 update : Msg -> Model -> Model
 update msg model =
     case msg of
-        SimpleStrategySelected ->
-            defaultSimpleStrategy
-
-        ComplexStrategySelected ->
-            defaultComplexStrategy
-
         PortfolioChanged portfolio ->
             setPortfolio portfolio model
 

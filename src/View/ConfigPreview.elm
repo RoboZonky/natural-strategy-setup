@@ -1,16 +1,16 @@
 module View.ConfigPreview exposing (view)
 
-import Data.Strategy as Strategy exposing (ParsedStrategy)
+import Data.Strategy as Strategy exposing (StrategyConfiguration)
 import Html exposing (Html, a, div, text, textarea)
 import Html.Attributes exposing (cols, downloadAs, href, readonly, rows, style, value, width)
 import Types exposing (..)
 
 
-view : ParsedStrategy -> Html Msg
+view : StrategyConfiguration -> Html Msg
 view model =
     let
         strategyString =
-            Strategy.renderParsedStrategy model
+            Strategy.renderStrategyConfiguration model
     in
     div [ style [ ( "position", "fixed" ), ( "right", "0" ), ( "top", "0" ), ( "width", "50%" ) ] ]
         [ textarea

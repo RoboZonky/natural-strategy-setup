@@ -16,6 +16,7 @@ defaultInvestmentForm ( defaultMin, defaultMax ) =
         , inputCell defaultMin ChangeDefaultInvestmentMin
         , text " až "
         , inputCell defaultMax ChangeDefaultInvestmentMax
+        , text " Kč."
         ]
 
 
