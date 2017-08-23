@@ -21,11 +21,10 @@ view model =
             ]
             []
         , div []
-            [ text "Download "
-            , a
+            [ a
                 [ href <| "data:text/plain;charset=utf-8," ++ strategyString
                 , downloadAs <| "strategy.txt"
                 ]
-                [ text "strategy file" ]
+                [ text "Stáhnout konfigurační soubor" ]
             ]
         ]

@@ -10,8 +10,9 @@ import Html.Events exposing (onClick, onInput)
 import Types exposing (..)
 import View.Confirmation as Confirmation
 import View.Investment as Investment
+import View.InvestmentShare as InvestmentShare
 import View.PortfolioStructure as PortfolioStructure
-import View.TargetPortfolioSize
+import View.TargetPortfolioSize as TargetPortfolioSize
 
 
 form : ParsedStrategy -> Html Msg
@@ -54,7 +55,8 @@ generalSettingsForm : GeneralSettings -> Html Msg
 generalSettingsForm generalSettings =
     div []
         [ h2 [] [ text "Obecná nastavení" ]
-        , View.TargetPortfolioSize.form generalSettings.targetPortfolioSize
+        , TargetPortfolioSize.form generalSettings.targetPortfolioSize
+        , InvestmentShare.form generalSettings.defaultInvestmentShare
         , Confirmation.form generalSettings.confirmationSettings
         ]
 

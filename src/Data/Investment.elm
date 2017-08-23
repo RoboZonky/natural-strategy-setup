@@ -3,6 +3,7 @@ module Data.Investment
         ( InvestmentsPerRating
         , Size
         , defaultInvestmentsPerRating
+        , defaultSize
         , renderDefaultInvestmentSize
         , renderInvestment
         , renderInvestments
@@ -30,9 +31,17 @@ type alias Size =
     ( Int, Int )
 
 
+defaultSize : Size
+defaultSize =
+    ( 200, 200 )
+
+
 renderDefaultInvestmentSize : Size -> String
 renderDefaultInvestmentSize investmentSize =
-    "Běžná výše investice je" ++ investmentSizeToString investmentSize ++ " Kč."
+    if investmentSize /= defaultSize then
+        "Běžná výše investice je" ++ investmentSizeToString investmentSize ++ " Kč."
+    else
+        ""
 
 
 renderInvestment : InvestmentPerRating -> String

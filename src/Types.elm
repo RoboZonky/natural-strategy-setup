@@ -9,6 +9,7 @@ type Msg
     | ComplexStrategySelected
     | PortfolioChanged Portfolio
     | TargetPortfolioSizeChanged String
+    | TargetPortfolioShareChanged String
     | ChangePortfolioShareMin Rating String
     | ChangePortfolioShareMax Rating String
     | ToggleNotificationOnRating Rating Bool

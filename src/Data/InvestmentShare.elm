@@ -6,15 +6,15 @@ module Data.InvestmentShare
 
 
 type InvestmentShare
-    = Unbounded --in practice bounded by Zonky, which permits max 5000 Kč
-    | InvestmentShare Int
+    = Unrestricted --in practice bounded by Zonky, which permits max 5000 Kč
+    | PercentShare Int
 
 
 renderInvestmentShare : InvestmentShare -> String
 renderInvestmentShare investmentShare =
     case investmentShare of
-        InvestmentShare share ->
+        PercentShare share ->
             "Investovat maximálně " ++ toString share ++ " % výše úvěru."
 
-        Unbounded ->
+        Unrestricted ->
             ""

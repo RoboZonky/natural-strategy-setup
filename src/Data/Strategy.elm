@@ -50,8 +50,8 @@ defaultComplexStrategy =
         { generalSettings =
             { portfolio = Portfolio.Conservative
             , targetPortfolioSize = TargetPortfolioSize.Unbounded
-            , defaultInvestmentSize = ( 200, 200 )
-            , defaultInvestmentShare = InvestmentShare.Unbounded
+            , defaultInvestmentSize = Investment.defaultSize
+            , defaultInvestmentShare = InvestmentShare.Unrestricted
             , defaultTargetBalance = TargetBalance.Unspecified
             , confirmationSettings = Confirmation.confirmationsDisabled
             }
@@ -98,6 +98,15 @@ setTargetPortfolioSize targetPortfolioSize =
             { settings | generalSettings = { generalSettings | targetPortfolioSize = targetPortfolioSize } }
     in
     modifyComplexStrategy sizeSetter
+
+
+setDefaultInvestmentShare : InvestmentShare -> ParsedStrategy -> ParsedStrategy
+setDefaultInvestmentShare share =
+    let
+        shareSetter ({ generalSettings } as settings) =
+            { settings | generalSettings = { generalSettings | defaultInvestmentShare = share } }
+    in
+    modifyComplexStrategy shareSetter
 
 
 setNotification : Rating -> Bool -> ParsedStrategy -> ParsedStrategy
@@ -219,6 +228,7 @@ renderGeneralSettings generalSettings =
         [ "- Obecná nastavení"
         , Portfolio.renderPortfolio generalSettings.portfolio
         , TargetPortfolioSize.renderTargetPortfolioSize generalSettings.targetPortfolioSize
+        , InvestmentShare.renderInvestmentShare generalSettings.defaultInvestmentShare
         , Investment.renderDefaultInvestmentSize generalSettings.defaultInvestmentSize
         , TargetBalance.renderTargetBalance generalSettings.defaultTargetBalance
         , Confirmation.renderConfirmation generalSettings.confirmationSettings

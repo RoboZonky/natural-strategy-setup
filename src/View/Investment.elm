@@ -34,15 +34,15 @@ investmentOverridesForm default overrides =
         headerRow =
             tr []
                 [ th [] [ text "Rating" ]
-                , th [] [ text "minimálně" ]
-                , th [] [ text "maximálně" ]
+                , th [] [ text "od (Kč)" ]
+                , th [] [ text "do (Kč)" ]
                 ]
 
         dataRows =
             List.map (investmentRow default overrides) Rating.allRatings
     in
     p [] <|
-        [ text "V následující tabulce upravte výši investice pokud si přejete, aby se lišila od běžné výše"
+        [ text "Pokud si přejete, aby se výše investice lišily na základě ratingu půjčky, upravte je v následující tabulce"
         , table [] (headerRow :: dataRows)
         ]
 

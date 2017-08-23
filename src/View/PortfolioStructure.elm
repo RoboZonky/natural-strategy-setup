@@ -50,8 +50,8 @@ ratingSharesTable portfolio shares =
         headerRow =
             tr []
                 [ th [] [ text "Rating" ]
-                , th [] [ text "minimálně" ]
-                , th [] [ text "maximálně" ]
+                , th [] [ text "od (%)" ]
+                , th [] [ text "do (%)" ]
                 ]
 
         dataRows =
@@ -69,7 +69,7 @@ ratingSharesTable portfolio shares =
                 []
     in
     p [] <|
-        [ text <| tableDescription ++ " požadovaný podíl aktuální zůstatkové částky investovaný do půjček v daném ratingu (v %)"
+        [ text <| tableDescription ++ " požadovaný procentuální podíl aktuální zůstatkové částky investovaný do půjček v daném ratingu"
         , table [] (headerRow :: dataRows)
         ]
             ++ validationErrors

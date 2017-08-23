@@ -1,5 +1,6 @@
 module Main exposing (..)
 
+import Data.InvestmentShare exposing (InvestmentShare(..))
 import Data.Strategy exposing (..)
 import Data.TargetPortfolioSize exposing (..)
 import Html exposing (Html, text)
@@ -72,6 +73,13 @@ update msg model =
             String.toInt newMaxStr
                 |> Result.map (\newMax -> setDefaultInvestmentMax newMax model)
                 |> Result.withDefault model
+
+        TargetPortfolioShareChanged shareStr ->
+            let
+                share =
+                    String.toInt shareStr |> Result.map PercentShare |> Result.withDefault Unrestricted
+            in
+            setDefaultInvestmentShare share model
 
 
 view : Model -> Html Msg
