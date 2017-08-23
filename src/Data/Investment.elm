@@ -1,14 +1,15 @@
 module Data.Investment
     exposing
-        ( InvestmentPerRating(..)
-        , Size(..)
+        ( InvestmentsPerRating
+        , Size
+        , defaultInvestmentsPerRating
         , renderDefaultInvestmentSize
         , renderInvestment
         , renderInvestments
         )
 
-import AllDict as Dict exposing (AllDict)
-import Data.Rating exposing (Rating, ratingToString)
+import AllDict exposing (AllDict)
+import Data.Rating as Rating exposing (Rating, ratingToString)
 import Util
 
 
@@ -20,10 +21,13 @@ type alias InvestmentsPerRating =
     AllDict Rating Size Int
 
 
-type Size
-    = Amount Int
-    | UpTo Int
-    | FromTo Int Int
+defaultInvestmentsPerRating : Size -> InvestmentsPerRating
+defaultInvestmentsPerRating defaultSize =
+    AllDict.fromList Rating.hash <| List.map (\r -> ( r, defaultSize )) Rating.allRatings
+
+
+type alias Size =
+    ( Int, Int )
 
 
 renderDefaultInvestmentSize : Size -> String
@@ -36,20 +40,24 @@ renderInvestment (InvestmentPerRating rating investmentSize) =
     "Do úvěrů v ratingu " ++ ratingToString rating ++ " investovat" ++ investmentSizeToString investmentSize ++ " Kč."
 
 
-renderInvestments : List InvestmentPerRating -> String
-renderInvestments investments =
-    Util.renderNonemptySection "\n- Výše investice" <|
-        List.map renderInvestment investments
+renderInvestments : Size -> InvestmentsPerRating -> String
+renderInvestments defaultSize investments =
+    if AllDict.isEmpty investments then
+        ""
+    else
+        AllDict.toList investments
+            --filter our sizes equal to default size
+            |> List.filter (\( _, invSize ) -> invSize /= defaultSize)
+            |> List.map (\( rating, invSize ) -> InvestmentPerRating rating invSize)
+            |> List.map renderInvestment
+            |> Util.renderNonemptySection "\n- Výše investice"
 
 
 investmentSizeToString : Size -> String
-investmentSizeToString investmentSize =
-    case investmentSize of
-        Amount amt ->
-            " " ++ toString amt
-
-        UpTo amt ->
-            " až " ++ toString amt
-
-        FromTo from to ->
-            " " ++ toString from ++ " až " ++ toString to
+investmentSizeToString ( mini, maxi ) =
+    if mini == maxi then
+        " " ++ toString mini
+    else if mini == 0 then
+        " až " ++ toString maxi
+    else
+        " " ++ toString mini ++ " až " ++ toString maxi

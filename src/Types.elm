@@ -12,3 +12,7 @@ type Msg
     | ChangePortfolioShareMin Rating String
     | ChangePortfolioShareMax Rating String
     | ToggleNotificationOnRating Rating Bool
+    | ChangeInvestmentMin Rating String
+    | ChangeInvestmentMax Rating String
+    | ChangeDefaultInvestmentMin String
+    | ChangeDefaultInvestmentMax String

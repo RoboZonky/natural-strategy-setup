@@ -3,7 +3,7 @@ module Data.Strategy exposing (..)
 import AllDict
 import Data.BuyFilter exposing (BuyFilter(..))
 import Data.Confirmation as Confirmation exposing (ConfirmationSettings)
-import Data.Investment as Investment exposing (InvestmentPerRating(..), Size(..))
+import Data.Investment as Investment exposing (InvestmentsPerRating, Size)
 import Data.InvestmentShare as InvestmentShare exposing (InvestmentShare)
 import Data.Portfolio as Portfolio exposing (Portfolio(..))
 import Data.PortfolioShare as PortfolioShare exposing (PortfolioShare, PortfolioShares, Share)
@@ -23,7 +23,7 @@ type ParsedStrategy
 type alias ComplexStrategyParameters =
     { generalSettings : GeneralSettings
     , portfolioShares : PortfolioShares
-    , investmentPerRating : List InvestmentPerRating
+    , investmentSizeOverrides : InvestmentsPerRating
     , buyFilters : List BuyFilter
     , sellFilters : List SellFilter
     }
@@ -50,13 +50,13 @@ defaultComplexStrategy =
         { generalSettings =
             { portfolio = Portfolio.Conservative
             , targetPortfolioSize = TargetPortfolioSize.Unbounded
-            , defaultInvestmentSize = Amount 200
+            , defaultInvestmentSize = ( 200, 200 )
             , defaultInvestmentShare = InvestmentShare.Unbounded
             , defaultTargetBalance = TargetBalance.Unspecified
             , confirmationSettings = Confirmation.confirmationsDisabled
             }
         , portfolioShares = PredefinedShares.conservativeShares
-        , investmentPerRating = [ InvestmentPerRating A_Double_Star (Amount 150), InvestmentPerRating B (FromTo 10 20), InvestmentPerRating D (UpTo 80) ]
+        , investmentSizeOverrides = Investment.defaultInvestmentsPerRating ( 200, 200 )
         , buyFilters = []
         , sellFilters = []
         }
@@ -145,17 +145,71 @@ setPortfolioShareMax rtg newMax =
     modifyComplexStrategy strategyParamsUpdater
 
 
+setInvestmentMin : Rating -> Int -> ParsedStrategy -> ParsedStrategy
+setInvestmentMin rtg newMin =
+    let
+        invUpdater =
+            AllDict.update rtg (Maybe.map (\( mi, ma ) -> ( newMin, max ma newMin {- automatically bump ma when newMin exceeds it -} )))
+
+        strategyParamsUpdater params =
+            { params | investmentSizeOverrides = invUpdater params.investmentSizeOverrides }
+    in
+    modifyComplexStrategy strategyParamsUpdater
+
+
+setInvestmentMax : Rating -> Int -> ParsedStrategy -> ParsedStrategy
+setInvestmentMax rtg newMax =
+    let
+        invUpdater =
+            AllDict.update rtg (Maybe.map (\( mi, ma ) -> ( mi, newMax )))
+
+        strategyParamsUpdater params =
+            { params | investmentSizeOverrides = invUpdater params.investmentSizeOverrides }
+    in
+    modifyComplexStrategy strategyParamsUpdater
+
+
+setDefaultInvestmentMin : Int -> ParsedStrategy -> ParsedStrategy
+setDefaultInvestmentMin newMin =
+    let
+        setMin newMin generalSettings =
+            { generalSettings | defaultInvestmentSize = ( newMin, max (Tuple.second generalSettings.defaultInvestmentSize) newMin ) }
+
+        strategyParamsUpdater params =
+            { params
+                | generalSettings = setMin newMin params.generalSettings
+                , investmentSizeOverrides = Investment.defaultInvestmentsPerRating ( newMin, max (Tuple.second params.generalSettings.defaultInvestmentSize) newMin )
+            }
+    in
+    modifyComplexStrategy strategyParamsUpdater
+
+
+setDefaultInvestmentMax : Int -> ParsedStrategy -> ParsedStrategy
+setDefaultInvestmentMax newMax =
+    let
+        setMax newMax generalSettings =
+            { generalSettings | defaultInvestmentSize = ( Tuple.first generalSettings.defaultInvestmentSize, newMax ) }
+
+        strategyParamsUpdater params =
+            { params
+                | generalSettings = setMax newMax params.generalSettings
+                , investmentSizeOverrides = Investment.defaultInvestmentsPerRating ( Tuple.first params.generalSettings.defaultInvestmentSize, newMax )
+            }
+    in
+    modifyComplexStrategy strategyParamsUpdater
+
+
 renderParsedStrategy : ParsedStrategy -> String
 renderParsedStrategy strategy =
     case strategy of
         SimpleStrategy portfolioType ->
             Portfolio.renderPortfolio portfolioType
 
-        ComplexStrategy { generalSettings, portfolioShares, investmentPerRating } ->
+        ComplexStrategy { generalSettings, portfolioShares, investmentSizeOverrides } ->
             Util.joinNonemptyLines
                 [ renderGeneralSettings generalSettings
                 , PortfolioShare.renderPortfolioShares generalSettings.portfolio portfolioShares
-                , Investment.renderInvestments investmentPerRating
+                , Investment.renderInvestments generalSettings.defaultInvestmentSize investmentSizeOverrides
                 ]
 
 
