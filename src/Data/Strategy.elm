@@ -10,7 +10,7 @@ import Data.PortfolioShare as PortfolioShare exposing (PortfolioShare, Portfolio
 import Data.PortfolioShare.Predefined as PredefinedShares
 import Data.Rating exposing (Rating(..))
 import Data.SellFilter exposing (SellFilter(..))
-import Data.TargetBalance as TargetBalance exposing (TargetBalance)
+import Data.TargetBalance as TargetBalance exposing (TargetBalance, defaultTargetBalance)
 import Data.TargetPortfolioSize as TargetPortfolioSize exposing (TargetPortfolioSize)
 import Util
 
@@ -150,6 +150,13 @@ setDefaultInvestmentMax newMax config =
     { config
         | generalSettings = setMax newMax config.generalSettings
         , investmentSizeOverrides = Investment.defaultInvestmentsPerRating ( Tuple.first config.generalSettings.defaultInvestmentSize, newMax )
+    }
+
+
+setTargetBalance : TargetBalance -> StrategyConfiguration -> StrategyConfiguration
+setTargetBalance newBalance ({ generalSettings } as config) =
+    { config
+        | generalSettings = { generalSettings | defaultTargetBalance = newBalance }
     }
 
 

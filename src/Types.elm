@@ -15,3 +15,4 @@ type Msg
     | ChangeInvestmentMax Rating String
     | ChangeDefaultInvestmentMin String
     | ChangeDefaultInvestmentMax String
+    | TargetBalanceChanged String

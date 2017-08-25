@@ -4,12 +4,14 @@ import Data.BuyFilter exposing (BuyFilter)
 import Data.PortfolioShare as PortfolioShare exposing (PortfolioShare, PortfolioShares)
 import Data.SellFilter exposing (SellFilter)
 import Data.Strategy exposing (..)
+import Data.TargetBalance exposing (defaultTargetBalance)
 import Html exposing (Html, button, caption, div, h2, input, label, option, select, table, td, text, textarea, th, tr, ul)
 import Types exposing (..)
 import View.Confirmation as Confirmation
 import View.Investment as Investment
 import View.InvestmentShare as InvestmentShare
 import View.PortfolioStructure as PortfolioStructure
+import View.TargetBalance as TargetBalance
 import View.TargetPortfolioSize as TargetPortfolioSize
 
 
@@ -33,12 +35,13 @@ strategyForm { generalSettings, portfolioShares, investmentSizeOverrides, buyFil
 
 
 generalSettingsForm : GeneralSettings -> Html Msg
-generalSettingsForm generalSettings =
+generalSettingsForm { targetPortfolioSize, defaultInvestmentShare, defaultTargetBalance, confirmationSettings } =
     div []
         [ h2 [] [ text "Obecná nastavení" ]
-        , TargetPortfolioSize.form generalSettings.targetPortfolioSize
-        , InvestmentShare.form generalSettings.defaultInvestmentShare
-        , Confirmation.form generalSettings.confirmationSettings
+        , TargetPortfolioSize.form targetPortfolioSize
+        , InvestmentShare.form defaultInvestmentShare
+        , TargetBalance.form defaultTargetBalance
+        , Confirmation.form confirmationSettings
         ]
 
 

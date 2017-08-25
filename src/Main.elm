@@ -2,6 +2,7 @@ module Main exposing (..)
 
 import Data.InvestmentShare exposing (InvestmentShare(..))
 import Data.Strategy exposing (..)
+import Data.TargetBalance exposing (TargetBalance(..))
 import Data.TargetPortfolioSize exposing (..)
 import Html exposing (Html, text)
 import Types exposing (..)
@@ -28,16 +29,6 @@ update msg model =
         PortfolioChanged portfolio ->
             setPortfolio portfolio model
 
-        ChangePortfolioShareMin rating newMinStr ->
-            String.toInt newMinStr
-                |> Result.map (\newMin -> setPortfolioShareMin rating newMin model)
-                |> Result.withDefault model
-
-        ChangePortfolioShareMax rating newMaxStr ->
-            String.toInt newMaxStr
-                |> Result.map (\newMax -> setPortfolioShareMax rating newMax model)
-                |> Result.withDefault model
-
         TargetPortfolioSizeChanged targetSizeStr ->
             let
                 targetSize =
@@ -45,35 +36,47 @@ update msg model =
             in
             setTargetPortfolioSize targetSize model
 
-        ToggleNotificationOnRating rating isEnabled ->
-            setNotification rating isEnabled model
-
-        ChangeInvestmentMin rating newMinStr ->
-            String.toInt newMinStr
-                |> Result.map (\newMin -> setInvestmentMin rating newMin model)
-                |> Result.withDefault model
-
-        ChangeInvestmentMax rating newMaxStr ->
-            String.toInt newMaxStr
-                |> Result.map (\newMax -> setInvestmentMax rating newMax model)
-                |> Result.withDefault model
-
-        ChangeDefaultInvestmentMin newMinStr ->
-            String.toInt newMinStr
-                |> Result.map (\newMin -> setDefaultInvestmentMin newMin model)
-                |> Result.withDefault model
-
-        ChangeDefaultInvestmentMax newMaxStr ->
-            String.toInt newMaxStr
-                |> Result.map (\newMax -> setDefaultInvestmentMax newMax model)
-                |> Result.withDefault model
-
         TargetPortfolioShareChanged shareStr ->
             let
                 share =
                     String.toInt shareStr |> Result.map PercentShare |> Result.withDefault Unrestricted
             in
             setDefaultInvestmentShare share model
+
+        ToggleNotificationOnRating rating isEnabled ->
+            setNotification rating isEnabled model
+
+        ChangePortfolioShareMin rating newMinStr ->
+            updateModelIfValidInt newMinStr (\newMin -> setPortfolioShareMin rating newMin model) model
+
+        ChangePortfolioShareMax rating newMaxStr ->
+            updateModelIfValidInt newMaxStr (\newMax -> setPortfolioShareMax rating newMax model) model
+
+        ChangeInvestmentMin rating newMinStr ->
+            updateModelIfValidInt newMinStr (\newMin -> setInvestmentMin rating newMin model) model
+
+        ChangeInvestmentMax rating newMaxStr ->
+            updateModelIfValidInt newMaxStr (\newMax -> setInvestmentMax rating newMax model) model
+
+        ChangeDefaultInvestmentMin newMinStr ->
+            updateModelIfValidInt newMinStr (\newMin -> setDefaultInvestmentMin newMin model) model
+
+        ChangeDefaultInvestmentMax newMaxStr ->
+            updateModelIfValidInt newMaxStr (\newMax -> setDefaultInvestmentMax newMax model) model
+
+        TargetBalanceChanged newBalanceStr ->
+            let
+                newBalance =
+                    String.toInt newBalanceStr |> Result.map TargetBalance |> Result.withDefault Unspecified
+            in
+            setTargetBalance newBalance model
+
+
+updateModelIfValidInt : String -> (Int -> Model) -> Model -> Model
+updateModelIfValidInt intStr modelUpdater model =
+    String.toInt intStr
+        |> Result.map (\parsedInt -> modelUpdater parsedInt)
+        |> Result.withDefault model
 
 
 view : Model -> Html Msg
