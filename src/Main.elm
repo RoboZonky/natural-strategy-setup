@@ -1,9 +1,9 @@
 module Main exposing (..)
 
-import Data.InvestmentShare exposing (InvestmentShare(..))
+import Data.InvestmentShare as InvestmentShare exposing (InvestmentShare(..))
 import Data.Strategy exposing (..)
-import Data.TargetBalance exposing (TargetBalance(..))
-import Data.TargetPortfolioSize exposing (..)
+import Data.TargetBalance as TargetBalance exposing (TargetBalance(TargetBalance))
+import Data.TargetPortfolioSize as TargetPortfolioSize exposing (..)
 import Html exposing (Html, text)
 import Types exposing (..)
 import View.ConfigPreview as ConfigPreview
@@ -32,16 +32,32 @@ update msg model =
         TargetPortfolioSizeChanged targetSizeStr ->
             let
                 targetSize =
-                    String.toInt targetSizeStr |> Result.map Bounded |> Result.withDefault Unbounded
+                    emptyStringToZero targetSizeStr
+                        |> String.toInt
+                        |> Result.map TargetPortfolioSize
+                        |> Result.withDefault TargetPortfolioSize.NotSpecified
             in
             setTargetPortfolioSize targetSize model
 
         TargetPortfolioShareChanged shareStr ->
             let
                 share =
-                    String.toInt shareStr |> Result.map PercentShare |> Result.withDefault Unrestricted
+                    emptyStringToZero shareStr
+                        |> String.toInt
+                        |> Result.map InvestmentSharePercent
+                        |> Result.withDefault InvestmentShare.NotSpecified
             in
             setDefaultInvestmentShare share model
+
+        TargetBalanceChanged newBalanceStr ->
+            let
+                newBalance =
+                    emptyStringToZero newBalanceStr
+                        |> String.toInt
+                        |> Result.map TargetBalance
+                        |> Result.withDefault TargetBalance.NotSpecified
+            in
+            setTargetBalance newBalance model
 
         ToggleNotificationOnRating rating isEnabled ->
             setNotification rating isEnabled model
@@ -64,12 +80,19 @@ update msg model =
         ChangeDefaultInvestmentMax newMaxStr ->
             updateModelIfValidInt newMaxStr (\newMax -> setDefaultInvestmentMax newMax model) model
 
-        TargetBalanceChanged newBalanceStr ->
-            let
-                newBalance =
-                    String.toInt newBalanceStr |> Result.map TargetBalance |> Result.withDefault Unspecified
-            in
-            setTargetBalance newBalance model
+
+
+-- This is to make radio + input subforms (TargetPortfolioSize, InvestmentShare and TargetBalance)
+-- NOT switch back to NotSpecified when user deletes the whole input
+-- TODO probably introduce 2 separate messages to control radios vs inputs
+
+
+emptyStringToZero : String -> String
+emptyStringToZero str =
+    if String.isEmpty str then
+        "0"
+    else
+        str
 
 
 updateModelIfValidInt : String -> (Int -> Model) -> Model -> Model

@@ -2,7 +2,7 @@ module View.TargetBalance exposing (form)
 
 import Data.TargetBalance exposing (TargetBalance(..))
 import Html exposing (Html, div, fieldset, input, label, legend, text)
-import Html.Attributes as Attr exposing (checked, disabled, name, type_, value)
+import Html.Attributes as Attr exposing (checked, disabled, name, style, type_, value)
 import Html.Events exposing (onClick, onInput)
 import Types exposing (..)
 
@@ -10,15 +10,30 @@ import Types exposing (..)
 form : TargetBalance -> Html Msg
 form targetBalance =
     let
-        ( isUnspecified, valueAttribute ) =
+        ( isUnspecified, valueAttribute, validationError ) =
             case targetBalance of
-                Unspecified ->
-                    ( True, value defaultValue )
+                NotSpecified ->
+                    ( True, value defaultValue, [] )
 
                 TargetBalance val ->
-                    ( False, value (toString val) )
+                    let
+                        validationError =
+                            if val < 200 then
+                                [ div [ style [ ( "color", "red" ) ] ]
+                                    [ text "Minimální výše investice na Zonky.cz je 200 Kč. Nastovavat nižší hodnotu nemá smysl." ]
+                                ]
+                            else
+                                []
+                    in
+                    ( False
+                    , if val == 0 then
+                        value ""
+                      else
+                        value (toString val)
+                    , validationError
+                    )
     in
-    fieldset []
+    fieldset [] <|
         [ legend [] [ text "Disponibilní zůstatek" ]
         , text "Investovat "
         , div []
@@ -36,6 +51,7 @@ form targetBalance =
                 ]
             ]
         ]
+            ++ validationError
 
 
 defaultValue : String

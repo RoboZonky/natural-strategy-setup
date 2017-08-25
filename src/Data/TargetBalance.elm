@@ -7,7 +7,7 @@ module Data.TargetBalance
 
 
 type TargetBalance
-    = Unspecified
+    = NotSpecified
     | TargetBalance Int
 
 
@@ -25,5 +25,5 @@ renderTargetBalance targetBalance =
             else
                 ""
 
-        Unspecified ->
+        NotSpecified ->
             ""

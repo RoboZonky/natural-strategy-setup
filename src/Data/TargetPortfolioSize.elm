@@ -6,15 +6,15 @@ module Data.TargetPortfolioSize
 
 
 type TargetPortfolioSize
-    = Unbounded
-    | Bounded Int
+    = NotSpecified
+    | TargetPortfolioSize Int
 
 
 renderTargetPortfolioSize : TargetPortfolioSize -> String
 renderTargetPortfolioSize targetPortfolioSize =
     case targetPortfolioSize of
-        Bounded maxBound ->
+        TargetPortfolioSize maxBound ->
             "Cílová zůstatková částka je " ++ toString maxBound ++ " Kč."
 
-        Unbounded ->
+        NotSpecified ->
             ""

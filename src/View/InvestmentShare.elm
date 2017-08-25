@@ -10,12 +10,12 @@ import Types exposing (..)
 form : InvestmentShare -> Html Msg
 form investmentShare =
     let
-        ( isUnrestricted, validationError, valueAttribute ) =
+        ( isUnrestricted, valueAttribute, validationError ) =
             case investmentShare of
-                Unrestricted ->
-                    ( True, [], value defaultValue )
+                NotSpecified ->
+                    ( True, value defaultValue, [] )
 
-                PercentShare pct ->
+                InvestmentSharePercent pct ->
                     let
                         validationError =
                             if pct < 1 || 100 < pct then
@@ -23,7 +23,13 @@ form investmentShare =
                             else
                                 []
                     in
-                    ( False, validationError, value (toString pct) )
+                    ( False
+                    , if pct == 0 then
+                        value ""
+                      else
+                        value (toString pct)
+                    , validationError
+                    )
     in
     fieldset [] <|
         [ legend []
@@ -37,7 +43,7 @@ form investmentShare =
             ]
         , label []
             [ input [ type_ "radio", name "portfolioShare", onClick (TargetPortfolioShareChanged defaultValue), checked (not isUnrestricted) ] []
-            , text " maximalně "
+            , text " maximálně "
             , input [ type_ "number", Attr.min "1", Attr.max "100", onInput TargetPortfolioShareChanged, disabled isUnrestricted, valueAttribute ] []
             , text " % výše úvěru."
             ]

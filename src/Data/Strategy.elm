@@ -38,10 +38,10 @@ defaultStrategyConfiguration : StrategyConfiguration
 defaultStrategyConfiguration =
     { generalSettings =
         { portfolio = Portfolio.Conservative
-        , targetPortfolioSize = TargetPortfolioSize.Unbounded
+        , targetPortfolioSize = TargetPortfolioSize.NotSpecified
         , defaultInvestmentSize = Investment.defaultSize
-        , defaultInvestmentShare = InvestmentShare.Unrestricted
-        , defaultTargetBalance = TargetBalance.Unspecified
+        , defaultInvestmentShare = InvestmentShare.NotSpecified
+        , defaultTargetBalance = TargetBalance.NotSpecified
         , confirmationSettings = Confirmation.confirmationsDisabled
         }
     , portfolioShares = PredefinedShares.conservativeShares

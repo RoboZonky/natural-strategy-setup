@@ -12,11 +12,16 @@ form targetPortfolioSize =
     let
         ( isUnbounded, valueAttribute ) =
             case targetPortfolioSize of
-                Unbounded ->
+                NotSpecified ->
                     ( True, value defaultSize )
 
-                Bounded val ->
-                    ( False, value (toString val) )
+                TargetPortfolioSize maxBound ->
+                    ( False
+                    , if maxBound == 0 then
+                        value ""
+                      else
+                        value (toString maxBound)
+                    )
     in
     fieldset []
         [ legend [] [ text "Cílová zůstatková částka je " ]
@@ -26,7 +31,7 @@ form targetPortfolioSize =
             ]
         , label []
             [ input [ type_ "radio", name "portfolioSize", onClick (TargetPortfolioSizeChanged defaultSize), checked (not isUnbounded) ] []
-            , text " maximalně "
+            , text " maximálně "
             , input [ type_ "number", Attr.min "0", Attr.max "100000000", onInput TargetPortfolioSizeChanged, disabled isUnbounded, valueAttribute ] []
             , text " Kč."
             ]
