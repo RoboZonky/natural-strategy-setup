@@ -1,10 +1,6 @@
 module View.Strategy exposing (..)
 
-import Data.BuyFilter exposing (BuyFilter)
-import Data.PortfolioShare as PortfolioShare exposing (PortfolioShare, PortfolioShares)
-import Data.SellFilter exposing (SellFilter)
 import Data.Strategy exposing (..)
-import Data.TargetBalance exposing (defaultTargetBalance)
 import Html exposing (Html, button, caption, div, h2, input, label, option, select, table, td, text, textarea, th, tr, ul)
 import Types exposing (..)
 import View.Confirmation as Confirmation

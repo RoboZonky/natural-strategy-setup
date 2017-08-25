@@ -13,7 +13,7 @@ form investmentShare =
         ( isUnrestricted, validationError, valueAttribute ) =
             case investmentShare of
                 Unrestricted ->
-                    ( True, [], [] )
+                    ( True, [], value defaultValue )
 
                 PercentShare pct ->
                     let
@@ -23,7 +23,7 @@ form investmentShare =
                             else
                                 []
                     in
-                    ( False, validationError, [ value (toString pct) ] )
+                    ( False, validationError, value (toString pct) )
     in
     fieldset [] <|
         [ legend []
@@ -36,10 +36,15 @@ form investmentShare =
                 ]
             ]
         , label []
-            [ input [ type_ "radio", name "portfolioShare", onClick (TargetPortfolioShareChanged "1"), checked (not isUnrestricted) ] []
+            [ input [ type_ "radio", name "portfolioShare", onClick (TargetPortfolioShareChanged defaultValue), checked (not isUnrestricted) ] []
             , text " maximalně "
-            , input (valueAttribute ++ [ type_ "number", Attr.min "1", Attr.max "100", onInput TargetPortfolioShareChanged, disabled isUnrestricted ]) []
+            , input [ type_ "number", Attr.min "1", Attr.max "100", onInput TargetPortfolioShareChanged, disabled isUnrestricted, valueAttribute ] []
             , text " % výše úvěru."
             ]
         ]
             ++ validationError
+
+
+defaultValue : String
+defaultValue =
+    "1"
