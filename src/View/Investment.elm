@@ -1,4 +1,4 @@
-module View.Investment exposing (investmentForm)
+module View.Investment exposing (form)
 
 import AllDict exposing (AllDict)
 import Data.Investment as Investment exposing (InvestmentsPerRating)
@@ -9,6 +9,15 @@ import Html.Events exposing (onInput)
 import Types exposing (..)
 
 
+form : Investment.Size -> InvestmentsPerRating -> Html Msg
+form invDefault invOverrides =
+    div []
+        [ h2 [] [ text "Výše investice" ]
+        , defaultInvestmentForm invDefault
+        , investmentOverridesForm invDefault invOverrides
+        ]
+
+
 defaultInvestmentForm : Investment.Size -> Html Msg
 defaultInvestmentForm ( defaultMin, defaultMax ) =
     div []
@@ -17,15 +26,6 @@ defaultInvestmentForm ( defaultMin, defaultMax ) =
         , text " až "
         , inputCell defaultMax ChangeDefaultInvestmentMax
         , text " Kč."
-        ]
-
-
-investmentForm : Investment.Size -> InvestmentsPerRating -> Html Msg
-investmentForm invDefault invOverrides =
-    div []
-        [ h2 [] [ text "Výše investice" ]
-        , defaultInvestmentForm invDefault
-        , investmentOverridesForm invDefault invOverrides
         ]
 
 

@@ -27,10 +27,8 @@ strategyForm : StrategyConfiguration -> Html Msg
 strategyForm { generalSettings, portfolioShares, investmentSizeOverrides, buyFilters, sellFilters } =
     div []
         [ generalSettingsForm generalSettings
-        , PortfolioStructure.portfolioSharesForm generalSettings.portfolio portfolioShares
-        , Investment.investmentForm generalSettings.defaultInvestmentSize investmentSizeOverrides
-        , buyFiltersForm buyFilters
-        , sellFiltersForm sellFilters
+        , PortfolioStructure.form generalSettings.portfolio portfolioShares
+        , Investment.form generalSettings.defaultInvestmentSize investmentSizeOverrides
         ]
 
 
@@ -43,37 +41,3 @@ generalSettingsForm { targetPortfolioSize, defaultInvestmentShare, defaultTarget
         , TargetBalance.form defaultTargetBalance
         , Confirmation.form confirmationSettings
         ]
-
-
-portfolioView : PortfolioShare -> Html Msg
-portfolioView portfolioShare =
-    Html.li []
-        [ text <| PortfolioShare.renderPortfolioShare portfolioShare
-        , button [] [ text "Odebrat" ]
-        ]
-
-
-buyFiltersForm : List BuyFilter -> Html Msg
-buyFiltersForm filters =
-    div []
-        [ h2 [] [ text "Filtrování tržiště" ]
-        , button [] [ text "Přidat filtr" ]
-        ]
-
-
-sellFiltersForm : List SellFilter -> Html Msg
-sellFiltersForm filters =
-    div []
-        [ h2 [] [ text "Prodej participací" ]
-        , button [] [ text "Přidat filtr" ]
-        ]
-
-
-listView : (a -> Html Msg) -> List a -> Html Msg
-listView itemView list =
-    case list of
-        [] ->
-            text "Bez úprav"
-
-        nonempty ->
-            ul [] <| List.map itemView nonempty

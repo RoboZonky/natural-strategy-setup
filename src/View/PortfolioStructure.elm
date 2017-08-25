@@ -1,4 +1,4 @@
-module View.PortfolioStructure exposing (defaultPortfolioForm, portfolioSharesForm)
+module View.PortfolioStructure exposing (defaultPortfolioForm, form)
 
 import AllDict as Dict
 import Data.Portfolio as Portfolio exposing (Portfolio(..))
@@ -8,6 +8,15 @@ import Html exposing (Html, caption, div, h2, input, option, p, select, table, t
 import Html.Attributes as Attr exposing (size, style, type_, value)
 import Html.Events exposing (onInput)
 import Types exposing (..)
+
+
+form : Portfolio -> PortfolioShares -> Html Msg
+form portfolio shares =
+    div []
+        [ h2 [] [ text "Struktura portfolia" ]
+        , defaultPortfolioForm
+        , ratingSharesTable portfolio shares
+        ]
 
 
 defaultPortfolioForm : Html Msg
@@ -25,15 +34,6 @@ defaultPortfolioSelect =
                     [ text (Portfolio.toString portfolio) ]
             )
             [ Conservative, Balanced, Progressive, Empty ]
-
-
-portfolioSharesForm : Portfolio -> PortfolioShares -> Html Msg
-portfolioSharesForm portfolio shares =
-    div []
-        [ h2 [] [ text "Struktura portfolia" ]
-        , defaultPortfolioForm
-        , ratingSharesTable portfolio shares
-        ]
 
 
 ratingSharesTable : Portfolio -> PortfolioShares -> Html Msg
