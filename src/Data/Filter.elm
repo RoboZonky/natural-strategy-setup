@@ -52,7 +52,17 @@ renderMarketplaceFilter (MarketplaceFilter { whatToFilter, ignoreWhen, butNotWhe
 
 renderConditionList : List Condition -> String
 renderConditionList =
-    String.join "; " << List.map renderCondition
+    List.map renderCondition >> String.join "; " >> addDotIfNotEmpty
+
+
+addDotIfNotEmpty : String -> String
+addDotIfNotEmpty s =
+    s
+        ++ (if String.isEmpty s then
+                ""
+            else
+                "."
+           )
 
 
 type Condition

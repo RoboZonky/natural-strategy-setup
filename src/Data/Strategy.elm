@@ -193,8 +193,8 @@ renderGeneralSettings generalSettings =
         [ "- Obecná nastavení"
         , Portfolio.renderPortfolio generalSettings.portfolio
         , TargetPortfolioSize.renderTargetPortfolioSize generalSettings.targetPortfolioSize
-        , InvestmentShare.renderInvestmentShare generalSettings.defaultInvestmentShare
         , Investment.renderDefaultInvestmentSize generalSettings.defaultInvestmentSize
+        , InvestmentShare.renderInvestmentShare generalSettings.defaultInvestmentShare
         , TargetBalance.renderTargetBalance generalSettings.defaultTargetBalance
         , Confirmation.renderConfirmation generalSettings.confirmationSettings
         ]

@@ -15,15 +15,28 @@ interestToString : Interest -> String
 interestToString interest =
     case interest of
         LessThan maxBound ->
-            "nedosahuje " ++ toString maxBound
+            "nedosahuje " ++ floatToString maxBound
 
         Between minBound maxBound ->
-            "je " ++ toString minBound ++ " až " ++ toString maxBound
+            "je " ++ floatToString minBound ++ " až " ++ floatToString maxBound
 
         MoreThan minBound ->
-            "přesahuje " ++ toString minBound
+            "přesahuje " ++ floatToString minBound
 
 
 renderInterestCondition : InterestCondition -> String
 renderInterestCondition (InterestCondition interest) =
-    "úrok " ++ interestToString interest ++ " % p.a."
+    "úrok " ++ interestToString interest ++ " % p.a"
+
+
+floatToString : Float -> String
+floatToString =
+    -- toString for float has '.'. Replace it with ','
+    String.map
+        (\c ->
+            if c == '.' then
+                ','
+            else
+                c
+        )
+        << toString
