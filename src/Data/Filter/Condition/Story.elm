@@ -1,4 +1,4 @@
-module Story
+module Data.Filter.Condition.Story
     exposing
         ( Story(..)
         , StoryCondition(..)

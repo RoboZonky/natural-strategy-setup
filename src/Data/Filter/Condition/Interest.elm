@@ -1,4 +1,4 @@
-module Data.Interest exposing (..)
+module Data.Filter.Condition.Interest exposing (..)
 
 
 type Interest

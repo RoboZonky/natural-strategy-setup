@@ -1,4 +1,4 @@
-module Data.LoanTerm
+module Data.Filter.Condition.LoanTerm
     exposing
         ( LoanTerm(..)
         , TermCondition(..)

@@ -1,4 +1,4 @@
-module Data.LoanPurpose
+module Data.Filter.Condition.LoanPurpose
     exposing
         ( LoanPurpose(..)
         , LoanPurposeCondition(..)

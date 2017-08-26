@@ -1,4 +1,4 @@
-module Data.MainIncome
+module Data.Filter.Condition.MainIncome
     exposing
         ( IncomeCondition(..)
         , MainIncome(..)
