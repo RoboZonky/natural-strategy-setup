@@ -7,3 +7,8 @@ type Amount
 
 type AmountCondition
     = AmountCondition
+
+
+renderAmountCondition : AmountCondition -> String
+renderAmountCondition AmountCondition =
+    "TODO amount condition"

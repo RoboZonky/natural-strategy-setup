@@ -1,20 +1,68 @@
-module Data.Filter exposing (..)
+module Data.Filter
+    exposing
+        ( Condition(..)
+        , FilteredItem(..)
+        , MarketplaceFilter(..)
+        , renderCondition
+        , renderMarketplaceFilter
+        )
 
-import Data.Filter.Condition.Amount exposing (AmountCondition)
-import Data.Filter.Condition.Interest exposing (InterestCondition)
-import Data.Filter.Condition.LoanPurpose exposing (LoanPurposeCondition)
-import Data.Filter.Condition.LoanTerm exposing (TermCondition)
-import Data.Filter.Condition.MainIncome exposing (IncomeCondition)
-import Data.Filter.Condition.Region exposing (RegionCondition)
-import Data.Filter.Condition.Story exposing (StoryCondition)
-import Data.Rating exposing (RatingCondition)
+import Data.Filter.Condition.Amount exposing (AmountCondition, renderAmountCondition)
+import Data.Filter.Condition.Interest exposing (InterestCondition, renderInterestCondition)
+import Data.Filter.Condition.LoanPurpose exposing (LoanPurposeCondition, renderLoanPurposeCondition)
+import Data.Filter.Condition.LoanTerm exposing (TermCondition, renderTermCondition)
+import Data.Filter.Condition.MainIncome exposing (IncomeCondition, renderIncomeCondition)
+import Data.Filter.Condition.Region exposing (RegionCondition, renderRegionCondition)
+import Data.Filter.Condition.Story exposing (StoryCondition, renderStoryCondition)
+import Data.Rating exposing (RatingCondition, renderRatingCondition)
+import List.Nonempty as NEList
+
+
+type FilteredItem
+    = Loan
+    | Participation
+    | Loan_And_Participation
+
+
+renderFilteredItem : FilteredItem -> String
+renderFilteredItem item =
+    case item of
+        Loan_And_Participation ->
+            "vše"
+
+        Participation ->
+            "participaci"
+
+        Loan ->
+            "úvěr"
 
 
 type MarketplaceFilter
     = MarketplaceFilter
-        { ignoreWhen : List Condition
+        { whatToFilter : FilteredItem
+        , ignoreWhen : NEList.Nonempty Condition
         , butNotWhen : List Condition
         }
+
+
+renderMarketplaceFilter : MarketplaceFilter -> String
+renderMarketplaceFilter (MarketplaceFilter { whatToFilter, ignoreWhen, butNotWhen }) =
+    let
+        negativePart =
+            if List.isEmpty butNotWhen then
+                ""
+            else
+                "\n(Ale ne když: " ++ renderConditionList butNotWhen ++ ")"
+
+        positivePart =
+            renderConditionList <| NEList.toList ignoreWhen
+    in
+    "Ignorovat " ++ renderFilteredItem whatToFilter ++ ", kde: " ++ positivePart ++ negativePart
+
+
+renderConditionList : List Condition -> String
+renderConditionList =
+    String.join "; " << List.map renderCondition
 
 
 type Condition
@@ -26,3 +74,31 @@ type Condition
     | Condition_Term TermCondition
     | Condition_Amount AmountCondition
     | Condition_Interest InterestCondition
+
+
+renderCondition : Condition -> String
+renderCondition condition =
+    case condition of
+        Condition_Region regionCond ->
+            renderRegionCondition regionCond
+
+        Condition_Rating ratingCond ->
+            renderRatingCondition ratingCond
+
+        Condition_Income incomeCond ->
+            renderIncomeCondition incomeCond
+
+        Condition_Purpose loanPurposeCond ->
+            renderLoanPurposeCondition loanPurposeCond
+
+        Condition_Story storyCond ->
+            renderStoryCondition storyCond
+
+        Condition_Term termCond ->
+            renderTermCondition termCond
+
+        Condition_Amount amountCond ->
+            renderAmountCondition amountCond
+
+        Condition_Interest interestCond ->
+            renderInterestCondition interestCond
