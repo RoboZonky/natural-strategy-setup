@@ -3,7 +3,7 @@ module Data.Filter
         ( Condition(..)
         , FilteredItem(..)
         , MarketplaceFilter(..)
-        , renderCondition
+        , renderFilters
         , renderMarketplaceFilter
         )
 
@@ -16,25 +16,15 @@ import Data.Filter.Condition.Region exposing (RegionCondition, renderRegionCondi
 import Data.Filter.Condition.Story exposing (StoryCondition, renderStoryCondition)
 import Data.Rating exposing (RatingCondition, renderRatingCondition)
 import List.Nonempty as NEList
+import Util
 
 
-type FilteredItem
-    = Loan
-    | Participation
-    | Loan_And_Participation
-
-
-renderFilteredItem : FilteredItem -> String
-renderFilteredItem item =
-    case item of
-        Loan_And_Participation ->
-            "vše"
-
-        Participation ->
-            "participaci"
-
-        Loan ->
-            "úvěr"
+renderFilters : List MarketplaceFilter -> String
+renderFilters filters =
+    if List.isEmpty filters then
+        ""
+    else
+        Util.joinNonemptyLines <| "\n- Filtrování tržiště" :: List.map renderMarketplaceFilter filters
 
 
 type MarketplaceFilter
@@ -102,3 +92,22 @@ renderCondition condition =
 
         Condition_Interest interestCond ->
             renderInterestCondition interestCond
+
+
+type FilteredItem
+    = Loan
+    | Participation
+    | Loan_And_Participation
+
+
+renderFilteredItem : FilteredItem -> String
+renderFilteredItem item =
+    case item of
+        Loan_And_Participation ->
+            "vše"
+
+        Participation ->
+            "participaci"
+
+        Loan ->
+            "úvěr"

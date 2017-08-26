@@ -4,6 +4,7 @@ import Data.Strategy exposing (..)
 import Html exposing (Html, button, caption, div, h2, input, label, option, select, table, td, text, textarea, th, tr, ul)
 import Types exposing (..)
 import View.Confirmation as Confirmation
+import View.FilterList as FilterList
 import View.Investment as Investment
 import View.InvestmentShare as InvestmentShare
 import View.PortfolioStructure as PortfolioStructure
@@ -25,6 +26,7 @@ strategyForm { generalSettings, portfolioShares, investmentSizeOverrides, buyFil
         [ generalSettingsForm generalSettings
         , PortfolioStructure.form generalSettings.portfolio portfolioShares
         , Investment.form generalSettings.defaultInvestmentSize investmentSizeOverrides
+        , FilterList.form buyFilters
         ]
 
 

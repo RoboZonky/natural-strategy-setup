@@ -80,6 +80,12 @@ update msg model =
         ChangeDefaultInvestmentMax newMaxStr ->
             updateModelIfValidInt newMaxStr (\newMax -> setDefaultInvestmentMax newMax model) model
 
+        AddBuyFilter newFilter ->
+            addBuyFilter newFilter model
+
+        RemoveBuyFilter index ->
+            removeBuyFilter index model
+
 
 
 -- This is to make radio + input subforms (TargetPortfolioSize, InvestmentShare and TargetBalance)

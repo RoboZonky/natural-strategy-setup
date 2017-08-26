@@ -1,5 +1,6 @@
 module Types exposing (..)
 
+import Data.Filter exposing (MarketplaceFilter)
 import Data.Portfolio exposing (Portfolio)
 import Data.Rating exposing (Rating)
 
@@ -16,3 +17,5 @@ type Msg
     | ChangeDefaultInvestmentMin String
     | ChangeDefaultInvestmentMax String
     | TargetBalanceChanged String
+    | AddBuyFilter MarketplaceFilter
+    | RemoveBuyFilter Int

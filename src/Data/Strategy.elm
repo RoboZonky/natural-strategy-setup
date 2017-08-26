@@ -2,7 +2,7 @@ module Data.Strategy exposing (..)
 
 import AllDict
 import Data.Confirmation as Confirmation exposing (ConfirmationSettings)
-import Data.Filter as Filter
+import Data.Filter as Filters exposing (MarketplaceFilter)
 import Data.Investment as Investment exposing (InvestmentsPerRating, Size)
 import Data.InvestmentShare as InvestmentShare exposing (InvestmentShare)
 import Data.Portfolio as Portfolio exposing (Portfolio(..))
@@ -11,6 +11,7 @@ import Data.PortfolioStructure.Predefined as PredefinedShares
 import Data.Rating exposing (Rating(..))
 import Data.TargetBalance as TargetBalance exposing (TargetBalance, defaultTargetBalance)
 import Data.TargetPortfolioSize as TargetPortfolioSize exposing (TargetPortfolioSize)
+import Tmp
 import Util
 
 
@@ -18,8 +19,8 @@ type alias StrategyConfiguration =
     { generalSettings : GeneralSettings
     , portfolioShares : PortfolioShares
     , investmentSizeOverrides : InvestmentsPerRating
-    , buyFilters : List Filter.MarketplaceFilter
-    , sellFilters : List Filter.MarketplaceFilter
+    , buyFilters : List MarketplaceFilter
+    , sellFilters : List MarketplaceFilter
     }
 
 
@@ -45,7 +46,7 @@ defaultStrategyConfiguration =
         }
     , portfolioShares = PredefinedShares.conservativeShares
     , investmentSizeOverrides = Investment.defaultInvestmentsPerRating ( 200, 200 )
-    , buyFilters = []
+    , buyFilters = Tmp.sampleFilters
     , sellFilters = []
     }
 
@@ -159,14 +160,30 @@ setTargetBalance newBalance ({ generalSettings } as config) =
     }
 
 
+removeBuyFilter : Int -> StrategyConfiguration -> StrategyConfiguration
+removeBuyFilter index config =
+    { config | buyFilters = removeItemWithIndex index config.buyFilters }
+
+
+removeItemWithIndex : Int -> List a -> List a
+removeItemWithIndex i xs =
+    List.take i xs ++ List.drop (i + 1) xs
+
+
+addBuyFilter : MarketplaceFilter -> StrategyConfiguration -> StrategyConfiguration
+addBuyFilter newFilter config =
+    { config | buyFilters = config.buyFilters ++ [ newFilter ] }
+
+
 renderStrategyConfiguration : StrategyConfiguration -> String
 renderStrategyConfiguration strategy =
     case strategy of
-        { generalSettings, portfolioShares, investmentSizeOverrides } ->
+        { generalSettings, portfolioShares, investmentSizeOverrides, buyFilters } ->
             Util.joinNonemptyLines
                 [ renderGeneralSettings generalSettings
                 , PortfolioStructure.renderPortfolioShares generalSettings.portfolio portfolioShares
                 , Investment.renderInvestments generalSettings.defaultInvestmentSize investmentSizeOverrides
+                , Filters.renderFilters buyFilters
                 ]
 
 

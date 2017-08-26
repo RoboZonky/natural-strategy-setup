@@ -57,7 +57,7 @@ loanPurposeToString loanPurpose =
 
 renderLoanPurposeCondition : LoanPurposeCondition -> String
 renderLoanPurposeCondition (LoanPurposeList list) =
-    "účel je" ++ renderLoandPurposeList list
+    "účel je " ++ renderLoandPurposeList list
 
 
 renderLoandPurposeList : List LoanPurpose -> String
