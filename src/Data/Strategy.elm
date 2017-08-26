@@ -6,8 +6,8 @@ import Data.Confirmation as Confirmation exposing (ConfirmationSettings)
 import Data.Investment as Investment exposing (InvestmentsPerRating, Size)
 import Data.InvestmentShare as InvestmentShare exposing (InvestmentShare)
 import Data.Portfolio as Portfolio exposing (Portfolio(..))
-import Data.PortfolioShare as PortfolioShare exposing (PortfolioShare, PortfolioShares, Share)
-import Data.PortfolioShare.Predefined as PredefinedShares
+import Data.PortfolioStructure as PortfolioStructure exposing (PortfolioShare, PortfolioShares, Share)
+import Data.PortfolioStructure.Predefined as PredefinedShares
 import Data.Rating exposing (Rating(..))
 import Data.SellFilter exposing (SellFilter(..))
 import Data.TargetBalance as TargetBalance exposing (TargetBalance, defaultTargetBalance)
@@ -166,7 +166,7 @@ renderStrategyConfiguration strategy =
         { generalSettings, portfolioShares, investmentSizeOverrides } ->
             Util.joinNonemptyLines
                 [ renderGeneralSettings generalSettings
-                , PortfolioShare.renderPortfolioShares generalSettings.portfolio portfolioShares
+                , PortfolioStructure.renderPortfolioShares generalSettings.portfolio portfolioShares
                 , Investment.renderInvestments generalSettings.defaultInvestmentSize investmentSizeOverrides
                 ]
 

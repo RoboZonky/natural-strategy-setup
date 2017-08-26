@@ -1,4 +1,4 @@
-module Data.PortfolioShare
+module Data.PortfolioStructure
     exposing
         ( PortfolioShare
         , PortfolioShares

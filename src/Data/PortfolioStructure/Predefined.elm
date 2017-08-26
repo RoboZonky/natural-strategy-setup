@@ -1,4 +1,4 @@
-module Data.PortfolioShare.Predefined
+module Data.PortfolioStructure.Predefined
     exposing
         ( balancedShares
         , conservativeShares
@@ -7,7 +7,7 @@ module Data.PortfolioShare.Predefined
         )
 
 import AllDict as Dict
-import Data.PortfolioShare exposing (PortfolioShares)
+import Data.PortfolioStructure exposing (PortfolioShares)
 import Data.Rating as Rating exposing (Rating(..))
 
 

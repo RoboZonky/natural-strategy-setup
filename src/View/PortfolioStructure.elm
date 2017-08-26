@@ -2,7 +2,7 @@ module View.PortfolioStructure exposing (defaultPortfolioForm, form)
 
 import AllDict as Dict
 import Data.Portfolio as Portfolio exposing (Portfolio(..))
-import Data.PortfolioShare exposing (PortfolioShare, PortfolioShares)
+import Data.PortfolioStructure exposing (PortfolioShare, PortfolioShares, Share)
 import Data.Rating as Rating
 import Html exposing (Html, caption, div, h2, input, option, p, select, table, td, text, th, tr)
 import Html.Attributes as Attr exposing (size, style, type_, value)
@@ -89,18 +89,35 @@ portfolioShareEditableRow ( rtg, ( mi, mx ) ) =
     let
         inputCell val msg =
             input [ size 2, type_ "number", Attr.min "0", Attr.max "100", value (toString val), onInput msg ] []
-
-        validationError =
-            if mi > mx then
-                [ td [ style [ ( "color", "red" ), ( "border", "none" ) ] ]
-                    [ text "Minimum musí být menší nebo rovno než maximum" ]
-                ]
-            else
-                []
     in
     tr [] <|
         [ td [] [ text <| Rating.ratingToString rtg ]
         , td [] [ inputCell mi (ChangePortfolioShareMin rtg) ]
         , td [] [ inputCell mx (ChangePortfolioShareMax rtg) ]
         ]
-            ++ validationError
+            ++ validationErrors ( mi, mx )
+
+
+validationErrors : Share -> List (Html Msg)
+validationErrors ( mi, mx ) =
+    let
+        minGtMax =
+            if mi > mx then
+                [ "Minimum nesmí být větší než maximum" ]
+            else
+                []
+
+        maxOver100 =
+            if mx > 100 then
+                [ "Maximum nesmí být větší než 100" ]
+            else
+                []
+    in
+    case minGtMax ++ maxOver100 of
+        [] ->
+            []
+
+        errs ->
+            [ td [ style [ ( "color", "red" ), ( "border", "none" ) ] ]
+                [ text <| String.join "; " errs ]
+            ]
