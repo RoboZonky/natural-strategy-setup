@@ -42,7 +42,7 @@ investmentOverridesForm default overrides =
         dataRows =
             List.map (investmentRow default overrides) Rating.allRatings
     in
-    p [] <|
+    div []
         [ text "Pokud si přejete, aby se výše investice lišily na základě ratingu půjčky, upravte je v následující tabulce"
         , table [] (headerRow :: dataRows)
         ]

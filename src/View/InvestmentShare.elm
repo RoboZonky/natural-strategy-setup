@@ -36,12 +36,10 @@ form investmentShare =
             [ text "Maximální podíl ivestice" ]
         , text "Investovat  "
         , div []
-            [ label []
-                [ input [ type_ "radio", name "portfolioShare", onClick (TargetPortfolioShareChanged "undefined"), checked isUnrestricted ] []
-                , text " bez ohledu na to jaký podíl výše úvěru moje půjčka pokryje"
-                ]
+            [ input [ type_ "radio", name "portfolioShare", onClick (TargetPortfolioShareChanged "undefined"), checked isUnrestricted ] []
+            , text " bez ohledu na to jaký podíl výše úvěru moje půjčka pokryje"
             ]
-        , label []
+        , div []
             [ input [ type_ "radio", name "portfolioShare", onClick (TargetPortfolioShareChanged defaultValue), checked (not isUnrestricted) ] []
             , text " maximálně "
             , input [ type_ "number", Attr.min "1", Attr.max "100", onInput TargetPortfolioShareChanged, disabled isUnrestricted, valueAttribute ] []

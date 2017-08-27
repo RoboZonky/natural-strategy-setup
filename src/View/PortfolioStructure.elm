@@ -68,7 +68,7 @@ ratingSharesTable portfolio shares =
             else
                 []
     in
-    p [] <|
+    div [] <|
         [ text <| tableDescription ++ " požadovaný procentuální podíl aktuální zůstatkové částky investovaný do půjček v daném ratingu"
         , table [] (headerRow :: dataRows)
         ]
