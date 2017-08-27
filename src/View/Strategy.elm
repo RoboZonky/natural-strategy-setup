@@ -1,7 +1,10 @@
 module View.Strategy exposing (..)
 
+import Bootstrap.Accordion as Accordion
+import Bootstrap.Grid as Grid
+import Bootstrap.Grid.Col as Col
 import Data.Strategy exposing (..)
-import Html exposing (Html, button, caption, div, h2, input, label, option, select, table, td, text, textarea, th, tr, ul)
+import Html exposing (Html, button, caption, div, h1, h2, input, label, option, select, table, td, text, textarea, th, tr, ul)
 import Types exposing (..)
 import View.Confirmation as Confirmation
 import View.FilterList as FilterList
@@ -12,30 +15,39 @@ import View.TargetBalance as TargetBalance
 import View.TargetPortfolioSize as TargetPortfolioSize
 
 
-form : StrategyConfiguration -> Html Msg
-form config =
-    div []
-        [ h2 [] [ text "Konfigurace strategie" ]
-        , strategyForm config
+form : StrategyConfiguration -> Accordion.State -> Grid.Column Msg
+form config state =
+    Grid.col
+        [ Col.xs6 ]
+        [ h1 [] [ text "Konfigurace strategie" ]
+        , strategyForm config state
         ]
 
 
-strategyForm : StrategyConfiguration -> Html Msg
-strategyForm { generalSettings, portfolioShares, investmentSizeOverrides, buyFilters, sellFilters } =
-    div []
-        [ generalSettingsForm generalSettings
-        , PortfolioStructure.form generalSettings.portfolio portfolioShares
-        , Investment.form generalSettings.defaultInvestmentSize investmentSizeOverrides
-        , FilterList.form buyFilters
-        ]
+strategyForm : StrategyConfiguration -> Accordion.State -> Html Msg
+strategyForm { generalSettings, portfolioShares, investmentSizeOverrides, buyFilters, sellFilters } accordionState =
+    Accordion.config AccordionMsg
+        |> Accordion.cards
+            [ generalSettingsCard generalSettings
+            , PortfolioStructure.form generalSettings.portfolio portfolioShares
+            , Investment.form generalSettings.defaultInvestmentSize investmentSizeOverrides
+            , FilterList.form buyFilters
+            ]
+        |> Accordion.view accordionState
 
 
-generalSettingsForm : GeneralSettings -> Html Msg
-generalSettingsForm { targetPortfolioSize, defaultInvestmentShare, defaultTargetBalance, confirmationSettings } =
-    div []
-        [ h2 [] [ text "Obecná nastavení" ]
-        , TargetPortfolioSize.form targetPortfolioSize
-        , InvestmentShare.form defaultInvestmentShare
-        , TargetBalance.form defaultTargetBalance
-        , Confirmation.form confirmationSettings
-        ]
+generalSettingsCard : GeneralSettings -> Accordion.Card Msg
+generalSettingsCard { targetPortfolioSize, defaultInvestmentShare, defaultTargetBalance, confirmationSettings } =
+    Accordion.card
+        { id = "generalSettigsCard"
+        , options = []
+        , header = Accordion.headerH3 [] <| Accordion.toggle [] [ text "Obecná nastavení" ]
+        , blocks =
+            [ Accordion.block []
+                [ TargetPortfolioSize.form targetPortfolioSize
+                , InvestmentShare.form defaultInvestmentShare
+                , TargetBalance.form defaultTargetBalance
+                , Confirmation.form confirmationSettings
+                ]
+            ]
+        }

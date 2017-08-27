@@ -1,6 +1,8 @@
 module View.PortfolioStructure exposing (defaultPortfolioForm, form)
 
 import AllDict as Dict
+import Bootstrap.Accordion as Accordion
+import Bootstrap.Card as Card
 import Data.Portfolio as Portfolio exposing (Portfolio(..))
 import Data.PortfolioStructure exposing (PortfolioShare, PortfolioShares, Share)
 import Data.Rating as Rating
@@ -10,18 +12,24 @@ import Html.Events exposing (onInput)
 import Types exposing (..)
 
 
-form : Portfolio -> PortfolioShares -> Html Msg
+form : Portfolio -> PortfolioShares -> Accordion.Card Msg
 form portfolio shares =
-    div []
-        [ h2 [] [ text "Struktura portfolia" ]
-        , defaultPortfolioForm
-        , ratingSharesTable portfolio shares
-        ]
+    Accordion.card
+        { id = "portfolioStructureCard"
+        , options = []
+        , header = Accordion.headerH3 [] <| Accordion.toggle [] [ text "Struktura portfolia" ]
+        , blocks =
+            [ Accordion.block []
+                [ defaultPortfolioForm
+                , ratingSharesTable portfolio shares
+                ]
+            ]
+        }
 
 
-defaultPortfolioForm : Html Msg
+defaultPortfolioForm : Card.BlockItem Msg
 defaultPortfolioForm =
-    div [] [ text "Robot má udržovat ", defaultPortfolioSelect, text " portfolio." ]
+    Card.custom <| div [] [ text "Robot má udržovat ", defaultPortfolioSelect, text " portfolio." ]
 
 
 defaultPortfolioSelect : Html Msg
@@ -36,7 +44,7 @@ defaultPortfolioSelect =
             [ Conservative, Balanced, Progressive, Empty ]
 
 
-ratingSharesTable : Portfolio -> PortfolioShares -> Html Msg
+ratingSharesTable : Portfolio -> PortfolioShares -> Card.BlockItem Msg
 ratingSharesTable portfolio shares =
     let
         ( rowRenderingFunction, tableDescription ) =
@@ -68,11 +76,12 @@ ratingSharesTable portfolio shares =
             else
                 []
     in
-    div [] <|
-        [ text <| tableDescription ++ " požadovaný procentuální podíl aktuální zůstatkové částky investovaný do půjček v daném ratingu"
-        , table [] (headerRow :: dataRows)
-        ]
-            ++ validationErrors
+    Card.custom <|
+        div [] <|
+            [ text <| tableDescription ++ " požadovaný procentuální podíl aktuální zůstatkové částky investovaný do půjček v daném ratingu"
+            , table [] (headerRow :: dataRows)
+            ]
+                ++ validationErrors
 
 
 portfolioShareReadOnlyRow : PortfolioShare -> Html Msg

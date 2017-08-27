@@ -1,5 +1,6 @@
 module Types exposing (..)
 
+import Bootstrap.Accordion as Accordion
 import Data.Filter exposing (MarketplaceFilter)
 import Data.Portfolio exposing (Portfolio)
 import Data.Rating exposing (Rating)
@@ -19,3 +20,4 @@ type Msg
     | TargetBalanceChanged String
     | AddBuyFilter MarketplaceFilter
     | RemoveBuyFilter Int
+    | AccordionMsg Accordion.State

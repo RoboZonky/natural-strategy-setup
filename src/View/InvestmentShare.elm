@@ -1,5 +1,6 @@
 module View.InvestmentShare exposing (form)
 
+import Bootstrap.Card as Card
 import Data.InvestmentShare exposing (InvestmentShare(..))
 import Html exposing (Html, div, fieldset, input, label, legend, text)
 import Html.Attributes as Attr exposing (checked, disabled, name, style, type_, value)
@@ -7,7 +8,7 @@ import Html.Events exposing (onClick, onInput)
 import Types exposing (..)
 
 
-form : InvestmentShare -> Html Msg
+form : InvestmentShare -> Card.BlockItem Msg
 form investmentShare =
     let
         ( isUnrestricted, valueAttribute, validationError ) =
@@ -31,22 +32,23 @@ form investmentShare =
                     , validationError
                     )
     in
-    fieldset [] <|
-        [ legend []
-            [ text "Maximální podíl ivestice" ]
-        , text "Investovat  "
-        , div []
-            [ input [ type_ "radio", name "portfolioShare", onClick (TargetPortfolioShareChanged "undefined"), checked isUnrestricted ] []
-            , text " bez ohledu na to jaký podíl výše úvěru moje půjčka pokryje"
+    Card.custom <|
+        fieldset [] <|
+            [ legend []
+                [ text "Maximální podíl ivestice" ]
+            , text "Investovat  "
+            , div []
+                [ input [ type_ "radio", name "portfolioShare", onClick (TargetPortfolioShareChanged "undefined"), checked isUnrestricted ] []
+                , text " bez ohledu na to jaký podíl výše úvěru moje půjčka pokryje"
+                ]
+            , div []
+                [ input [ type_ "radio", name "portfolioShare", onClick (TargetPortfolioShareChanged defaultValue), checked (not isUnrestricted) ] []
+                , text " maximálně "
+                , input [ type_ "number", Attr.min "1", Attr.max "100", onInput TargetPortfolioShareChanged, disabled isUnrestricted, valueAttribute ] []
+                , text " % výše úvěru."
+                ]
             ]
-        , div []
-            [ input [ type_ "radio", name "portfolioShare", onClick (TargetPortfolioShareChanged defaultValue), checked (not isUnrestricted) ] []
-            , text " maximálně "
-            , input [ type_ "number", Attr.min "1", Attr.max "100", onInput TargetPortfolioShareChanged, disabled isUnrestricted, valueAttribute ] []
-            , text " % výše úvěru."
-            ]
-        ]
-            ++ validationError
+                ++ validationError
 
 
 defaultValue : String

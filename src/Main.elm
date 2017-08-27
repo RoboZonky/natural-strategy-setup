@@ -1,5 +1,7 @@
 module Main exposing (..)
 
+import Bootstrap.Accordion as Accordion
+import Bootstrap.Grid as Grid
 import Data.InvestmentShare as InvestmentShare exposing (InvestmentShare(..))
 import Data.Strategy exposing (..)
 import Data.TargetBalance as TargetBalance exposing (TargetBalance(TargetBalance))
@@ -11,23 +13,37 @@ import View.Strategy as Strategy
 
 
 type alias Model =
-    StrategyConfiguration
+    { strategyConfig : StrategyConfiguration
+    , accordionState : Accordion.State
+    }
+
+
+initialModel : Model
+initialModel =
+    { strategyConfig = defaultStrategyConfiguration
+    , accordionState = Accordion.initialState
+    }
 
 
 main : Program Never Model Msg
 main =
     Html.beginnerProgram
-        { model = defaultStrategyConfiguration
+        { model = initialModel
         , update = update
         , view = view
         }
+
+
+updateStrategy : (StrategyConfiguration -> StrategyConfiguration) -> Model -> Model
+updateStrategy strategyUpdater model =
+    { model | strategyConfig = strategyUpdater model.strategyConfig }
 
 
 update : Msg -> Model -> Model
 update msg model =
     case msg of
         PortfolioChanged portfolio ->
-            setPortfolio portfolio model
+            updateStrategy (setPortfolio portfolio) model
 
         TargetPortfolioSizeChanged targetSizeStr ->
             let
@@ -37,7 +53,7 @@ update msg model =
                         |> Result.map TargetPortfolioSize
                         |> Result.withDefault TargetPortfolioSize.NotSpecified
             in
-            setTargetPortfolioSize targetSize model
+            updateStrategy (setTargetPortfolioSize targetSize) model
 
         TargetPortfolioShareChanged shareStr ->
             let
@@ -47,7 +63,7 @@ update msg model =
                         |> Result.map InvestmentSharePercent
                         |> Result.withDefault InvestmentShare.NotSpecified
             in
-            setDefaultInvestmentShare share model
+            updateStrategy (setDefaultInvestmentShare share) model
 
         TargetBalanceChanged newBalanceStr ->
             let
@@ -57,34 +73,37 @@ update msg model =
                         |> Result.map TargetBalance
                         |> Result.withDefault TargetBalance.NotSpecified
             in
-            setTargetBalance newBalance model
+            updateStrategy (setTargetBalance newBalance) model
 
         ToggleNotificationOnRating rating isEnabled ->
-            setNotification rating isEnabled model
+            updateStrategy (setNotification rating isEnabled) model
 
         ChangePortfolioShareMin rating newMinStr ->
-            updateModelIfValidInt newMinStr (\newMin -> setPortfolioShareMin rating newMin model) model
+            updateStrategy (updateStrategyIfValidInt newMinStr (\newMin -> setPortfolioShareMin rating newMin model.strategyConfig)) model
 
         ChangePortfolioShareMax rating newMaxStr ->
-            updateModelIfValidInt newMaxStr (\newMax -> setPortfolioShareMax rating newMax model) model
+            updateStrategy (updateStrategyIfValidInt newMaxStr (\newMax -> setPortfolioShareMax rating newMax model.strategyConfig)) model
 
         ChangeInvestmentMin rating newMinStr ->
-            updateModelIfValidInt newMinStr (\newMin -> setInvestmentMin rating newMin model) model
+            updateStrategy (updateStrategyIfValidInt newMinStr (\newMin -> setInvestmentMin rating newMin model.strategyConfig)) model
 
         ChangeInvestmentMax rating newMaxStr ->
-            updateModelIfValidInt newMaxStr (\newMax -> setInvestmentMax rating newMax model) model
+            updateStrategy (updateStrategyIfValidInt newMaxStr (\newMax -> setInvestmentMax rating newMax model.strategyConfig)) model
 
         ChangeDefaultInvestmentMin newMinStr ->
-            updateModelIfValidInt newMinStr (\newMin -> setDefaultInvestmentMin newMin model) model
+            updateStrategy (updateStrategyIfValidInt newMinStr (\newMin -> setDefaultInvestmentMin newMin model.strategyConfig)) model
 
         ChangeDefaultInvestmentMax newMaxStr ->
-            updateModelIfValidInt newMaxStr (\newMax -> setDefaultInvestmentMax newMax model) model
+            updateStrategy (updateStrategyIfValidInt newMaxStr (\newMax -> setDefaultInvestmentMax newMax model.strategyConfig)) model
 
         AddBuyFilter newFilter ->
-            addBuyFilter newFilter model
+            updateStrategy (addBuyFilter newFilter) model
 
         RemoveBuyFilter index ->
-            removeBuyFilter index model
+            updateStrategy (removeBuyFilter index) model
+
+        AccordionMsg state ->
+            { model | accordionState = state }
 
 
 
@@ -101,16 +120,16 @@ emptyStringToZero str =
         str
 
 
-updateModelIfValidInt : String -> (Int -> Model) -> Model -> Model
-updateModelIfValidInt intStr modelUpdater model =
+updateStrategyIfValidInt : String -> (Int -> StrategyConfiguration) -> StrategyConfiguration -> StrategyConfiguration
+updateStrategyIfValidInt intStr strategyUpdater strategyConfig =
     String.toInt intStr
-        |> Result.map (\parsedInt -> modelUpdater parsedInt)
-        |> Result.withDefault model
+        |> Result.map (\parsedInt -> strategyUpdater parsedInt)
+        |> Result.withDefault strategyConfig
 
 
 view : Model -> Html Msg
-view model =
-    Html.div []
-        [ Strategy.form model
-        , ConfigPreview.view model
+view { strategyConfig, accordionState } =
+    Grid.row []
+        [ Strategy.form strategyConfig accordionState
+        , ConfigPreview.view strategyConfig
         ]

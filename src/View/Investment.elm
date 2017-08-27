@@ -1,6 +1,8 @@
 module View.Investment exposing (form)
 
 import AllDict exposing (AllDict)
+import Bootstrap.Accordion as Accordion
+import Bootstrap.Card as Card
 import Data.Investment as Investment exposing (InvestmentsPerRating)
 import Data.Rating as Rating exposing (Rating)
 import Html exposing (Html, button, div, h2, input, p, table, td, text, th, tr)
@@ -9,27 +11,34 @@ import Html.Events exposing (onInput)
 import Types exposing (..)
 
 
-form : Investment.Size -> InvestmentsPerRating -> Html Msg
+form : Investment.Size -> InvestmentsPerRating -> Accordion.Card Msg
 form invDefault invOverrides =
-    div []
-        [ h2 [] [ text "Výše investice" ]
-        , defaultInvestmentForm invDefault
-        , investmentOverridesForm invDefault invOverrides
-        ]
+    Accordion.card
+        { id = "investmentSizeCard"
+        , options = []
+        , header = Accordion.headerH3 [] <| Accordion.toggle [] [ text "Výše investice" ]
+        , blocks =
+            [ Accordion.block []
+                [ defaultInvestmentForm invDefault
+                , investmentOverridesForm invDefault invOverrides
+                ]
+            ]
+        }
 
 
-defaultInvestmentForm : Investment.Size -> Html Msg
+defaultInvestmentForm : Investment.Size -> Card.BlockItem Msg
 defaultInvestmentForm ( defaultMin, defaultMax ) =
-    div []
-        [ text "Běžná výše investice je "
-        , inputCell defaultMin ChangeDefaultInvestmentMin
-        , text " až "
-        , inputCell defaultMax ChangeDefaultInvestmentMax
-        , text " Kč."
-        ]
+    Card.custom <|
+        div []
+            [ text "Běžná výše investice je "
+            , inputCell defaultMin ChangeDefaultInvestmentMin
+            , text " až "
+            , inputCell defaultMax ChangeDefaultInvestmentMax
+            , text " Kč."
+            ]
 
 
-investmentOverridesForm : Investment.Size -> InvestmentsPerRating -> Html Msg
+investmentOverridesForm : Investment.Size -> InvestmentsPerRating -> Card.BlockItem Msg
 investmentOverridesForm default overrides =
     let
         headerRow =
@@ -42,10 +51,11 @@ investmentOverridesForm default overrides =
         dataRows =
             List.map (investmentRow default overrides) Rating.allRatings
     in
-    div []
-        [ text "Pokud si přejete, aby se výše investice lišily na základě ratingu půjčky, upravte je v následující tabulce"
-        , table [] (headerRow :: dataRows)
-        ]
+    Card.custom <|
+        div []
+            [ text "Pokud si přejete, aby se výše investice lišily na základě ratingu půjčky, upravte je v následující tabulce"
+            , table [] (headerRow :: dataRows)
+            ]
 
 
 investmentRow : Investment.Size -> InvestmentsPerRating -> Rating -> Html Msg

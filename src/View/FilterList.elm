@@ -1,5 +1,7 @@
 module View.FilterList exposing (form)
 
+import Bootstrap.Accordion as Accordion
+import Bootstrap.Card as Card
 import Data.Filter exposing (MarketplaceFilter, renderMarketplaceFilter)
 import Html exposing (Html, button, div, h2, h3, text)
 import Html.Attributes exposing (style)
@@ -7,12 +9,20 @@ import Html.Events exposing (onClick)
 import Types exposing (Msg(RemoveBuyFilter))
 
 
-form : List MarketplaceFilter -> Html Msg
-form list =
-    div [] <|
-        [ h2 [] [ text "Filtrování tržiště" ] ]
-            ++ List.indexedMap viewFilter list
-            ++ [ filterCreationControls ]
+form : List MarketplaceFilter -> Accordion.Card Msg
+form filters =
+    Accordion.card
+        { id = "buyFiltersCard"
+        , options = []
+        , header = Accordion.headerH3 [] <| Accordion.toggle [] [ text "Filtrování tržiště" ]
+        , blocks =
+            [ Accordion.block [] [ filtersView filters, filterCreationControls ] ]
+        }
+
+
+filtersView : List MarketplaceFilter -> Card.BlockItem Msg
+filtersView filters =
+    Card.custom <| div [] <| List.indexedMap viewFilter filters
 
 
 viewFilter : Int -> MarketplaceFilter -> Html Msg
@@ -27,12 +37,13 @@ viewFilter index mf =
         ]
 
 
-filterCreationControls : Html Msg
+filterCreationControls : Card.BlockItem Msg
 filterCreationControls =
-    div []
-        [ button [] [ text "Přidat filtr (TODO otevře modal)" ]
-        , filterCreationModal
-        ]
+    Card.custom <|
+        div []
+            [ button [] [ text "Přidat filtr (TODO otevře modal)" ]
+            , filterCreationModal
+            ]
 
 
 filterCreationModal : Html Msg

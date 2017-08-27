@@ -1,5 +1,6 @@
 module View.TargetBalance exposing (form)
 
+import Bootstrap.Card as Card
 import Data.TargetBalance exposing (TargetBalance(..))
 import Html exposing (Html, div, fieldset, input, label, legend, text)
 import Html.Attributes as Attr exposing (checked, disabled, name, style, type_, value)
@@ -7,7 +8,7 @@ import Html.Events exposing (onClick, onInput)
 import Types exposing (..)
 
 
-form : TargetBalance -> Html Msg
+form : TargetBalance -> Card.BlockItem Msg
 form targetBalance =
     let
         ( isUnspecified, valueAttribute, validationError ) =
@@ -33,21 +34,22 @@ form targetBalance =
                     , validationError
                     )
     in
-    fieldset [] <|
-        [ legend [] [ text "Disponibilní zůstatek" ]
-        , text "Investovat "
-        , div []
-            [ input [ type_ "radio", name "balance", onClick (TargetBalanceChanged "undefined"), checked isUnspecified ] []
-            , text " bez ohledu na disponibilní zůstatek "
+    Card.custom <|
+        fieldset [] <|
+            [ legend [] [ text "Disponibilní zůstatek" ]
+            , text "Investovat "
+            , div []
+                [ input [ type_ "radio", name "balance", onClick (TargetBalanceChanged "undefined"), checked isUnspecified ] []
+                , text " bez ohledu na disponibilní zůstatek "
+                ]
+            , div []
+                [ input [ type_ "radio", name "balance", onClick (TargetBalanceChanged defaultValue), checked (not isUnspecified) ] []
+                , text " pouze pokud disponibilní zůstatek přesáhne "
+                , input [ type_ "number", Attr.min "200", Attr.max "100000000", onInput TargetBalanceChanged, disabled isUnspecified, valueAttribute ] []
+                , text " Kč."
+                ]
             ]
-        , div []
-            [ input [ type_ "radio", name "balance", onClick (TargetBalanceChanged defaultValue), checked (not isUnspecified) ] []
-            , text " pouze pokud disponibilní zůstatek přesáhne "
-            , input [ type_ "number", Attr.min "200", Attr.max "100000000", onInput TargetBalanceChanged, disabled isUnspecified, valueAttribute ] []
-            , text " Kč."
-            ]
-        ]
-            ++ validationError
+                ++ validationError
 
 
 defaultValue : String
