@@ -16,7 +16,7 @@ form invDefault invOverrides =
     Accordion.card
         { id = "investmentSizeCard"
         , options = []
-        , header = Accordion.headerH3 [] <| Accordion.toggle [] [ text "Výše investice" ]
+        , header = Accordion.headerH4 [] <| Accordion.toggle [] [ text "Výše investice" ]
         , blocks =
             [ Accordion.block []
                 [ defaultInvestmentForm invDefault

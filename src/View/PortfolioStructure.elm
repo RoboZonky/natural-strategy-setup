@@ -17,7 +17,7 @@ form portfolio shares =
     Accordion.card
         { id = "portfolioStructureCard"
         , options = []
-        , header = Accordion.headerH3 [] <| Accordion.toggle [] [ text "Struktura portfolia" ]
+        , header = Accordion.headerH4 [] <| Accordion.toggle [] [ text "Struktura portfolia" ]
         , blocks =
             [ Accordion.block []
                 [ defaultPortfolioForm

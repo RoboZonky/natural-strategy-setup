@@ -2,6 +2,7 @@ module Main exposing (..)
 
 import Bootstrap.Accordion as Accordion
 import Bootstrap.Grid as Grid
+import Bootstrap.Modal as Modal
 import Data.InvestmentShare as InvestmentShare exposing (InvestmentShare(..))
 import Data.Strategy exposing (..)
 import Data.TargetBalance as TargetBalance exposing (TargetBalance(TargetBalance))
@@ -15,6 +16,7 @@ import View.Strategy as Strategy
 type alias Model =
     { strategyConfig : StrategyConfiguration
     , accordionState : Accordion.State
+    , modalState : Modal.State
     }
 
 
@@ -22,6 +24,7 @@ initialModel : Model
 initialModel =
     { strategyConfig = defaultStrategyConfiguration
     , accordionState = Accordion.initialState
+    , modalState = Modal.hiddenState
     }
 
 
@@ -105,6 +108,9 @@ update msg model =
         AccordionMsg state ->
             { model | accordionState = state }
 
+        ModalMsg state ->
+            { model | modalState = state }
+
 
 
 -- This is to make radio + input subforms (TargetPortfolioSize, InvestmentShare and TargetBalance)
@@ -128,8 +134,8 @@ updateStrategyIfValidInt intStr strategyUpdater strategyConfig =
 
 
 view : Model -> Html Msg
-view { strategyConfig, accordionState } =
+view { strategyConfig, accordionState, modalState } =
     Grid.row []
-        [ Strategy.form strategyConfig accordionState
+        [ Strategy.form strategyConfig accordionState modalState
         , ConfigPreview.view strategyConfig
         ]

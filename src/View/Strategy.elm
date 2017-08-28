@@ -3,10 +3,12 @@ module View.Strategy exposing (..)
 import Bootstrap.Accordion as Accordion
 import Bootstrap.Grid as Grid
 import Bootstrap.Grid.Col as Col
+import Bootstrap.Modal as Modal
 import Data.Strategy exposing (..)
 import Html exposing (Html, button, caption, div, h1, h2, input, label, option, select, table, td, text, textarea, th, tr, ul)
 import Types exposing (..)
 import View.Confirmation as Confirmation
+import View.Filter.FilterCreationModal as FilterCreationModal
 import View.FilterList as FilterList
 import View.Investment as Investment
 import View.InvestmentShare as InvestmentShare
@@ -15,12 +17,13 @@ import View.TargetBalance as TargetBalance
 import View.TargetPortfolioSize as TargetPortfolioSize
 
 
-form : StrategyConfiguration -> Accordion.State -> Grid.Column Msg
-form config state =
+form : StrategyConfiguration -> Accordion.State -> Modal.State -> Grid.Column Msg
+form config accordionState modalState =
     Grid.col
         [ Col.xs6 ]
         [ h1 [] [ text "Konfigurace strategie" ]
-        , strategyForm config state
+        , strategyForm config accordionState
+        , FilterCreationModal.view modalState
         ]
 
 
@@ -41,7 +44,7 @@ generalSettingsCard { targetPortfolioSize, defaultInvestmentShare, defaultTarget
     Accordion.card
         { id = "generalSettigsCard"
         , options = []
-        , header = Accordion.headerH3 [] <| Accordion.toggle [] [ text "Obecná nastavení" ]
+        , header = Accordion.headerH4 [] <| Accordion.toggle [] [ text "Obecná nastavení" ]
         , blocks =
             [ Accordion.block []
                 [ TargetPortfolioSize.form targetPortfolioSize

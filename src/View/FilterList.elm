@@ -1,12 +1,15 @@
 module View.FilterList exposing (form)
 
 import Bootstrap.Accordion as Accordion
+import Bootstrap.Button as Button
 import Bootstrap.Card as Card
+import Bootstrap.ListGroup as ListGroup
+import Bootstrap.Modal as Modal
 import Data.Filter exposing (MarketplaceFilter, renderMarketplaceFilter)
 import Html exposing (Html, button, div, h2, h3, text)
-import Html.Attributes exposing (style)
+import Html.Attributes exposing (class)
 import Html.Events exposing (onClick)
-import Types exposing (Msg(RemoveBuyFilter))
+import Types exposing (Msg(ModalMsg, RemoveBuyFilter))
 
 
 form : List MarketplaceFilter -> Accordion.Card Msg
@@ -14,7 +17,7 @@ form filters =
     Accordion.card
         { id = "buyFiltersCard"
         , options = []
-        , header = Accordion.headerH3 [] <| Accordion.toggle [] [ text "Filtrování tržiště" ]
+        , header = Accordion.headerH4 [] <| Accordion.toggle [] [ text "Filtrování tržiště" ]
         , blocks =
             [ Accordion.block [] [ filtersView filters, filterCreationControls ] ]
         }
@@ -22,16 +25,22 @@ form filters =
 
 filtersView : List MarketplaceFilter -> Card.BlockItem Msg
 filtersView filters =
-    Card.custom <| div [] <| List.indexedMap viewFilter filters
+    Card.custom <| ListGroup.ul <| List.indexedMap viewFilter filters
 
 
-viewFilter : Int -> MarketplaceFilter -> Html Msg
+viewFilter : Int -> MarketplaceFilter -> ListGroup.Item Msg
 viewFilter index mf =
     let
         removeButton =
-            button [ onClick (RemoveBuyFilter index) ] [ text "Odebrat filtr" ]
+            Button.button
+                [ Button.danger
+                , Button.small
+                , Button.onClick (RemoveBuyFilter index)
+                , Button.attrs [ class "float-right" ]
+                ]
+                [ text "Odebrat" ]
     in
-    div []
+    ListGroup.li []
         [ text <| renderMarketplaceFilter mf ++ " "
         , removeButton
         ]
@@ -40,23 +49,8 @@ viewFilter index mf =
 filterCreationControls : Card.BlockItem Msg
 filterCreationControls =
     Card.custom <|
-        div []
-            [ button [] [ text "Přidat filtr (TODO otevře modal)" ]
-            , filterCreationModal
+        Button.button
+            [ Button.primary
+            , Button.attrs [ onClick <| ModalMsg Modal.visibleState ]
             ]
-
-
-filterCreationModal : Html Msg
-filterCreationModal =
-    div [ style [ ( "border", "1px solid black" ), ( "width", "50%" ) ] ]
-        [ h3 []
-            [ text "Vytvořit filtr (TODO obsah modalu)" ]
-        , div []
-            [ text "Modal body" ]
-        , div
-            [{--modal footer--}
-            ]
-            [ button [] [ text "Přidat" ]
-            , button [] [ text "zrušit" ]
-            ]
-        ]
+            [ text "Přidat Filtr" ]
