@@ -23,3 +23,4 @@ type Msg
     | RemoveBuyFilter Int
     | AccordionMsg Accordion.State
     | ModalMsg Modal.State
+    | NoOp

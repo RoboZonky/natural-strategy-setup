@@ -1,10 +1,13 @@
 module View.TargetBalance exposing (form)
 
 import Bootstrap.Card as Card
+import Bootstrap.Form as Form
+import Bootstrap.Form.Input as Input
+import Bootstrap.Form.Radio as Radio
 import Data.TargetBalance exposing (TargetBalance(..))
 import Html exposing (Html, div, fieldset, input, label, legend, text)
 import Html.Attributes as Attr exposing (checked, disabled, name, style, type_, value)
-import Html.Events exposing (onClick, onInput)
+import Html.Events exposing (onClick, onInput, onSubmit)
 import Types exposing (..)
 
 
@@ -35,17 +38,25 @@ form targetBalance =
                     )
     in
     Card.custom <|
-        fieldset [] <|
+        Form.group [] <|
             [ legend [] [ text "Disponibilní zůstatek" ]
-            , text "Investovat "
-            , div []
-                [ input [ type_ "radio", name "balance", onClick (TargetBalanceChanged "undefined"), checked isUnspecified ] []
-                , text " bez ohledu na disponibilní zůstatek "
+            , Radio.radio
+                [ Radio.checked isUnspecified
+                , Radio.name "balance"
+                , Radio.onClick (TargetBalanceChanged "undefined")
                 ]
-            , div []
-                [ input [ type_ "radio", name "balance", onClick (TargetBalanceChanged defaultValue), checked (not isUnspecified) ] []
-                , text " pouze pokud disponibilní zůstatek přesáhne "
-                , input [ type_ "number", Attr.min "200", Attr.max "100000000", onInput TargetBalanceChanged, disabled isUnspecified, valueAttribute ] []
+                "Investovat bez ohledu na disponibilní zůstatek "
+            , Form.formInline [ onSubmit NoOp ]
+                [ Radio.radio
+                    [ Radio.checked (not isUnspecified)
+                    , Radio.name "balance"
+                    , Radio.onClick (TargetBalanceChanged defaultValue)
+                    ]
+                    "Investovat pouze pokud disponibilní zůstatek přesáhne"
+                , Input.number
+                    [ Input.small
+                    , Input.attrs [ Attr.min "200", Attr.max "100000000", onInput TargetBalanceChanged, disabled isUnspecified, valueAttribute ]
+                    ]
                 , text " Kč."
                 ]
             ]

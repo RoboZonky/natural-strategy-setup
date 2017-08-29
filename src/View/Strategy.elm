@@ -21,8 +21,7 @@ form : StrategyConfiguration -> Accordion.State -> Modal.State -> Grid.Column Ms
 form config accordionState modalState =
     Grid.col
         [ Col.xs6 ]
-        [ h1 [] [ text "Konfigurace strategie" ]
-        , strategyForm config accordionState
+        [ strategyForm config accordionState
         , FilterCreationModal.view modalState
         ]
 

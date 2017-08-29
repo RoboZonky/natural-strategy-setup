@@ -7,7 +7,7 @@ import Data.InvestmentShare as InvestmentShare exposing (InvestmentShare(..))
 import Data.Strategy exposing (..)
 import Data.TargetBalance as TargetBalance exposing (TargetBalance(TargetBalance))
 import Data.TargetPortfolioSize as TargetPortfolioSize exposing (..)
-import Html exposing (Html, text)
+import Html exposing (Html, h1, text)
 import Types exposing (..)
 import View.ConfigPreview as ConfigPreview
 import View.Strategy as Strategy
@@ -111,6 +111,9 @@ update msg model =
         ModalMsg state ->
             { model | modalState = state }
 
+        NoOp ->
+            model
+
 
 
 -- This is to make radio + input subforms (TargetPortfolioSize, InvestmentShare and TargetBalance)
@@ -135,7 +138,10 @@ updateStrategyIfValidInt intStr strategyUpdater strategyConfig =
 
 view : Model -> Html Msg
 view { strategyConfig, accordionState, modalState } =
-    Grid.row []
-        [ Strategy.form strategyConfig accordionState modalState
-        , ConfigPreview.view strategyConfig
+    Grid.containerFluid []
+        [ h1 [] [ text "Konfigurace strategie" ]
+        , Grid.row []
+            [ Strategy.form strategyConfig accordionState modalState
+            , ConfigPreview.view strategyConfig
+            ]
         ]
