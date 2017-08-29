@@ -3,11 +3,12 @@ module View.FilterList exposing (form)
 import Bootstrap.Accordion as Accordion
 import Bootstrap.Button as Button
 import Bootstrap.Card as Card
-import Bootstrap.ListGroup as ListGroup
+import Bootstrap.Grid as Grid
+import Bootstrap.Grid.Col as Col
 import Bootstrap.Modal as Modal
 import Data.Filter exposing (MarketplaceFilter, renderMarketplaceFilter)
-import Html exposing (Html, button, div, h2, h3, text)
-import Html.Attributes exposing (class)
+import Html exposing (Html, button, div, h2, h3, pre, span, text)
+import Html.Attributes exposing (class, href, style)
 import Html.Events exposing (onClick)
 import Types exposing (Msg(ModalMsg, RemoveBuyFilter))
 
@@ -25,25 +26,27 @@ form filters =
 
 filtersView : List MarketplaceFilter -> Card.BlockItem Msg
 filtersView filters =
-    Card.custom <| ListGroup.ul <| List.indexedMap viewFilter filters
+    Card.custom <| div [] <| List.indexedMap viewFilter filters
 
 
-viewFilter : Int -> MarketplaceFilter -> ListGroup.Item Msg
+viewFilter : Int -> MarketplaceFilter -> Html Msg
 viewFilter index mf =
     let
         removeButton =
-            Button.button
-                [ Button.danger
-                , Button.small
-                , Button.onClick (RemoveBuyFilter index)
-                , Button.attrs [ class "float-right" ]
-                ]
-                [ text "Odebrat" ]
+            span [ onClick (RemoveBuyFilter index), class "float-right" ] [ text "✖" ]
+
+        filterText =
+            span [ style [ ( "white-space", "pre" ) ] ] [ text <| renderMarketplaceFilter mf ]
     in
-    ListGroup.li []
-        [ text <| renderMarketplaceFilter mf ++ " "
-        , removeButton
-        ]
+    Card.config []
+        |> Card.block []
+            [ Card.custom <|
+                Grid.row []
+                    [ Grid.col [ Col.xs11 ] [ filterText ]
+                    , Grid.col [ Col.xs1 ] [ removeButton ]
+                    ]
+            ]
+        |> Card.view
 
 
 filterCreationControls : Card.BlockItem Msg
