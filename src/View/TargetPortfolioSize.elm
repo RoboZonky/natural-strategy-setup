@@ -5,9 +5,9 @@ import Bootstrap.Form as Form
 import Bootstrap.Form.Input as Input
 import Bootstrap.Form.Radio as Radio
 import Data.TargetPortfolioSize exposing (TargetPortfolioSize(..))
-import Html exposing (Html, div, fieldset, input, label, legend, span, text)
-import Html.Attributes as Attr exposing (checked, class, disabled, name, type_, value)
-import Html.Events exposing (onClick, onInput, onSubmit)
+import Html exposing (Html, legend, text)
+import Html.Attributes as Attr exposing (class)
+import Html.Events exposing (onSubmit)
 import Types exposing (..)
 
 
@@ -17,14 +17,14 @@ form targetPortfolioSize =
         ( isUnbounded, valueAttribute ) =
             case targetPortfolioSize of
                 NotSpecified ->
-                    ( True, value defaultSize )
+                    ( True, Input.value defaultSize )
 
                 TargetPortfolioSize maxBound ->
                     ( False
                     , if maxBound == 0 then
-                        value ""
+                        Input.value ""
                       else
-                        value (toString maxBound)
+                        Input.value (toString maxBound)
                     )
     in
     Card.custom <|
@@ -48,7 +48,8 @@ form targetPortfolioSize =
                     [ Input.small
                     , Input.onInput TargetPortfolioSizeChanged
                     , Input.disabled isUnbounded
-                    , Input.attrs [ Attr.min "0", Attr.max "100000000", valueAttribute, class "mx-1" ]
+                    , valueAttribute
+                    , Input.attrs [ Attr.min "0", Attr.max "100000000", class "mx-1" ]
                     ]
                 , text "Kč."
                 ]

@@ -5,9 +5,9 @@ import Bootstrap.Form as Form
 import Bootstrap.Form.Input as Input
 import Bootstrap.Form.Radio as Radio
 import Data.TargetBalance exposing (TargetBalance(..))
-import Html exposing (Html, div, fieldset, input, label, legend, text)
-import Html.Attributes as Attr exposing (checked, disabled, name, style, type_, value)
-import Html.Events exposing (onClick, onInput, onSubmit)
+import Html exposing (Html, div, legend, text)
+import Html.Attributes as Attr exposing (class, style)
+import Html.Events exposing (onSubmit)
 import Types exposing (..)
 
 
@@ -17,7 +17,7 @@ form targetBalance =
         ( isUnspecified, valueAttribute, validationError ) =
             case targetBalance of
                 NotSpecified ->
-                    ( True, value defaultValue, [] )
+                    ( True, Input.value defaultValue, [] )
 
                 TargetBalance val ->
                     let
@@ -31,9 +31,9 @@ form targetBalance =
                     in
                     ( False
                     , if val == 0 then
-                        value ""
+                        Input.value ""
                       else
-                        value (toString val)
+                        Input.value (toString val)
                     , validationError
                     )
     in
@@ -55,7 +55,10 @@ form targetBalance =
                     "Investovat pouze pokud disponibilní zůstatek přesáhne"
                 , Input.number
                     [ Input.small
-                    , Input.attrs [ Attr.min "200", Attr.max "100000000", onInput TargetBalanceChanged, disabled isUnspecified, valueAttribute ]
+                    , Input.onInput TargetBalanceChanged
+                    , Input.disabled isUnspecified
+                    , valueAttribute
+                    , Input.attrs [ Attr.min "200", Attr.max "100000000", class "mx-1" ]
                     ]
                 , text " Kč."
                 ]

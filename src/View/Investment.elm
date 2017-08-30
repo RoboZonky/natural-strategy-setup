@@ -3,11 +3,14 @@ module View.Investment exposing (form)
 import AllDict exposing (AllDict)
 import Bootstrap.Accordion as Accordion
 import Bootstrap.Card as Card
+import Bootstrap.Form as Form
+import Bootstrap.Form.Input as Input
+import Bootstrap.Table as Table
 import Data.Investment as Investment exposing (InvestmentsPerRating)
 import Data.Rating as Rating exposing (Rating)
-import Html exposing (Html, button, div, h2, input, p, table, td, text, th, tr)
-import Html.Attributes as Attr exposing (size, style, type_, value)
-import Html.Events exposing (onInput)
+import Html exposing (Attribute, Html, div, text)
+import Html.Attributes as Attr exposing (class, size, style)
+import Html.Events exposing (onSubmit)
 import Types exposing (..)
 
 
@@ -29,36 +32,47 @@ form invDefault invOverrides =
 defaultInvestmentForm : Investment.Size -> Card.BlockItem Msg
 defaultInvestmentForm ( defaultMin, defaultMax ) =
     Card.custom <|
-        div []
-            [ text "Běžná výše investice je "
-            , inputCell defaultMin ChangeDefaultInvestmentMin
-            , text " až "
-            , inputCell defaultMax ChangeDefaultInvestmentMax
-            , text " Kč."
+        Form.formInline [ onSubmit NoOp ]
+            [ text "Běžná výše investice je"
+            , inputCell [ class "mx-1" ] defaultMin ChangeDefaultInvestmentMin
+            , text "až"
+            , inputCell [ class "mx-1" ] defaultMax ChangeDefaultInvestmentMax
+            , text "Kč."
             ]
 
 
 investmentOverridesForm : Investment.Size -> InvestmentsPerRating -> Card.BlockItem Msg
 investmentOverridesForm default overrides =
-    let
-        headerRow =
-            tr []
-                [ th [] [ text "Rating" ]
-                , th [] [ text "od (Kč)" ]
-                , th [] [ text "do (Kč)" ]
-                ]
-
-        dataRows =
-            List.map (investmentRow default overrides) Rating.allRatings
-    in
     Card.custom <|
         div []
             [ text "Pokud si přejete, aby se výše investice lišily na základě ratingu půjčky, upravte je v následující tabulce"
-            , table [] (headerRow :: dataRows)
+            , investmentOverridesTable default overrides
             ]
 
 
-investmentRow : Investment.Size -> InvestmentsPerRating -> Rating -> Html Msg
+investmentOverridesTable : Investment.Size -> InvestmentsPerRating -> Html Msg
+investmentOverridesTable default overrides =
+    let
+        thead =
+            Table.thead [ Table.defaultHead ]
+                [ Table.tr []
+                    [ Table.th [] [ text "Rating" ]
+                    , Table.th [] [ text "Od (Kč)" ]
+                    , Table.th [] [ text "Do (Kč)" ]
+                    ]
+                ]
+
+        tbody =
+            Table.tbody [] <| List.map (investmentRow default overrides) Rating.allRatings
+    in
+    Table.table
+        { options = [ Table.bordered, Table.small, Table.attr (style [ ( "border", "none" ) ]) ]
+        , thead = thead
+        , tbody = tbody
+        }
+
+
+investmentRow : Investment.Size -> InvestmentsPerRating -> Rating -> Table.Row Msg
 investmentRow invDefault invOverrides rating =
     let
         ( mi, mx ) =
@@ -66,20 +80,40 @@ investmentRow invDefault invOverrides rating =
 
         validationError =
             if mi > mx then
-                [ td [ style [ ( "color", "red" ), ( "border", "none" ) ] ]
-                    [ text "Minimum musí být menší nebo rovno než maximum" ]
-                ]
+                "Minimum nesmí být větší než maximum"
             else
-                []
+                ""
     in
-    tr [] <|
-        [ td [] [ text <| Rating.ratingToString rating ]
-        , td [] [ inputCell mi (ChangeInvestmentMin rating) ]
-        , td [] [ inputCell mx (ChangeInvestmentMax rating) ]
+    Table.tr []
+        [ Table.td [] [ text <| Rating.ratingToString rating ]
+        , Table.td [] [ inputCell [] mi (ChangeInvestmentMin rating) ]
+        , Table.td [] [ inputCell [] mx (ChangeInvestmentMax rating) ]
+        , validationCell validationError
         ]
-            ++ validationError
 
 
-inputCell : Int -> (String -> Msg) -> Html Msg
-inputCell val msg =
-    input [ size 4, type_ "number", Attr.min "0", Attr.max "1000000", value (toString val), onInput msg ] []
+validationCell : String -> Table.Cell Msg
+validationCell errorText =
+    Table.td
+        [ Table.cellAttr
+            (style
+                {- hack to make the first three columns NOT take up whole width of accordion card we ALWAYS
+                   (even when there's not validation error) display extra column with validation error occupying 65% of width.
+                -}
+                [ ( "width", "65%" )
+                , ( "border", "none" )
+                , ( "color", "red" )
+                ]
+            )
+        ]
+        [ text errorText ]
+
+
+inputCell : List (Attribute Msg) -> Int -> (String -> Msg) -> Html Msg
+inputCell extraAttrs val msg =
+    Input.number
+        [ Input.small
+        , Input.value (toString val)
+        , Input.onInput msg
+        , Input.attrs <| extraAttrs ++ [ size 4, Attr.min "0", Attr.max "1000000" ]
+        ]
