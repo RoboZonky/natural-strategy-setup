@@ -97,7 +97,7 @@ validationCell errorText =
     Table.td
         [ Table.cellAttr
             (style
-                {- hack to make the first three columns NOT take up whole width of accordion card we ALWAYS
+                {- TODO (Issue #9) hack to make the first three columns NOT take up whole width of accordion card we ALWAYS
                    (even when there's not validation error) display extra column with validation error occupying 65% of width.
                 -}
                 [ ( "width", "65%" )

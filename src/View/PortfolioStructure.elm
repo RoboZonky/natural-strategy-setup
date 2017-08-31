@@ -3,12 +3,16 @@ module View.PortfolioStructure exposing (defaultPortfolioForm, form)
 import AllDict as Dict
 import Bootstrap.Accordion as Accordion
 import Bootstrap.Card as Card
+import Bootstrap.Form as Form
+import Bootstrap.Form.Input as Input
+import Bootstrap.Form.Select as Select
+import Bootstrap.Table as Table
 import Data.Portfolio as Portfolio exposing (Portfolio(..))
 import Data.PortfolioStructure exposing (PortfolioShare, PortfolioShares, Share)
 import Data.Rating as Rating
-import Html exposing (Html, caption, div, h2, input, option, p, select, table, td, text, th, tr)
-import Html.Attributes as Attr exposing (size, style, type_, value)
-import Html.Events exposing (onInput)
+import Html exposing (Html, div, text)
+import Html.Attributes as Attr exposing (class, size, style, value)
+import Html.Events exposing (onSubmit)
 import Types exposing (..)
 
 
@@ -29,19 +33,29 @@ form portfolio shares =
 
 defaultPortfolioForm : Card.BlockItem Msg
 defaultPortfolioForm =
-    Card.custom <| div [] [ text "Robot má udržovat ", defaultPortfolioSelect, text " portfolio." ]
+    Card.custom <|
+        Form.formInline [ onSubmit NoOp ]
+            [ text "Robot má udržovat ", defaultPortfolioSelect, text " portfolio." ]
 
 
 defaultPortfolioSelect : Html Msg
 defaultPortfolioSelect =
-    select [ onInput (PortfolioChanged << Portfolio.fromString) ] <|
-        List.map
-            (\portfolio ->
-                option
-                    [ value (toString portfolio) ]
-                    [ text (Portfolio.toString portfolio) ]
-            )
-            [ Conservative, Balanced, Progressive, Empty ]
+    let
+        optionList =
+            List.map
+                (\portfolio ->
+                    Select.item
+                        [ value (toString portfolio) ]
+                        [ text (Portfolio.toString portfolio) ]
+                )
+                [ Conservative, Balanced, Progressive, Empty ]
+    in
+    Select.select
+        [ Select.small
+        , Select.onChange (PortfolioChanged << Portfolio.fromString)
+        , Select.attrs [ class "mx-1" ]
+        ]
+        optionList
 
 
 ratingSharesTable : Portfolio -> PortfolioShares -> Card.BlockItem Msg
@@ -55,15 +69,17 @@ ratingSharesTable portfolio shares =
                 _ ->
                     ( portfolioShareReadOnlyRow, "Následující tabulka ukazuje" )
 
-        headerRow =
-            tr []
-                [ th [] [ text "Rating" ]
-                , th [] [ text "od (%)" ]
-                , th [] [ text "do (%)" ]
+        thead =
+            Table.thead [ Table.defaultHead ]
+                [ Table.tr []
+                    [ Table.th [] [ text "Rating" ]
+                    , Table.th [] [ text "Od (%)" ]
+                    , Table.th [] [ text "Do (%)" ]
+                    ]
                 ]
 
-        dataRows =
-            List.map rowRenderingFunction <| Dict.toList shares
+        tbody =
+            Table.tbody [] <| List.map rowRenderingFunction <| Dict.toList shares
 
         sumOfShareMinimums =
             Dict.foldr (\_ ( min, _ ) acc -> min + acc) 0 shares
@@ -74,40 +90,57 @@ ratingSharesTable portfolio shares =
                     [ text <| "Součet minim musí být přesně 100% (teď je " ++ toString sumOfShareMinimums ++ "%)" ]
                 ]
             else
-                []
+                [ div [ style [ ( "height", "2em" ) ] ]
+                    [{- TODO (Issue #8) this empty div is hack to make the table validation error visible.
+                        When user selects "empty" portfolio, the size of table changes,
+                        which makes the validation error below it invisible (because the containing
+                        accordion's card's height fits the height of its content when it's expanded)
+                     -}
+                    ]
+                ]
     in
     Card.custom <|
         div [] <|
             [ text <| tableDescription ++ " požadovaný procentuální podíl aktuální zůstatkové částky investovaný do půjček v daném ratingu"
-            , table [] (headerRow :: dataRows)
+            , Table.table
+                { options = [ Table.bordered, Table.small, Table.attr (style [ ( "border", "none" ) ]) ]
+                , thead = thead
+                , tbody = tbody
+                }
             ]
                 ++ validationErrors
 
 
-portfolioShareReadOnlyRow : PortfolioShare -> Html Msg
+portfolioShareReadOnlyRow : PortfolioShare -> Table.Row Msg
 portfolioShareReadOnlyRow ( rtg, ( mi, mx ) ) =
-    tr []
-        [ td [] [ text <| Rating.ratingToString rtg ]
-        , td [] [ text <| toString mi ]
-        , td [] [ text <| toString mx ]
+    Table.tr []
+        [ Table.td [] [ text <| Rating.ratingToString rtg ]
+        , Table.td [] [ text <| toString mi ]
+        , Table.td [] [ text <| toString mx ]
+        , validationErrors ( mi, mx )
         ]
 
 
-portfolioShareEditableRow : PortfolioShare -> Html Msg
+portfolioShareEditableRow : PortfolioShare -> Table.Row Msg
 portfolioShareEditableRow ( rtg, ( mi, mx ) ) =
     let
         inputCell val msg =
-            input [ size 2, type_ "number", Attr.min "0", Attr.max "100", value (toString val), onInput msg ] []
+            Input.number
+                [ Input.small
+                , Input.value (toString val)
+                , Input.onInput msg
+                , Input.attrs <| [ size 2, Attr.min "0", Attr.max "100" ]
+                ]
     in
-    tr [] <|
-        [ td [] [ text <| Rating.ratingToString rtg ]
-        , td [] [ inputCell mi (ChangePortfolioShareMin rtg) ]
-        , td [] [ inputCell mx (ChangePortfolioShareMax rtg) ]
+    Table.tr []
+        [ Table.td [] [ text <| Rating.ratingToString rtg ]
+        , Table.td [] [ inputCell mi (ChangePortfolioShareMin rtg) ]
+        , Table.td [] [ inputCell mx (ChangePortfolioShareMax rtg) ]
+        , validationErrors ( mi, mx )
         ]
-            ++ validationErrors ( mi, mx )
 
 
-validationErrors : Share -> List (Html Msg)
+validationErrors : Share -> Table.Cell Msg
 validationErrors ( mi, mx ) =
     let
         minGtMax =
@@ -122,11 +155,21 @@ validationErrors ( mi, mx ) =
             else
                 []
     in
-    case minGtMax ++ maxOver100 of
-        [] ->
-            []
+    validationCell <| String.join "; " <| minGtMax ++ maxOver100
 
-        errs ->
-            [ td [ style [ ( "color", "red" ), ( "border", "none" ) ] ]
-                [ text <| String.join "; " errs ]
-            ]
+
+validationCell : String -> Table.Cell Msg
+validationCell errorText =
+    Table.td
+        [ Table.cellAttr
+            (style
+                {- TODO (Issue #9) hack to make the first three columns NOT take up whole width of accordion card we ALWAYS
+                   (even when there's not validation error) display extra column with validation error occupying 70% of width.
+                -}
+                [ ( "width", "70%" )
+                , ( "border", "none" )
+                , ( "color", "red" )
+                ]
+            )
+        ]
+        [ text errorText ]
