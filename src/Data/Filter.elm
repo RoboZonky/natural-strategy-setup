@@ -3,8 +3,12 @@ module Data.Filter
         ( Condition(..)
         , FilteredItem(..)
         , MarketplaceFilter(..)
+        , emptyFilter
+        , filtereedItemFromString
+        , renderFilteredItem
         , renderFilters
         , renderMarketplaceFilter
+        , setFilteredItem
         )
 
 import Data.Filter.Condition.Amount exposing (AmountCondition, renderAmountCondition)
@@ -15,7 +19,6 @@ import Data.Filter.Condition.MainIncome exposing (IncomeCondition, renderIncomeC
 import Data.Filter.Condition.Region exposing (RegionCondition, renderRegionCondition)
 import Data.Filter.Condition.Story exposing (StoryCondition, renderStoryCondition)
 import Data.Rating exposing (RatingCondition, renderRatingCondition)
-import List.Nonempty as NEList
 import Util
 
 
@@ -30,9 +33,23 @@ renderFilters filters =
 type MarketplaceFilter
     = MarketplaceFilter
         { whatToFilter : FilteredItem
-        , ignoreWhen : NEList.Nonempty Condition
+        , ignoreWhen : List Condition
         , butNotWhen : List Condition
         }
+
+
+emptyFilter : MarketplaceFilter
+emptyFilter =
+    MarketplaceFilter
+        { whatToFilter = Loan
+        , ignoreWhen = []
+        , butNotWhen = []
+        }
+
+
+setFilteredItem : FilteredItem -> MarketplaceFilter -> MarketplaceFilter
+setFilteredItem newItem (MarketplaceFilter mf) =
+    MarketplaceFilter { mf | whatToFilter = newItem }
 
 
 renderMarketplaceFilter : MarketplaceFilter -> String
@@ -45,7 +62,7 @@ renderMarketplaceFilter (MarketplaceFilter { whatToFilter, ignoreWhen, butNotWhe
                 "\n(Ale ne když: " ++ renderConditionList butNotWhen ++ ")"
 
         positivePart =
-            renderConditionList <| NEList.toList ignoreWhen
+            renderConditionList ignoreWhen
     in
     "Ignorovat " ++ renderFilteredItem whatToFilter ++ ", kde: " ++ positivePart ++ negativePart
 
@@ -121,3 +138,16 @@ renderFilteredItem item =
 
         Loan ->
             "úvěr"
+
+
+filtereedItemFromString : String -> FilteredItem
+filtereedItemFromString s =
+    case s of
+        "Loan_And_Participation" ->
+            Loan_And_Participation
+
+        "Participation" ->
+            Participation
+
+        _ ->
+            Loan

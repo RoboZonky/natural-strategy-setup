@@ -8,14 +8,13 @@ import Data.Filter.Condition.MainIncome exposing (IncomeCondition(..), MainIncom
 import Data.Filter.Condition.Region exposing (..)
 import Data.Filter.Condition.Story exposing (..)
 import Data.Rating exposing (..)
-import List.Nonempty as NE
 
 
 simpleFilter : Condition -> MarketplaceFilter
 simpleFilter c =
     MarketplaceFilter
         { whatToFilter = Loan
-        , ignoreWhen = NE.fromElement c
+        , ignoreWhen = [ c ]
         , butNotWhen = []
         }
 
@@ -36,22 +35,22 @@ sampleFilters =
     , simpleFilter <| Condition_Interest (InterestCondition (Interest.Between 9.99 19.99))
     , MarketplaceFilter
         { whatToFilter = Loan
-        , ignoreWhen = NE.cons (Condition_Rating (WorseThan A_Plus)) <| NE.fromElement (Condition_Income (IncomeList [ UNEMPLOYED, PENSION ]))
+        , ignoreWhen = [ Condition_Rating (WorseThan A_Plus), Condition_Income (IncomeList [ UNEMPLOYED, PENSION ]) ]
         , butNotWhen = []
         }
     , MarketplaceFilter
         { whatToFilter = Loan
-        , ignoreWhen = NE.cons (Condition_Region (RegionList [ USTECKY, MORAVSKOSLEZSKY ])) <| NE.fromElement (Condition_Term (TermCondition (MoreThan 36)))
+        , ignoreWhen = [ Condition_Region (RegionList [ USTECKY, MORAVSKOSLEZSKY ]), Condition_Term (TermCondition (MoreThan 36)) ]
         , butNotWhen = [ Condition_Rating (BetterThan A_Plus) ]
         }
     , MarketplaceFilter
         { whatToFilter = Participation
-        , ignoreWhen = NE.fromElement <| Condition_Term (TermCondition (MoreThan 36))
+        , ignoreWhen = [ Condition_Term (TermCondition (MoreThan 36)) ]
         , butNotWhen = []
         }
     , MarketplaceFilter
         { whatToFilter = Loan_And_Participation
-        , ignoreWhen = NE.fromElement <| Condition_Term (TermCondition (MoreThan 36))
+        , ignoreWhen = [ Condition_Term (TermCondition (MoreThan 36)) ]
         , butNotWhen = []
         }
     ]

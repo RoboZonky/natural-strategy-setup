@@ -3,7 +3,6 @@ module View.Strategy exposing (..)
 import Bootstrap.Accordion as Accordion
 import Bootstrap.Grid as Grid
 import Bootstrap.Grid.Col as Col
-import Bootstrap.Modal as Modal
 import Data.Strategy exposing (..)
 import Html exposing (Html, button, caption, div, h1, h2, input, label, option, select, table, td, text, textarea, th, tr, ul)
 import Types exposing (..)
@@ -17,12 +16,12 @@ import View.TargetBalance as TargetBalance
 import View.TargetPortfolioSize as TargetPortfolioSize
 
 
-form : StrategyConfiguration -> Accordion.State -> Modal.State -> Grid.Column Msg
-form config accordionState modalState =
+form : StrategyConfiguration -> Accordion.State -> FilterCreationModal.State -> Grid.Column Msg
+form config accordionState filterCreationState =
     Grid.col
         [ Col.xs6 ]
         [ strategyForm config accordionState
-        , FilterCreationModal.view modalState
+        , Html.map ModalMsg <| FilterCreationModal.view filterCreationState
         ]
 
 
