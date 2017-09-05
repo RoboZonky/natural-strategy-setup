@@ -2,6 +2,7 @@ module Data.Filter.Condition.LoanTerm
     exposing
         ( LoanTerm(..)
         , TermCondition(..)
+        , defaultTermCondition
         , renderTermCondition
         )
 
@@ -14,6 +15,11 @@ type LoanTerm
 
 type TermCondition
     = TermCondition LoanTerm
+
+
+defaultTermCondition : TermCondition
+defaultTermCondition =
+    TermCondition (MoreThan 0)
 
 
 loanTermToString : LoanTerm -> String

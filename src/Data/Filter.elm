@@ -1,8 +1,12 @@
 module Data.Filter
     exposing
         ( Condition(..)
+        , Conditions
         , FilteredItem(..)
         , MarketplaceFilter(..)
+        , addNegativeCondition
+        , addPositiveCondition
+        , emptyConditions
         , emptyFilter
         , filtereedItemFromString
         , renderFilteredItem
@@ -33,8 +37,8 @@ renderFilters filters =
 type MarketplaceFilter
     = MarketplaceFilter
         { whatToFilter : FilteredItem
-        , ignoreWhen : List Condition
-        , butNotWhen : List Condition
+        , ignoreWhen : Conditions
+        , butNotWhen : Conditions
         }
 
 
@@ -42,8 +46,8 @@ emptyFilter : MarketplaceFilter
 emptyFilter =
     MarketplaceFilter
         { whatToFilter = Loan
-        , ignoreWhen = []
-        , butNotWhen = []
+        , ignoreWhen = emptyConditions
+        , butNotWhen = emptyConditions
         }
 
 
@@ -52,17 +56,27 @@ setFilteredItem newItem (MarketplaceFilter mf) =
     MarketplaceFilter { mf | whatToFilter = newItem }
 
 
+addPositiveCondition : Condition -> MarketplaceFilter -> MarketplaceFilter
+addPositiveCondition c (MarketplaceFilter mf) =
+    MarketplaceFilter { mf | ignoreWhen = addCondition c mf.ignoreWhen }
+
+
+addNegativeCondition : Condition -> MarketplaceFilter -> MarketplaceFilter
+addNegativeCondition c (MarketplaceFilter mf) =
+    MarketplaceFilter { mf | butNotWhen = addCondition c mf.butNotWhen }
+
+
 renderMarketplaceFilter : MarketplaceFilter -> String
 renderMarketplaceFilter (MarketplaceFilter { whatToFilter, ignoreWhen, butNotWhen }) =
     let
         negativePart =
-            if List.isEmpty butNotWhen then
+            if List.isEmpty (conditionsToList butNotWhen) then
                 ""
             else
-                "\n(Ale ne když: " ++ renderConditionList butNotWhen ++ ")"
+                "\n(Ale ne když: " ++ renderConditionList (conditionsToList butNotWhen) ++ ")"
 
         positivePart =
-            renderConditionList ignoreWhen
+            renderConditionList <| conditionsToList ignoreWhen
     in
     "Ignorovat " ++ renderFilteredItem whatToFilter ++ ", kde: " ++ positivePart ++ negativePart
 
@@ -91,6 +105,133 @@ type Condition
     | Condition_Term TermCondition
     | Condition_Amount AmountCondition
     | Condition_Interest InterestCondition
+
+
+type alias Conditions =
+    { region : Maybe RegionCondition
+    , rating : Maybe RatingCondition
+    , income : Maybe IncomeCondition
+    , purpose : Maybe LoanPurposeCondition
+    , story : Maybe StoryCondition
+    , term : Maybe TermCondition
+    , amount : Maybe AmountCondition
+    , interest : Maybe InterestCondition
+    }
+
+
+emptyConditions : Conditions
+emptyConditions =
+    { region = Nothing
+    , rating = Nothing
+    , income = Nothing
+    , purpose = Nothing
+    , story = Nothing
+    , term = Nothing
+    , amount = Nothing
+    , interest = Nothing
+    }
+
+
+addCondition : Condition -> Conditions -> Conditions
+addCondition c cs =
+    case c of
+        Condition_Region regionCond ->
+            setRegionCondition regionCond cs
+
+        Condition_Rating ratingCond ->
+            setRatingCondition ratingCond cs
+
+        Condition_Income incomeCond ->
+            setIncomeCondition incomeCond cs
+
+        Condition_Purpose loanPurposeCond ->
+            setLoanPurposeCondition loanPurposeCond cs
+
+        Condition_Story storyCond ->
+            setStoryCondition storyCond cs
+
+        Condition_Term termCond ->
+            setTermCondition termCond cs
+
+        Condition_Amount amountCond ->
+            setAmountCondition amountCond cs
+
+        Condition_Interest interestCond ->
+            setInterestCondition interestCond cs
+
+
+setRegionCondition : RegionCondition -> Conditions -> Conditions
+setRegionCondition c cs =
+    { cs | region = Just c }
+
+
+setRatingCondition : RatingCondition -> Conditions -> Conditions
+setRatingCondition c cs =
+    { cs | rating = Just c }
+
+
+setIncomeCondition : IncomeCondition -> Conditions -> Conditions
+setIncomeCondition c cs =
+    { cs | income = Just c }
+
+
+setLoanPurposeCondition : LoanPurposeCondition -> Conditions -> Conditions
+setLoanPurposeCondition c cs =
+    { cs | purpose = Just c }
+
+
+setStoryCondition : StoryCondition -> Conditions -> Conditions
+setStoryCondition c cs =
+    { cs | story = Just c }
+
+
+setTermCondition : TermCondition -> Conditions -> Conditions
+setTermCondition c cs =
+    { cs | term = Just c }
+
+
+setAmountCondition : AmountCondition -> Conditions -> Conditions
+setAmountCondition c cs =
+    { cs | amount = Just c }
+
+
+setInterestCondition : InterestCondition -> Conditions -> Conditions
+setInterestCondition c cs =
+    { cs | interest = Just c }
+
+
+conditionsToList : Conditions -> List Condition
+conditionsToList { region, rating, income, purpose, story, term, amount, interest } =
+    let
+        fromMaybe : (a -> Condition) -> Maybe a -> List Condition
+        fromMaybe wrap =
+            Maybe.withDefault [] << Maybe.map (List.singleton << wrap)
+
+        reg =
+            fromMaybe Condition_Region region
+
+        rat =
+            fromMaybe Condition_Rating rating
+
+        inc =
+            fromMaybe Condition_Income income
+
+        pur =
+            fromMaybe Condition_Purpose purpose
+
+        sto =
+            fromMaybe Condition_Story story
+
+        ter =
+            fromMaybe Condition_Term term
+
+        amo =
+            fromMaybe Condition_Amount amount
+
+        inte =
+            fromMaybe Condition_Interest interest
+    in
+    List.concat [ reg, rat, inc, pur, sto, ter, amo, inte ]
 
 
 renderCondition : Condition -> String

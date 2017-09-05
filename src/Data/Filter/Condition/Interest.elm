@@ -1,4 +1,10 @@
-module Data.Filter.Condition.Interest exposing (..)
+module Data.Filter.Condition.Interest
+    exposing
+        ( Interest(..)
+        , InterestCondition(..)
+        , interestToString
+        , renderInterestCondition
+        )
 
 
 type Interest
@@ -9,6 +15,11 @@ type Interest
 
 type InterestCondition
     = InterestCondition Interest
+
+
+defaultInterestCondition : InterestCondition
+defaultInterestCondition =
+    InterestCondition (MoreThan 0)
 
 
 interestToString : Interest -> String

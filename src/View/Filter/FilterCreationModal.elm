@@ -2,12 +2,13 @@ module View.Filter.FilterCreationModal exposing (..)
 
 import Bootstrap.Button as Button
 import Bootstrap.Form as Form
+import Bootstrap.Form.Checkbox as Checkbox
 import Bootstrap.Form.Select as Select
 import Bootstrap.Grid as Grid
 import Bootstrap.Grid.Col as Col
 import Bootstrap.Modal as Modal
-import Data.Filter as Filter exposing (FilteredItem(..), MarketplaceFilter(..), setFilteredItem)
-import Html exposing (Html, text)
+import Data.Filter as Filter exposing (Conditions, FilteredItem(..), MarketplaceFilter(..), renderMarketplaceFilter, setFilteredItem)
+import Html exposing (Html, div, hr, text)
 import Html.Attributes exposing (class, value)
 import Html.Events exposing (onClick, onSubmit)
 import Types exposing (..)
@@ -68,7 +69,11 @@ modalBody (MarketplaceFilter state) =
         [ Grid.row []
             [ Grid.col
                 [ Col.xs12 ]
-                [ whatToFilterForm ]
+                [ whatToFilterForm
+                , positiveConditionsForm state.whatToFilter
+                , hr [] []
+                , text <| renderMarketplaceFilter (MarketplaceFilter state)
+                ]
             ]
         ]
 
@@ -97,3 +102,73 @@ whatToFilterSelect =
         , Select.attrs [ class "mx-1" ]
         ]
         optionList
+
+
+positiveConditionsForm : FilteredItem -> Html ModalMsg
+positiveConditionsForm filteredItem =
+    let
+        optionalAmountRow =
+            case filteredItem of
+                Loan ->
+                    [ conditionRow "Výše úvěru" amountForm ]
+
+                _ ->
+                    []
+    in
+    div [] <|
+        [ conditionRow "Úrok" interestForm
+        , conditionRow "Účel úvěru" purposeForm
+        , conditionRow "Délka úvěru" termForm
+        , conditionRow "Zdroj příjmů klienta" mainIncomeForm
+        , conditionRow "Příběh" storyForm
+        , conditionRow "Kraj klienta" regionForm
+        ]
+            ++ optionalAmountRow
+
+
+ratingForm : Html ModalMsg
+ratingForm =
+    text "abc"
+
+
+amountForm : Html ModalMsg
+amountForm =
+    text "def"
+
+
+interestForm : Html ModalMsg
+interestForm =
+    text "ghi"
+
+
+purposeForm : Html ModalMsg
+purposeForm =
+    text "jkl"
+
+
+termForm : Html ModalMsg
+termForm =
+    text "mno"
+
+
+mainIncomeForm : Html ModalMsg
+mainIncomeForm =
+    text "pqr"
+
+
+storyForm : Html ModalMsg
+storyForm =
+    text "stu"
+
+
+regionForm : Html ModalMsg
+regionForm =
+    text "vwx"
+
+
+conditionRow : String -> Html ModalMsg -> Html ModalMsg
+conditionRow conditionName subform =
+    Grid.row []
+        [ Grid.col [ Col.xs3 ] [ Checkbox.checkbox [] conditionName ]
+        , Grid.col [ Col.xs9 ] [ subform ]
+        ]

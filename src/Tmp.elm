@@ -10,47 +10,22 @@ import Data.Filter.Condition.Story exposing (..)
 import Data.Rating exposing (..)
 
 
-simpleFilter : Condition -> MarketplaceFilter
-simpleFilter c =
-    MarketplaceFilter
-        { whatToFilter = Loan
-        , ignoreWhen = [ c ]
-        , butNotWhen = []
-        }
-
-
 sampleFilters : List MarketplaceFilter
 sampleFilters =
-    [ simpleFilter <| Condition_Region (RegionList [ USTECKY ])
-    , simpleFilter <| Condition_Purpose (LoanPurposeList [ CESTOVANI, JINE ])
-    , simpleFilter <| Condition_Income (IncomeList [ STUDENT, UNEMPLOYED ])
-    , simpleFilter <| Condition_Rating (RatingList [ A ])
-    , simpleFilter <| Condition_Rating (RatingList [ C, D ])
-    , simpleFilter <| Condition_Rating (RatingList [ A, B, C ])
-    , simpleFilter <| Condition_Rating (WorseThan A)
-    , simpleFilter <| Condition_Rating (BetterThan A_Plus)
-    , simpleFilter <| Condition_Story (StoryCondition SHORT)
-    , simpleFilter <| Condition_Term (TermCondition (LessThan 36))
-    , simpleFilter <| Condition_Term (TermCondition (Between 20 40))
-    , simpleFilter <| Condition_Interest (InterestCondition (Interest.Between 9.99 19.99))
-    , MarketplaceFilter
-        { whatToFilter = Loan
-        , ignoreWhen = [ Condition_Rating (WorseThan A_Plus), Condition_Income (IncomeList [ UNEMPLOYED, PENSION ]) ]
-        , butNotWhen = []
-        }
-    , MarketplaceFilter
-        { whatToFilter = Loan
-        , ignoreWhen = [ Condition_Region (RegionList [ USTECKY, MORAVSKOSLEZSKY ]), Condition_Term (TermCondition (MoreThan 36)) ]
-        , butNotWhen = [ Condition_Rating (BetterThan A_Plus) ]
-        }
-    , MarketplaceFilter
-        { whatToFilter = Participation
-        , ignoreWhen = [ Condition_Term (TermCondition (MoreThan 36)) ]
-        , butNotWhen = []
-        }
-    , MarketplaceFilter
-        { whatToFilter = Loan_And_Participation
-        , ignoreWhen = [ Condition_Term (TermCondition (MoreThan 36)) ]
-        , butNotWhen = []
-        }
+    [ addPositiveCondition (Condition_Region (RegionList [ USTECKY ])) emptyFilter
+    , addPositiveCondition (Condition_Purpose (LoanPurposeList [ CESTOVANI, JINE ])) emptyFilter
+    , addPositiveCondition (Condition_Income (IncomeList [ STUDENT, UNEMPLOYED ])) emptyFilter
+    , addPositiveCondition (Condition_Rating (RatingList [ A ])) emptyFilter
+    , addPositiveCondition (Condition_Rating (RatingList [ C, D ])) emptyFilter
+    , addPositiveCondition (Condition_Rating (RatingList [ A, B, C ])) emptyFilter
+    , addPositiveCondition (Condition_Rating (WorseThan A)) emptyFilter
+    , addPositiveCondition (Condition_Rating (BetterThan A_Plus)) emptyFilter
+    , addPositiveCondition (Condition_Story (StoryCondition SHORT)) emptyFilter
+    , addPositiveCondition (Condition_Term (TermCondition (LessThan 36))) emptyFilter
+    , addPositiveCondition (Condition_Term (TermCondition (Between 20 40))) emptyFilter
+    , addPositiveCondition (Condition_Interest (InterestCondition (Interest.Between 9.99 19.99))) emptyFilter
+    , addPositiveCondition (Condition_Rating (WorseThan A_Plus)) <| addPositiveCondition (Condition_Income (IncomeList [ UNEMPLOYED, PENSION ])) emptyFilter
+    , addPositiveCondition (Condition_Region (RegionList [ USTECKY, MORAVSKOSLEZSKY ])) <| addPositiveCondition (Condition_Term (TermCondition (MoreThan 36))) <| addNegativeCondition (Condition_Rating (BetterThan A_Plus)) emptyFilter
+    , setFilteredItem Participation <| addPositiveCondition (Condition_Term (TermCondition (MoreThan 36))) emptyFilter
+    , setFilteredItem Loan_And_Participation <| addPositiveCondition (Condition_Term (TermCondition (MoreThan 36))) emptyFilter
     ]

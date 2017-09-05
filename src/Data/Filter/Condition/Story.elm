@@ -2,6 +2,7 @@ module Data.Filter.Condition.Story
     exposing
         ( Story(..)
         , StoryCondition(..)
+        , defaultStoryCondition
         , renderStoryCondition
         )
 
@@ -15,6 +16,11 @@ type Story
 
 type StoryCondition
     = StoryCondition Story
+
+
+defaultStoryCondition : StoryCondition
+defaultStoryCondition =
+    StoryCondition SHORT
 
 
 storyToString : Story -> String

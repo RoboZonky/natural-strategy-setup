@@ -2,6 +2,7 @@ module Data.Filter.Condition.LoanPurpose
     exposing
         ( LoanPurpose(..)
         , LoanPurposeCondition(..)
+        , defaultLoanPurposeCondition
         , renderLoanPurposeCondition
         )
 
@@ -22,6 +23,11 @@ type LoanPurpose
 
 type LoanPurposeCondition
     = LoanPurposeList (List LoanPurpose)
+
+
+defaultLoanPurposeCondition : LoanPurposeCondition
+defaultLoanPurposeCondition =
+    LoanPurposeList []
 
 
 loanPurposeToString : LoanPurpose -> String

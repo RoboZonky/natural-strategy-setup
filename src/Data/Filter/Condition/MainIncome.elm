@@ -2,6 +2,7 @@ module Data.Filter.Condition.MainIncome
     exposing
         ( IncomeCondition(..)
         , MainIncome(..)
+        , defaultIncomeCondition
         , renderIncomeCondition
         )
 
@@ -22,6 +23,11 @@ type MainIncome
 
 type IncomeCondition
     = IncomeList (List MainIncome)
+
+
+defaultIncomeCondition : IncomeCondition
+defaultIncomeCondition =
+    IncomeList []
 
 
 mainIncomeToString : MainIncome -> String

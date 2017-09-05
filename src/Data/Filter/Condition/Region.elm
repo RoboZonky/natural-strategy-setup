@@ -2,6 +2,7 @@ module Data.Filter.Condition.Region
     exposing
         ( Region(..)
         , RegionCondition(..)
+        , defaultRegionCondition
         , renderRegionCondition
         )
 
@@ -73,6 +74,11 @@ regionToString r =
 
 type RegionCondition
     = RegionList (List Region)
+
+
+defaultRegionCondition : RegionCondition
+defaultRegionCondition =
+    RegionList []
 
 
 renderRegionCondition : RegionCondition -> String
