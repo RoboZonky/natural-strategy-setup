@@ -2,7 +2,8 @@ module Types exposing (..)
 
 import Bootstrap.Accordion as Accordion
 import Bootstrap.Modal as Modal
-import Data.Filter exposing (FilteredItem, MarketplaceFilter)
+import Data.Filter exposing (Condition, FilteredItem, MarketplaceFilter)
+import Data.Filter.Condition.Amount exposing (AmountMsg)
 import Data.Portfolio exposing (Portfolio)
 import Data.Rating exposing (Rating)
 
@@ -29,4 +30,7 @@ type Msg
 type ModalMsg
     = FilteredItemChange FilteredItem
     | OpenOrClose Modal.State
+    | AmountMsg AmountMsg
+    | AddCondition Condition
+    | RemoveAmountCondition
     | ModalNoOp

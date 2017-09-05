@@ -9,6 +9,7 @@ import Html exposing (Html, legend, text)
 import Html.Attributes as Attr exposing (class)
 import Html.Events exposing (onSubmit)
 import Types exposing (..)
+import Util
 
 
 form : TargetPortfolioSize -> Card.BlockItem Msg
@@ -21,10 +22,7 @@ form targetPortfolioSize =
 
                 TargetPortfolioSize maxBound ->
                     ( False
-                    , if maxBound == 0 then
-                        Input.value ""
-                      else
-                        Input.value (toString maxBound)
+                    , Input.value <| Util.zeroToEmpty maxBound
                     )
     in
     Card.custom <|

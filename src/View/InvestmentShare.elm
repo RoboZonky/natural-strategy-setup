@@ -9,15 +9,16 @@ import Html exposing (Html, div, fieldset, input, label, legend, text)
 import Html.Attributes as Attr exposing (checked, class, disabled, name, style, type_, value)
 import Html.Events exposing (onClick, onInput, onSubmit)
 import Types exposing (..)
+import Util
 
 
 form : InvestmentShare -> Card.BlockItem Msg
 form investmentShare =
     let
-        ( isUnrestricted, valueAttribute, validationError ) =
+        ( isUnrestricted, inputValue, validationError ) =
             case investmentShare of
                 NotSpecified ->
-                    ( True, value defaultValue, [] )
+                    ( True, Input.value defaultValue, [] )
 
                 InvestmentSharePercent pct ->
                     let
@@ -28,10 +29,7 @@ form investmentShare =
                                 []
                     in
                     ( False
-                    , if pct == 0 then
-                        value ""
-                      else
-                        value (toString pct)
+                    , Input.value <| Util.zeroToEmpty pct
                     , validationError
                     )
     in
@@ -53,7 +51,8 @@ form investmentShare =
                     "Investovat maximálně"
                 , Input.number
                     [ Input.small
-                    , Input.attrs [ Attr.min "1", Attr.max "100", onInput TargetPortfolioShareChanged, disabled isUnrestricted, valueAttribute, class "mx-1" ]
+                    , inputValue
+                    , Input.attrs [ Attr.min "1", Attr.max "100", onInput TargetPortfolioShareChanged, disabled isUnrestricted, class "mx-1" ]
                     ]
                 , text "% výše úvěru."
                 ]

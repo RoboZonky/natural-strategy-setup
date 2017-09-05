@@ -8,6 +8,7 @@ import Data.TargetBalance as TargetBalance exposing (TargetBalance(TargetBalance
 import Data.TargetPortfolioSize as TargetPortfolioSize exposing (..)
 import Html exposing (Html, h1, text)
 import Types exposing (..)
+import Util
 import View.ConfigPreview as ConfigPreview
 import View.Filter.FilterCreationModal as FilterCreationModal
 import View.Strategy as Strategy
@@ -51,7 +52,7 @@ update msg model =
         TargetPortfolioSizeChanged targetSizeStr ->
             let
                 targetSize =
-                    emptyStringToZero targetSizeStr
+                    Util.emptyToZero targetSizeStr
                         |> String.toInt
                         |> Result.map TargetPortfolioSize
                         |> Result.withDefault TargetPortfolioSize.NotSpecified
@@ -61,7 +62,7 @@ update msg model =
         TargetPortfolioShareChanged shareStr ->
             let
                 share =
-                    emptyStringToZero shareStr
+                    Util.emptyToZero shareStr
                         |> String.toInt
                         |> Result.map InvestmentSharePercent
                         |> Result.withDefault InvestmentShare.NotSpecified
@@ -71,7 +72,7 @@ update msg model =
         TargetBalanceChanged newBalanceStr ->
             let
                 newBalance =
-                    emptyStringToZero newBalanceStr
+                    Util.emptyToZero newBalanceStr
                         |> String.toInt
                         |> Result.map TargetBalance
                         |> Result.withDefault TargetBalance.NotSpecified
@@ -113,20 +114,6 @@ update msg model =
 
         NoOp ->
             model
-
-
-
--- This is to make radio + input subforms (TargetPortfolioSize, InvestmentShare and TargetBalance)
--- NOT switch back to NotSpecified when user deletes the whole input
--- TODO probably introduce 2 separate messages to control radios vs inputs
-
-
-emptyStringToZero : String -> String
-emptyStringToZero str =
-    if String.isEmpty str then
-        "0"
-    else
-        str
 
 
 updateStrategyIfValidInt : String -> (Int -> StrategyConfiguration) -> StrategyConfiguration -> StrategyConfiguration

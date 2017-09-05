@@ -9,6 +9,7 @@ import Html exposing (Html, div, legend, text)
 import Html.Attributes as Attr exposing (class, style)
 import Html.Events exposing (onSubmit)
 import Types exposing (..)
+import Util
 
 
 form : TargetBalance -> Card.BlockItem Msg
@@ -30,10 +31,7 @@ form targetBalance =
                                 []
                     in
                     ( False
-                    , if val == 0 then
-                        Input.value ""
-                      else
-                        Input.value (toString val)
+                    , Input.value <| Util.zeroToEmpty val
                     , validationError
                     )
     in

@@ -2,16 +2,21 @@ module Data.Filter.Condition.Amount
     exposing
         ( Amount(..)
         , AmountCondition(..)
+        , AmountMsg(..)
+        , amountForm
         , defaultAmountCondition
+        , map
         , renderAmountCondition
+        , update
         )
 
 import Bootstrap.Form as Form
 import Bootstrap.Form.Input as Input
 import Bootstrap.Form.Radio as Radio
-import Html exposing (Html, text)
+import Html exposing (Attribute, Html, text)
 import Html.Attributes as Attr exposing (class)
 import Html.Events exposing (onSubmit)
+import Util exposing (emptyToZero, zeroToEmpty)
 
 
 type Amount
@@ -22,6 +27,11 @@ type Amount
 
 type AmountCondition
     = AmountCondition Amount
+
+
+map : (Amount -> Amount) -> AmountCondition -> AmountCondition
+map f (AmountCondition c) =
+    AmountCondition (f c)
 
 
 defaultAmountCondition : AmountCondition
@@ -90,7 +100,21 @@ isMore amt =
 
 update : AmountMsg -> Amount -> Amount
 update msg amt =
-    amt
+    case msg of
+        SetLessThan hi ->
+            emptyToZero hi |> String.toInt |> Result.map LessThan |> Result.withDefault amt
+
+        SetBetween loStr hiStr ->
+            emptyToZero loStr
+                |> String.toInt
+                |> Result.andThen (\lo -> emptyToZero hiStr |> String.toInt |> Result.map (\hi -> Between lo hi))
+                |> Result.withDefault amt
+
+        SetMoreThan lo ->
+            emptyToZero lo |> String.toInt |> Result.map MoreThan |> Result.withDefault amt
+
+        AmountNoOp ->
+            amt
 
 
 amountForm : Model -> Html AmountMsg
@@ -119,49 +143,52 @@ amountForm amt =
 
                 _ ->
                     ""
+
+        mtVal =
+            case amt of
+                MoreThan x ->
+                    zeroToEmpty x
+
+                _ ->
+                    ""
     in
-    Form.formInline [ onSubmit AmountNoOp ]
-        [ Radio.radio
-            [ Radio.checked (isLess amt)
-            , Radio.name "amount"
-            , Radio.onClick (SetLessThan "0")
+    Form.form [ onSubmit AmountNoOp ]
+        [ Form.formInline [ onSubmit AmountNoOp ]
+            [ amountRadio (isLess amt) (SetLessThan "0") "nedosahuje"
+            , numericInput SetLessThan (isLess amt) ltVal
+            , text "Kč"
             ]
-            "nedosahuje"
-        , Input.number
-            [ Input.small
-            , Input.onInput SetLessThan
-            , Input.disabled (isLess amt)
-            , Input.value ltVal
-            , Input.attrs [ Attr.min "0", Attr.max "100000000", class "mx-1" ]
+        , Form.formInline [ onSubmit AmountNoOp ]
+            [ amountRadio (isBetween amt) (SetBetween "0" "0") "je"
+            , numericInput (\x -> SetBetween x btwMaxVal) (isBetween amt) btwMinVal
+            , text "až"
+            , numericInput (\y -> SetBetween btwMinVal y) (isBetween amt) btwMaxVal
+            , text "Kč"
             ]
-        , Radio.radio
-            [ Radio.checked (isBetween amt)
-            , Radio.name "amount"
-            , Radio.onClick (SetLessThan "0")
+        , Form.formInline [ onSubmit AmountNoOp ]
+            [ amountRadio (isMore amt) (SetMoreThan "0") "přesahuje"
+            , numericInput SetMoreThan (isMore amt) mtVal
+            , text "Kč"
             ]
-            "je"
-        , Input.number
-            [ Input.small
-            , Input.onInput (\x -> SetBetween x btwMaxVal)
-            , Input.disabled (isBetween amt)
-            , Input.value btwMinVal
-            , Input.attrs [ Attr.min "0", Attr.max "100000000", class "mx-1" ]
-            ]
-        , text "až"
-        , Input.number
-            [ Input.small
-            , Input.onInput (\y -> SetBetween btwMinVal y)
-            , Input.disabled (isBetween amt)
-            , Input.value btwMaxVal
-            , Input.attrs [ Attr.min "0", Attr.max "100000000", class "mx-1" ]
-            ]
-        , text "Kč."
         ]
 
 
-zeroToEmpty : Int -> String
-zeroToEmpty x =
-    if x == 0 then
-        ""
-    else
-        toString x
+numericInput : (String -> AmountMsg) -> Bool -> String -> Html AmountMsg
+numericInput msg enabled value =
+    Input.number
+        [ Input.small
+        , Input.onInput msg
+        , Input.disabled <| not enabled
+        , Input.value value
+        , Input.attrs [ Attr.min "0", Attr.max "10000000", class "mx-1" ]
+        ]
+
+
+amountRadio : Bool -> AmountMsg -> String -> Html AmountMsg
+amountRadio checked msg label =
+    Radio.radio
+        [ Radio.name "amount"
+        , Radio.checked checked
+        , Radio.onClick msg
+        ]
+        label

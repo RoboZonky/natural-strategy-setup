@@ -9,6 +9,7 @@ module Data.Filter
         , emptyConditions
         , emptyFilter
         , filtereedItemFromString
+        , removePositiveAmountCondition
         , renderFilteredItem
         , renderFilters
         , renderMarketplaceFilter
@@ -198,6 +199,16 @@ setAmountCondition c cs =
 setInterestCondition : InterestCondition -> Conditions -> Conditions
 setInterestCondition c cs =
     { cs | interest = Just c }
+
+
+removePositiveAmountCondition : MarketplaceFilter -> MarketplaceFilter
+removePositiveAmountCondition (MarketplaceFilter mf) =
+    MarketplaceFilter { mf | ignoreWhen = removeAmountCondition mf.ignoreWhen }
+
+
+removeAmountCondition : Conditions -> Conditions
+removeAmountCondition cs =
+    { cs | amount = Nothing }
 
 
 conditionsToList : Conditions -> List Condition

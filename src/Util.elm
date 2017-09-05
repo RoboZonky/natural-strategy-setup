@@ -30,3 +30,24 @@ renderNonemptySection sectionTitle list =
 
         nonempty ->
             joinNonemptyLines <| sectionTitle :: nonempty
+
+
+
+-- Used for entering numeric inputs. We want to represent 0 as empty input value (so that user can delete everything from the input)
+-- and conversely we want to treat "" input value to be parsed as 0
+
+
+zeroToEmpty : Int -> String
+zeroToEmpty x =
+    if x == 0 then
+        ""
+    else
+        toString x
+
+
+emptyToZero : String -> String
+emptyToZero s =
+    if String.isEmpty s then
+        "0"
+    else
+        s
