@@ -9,6 +9,7 @@ import Bootstrap.Grid.Col as Col
 import Bootstrap.Modal as Modal
 import Data.Filter as Filter exposing (Condition(..), Conditions, FilteredItem(..), MarketplaceFilter(..), renderMarketplaceFilter, setFilteredItem)
 import Data.Filter.Condition.Amount as Amount exposing (Amount(..), AmountCondition(..), AmountMsg(..))
+import Data.Filter.Condition.Story as Story exposing (Story(..), StoryCondition(..), StoryMsg(..))
 import Html exposing (Html, div, hr, text)
 import Html.Attributes exposing (class, value)
 import Html.Events exposing (onClick, onSubmit)
@@ -32,7 +33,7 @@ update : ModalMsg -> State -> State
 update msg state =
     case msg of
         FilteredItemChange item ->
-            { state | editedFilter = setFilteredItem item state.editedFilter }
+            { state | editedFilter = removeAmountConditionIfNotFilteringLoan item <| setFilteredItem item state.editedFilter }
 
         OpenOrClose st ->
             { state | openCloseState = st }
@@ -40,11 +41,17 @@ update msg state =
         AmountMsg msg ->
             { state | editedFilter = updateAmount msg state.editedFilter }
 
+        StoryMsg msg ->
+            { state | editedFilter = updateStory msg state.editedFilter }
+
         AddCondition c ->
             { state | editedFilter = Filter.addPositiveCondition c state.editedFilter }
 
         RemoveAmountCondition ->
             { state | editedFilter = Filter.removePositiveAmountCondition state.editedFilter }
+
+        RemoveStoryCondition ->
+            { state | editedFilter = Filter.removePositiveStoryCondition state.editedFilter }
 
         ModalNoOp ->
             state
@@ -130,7 +137,7 @@ positiveConditionsForm filteredItem conditions =
         , conditionRow "Účel úvěru" (AddCondition (Condition_Amount (AmountCondition (LessThan 0)))) RemoveAmountCondition purposeForm
         , conditionRow "Délka úvěru" (AddCondition (Condition_Amount (AmountCondition (LessThan 0)))) RemoveAmountCondition termForm
         , conditionRow "Zdroj příjmů klienta" (AddCondition (Condition_Amount (AmountCondition (LessThan 0)))) RemoveAmountCondition mainIncomeForm
-        , conditionRow "Příběh" (AddCondition (Condition_Amount (AmountCondition (LessThan 0)))) RemoveAmountCondition storyForm
+        , conditionRow "Příběh" (AddCondition (Condition_Story (StoryCondition SHORT))) RemoveStoryCondition (storyForm conditions.story)
         , conditionRow "Kraj klienta" (AddCondition (Condition_Amount (AmountCondition (LessThan 0)))) RemoveAmountCondition regionForm
         ]
             ++ amountRowOnlyEnabledForLoans
@@ -138,7 +145,7 @@ positiveConditionsForm filteredItem conditions =
 
 ratingForm : Html ModalMsg
 ratingForm =
-    text "abc"
+    text ""
 
 
 amountForm : Maybe AmountCondition -> Html ModalMsg
@@ -149,6 +156,41 @@ amountForm mc =
 
         Just (AmountCondition amt) ->
             Html.map AmountMsg <| Amount.amountForm amt
+
+
+interestForm : Html ModalMsg
+interestForm =
+    text ""
+
+
+purposeForm : Html ModalMsg
+purposeForm =
+    text ""
+
+
+termForm : Html ModalMsg
+termForm =
+    text ""
+
+
+mainIncomeForm : Html ModalMsg
+mainIncomeForm =
+    text ""
+
+
+storyForm : Maybe StoryCondition -> Html ModalMsg
+storyForm ms =
+    case ms of
+        Nothing ->
+            text ""
+
+        Just (StoryCondition s) ->
+            Html.map StoryMsg <| Story.storyForm s
+
+
+regionForm : Html ModalMsg
+regionForm =
+    text ""
 
 
 updateAmount : AmountMsg -> MarketplaceFilter -> MarketplaceFilter
@@ -163,34 +205,16 @@ updateAmount msg (MarketplaceFilter f) =
     MarketplaceFilter { f | ignoreWhen = newIgnoreWhen }
 
 
-interestForm : Html ModalMsg
-interestForm =
-    text "ghi"
+updateStory : StoryMsg -> MarketplaceFilter -> MarketplaceFilter
+updateStory msg (MarketplaceFilter f) =
+    let
+        { ignoreWhen } =
+            f
 
-
-purposeForm : Html ModalMsg
-purposeForm =
-    text "jkl"
-
-
-termForm : Html ModalMsg
-termForm =
-    text "mno"
-
-
-mainIncomeForm : Html ModalMsg
-mainIncomeForm =
-    text "pqr"
-
-
-storyForm : Html ModalMsg
-storyForm =
-    text "stu"
-
-
-regionForm : Html ModalMsg
-regionForm =
-    text "vwx"
+        newIgnoreWhen =
+            { ignoreWhen | story = Maybe.map (Story.map (Story.update msg)) ignoreWhen.story }
+    in
+    MarketplaceFilter { f | ignoreWhen = newIgnoreWhen }
 
 
 conditionRow : String -> ModalMsg -> ModalMsg -> Html ModalMsg -> Html ModalMsg
@@ -206,3 +230,11 @@ conditionRow conditionName addCondMsg removeCondMsg subform =
         [ Grid.col [ Col.xs3 ] [ Checkbox.checkbox [ Checkbox.onCheck onChk ] conditionName ]
         , Grid.col [ Col.xs9 ] [ subform ]
         ]
+
+
+removeAmountConditionIfNotFilteringLoan : FilteredItem -> MarketplaceFilter -> MarketplaceFilter
+removeAmountConditionIfNotFilteringLoan filteredItem mf =
+    if filteredItem /= Loan then
+        Filter.removePositiveAmountCondition mf
+    else
+        mf

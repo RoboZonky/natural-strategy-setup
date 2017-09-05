@@ -4,7 +4,7 @@ import Bootstrap.Accordion as Accordion
 import Bootstrap.Grid as Grid
 import Bootstrap.Grid.Col as Col
 import Data.Strategy exposing (..)
-import Html exposing (Html, button, caption, div, h1, h2, input, label, option, select, table, td, text, textarea, th, tr, ul)
+import Html exposing (Html, text)
 import Types exposing (..)
 import View.Confirmation as Confirmation
 import View.Filter.FilterCreationModal as FilterCreationModal
