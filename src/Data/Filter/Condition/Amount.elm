@@ -57,10 +57,6 @@ amountToString amount =
             "nedosahuje " ++ toString upperBound
 
 
-type alias Model =
-    Amount
-
-
 type AmountMsg
     = SetLessThan String
     | SetBetween String String
@@ -117,7 +113,7 @@ update msg amt =
             amt
 
 
-amountForm : Model -> Html AmountMsg
+amountForm : Amount -> Html AmountMsg
 amountForm amt =
     let
         ltVal =

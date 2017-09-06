@@ -9,6 +9,7 @@ import Bootstrap.Grid.Col as Col
 import Bootstrap.Modal as Modal
 import Data.Filter as Filter exposing (Condition(..), Conditions, FilteredItem(..), MarketplaceFilter(..), renderMarketplaceFilter, setFilteredItem)
 import Data.Filter.Condition.Amount as Amount exposing (Amount(..), AmountCondition(..), AmountMsg(..))
+import Data.Filter.Condition.Interest as Interest exposing (Interest(..), InterestCondition(..), InterestMsg(..))
 import Data.Filter.Condition.Story as Story exposing (Story(..), StoryCondition(..), StoryMsg(..))
 import Html exposing (Html, div, hr, text)
 import Html.Attributes exposing (class, value)
@@ -38,6 +39,9 @@ update msg state =
         OpenOrClose st ->
             { state | openCloseState = st }
 
+        InterestMsg msg ->
+            { state | editedFilter = updateInterest msg state.editedFilter }
+
         AmountMsg msg ->
             { state | editedFilter = updateAmount msg state.editedFilter }
 
@@ -46,6 +50,9 @@ update msg state =
 
         AddCondition c ->
             { state | editedFilter = Filter.addPositiveCondition c state.editedFilter }
+
+        RemoveInterestCondition ->
+            { state | editedFilter = Filter.removePositiveInterestCondition state.editedFilter }
 
         RemoveAmountCondition ->
             { state | editedFilter = Filter.removePositiveAmountCondition state.editedFilter }
@@ -127,18 +134,18 @@ positiveConditionsForm filteredItem conditions =
         amountRowOnlyEnabledForLoans =
             case filteredItem of
                 Loan ->
-                    [ conditionRow "Výše úvěru" (AddCondition (Condition_Amount (AmountCondition (LessThan 0)))) RemoveAmountCondition (amountForm conditions.amount) ]
+                    [ conditionRow "Výše úvěru" (AddCondition (Condition_Amount (AmountCondition (Amount.LessThan 0)))) RemoveAmountCondition (amountForm conditions.amount) ]
 
                 _ ->
                     []
     in
     div [] <|
-        [ conditionRow "Úrok" (AddCondition (Condition_Amount (AmountCondition (LessThan 0)))) RemoveAmountCondition interestForm
-        , conditionRow "Účel úvěru" (AddCondition (Condition_Amount (AmountCondition (LessThan 0)))) RemoveAmountCondition purposeForm
-        , conditionRow "Délka úvěru" (AddCondition (Condition_Amount (AmountCondition (LessThan 0)))) RemoveAmountCondition termForm
-        , conditionRow "Zdroj příjmů klienta" (AddCondition (Condition_Amount (AmountCondition (LessThan 0)))) RemoveAmountCondition mainIncomeForm
+        [ conditionRow "Úrok" (AddCondition (Condition_Interest (InterestCondition (Interest.LessThan 0)))) RemoveInterestCondition (interestForm conditions.interest)
+        , conditionRow "Účel úvěru" (AddCondition (Condition_Amount (AmountCondition (Amount.LessThan 0)))) RemoveAmountCondition purposeForm
+        , conditionRow "Délka úvěru" (AddCondition (Condition_Amount (AmountCondition (Amount.LessThan 0)))) RemoveAmountCondition termForm
+        , conditionRow "Zdroj příjmů klienta" (AddCondition (Condition_Amount (AmountCondition (Amount.LessThan 0)))) RemoveAmountCondition mainIncomeForm
         , conditionRow "Příběh" (AddCondition (Condition_Story (StoryCondition SHORT))) RemoveStoryCondition (storyForm conditions.story)
-        , conditionRow "Kraj klienta" (AddCondition (Condition_Amount (AmountCondition (LessThan 0)))) RemoveAmountCondition regionForm
+        , conditionRow "Kraj klienta" (AddCondition (Condition_Amount (AmountCondition (Amount.LessThan 0)))) RemoveAmountCondition regionForm
         ]
             ++ amountRowOnlyEnabledForLoans
 
@@ -158,9 +165,14 @@ amountForm mc =
             Html.map AmountMsg <| Amount.amountForm amt
 
 
-interestForm : Html ModalMsg
-interestForm =
-    text ""
+interestForm : Maybe InterestCondition -> Html ModalMsg
+interestForm ic =
+    case ic of
+        Nothing ->
+            text ""
+
+        Just (InterestCondition i) ->
+            Html.map InterestMsg <| Interest.interestForm i
 
 
 purposeForm : Html ModalMsg
@@ -191,6 +203,18 @@ storyForm ms =
 regionForm : Html ModalMsg
 regionForm =
     text ""
+
+
+updateInterest : InterestMsg -> MarketplaceFilter -> MarketplaceFilter
+updateInterest msg (MarketplaceFilter f) =
+    let
+        { ignoreWhen } =
+            f
+
+        newIgnoreWhen =
+            { ignoreWhen | interest = Maybe.map (Interest.map (Interest.update msg)) ignoreWhen.interest }
+    in
+    MarketplaceFilter { f | ignoreWhen = newIgnoreWhen }
 
 
 updateAmount : AmountMsg -> MarketplaceFilter -> MarketplaceFilter

@@ -37,7 +37,7 @@ renderNonemptySection sectionTitle list =
 -- and conversely we want to treat "" input value to be parsed as 0
 
 
-zeroToEmpty : Int -> String
+zeroToEmpty : number -> String
 zeroToEmpty x =
     if x == 0 then
         ""
