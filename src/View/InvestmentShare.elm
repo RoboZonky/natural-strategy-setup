@@ -38,14 +38,14 @@ form investmentShare =
             [ legend [] [ text "Maximální podíl ivestice" ]
             , Radio.radio
                 [ Radio.checked isUnrestricted
-                , Radio.name "portfolioSize"
+                , Radio.name "investmentShare"
                 , Radio.onClick (TargetPortfolioShareChanged "undefined")
                 ]
                 "Investovat bez ohledu na to jaký podíl výše úvěru moje půjčka pokryje"
             , Form.formInline [ onSubmit NoOp ]
                 [ Radio.radio
                     [ Radio.checked (not isUnrestricted)
-                    , Radio.name "portfolioSize"
+                    , Radio.name "investmentShare"
                     , Radio.onClick (TargetPortfolioShareChanged defaultValue)
                     ]
                     "Investovat maximálně"

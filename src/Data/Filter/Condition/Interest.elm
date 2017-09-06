@@ -165,19 +165,19 @@ interestForm amt =
         [ Form.formInline [ onSubmit InterestNoOp ]
             [ interestRadio (isLess amt) (SetLessThan "0") "nedosahuje"
             , numericInput SetLessThan (isLess amt) ltVal
-            , text "Kč"
+            , text "%"
             ]
         , Form.formInline [ onSubmit InterestNoOp ]
             [ interestRadio (isBetween amt) (SetBetween "0" "0") "je"
             , numericInput (\x -> SetBetween x btwMaxVal) (isBetween amt) btwMinVal
             , text "až"
             , numericInput (\y -> SetBetween btwMinVal y) (isBetween amt) btwMaxVal
-            , text "Kč"
+            , text "%"
             ]
         , Form.formInline [ onSubmit InterestNoOp ]
             [ interestRadio (isMore amt) (SetMoreThan "0") "přesahuje"
             , numericInput SetMoreThan (isMore amt) mtVal
-            , text "Kč"
+            , text "%"
             ]
         ]
 
@@ -189,7 +189,7 @@ numericInput msg enabled value =
         , Input.onInput msg
         , Input.disabled <| not enabled
         , Input.value value
-        , Input.attrs [ Attr.min "0", Attr.max "10000000", class "mx-1" ]
+        , Input.attrs [ Attr.min "0", Attr.max "100", class "mx-1" ]
         ]
 
 
