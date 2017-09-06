@@ -5,6 +5,7 @@ import Bootstrap.Modal as Modal
 import Data.Filter exposing (Condition, FilteredItem, MarketplaceFilter)
 import Data.Filter.Condition.Amount exposing (AmountMsg)
 import Data.Filter.Condition.Interest exposing (InterestMsg)
+import Data.Filter.Condition.LoanPurpose exposing (PurposeMsg)
 import Data.Filter.Condition.Story exposing (StoryMsg)
 import Data.Portfolio exposing (Portfolio)
 import Data.Rating exposing (Rating)
@@ -35,8 +36,10 @@ type ModalMsg
     | InterestMsg InterestMsg
     | AmountMsg AmountMsg
     | StoryMsg StoryMsg
+    | PurposeMsg PurposeMsg
     | AddCondition Condition
     | RemoveInterestCondition
     | RemoveAmountCondition
     | RemoveStoryCondition
+    | RemovePurposeCondition
     | ModalNoOp

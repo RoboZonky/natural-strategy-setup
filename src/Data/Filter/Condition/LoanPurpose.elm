@@ -2,10 +2,15 @@ module Data.Filter.Condition.LoanPurpose
     exposing
         ( LoanPurpose(..)
         , LoanPurposeCondition(..)
+        , PurposeMsg
         , defaultLoanPurposeCondition
+        , loanPurposeForm
         , renderLoanPurposeCondition
+        , update
         )
 
+import Bootstrap.Form.Checkbox as Checkbox
+import Html exposing (Html, div)
 import Util
 
 
@@ -19,6 +24,11 @@ type LoanPurpose
     | VZDELANI
     | ZDRAVI
     | JINE
+
+
+allPurposes : List LoanPurpose
+allPurposes =
+    [ AUTO_MOTO, CESTOVANI, DOMACNOST, ELEKTRONIKA, REFINANCOVANI_PUJCEK, VLASTNI_PROJEKT, VZDELANI, ZDRAVI, JINE ]
 
 
 type LoanPurposeCondition
@@ -69,3 +79,41 @@ renderLoanPurposeCondition (LoanPurposeList list) =
 renderLoandPurposeList : List LoanPurpose -> String
 renderLoandPurposeList =
     Util.orList loanPurposeToString
+
+
+type PurposeMsg
+    = AddPurpose LoanPurpose
+    | RemovePurpose LoanPurpose
+
+
+update : PurposeMsg -> LoanPurposeCondition -> LoanPurposeCondition
+update msg (LoanPurposeList plist) =
+    case msg of
+        AddPurpose p ->
+            LoanPurposeList (p :: plist)
+
+        RemovePurpose p ->
+            LoanPurposeList (List.filter (\pu -> pu /= p) plist)
+
+
+loanPurposeForm : LoanPurposeCondition -> Html PurposeMsg
+loanPurposeForm (LoanPurposeList plist) =
+    allPurposes
+        |> List.map (\p -> loanPurposeCheckbox p (List.member p plist))
+        |> div []
+
+
+loanPurposeCheckbox : LoanPurpose -> Bool -> Html PurposeMsg
+loanPurposeCheckbox purpose isEnabled =
+    Checkbox.checkbox
+        [ Checkbox.onCheck
+            (\checked ->
+                if checked then
+                    AddPurpose purpose
+                else
+                    RemovePurpose purpose
+            )
+        , Checkbox.checked isEnabled
+        , Checkbox.inline
+        ]
+        (loanPurposeToString purpose)
