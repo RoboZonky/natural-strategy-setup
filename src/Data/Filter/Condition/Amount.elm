@@ -2,10 +2,9 @@ module Data.Filter.Condition.Amount
     exposing
         ( Amount(..)
         , AmountCondition(..)
-        , AmountMsg(..)
+        , AmountMsg
         , amountForm
         , defaultAmountCondition
-        , map
         , renderAmountCondition
         , update
         )
@@ -27,11 +26,6 @@ type Amount
 
 type AmountCondition
     = AmountCondition Amount
-
-
-map : (Amount -> Amount) -> AmountCondition -> AmountCondition
-map f (AmountCondition c) =
-    AmountCondition (f c)
 
 
 defaultAmountCondition : AmountCondition
@@ -64,106 +58,71 @@ type AmountMsg
     | AmountNoOp
 
 
-isLess : Amount -> Bool
-isLess amt =
+whichEnabled : Amount -> ( Bool, Bool, Bool )
+whichEnabled amt =
     case amt of
         LessThan _ ->
-            True
+            ( True, False, False )
 
-        _ ->
-            False
-
-
-isBetween : Amount -> Bool
-isBetween amt =
-    case amt of
         Between _ _ ->
-            True
+            ( False, True, False )
 
-        _ ->
-            False
-
-
-isMore : Amount -> Bool
-isMore amt =
-    case amt of
         MoreThan _ ->
-            True
-
-        _ ->
-            False
+            ( False, False, True )
 
 
-update : AmountMsg -> Amount -> Amount
-update msg amt =
+update : AmountMsg -> AmountCondition -> AmountCondition
+update msg ((AmountCondition amt) as ac) =
     case msg of
         SetLessThan hi ->
-            emptyToZero hi |> String.toInt |> Result.map LessThan |> Result.withDefault amt
+            emptyToZero hi |> String.toInt |> Result.map (AmountCondition << LessThan) |> Result.withDefault ac
 
         SetBetween loStr hiStr ->
             emptyToZero loStr
                 |> String.toInt
-                |> Result.andThen (\lo -> emptyToZero hiStr |> String.toInt |> Result.map (\hi -> Between lo hi))
-                |> Result.withDefault amt
+                |> Result.andThen (\lo -> emptyToZero hiStr |> String.toInt |> Result.map (\hi -> AmountCondition <| Between lo hi))
+                |> Result.withDefault ac
 
         SetMoreThan lo ->
-            emptyToZero lo |> String.toInt |> Result.map MoreThan |> Result.withDefault amt
+            emptyToZero lo |> String.toInt |> Result.map (AmountCondition << MoreThan) |> Result.withDefault ac
 
         AmountNoOp ->
-            amt
+            ac
 
 
 amountForm : Amount -> Html AmountMsg
 amountForm amt =
     let
-        ltVal =
+        ( ltVal, btwMinVal, btwMaxVal, mtVal ) =
             case amt of
                 LessThan x ->
-                    zeroToEmpty x
+                    ( zeroToEmpty x, "", "", "" )
 
-                _ ->
-                    ""
+                Between mi ma ->
+                    ( "", zeroToEmpty mi, zeroToEmpty ma, "" )
 
-        btwMinVal =
-            case amt of
-                Between mi _ ->
-                    zeroToEmpty mi
-
-                _ ->
-                    ""
-
-        btwMaxVal =
-            case amt of
-                Between _ ma ->
-                    zeroToEmpty ma
-
-                _ ->
-                    ""
-
-        mtVal =
-            case amt of
                 MoreThan x ->
-                    zeroToEmpty x
+                    ( "", "", "", zeroToEmpty x )
 
-                _ ->
-                    ""
+        ( ltEnabled, btwEnabled, mtEnabled ) =
+            whichEnabled amt
     in
     Form.form [ onSubmit AmountNoOp ]
         [ Form.formInline [ onSubmit AmountNoOp ]
-            [ amountRadio (isLess amt) (SetLessThan "0") "nedosahuje"
-            , numericInput SetLessThan (isLess amt) ltVal
+            [ amountRadio ltEnabled (SetLessThan "0") "nedosahuje"
+            , numericInput SetLessThan ltEnabled ltVal
             , text "Kč"
             ]
         , Form.formInline [ onSubmit AmountNoOp ]
-            [ amountRadio (isBetween amt) (SetBetween "0" "0") "je"
-            , numericInput (\x -> SetBetween x btwMaxVal) (isBetween amt) btwMinVal
+            [ amountRadio btwEnabled (SetBetween "0" "0") "je"
+            , numericInput (\x -> SetBetween x btwMaxVal) btwEnabled btwMinVal
             , text "až"
-            , numericInput (\y -> SetBetween btwMinVal y) (isBetween amt) btwMaxVal
+            , numericInput (\y -> SetBetween btwMinVal y) btwEnabled btwMaxVal
             , text "Kč"
             ]
         , Form.formInline [ onSubmit AmountNoOp ]
-            [ amountRadio (isMore amt) (SetMoreThan "0") "přesahuje"
-            , numericInput SetMoreThan (isMore amt) mtVal
+            [ amountRadio mtEnabled (SetMoreThan "0") "přesahuje"
+            , numericInput SetMoreThan mtEnabled mtVal
             , text "Kč"
             ]
         ]

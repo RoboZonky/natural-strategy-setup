@@ -5,7 +5,6 @@ module Data.Filter.Condition.Interest
         , InterestMsg
         , interestForm
         , interestToString
-        , map
         , renderInterestCondition
         , update
         )
@@ -77,106 +76,71 @@ type InterestMsg
     | InterestNoOp
 
 
-isLess : Interest -> Bool
-isLess amt =
-    case amt of
+whichEnabled : Interest -> ( Bool, Bool, Bool )
+whichEnabled interest =
+    case interest of
         LessThan _ ->
-            True
+            ( True, False, False )
 
-        _ ->
-            False
-
-
-isBetween : Interest -> Bool
-isBetween amt =
-    case amt of
         Between _ _ ->
-            True
+            ( False, True, False )
 
-        _ ->
-            False
-
-
-isMore : Interest -> Bool
-isMore amt =
-    case amt of
         MoreThan _ ->
-            True
-
-        _ ->
-            False
+            ( False, False, True )
 
 
-update : InterestMsg -> Interest -> Interest
-update msg amt =
+update : InterestMsg -> InterestCondition -> InterestCondition
+update msg ((InterestCondition i) as ic) =
     case msg of
         SetLessThan hi ->
-            emptyToZero hi |> String.toFloat |> Result.map LessThan |> Result.withDefault amt
+            emptyToZero hi |> String.toFloat |> Result.map (InterestCondition << LessThan) |> Result.withDefault ic
 
         SetBetween loStr hiStr ->
             emptyToZero loStr
                 |> String.toFloat
-                |> Result.andThen (\lo -> emptyToZero hiStr |> String.toFloat |> Result.map (\hi -> Between lo hi))
-                |> Result.withDefault amt
+                |> Result.andThen (\lo -> emptyToZero hiStr |> String.toFloat |> Result.map (\hi -> InterestCondition <| Between lo hi))
+                |> Result.withDefault ic
 
         SetMoreThan lo ->
-            emptyToZero lo |> String.toFloat |> Result.map MoreThan |> Result.withDefault amt
+            emptyToZero lo |> String.toFloat |> Result.map (InterestCondition << MoreThan) |> Result.withDefault ic
 
         InterestNoOp ->
-            amt
+            ic
 
 
 interestForm : Interest -> Html InterestMsg
-interestForm amt =
+interestForm interest =
     let
-        ltVal =
-            case amt of
+        ( ltVal, btwMinVal, btwMaxVal, mtVal ) =
+            case interest of
                 LessThan x ->
-                    zeroToEmpty x
+                    ( zeroToEmpty x, "", "", "" )
 
-                _ ->
-                    ""
+                Between mi ma ->
+                    ( "", zeroToEmpty mi, zeroToEmpty ma, "" )
 
-        btwMinVal =
-            case amt of
-                Between mi _ ->
-                    zeroToEmpty mi
-
-                _ ->
-                    ""
-
-        btwMaxVal =
-            case amt of
-                Between _ ma ->
-                    zeroToEmpty ma
-
-                _ ->
-                    ""
-
-        mtVal =
-            case amt of
                 MoreThan x ->
-                    zeroToEmpty x
+                    ( "", "", "", zeroToEmpty x )
 
-                _ ->
-                    ""
+        ( ltEnabled, btwEnabled, mtEnabled ) =
+            whichEnabled interest
     in
     Form.form [ onSubmit InterestNoOp ]
         [ Form.formInline [ onSubmit InterestNoOp ]
-            [ interestRadio (isLess amt) (SetLessThan "0") "nedosahuje"
-            , numericInput SetLessThan (isLess amt) ltVal
+            [ interestRadio ltEnabled (SetLessThan "0") "nedosahuje"
+            , numericInput SetLessThan ltEnabled ltVal
             , text "%"
             ]
         , Form.formInline [ onSubmit InterestNoOp ]
-            [ interestRadio (isBetween amt) (SetBetween "0" "0") "je"
-            , numericInput (\x -> SetBetween x btwMaxVal) (isBetween amt) btwMinVal
+            [ interestRadio btwEnabled (SetBetween "0" "0") "je"
+            , numericInput (\x -> SetBetween x btwMaxVal) btwEnabled btwMinVal
             , text "až"
-            , numericInput (\y -> SetBetween btwMinVal y) (isBetween amt) btwMaxVal
+            , numericInput (\y -> SetBetween btwMinVal y) btwEnabled btwMaxVal
             , text "%"
             ]
         , Form.formInline [ onSubmit InterestNoOp ]
-            [ interestRadio (isMore amt) (SetMoreThan "0") "přesahuje"
-            , numericInput SetMoreThan (isMore amt) mtVal
+            [ interestRadio mtEnabled (SetMoreThan "0") "přesahuje"
+            , numericInput SetMoreThan mtEnabled mtVal
             , text "%"
             ]
         ]

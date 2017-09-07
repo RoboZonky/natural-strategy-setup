@@ -11,6 +11,7 @@ import Data.Filter as Filter exposing (Condition(..), Conditions, FilteredItem(.
 import Data.Filter.Condition.Amount as Amount exposing (Amount(..), AmountCondition(..), AmountMsg(..))
 import Data.Filter.Condition.Interest as Interest exposing (Interest(..), InterestCondition(..), InterestMsg(..))
 import Data.Filter.Condition.LoanPurpose as LoanPurpose exposing (LoanPurposeCondition(..), PurposeMsg(..))
+import Data.Filter.Condition.LoanTerm as LoanTerm exposing (LoanTermMsg(..), TermCondition(..))
 import Data.Filter.Condition.Story as Story exposing (Story(..), StoryCondition(..), StoryMsg(..))
 import Html exposing (Html, div, hr, text)
 import Html.Attributes exposing (class, value)
@@ -52,6 +53,9 @@ update msg state =
         PurposeMsg msg ->
             { state | editedFilter = updatePurpose msg state.editedFilter }
 
+        LoanTermMsg msg ->
+            { state | editedFilter = updateLoanTerm msg state.editedFilter }
+
         AddCondition c ->
             { state | editedFilter = Filter.addPositiveCondition c state.editedFilter }
 
@@ -66,6 +70,9 @@ update msg state =
 
         RemovePurposeCondition ->
             { state | editedFilter = Filter.removePositivePurposeCondition state.editedFilter }
+
+        RemoveTermCondition ->
+            { state | editedFilter = Filter.removePositiveTermCondition state.editedFilter }
 
         ModalNoOp ->
             state
@@ -149,7 +156,7 @@ positiveConditionsForm filteredItem conditions =
     div [] <|
         [ conditionRow "Úrok" (AddCondition (Condition_Interest (InterestCondition (Interest.LessThan 0)))) RemoveInterestCondition (interestForm conditions.interest)
         , conditionRow "Účel úvěru" (AddCondition (Condition_Purpose (LoanPurposeList []))) RemovePurposeCondition (purposeForm conditions.purpose)
-        , conditionRow "Délka úvěru" (AddCondition (Condition_Amount (AmountCondition (Amount.LessThan 0)))) RemoveAmountCondition termForm
+        , conditionRow "Délka úvěru" (AddCondition (Condition_Term (TermCondition (LoanTerm.LessThan 0)))) RemoveTermCondition (termForm conditions.term)
         , conditionRow "Zdroj příjmů klienta" (AddCondition (Condition_Amount (AmountCondition (Amount.LessThan 0)))) RemoveAmountCondition mainIncomeForm
         , conditionRow "Příběh" (AddCondition (Condition_Story (StoryCondition SHORT))) RemoveStoryCondition (storyForm conditions.story)
         , conditionRow "Kraj klienta" (AddCondition (Condition_Amount (AmountCondition (Amount.LessThan 0)))) RemoveAmountCondition regionForm
@@ -192,9 +199,14 @@ purposeForm mp =
             Html.map PurposeMsg <| LoanPurpose.loanPurposeForm c
 
 
-termForm : Html ModalMsg
-termForm =
-    text ""
+termForm : Maybe TermCondition -> Html ModalMsg
+termForm mt =
+    case mt of
+        Nothing ->
+            text ""
+
+        Just c ->
+            Html.map LoanTermMsg <| LoanTerm.loanTermForm c
 
 
 mainIncomeForm : Html ModalMsg
@@ -224,7 +236,7 @@ updateInterest msg (MarketplaceFilter f) =
             f
 
         newIgnoreWhen =
-            { ignoreWhen | interest = Maybe.map (Interest.map (Interest.update msg)) ignoreWhen.interest }
+            { ignoreWhen | interest = Maybe.map (Interest.update msg) ignoreWhen.interest }
     in
     MarketplaceFilter { f | ignoreWhen = newIgnoreWhen }
 
@@ -236,7 +248,7 @@ updateAmount msg (MarketplaceFilter f) =
             f
 
         newIgnoreWhen =
-            { ignoreWhen | amount = Maybe.map (Amount.map (Amount.update msg)) ignoreWhen.amount }
+            { ignoreWhen | amount = Maybe.map (Amount.update msg) ignoreWhen.amount }
     in
     MarketplaceFilter { f | ignoreWhen = newIgnoreWhen }
 
@@ -261,6 +273,18 @@ updatePurpose msg (MarketplaceFilter f) =
 
         newIgnoreWhen =
             { ignoreWhen | purpose = Maybe.map (LoanPurpose.update msg) ignoreWhen.purpose }
+    in
+    MarketplaceFilter { f | ignoreWhen = newIgnoreWhen }
+
+
+updateLoanTerm : LoanTermMsg -> MarketplaceFilter -> MarketplaceFilter
+updateLoanTerm msg (MarketplaceFilter f) =
+    let
+        { ignoreWhen } =
+            f
+
+        newIgnoreWhen =
+            { ignoreWhen | term = Maybe.map (LoanTerm.update msg) ignoreWhen.term }
     in
     MarketplaceFilter { f | ignoreWhen = newIgnoreWhen }
 
