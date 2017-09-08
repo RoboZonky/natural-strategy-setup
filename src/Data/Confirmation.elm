@@ -2,45 +2,24 @@ module Data.Confirmation
     exposing
         ( ConfirmationSettings
         , confirmationsDisabled
-        , getRatingsWithEnabledConfirmation
         , renderConfirmation
         )
 
-import AllDict exposing (AllDict)
-import Data.Rating as Rating exposing (Rating, RatingCondition)
+import Data.Filter.Condition.Rating as Rating exposing (Rating, RatingCondition(..))
 
 
 type alias ConfirmationSettings =
-    AllDict Rating Bool Int
+    RatingCondition
 
 
 confirmationsDisabled : ConfirmationSettings
 confirmationsDisabled =
-    AllDict.empty Rating.hash
+    RatingList []
 
 
 renderConfirmation : ConfirmationSettings -> String
-renderConfirmation settings =
-    let
-        enabledRatings =
-            getRatingsWithEnabledConfirmation settings
-
-        condition =
-            Rating.determineRatingCondition enabledRatings
-    in
+renderConfirmation (RatingList enabledRatings) =
     if List.isEmpty enabledRatings then
         ""
     else
-        "Potvrzovat mobilem investice do úvěrů, kde " ++ Rating.renderRatingCondition condition ++ "."
-
-
-getRatingsWithEnabledConfirmation : ConfirmationSettings -> List Rating
-getRatingsWithEnabledConfirmation settings =
-    AllDict.toList settings
-        |> List.filterMap
-            (\( rating, isRatingEnabled ) ->
-                if isRatingEnabled then
-                    Just rating
-                else
-                    Nothing
-            )
+        "Potvrzovat mobilem investice do úvěrů, kde " ++ Rating.renderRatingCondition (RatingList enabledRatings) ++ "."

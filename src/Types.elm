@@ -8,9 +8,9 @@ import Data.Filter.Condition.Interest exposing (InterestMsg)
 import Data.Filter.Condition.LoanPurpose exposing (PurposeMsg)
 import Data.Filter.Condition.LoanTerm exposing (LoanTermMsg)
 import Data.Filter.Condition.MainIncome exposing (MainIncomeMsg)
+import Data.Filter.Condition.Rating as Rating exposing (Rating, RatingMsg)
 import Data.Filter.Condition.Story exposing (StoryMsg)
 import Data.Portfolio exposing (Portfolio)
-import Data.Rating exposing (Rating)
 
 
 type Msg
@@ -19,7 +19,7 @@ type Msg
     | TargetPortfolioShareChanged String
     | ChangePortfolioShareMin Rating String
     | ChangePortfolioShareMax Rating String
-    | ToggleNotificationOnRating Rating Bool
+    | ConfirmationFormMsg Rating.RatingMsg
     | ChangeInvestmentMin Rating String
     | ChangeInvestmentMax Rating String
     | ChangeDefaultInvestmentMin String
@@ -41,6 +41,7 @@ type ModalMsg
     | PurposeMsg PurposeMsg
     | LoanTermMsg LoanTermMsg
     | MainIncomeMsg MainIncomeMsg
+    | RatingMsg RatingMsg
     | AddCondition Condition
     | RemoveInterestCondition
     | RemoveAmountCondition
@@ -48,4 +49,5 @@ type ModalMsg
     | RemovePurposeCondition
     | RemoveTermCondition
     | RemoveMainIncomeCondition
+    | RemoveRatingCondition
     | ModalNoOp

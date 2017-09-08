@@ -8,12 +8,13 @@ import Bootstrap.Grid as Grid
 import Bootstrap.Grid.Col as Col
 import Bootstrap.Modal as Modal
 import Data.Filter as Filter exposing (Condition(..), Conditions, FilteredItem(..), MarketplaceFilter(..), renderMarketplaceFilter, setFilteredItem)
-import Data.Filter.Condition.Amount as Amount exposing (Amount(..), AmountCondition(..), AmountMsg(..))
-import Data.Filter.Condition.Interest as Interest exposing (Interest(..), InterestCondition(..), InterestMsg(..))
-import Data.Filter.Condition.LoanPurpose as LoanPurpose exposing (LoanPurposeCondition(..), PurposeMsg(..))
-import Data.Filter.Condition.LoanTerm as LoanTerm exposing (LoanTermMsg(..), TermCondition(..))
-import Data.Filter.Condition.MainIncome as MainIncome exposing (MainIncome(..), MainIncomeCondition(..), MainIncomeMsg(..))
-import Data.Filter.Condition.Story as Story exposing (Story(..), StoryCondition(..), StoryMsg(..))
+import Data.Filter.Condition.Amount as Amount exposing (Amount(..), AmountCondition(..), AmountMsg)
+import Data.Filter.Condition.Interest as Interest exposing (Interest(..), InterestCondition(..), InterestMsg)
+import Data.Filter.Condition.LoanPurpose as LoanPurpose exposing (LoanPurposeCondition(..), PurposeMsg)
+import Data.Filter.Condition.LoanTerm as LoanTerm exposing (LoanTermMsg, TermCondition(..))
+import Data.Filter.Condition.MainIncome as MainIncome exposing (MainIncome(..), MainIncomeCondition(..), MainIncomeMsg)
+import Data.Filter.Condition.Rating as Rating exposing (RatingCondition(..), RatingMsg)
+import Data.Filter.Condition.Story as Story exposing (Story(..), StoryCondition(..), StoryMsg)
 import Html exposing (Html, div, hr, text)
 import Html.Attributes exposing (class, value)
 import Html.Events exposing (onClick, onSubmit)
@@ -60,6 +61,9 @@ update msg state =
         MainIncomeMsg msg ->
             { state | editedFilter = updateMainIncome msg state.editedFilter }
 
+        RatingMsg msg ->
+            { state | editedFilter = updateRating msg state.editedFilter }
+
         AddCondition c ->
             { state | editedFilter = Filter.addPositiveCondition c state.editedFilter }
 
@@ -80,6 +84,9 @@ update msg state =
 
         RemoveMainIncomeCondition ->
             { state | editedFilter = Filter.removePositiveIncomeCondition state.editedFilter }
+
+        RemoveRatingCondition ->
+            { state | editedFilter = Filter.removePositiveRatingCondition state.editedFilter }
 
         ModalNoOp ->
             state
@@ -161,7 +168,8 @@ positiveConditionsForm filteredItem conditions =
                     []
     in
     div [] <|
-        [ conditionRow "Úrok" (AddCondition (Condition_Interest (InterestCondition (Interest.LessThan 0)))) RemoveInterestCondition (interestForm conditions.interest)
+        [ conditionRow "Rating" (AddCondition (Condition_Rating (RatingList []))) RemoveRatingCondition (ratingForm conditions.rating)
+        , conditionRow "Úrok" (AddCondition (Condition_Interest (InterestCondition (Interest.LessThan 0)))) RemoveInterestCondition (interestForm conditions.interest)
         , conditionRow "Účel úvěru" (AddCondition (Condition_Purpose (LoanPurposeList []))) RemovePurposeCondition (purposeForm conditions.purpose)
         , conditionRow "Délka úvěru" (AddCondition (Condition_Term (TermCondition (LoanTerm.LessThan 0)))) RemoveTermCondition (termForm conditions.term)
         , conditionRow "Zdroj příjmů klienta" (AddCondition (Condition_Income (MainIncomeList []))) RemoveMainIncomeCondition (mainIncomeForm conditions.income)
@@ -171,9 +179,14 @@ positiveConditionsForm filteredItem conditions =
             ++ amountRowOnlyEnabledForLoans
 
 
-ratingForm : Html ModalMsg
-ratingForm =
-    text ""
+ratingForm : Maybe RatingCondition -> Html ModalMsg
+ratingForm mc =
+    case mc of
+        Nothing ->
+            text ""
+
+        Just c ->
+            Html.map RatingMsg <| Rating.ratingForm c
 
 
 amountForm : Maybe AmountCondition -> Html ModalMsg
@@ -309,6 +322,18 @@ updateMainIncome msg (MarketplaceFilter f) =
 
         newIgnoreWhen =
             { ignoreWhen | income = Maybe.map (MainIncome.update msg) ignoreWhen.income }
+    in
+    MarketplaceFilter { f | ignoreWhen = newIgnoreWhen }
+
+
+updateRating : RatingMsg -> MarketplaceFilter -> MarketplaceFilter
+updateRating msg (MarketplaceFilter f) =
+    let
+        { ignoreWhen } =
+            f
+
+        newIgnoreWhen =
+            { ignoreWhen | rating = Maybe.map (Rating.update msg) ignoreWhen.rating }
     in
     MarketplaceFilter { f | ignoreWhen = newIgnoreWhen }
 

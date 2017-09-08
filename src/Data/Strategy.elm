@@ -3,12 +3,12 @@ module Data.Strategy exposing (..)
 import AllDict
 import Data.Confirmation as Confirmation exposing (ConfirmationSettings)
 import Data.Filter as Filters exposing (MarketplaceFilter)
+import Data.Filter.Condition.Rating as Rating exposing (Rating(..), RatingMsg)
 import Data.Investment as Investment exposing (InvestmentsPerRating, Size)
 import Data.InvestmentShare as InvestmentShare exposing (InvestmentShare)
 import Data.Portfolio as Portfolio exposing (Portfolio(..))
 import Data.PortfolioStructure as PortfolioStructure exposing (PortfolioShare, PortfolioShares, Share)
 import Data.PortfolioStructure.Predefined as PredefinedShares
-import Data.Rating exposing (Rating(..))
 import Data.TargetBalance as TargetBalance exposing (TargetBalance, defaultTargetBalance)
 import Data.TargetPortfolioSize as TargetPortfolioSize exposing (TargetPortfolioSize)
 import Tmp
@@ -86,10 +86,10 @@ setDefaultInvestmentShare share ({ generalSettings } as config) =
     { config | generalSettings = { generalSettings | defaultInvestmentShare = share } }
 
 
-setNotification : Rating -> Bool -> StrategyConfiguration -> StrategyConfiguration
-setNotification rating isEnabled ({ generalSettings } as config) =
+updateNotificationSettings : RatingMsg -> StrategyConfiguration -> StrategyConfiguration
+updateNotificationSettings msg ({ generalSettings } as config) =
     { config
-        | generalSettings = { generalSettings | confirmationSettings = AllDict.insert rating isEnabled generalSettings.confirmationSettings }
+        | generalSettings = { generalSettings | confirmationSettings = Rating.update msg generalSettings.confirmationSettings }
     }
 
 

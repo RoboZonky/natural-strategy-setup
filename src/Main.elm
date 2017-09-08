@@ -79,8 +79,8 @@ update msg model =
             in
             updateStrategy (setTargetBalance newBalance) model
 
-        ToggleNotificationOnRating rating isEnabled ->
-            updateStrategy (setNotification rating isEnabled) model
+        ConfirmationFormMsg msg ->
+            updateStrategy (updateNotificationSettings msg) model
 
         ChangePortfolioShareMin rating newMinStr ->
             updateStrategy (updateStrategyIfValidInt newMinStr (\newMin -> setPortfolioShareMin rating newMin model.strategyConfig)) model

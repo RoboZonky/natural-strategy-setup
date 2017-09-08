@@ -6,8 +6,8 @@ import Bootstrap.Card as Card
 import Bootstrap.Form as Form
 import Bootstrap.Form.Input as Input
 import Bootstrap.Table as Table
+import Data.Filter.Condition.Rating as Rating exposing (Rating)
 import Data.Investment as Investment exposing (InvestmentsPerRating)
-import Data.Rating as Rating exposing (Rating)
 import Html exposing (Attribute, Html, div, text)
 import Html.Attributes as Attr exposing (class, size, style)
 import Html.Events exposing (onSubmit)

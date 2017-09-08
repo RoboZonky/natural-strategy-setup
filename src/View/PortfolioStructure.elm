@@ -7,9 +7,9 @@ import Bootstrap.Form as Form
 import Bootstrap.Form.Input as Input
 import Bootstrap.Form.Select as Select
 import Bootstrap.Table as Table
+import Data.Filter.Condition.Rating as Rating
 import Data.Portfolio as Portfolio exposing (Portfolio(..))
 import Data.PortfolioStructure exposing (PortfolioShare, PortfolioShares, Share)
-import Data.Rating as Rating
 import Html exposing (Html, div, text)
 import Html.Attributes as Attr exposing (class, size, style, value)
 import Html.Events exposing (onSubmit)
