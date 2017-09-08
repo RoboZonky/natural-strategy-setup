@@ -12,6 +12,7 @@ import Data.Filter.Condition.Amount as Amount exposing (Amount(..), AmountCondit
 import Data.Filter.Condition.Interest as Interest exposing (Interest(..), InterestCondition(..), InterestMsg(..))
 import Data.Filter.Condition.LoanPurpose as LoanPurpose exposing (LoanPurposeCondition(..), PurposeMsg(..))
 import Data.Filter.Condition.LoanTerm as LoanTerm exposing (LoanTermMsg(..), TermCondition(..))
+import Data.Filter.Condition.MainIncome as MainIncome exposing (MainIncome(..), MainIncomeCondition(..), MainIncomeMsg(..))
 import Data.Filter.Condition.Story as Story exposing (Story(..), StoryCondition(..), StoryMsg(..))
 import Html exposing (Html, div, hr, text)
 import Html.Attributes exposing (class, value)
@@ -56,6 +57,9 @@ update msg state =
         LoanTermMsg msg ->
             { state | editedFilter = updateLoanTerm msg state.editedFilter }
 
+        MainIncomeMsg msg ->
+            { state | editedFilter = updateMainIncome msg state.editedFilter }
+
         AddCondition c ->
             { state | editedFilter = Filter.addPositiveCondition c state.editedFilter }
 
@@ -73,6 +77,9 @@ update msg state =
 
         RemoveTermCondition ->
             { state | editedFilter = Filter.removePositiveTermCondition state.editedFilter }
+
+        RemoveMainIncomeCondition ->
+            { state | editedFilter = Filter.removePositiveIncomeCondition state.editedFilter }
 
         ModalNoOp ->
             state
@@ -157,7 +164,7 @@ positiveConditionsForm filteredItem conditions =
         [ conditionRow "Úrok" (AddCondition (Condition_Interest (InterestCondition (Interest.LessThan 0)))) RemoveInterestCondition (interestForm conditions.interest)
         , conditionRow "Účel úvěru" (AddCondition (Condition_Purpose (LoanPurposeList []))) RemovePurposeCondition (purposeForm conditions.purpose)
         , conditionRow "Délka úvěru" (AddCondition (Condition_Term (TermCondition (LoanTerm.LessThan 0)))) RemoveTermCondition (termForm conditions.term)
-        , conditionRow "Zdroj příjmů klienta" (AddCondition (Condition_Amount (AmountCondition (Amount.LessThan 0)))) RemoveAmountCondition mainIncomeForm
+        , conditionRow "Zdroj příjmů klienta" (AddCondition (Condition_Income (MainIncomeList []))) RemoveMainIncomeCondition (mainIncomeForm conditions.income)
         , conditionRow "Příběh" (AddCondition (Condition_Story (StoryCondition SHORT))) RemoveStoryCondition (storyForm conditions.story)
         , conditionRow "Kraj klienta" (AddCondition (Condition_Amount (AmountCondition (Amount.LessThan 0)))) RemoveAmountCondition regionForm
         ]
@@ -209,9 +216,14 @@ termForm mt =
             Html.map LoanTermMsg <| LoanTerm.loanTermForm c
 
 
-mainIncomeForm : Html ModalMsg
-mainIncomeForm =
-    text ""
+mainIncomeForm : Maybe MainIncomeCondition -> Html ModalMsg
+mainIncomeForm mc =
+    case mc of
+        Nothing ->
+            text ""
+
+        Just c ->
+            Html.map MainIncomeMsg <| MainIncome.mainIncomeForm c
 
 
 storyForm : Maybe StoryCondition -> Html ModalMsg
@@ -285,6 +297,18 @@ updateLoanTerm msg (MarketplaceFilter f) =
 
         newIgnoreWhen =
             { ignoreWhen | term = Maybe.map (LoanTerm.update msg) ignoreWhen.term }
+    in
+    MarketplaceFilter { f | ignoreWhen = newIgnoreWhen }
+
+
+updateMainIncome : MainIncomeMsg -> MarketplaceFilter -> MarketplaceFilter
+updateMainIncome msg (MarketplaceFilter f) =
+    let
+        { ignoreWhen } =
+            f
+
+        newIgnoreWhen =
+            { ignoreWhen | income = Maybe.map (MainIncome.update msg) ignoreWhen.income }
     in
     MarketplaceFilter { f | ignoreWhen = newIgnoreWhen }
 

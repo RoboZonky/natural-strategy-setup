@@ -1,11 +1,16 @@
 module Data.Filter.Condition.MainIncome
     exposing
-        ( IncomeCondition(..)
-        , MainIncome(..)
+        ( MainIncome(..)
+        , MainIncomeCondition(..)
+        , MainIncomeMsg
         , defaultIncomeCondition
+        , mainIncomeForm
         , renderIncomeCondition
+        , update
         )
 
+import Bootstrap.Form.Checkbox as Checkbox
+import Html exposing (Html, div)
 import Util
 
 
@@ -21,13 +26,13 @@ type MainIncome
     | OTHER
 
 
-type IncomeCondition
-    = IncomeList (List MainIncome)
+type MainIncomeCondition
+    = MainIncomeList (List MainIncome)
 
 
-defaultIncomeCondition : IncomeCondition
+defaultIncomeCondition : MainIncomeCondition
 defaultIncomeCondition =
-    IncomeList []
+    MainIncomeList []
 
 
 mainIncomeToString : MainIncome -> String
@@ -61,11 +66,54 @@ mainIncomeToString mainIncome =
             "jiné"
 
 
-renderIncomeCondition : IncomeCondition -> String
-renderIncomeCondition (IncomeList list) =
+allIncomesList : List MainIncome
+allIncomesList =
+    [ EMPLOYMENT, ENTREPRENEUR, LIBERAL_PROFESSION, MATERNITY_LEAVE, PENSION, SELF_EMPLOYMENT, STUDENT, UNEMPLOYED, OTHER ]
+
+
+renderIncomeCondition : MainIncomeCondition -> String
+renderIncomeCondition (MainIncomeList list) =
     "klient je " ++ renderMainIncomeList list
 
 
 renderMainIncomeList : List MainIncome -> String
 renderMainIncomeList =
     Util.orList mainIncomeToString
+
+
+type MainIncomeMsg
+    = AddMainIncome MainIncome
+    | RemoveMainIncome MainIncome
+
+
+update : MainIncomeMsg -> MainIncomeCondition -> MainIncomeCondition
+update msg (MainIncomeList ilist) =
+    case msg of
+        AddMainIncome i ->
+            MainIncomeList (i :: ilist)
+
+        RemoveMainIncome i ->
+            MainIncomeList (List.filter (\ii -> ii /= i) ilist)
+
+
+mainIncomeForm : MainIncomeCondition -> Html MainIncomeMsg
+mainIncomeForm (MainIncomeList plist) =
+    allIncomesList
+        |> List.map (\p -> mainIncomeCheckbox p (List.member p plist))
+        |> div []
+
+
+mainIncomeCheckbox : MainIncome -> Bool -> Html MainIncomeMsg
+mainIncomeCheckbox income isEnabled =
+    Checkbox.checkbox
+        [ Checkbox.onCheck
+            (\checked ->
+                if checked then
+                    AddMainIncome income
+                else
+                    RemoveMainIncome income
+            )
+        , Checkbox.checked isEnabled
+        , Checkbox.inline
+        ]
+        (mainIncomeToString income)

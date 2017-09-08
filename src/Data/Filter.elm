@@ -10,6 +10,7 @@ module Data.Filter
         , emptyFilter
         , filtereedItemFromString
         , removePositiveAmountCondition
+        , removePositiveIncomeCondition
         , removePositiveInterestCondition
         , removePositivePurposeCondition
         , removePositiveStoryCondition
@@ -24,7 +25,7 @@ import Data.Filter.Condition.Amount exposing (AmountCondition, renderAmountCondi
 import Data.Filter.Condition.Interest exposing (InterestCondition, renderInterestCondition)
 import Data.Filter.Condition.LoanPurpose exposing (LoanPurposeCondition, renderLoanPurposeCondition)
 import Data.Filter.Condition.LoanTerm exposing (TermCondition, renderTermCondition)
-import Data.Filter.Condition.MainIncome exposing (IncomeCondition, renderIncomeCondition)
+import Data.Filter.Condition.MainIncome exposing (MainIncomeCondition, renderIncomeCondition)
 import Data.Filter.Condition.Region exposing (RegionCondition, renderRegionCondition)
 import Data.Filter.Condition.Story exposing (StoryCondition, renderStoryCondition)
 import Data.Rating exposing (RatingCondition, renderRatingCondition)
@@ -104,7 +105,7 @@ addDotIfNotEmpty s =
 type Condition
     = Condition_Region RegionCondition
     | Condition_Rating RatingCondition
-    | Condition_Income IncomeCondition
+    | Condition_Income MainIncomeCondition
     | Condition_Purpose LoanPurposeCondition
     | Condition_Story StoryCondition
     | Condition_Term TermCondition
@@ -115,7 +116,7 @@ type Condition
 type alias Conditions =
     { region : Maybe RegionCondition
     , rating : Maybe RatingCondition
-    , income : Maybe IncomeCondition
+    , income : Maybe MainIncomeCondition
     , purpose : Maybe LoanPurposeCondition
     , story : Maybe StoryCondition
     , term : Maybe TermCondition
@@ -175,7 +176,7 @@ setRatingCondition c cs =
     { cs | rating = Just c }
 
 
-setIncomeCondition : IncomeCondition -> Conditions -> Conditions
+setIncomeCondition : MainIncomeCondition -> Conditions -> Conditions
 setIncomeCondition c cs =
     { cs | income = Just c }
 
@@ -230,6 +231,11 @@ removePositiveTermCondition (MarketplaceFilter mf) =
     MarketplaceFilter { mf | ignoreWhen = removeTermCondition mf.ignoreWhen }
 
 
+removePositiveIncomeCondition : MarketplaceFilter -> MarketplaceFilter
+removePositiveIncomeCondition (MarketplaceFilter mf) =
+    MarketplaceFilter { mf | ignoreWhen = removeIncomeCondition mf.ignoreWhen }
+
+
 removeAmountCondition : Conditions -> Conditions
 removeAmountCondition cs =
     { cs | amount = Nothing }
@@ -253,6 +259,11 @@ removePurposeCondition cs =
 removeTermCondition : Conditions -> Conditions
 removeTermCondition cs =
     { cs | term = Nothing }
+
+
+removeIncomeCondition : Conditions -> Conditions
+removeIncomeCondition cs =
+    { cs | income = Nothing }
 
 
 conditionsToList : Conditions -> List Condition
