@@ -9,6 +9,7 @@ import Data.Filter.Condition.LoanPurpose exposing (PurposeMsg)
 import Data.Filter.Condition.LoanTerm exposing (LoanTermMsg)
 import Data.Filter.Condition.MainIncome exposing (MainIncomeMsg)
 import Data.Filter.Condition.Rating as Rating exposing (Rating, RatingMsg)
+import Data.Filter.Condition.Region exposing (RegionMsg)
 import Data.Filter.Condition.Story exposing (StoryMsg)
 import Data.Portfolio exposing (Portfolio)
 
@@ -42,6 +43,7 @@ type ModalMsg
     | LoanTermMsg LoanTermMsg
     | MainIncomeMsg MainIncomeMsg
     | RatingMsg RatingMsg
+    | RegionMsg RegionMsg
     | AddCondition Condition
     | RemoveInterestCondition
     | RemoveAmountCondition
@@ -50,4 +52,5 @@ type ModalMsg
     | RemoveTermCondition
     | RemoveMainIncomeCondition
     | RemoveRatingCondition
+    | RemoveRegionCondition
     | ModalNoOp

@@ -2,10 +2,15 @@ module Data.Filter.Condition.Region
     exposing
         ( Region(..)
         , RegionCondition(..)
+        , RegionMsg
         , defaultRegionCondition
+        , regionForm
         , renderRegionCondition
+        , update
         )
 
+import Bootstrap.Form.Checkbox as Checkbox
+import Html exposing (Html, div)
 import Util
 
 
@@ -24,6 +29,11 @@ type Region
     | MORAVSKOSLEZSKY
     | USTECKY
     | ZLINSKY
+
+
+allRegions : List Region
+allRegions =
+    [ PRAHA, JIHOMORAVSKY, JIHOCESKY, PARDUBICKY, KRALOVEHRADECKY, VYSOCINA, KARLOVARSKY, LIBERECKY, OLOMOUCKY, PLZENKSY, STREDOCESKY, MORAVSKOSLEZSKY, USTECKY, ZLINSKY ]
 
 
 regionToString : Region -> String
@@ -89,3 +99,41 @@ renderRegionCondition (RegionList list) =
 renderRegionList : List Region -> String
 renderRegionList =
     Util.orList regionToString
+
+
+type RegionMsg
+    = AddRegion Region
+    | RemoveRegion Region
+
+
+update : RegionMsg -> RegionCondition -> RegionCondition
+update msg (RegionList rlist) =
+    case msg of
+        AddRegion r ->
+            RegionList (r :: rlist)
+
+        RemoveRegion r ->
+            RegionList (List.filter (\ru -> ru /= r) rlist)
+
+
+regionForm : RegionCondition -> Html RegionMsg
+regionForm (RegionList rlist) =
+    allRegions
+        |> List.map (\p -> regionCheckbox p (List.member p rlist))
+        |> div []
+
+
+regionCheckbox : Region -> Bool -> Html RegionMsg
+regionCheckbox region isEnabled =
+    Checkbox.checkbox
+        [ Checkbox.onCheck
+            (\checked ->
+                if checked then
+                    AddRegion region
+                else
+                    RemoveRegion region
+            )
+        , Checkbox.checked isEnabled
+        , Checkbox.inline
+        ]
+        (regionToString region)

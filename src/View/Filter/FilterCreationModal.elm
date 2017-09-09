@@ -14,6 +14,7 @@ import Data.Filter.Condition.LoanPurpose as LoanPurpose exposing (LoanPurposeCon
 import Data.Filter.Condition.LoanTerm as LoanTerm exposing (LoanTermMsg, TermCondition(..))
 import Data.Filter.Condition.MainIncome as MainIncome exposing (MainIncome(..), MainIncomeCondition(..), MainIncomeMsg)
 import Data.Filter.Condition.Rating as Rating exposing (RatingCondition(..), RatingMsg)
+import Data.Filter.Condition.Region as Region exposing (Region(..), RegionCondition(..), RegionMsg)
 import Data.Filter.Condition.Story as Story exposing (Story(..), StoryCondition(..), StoryMsg)
 import Html exposing (Html, div, hr, text)
 import Html.Attributes exposing (class, value)
@@ -64,6 +65,9 @@ update msg state =
         RatingMsg msg ->
             { state | editedFilter = updateRating msg state.editedFilter }
 
+        RegionMsg msg ->
+            { state | editedFilter = updateRegion msg state.editedFilter }
+
         AddCondition c ->
             { state | editedFilter = Filter.addPositiveCondition c state.editedFilter }
 
@@ -87,6 +91,9 @@ update msg state =
 
         RemoveRatingCondition ->
             { state | editedFilter = Filter.removePositiveRatingCondition state.editedFilter }
+
+        RemoveRegionCondition ->
+            { state | editedFilter = Filter.removePositiveRegionCondition state.editedFilter }
 
         ModalNoOp ->
             state
@@ -174,7 +181,7 @@ positiveConditionsForm filteredItem conditions =
         , conditionRow "Délka úvěru" (AddCondition (Condition_Term (TermCondition (LoanTerm.LessThan 0)))) RemoveTermCondition (termForm conditions.term)
         , conditionRow "Zdroj příjmů klienta" (AddCondition (Condition_Income (MainIncomeList []))) RemoveMainIncomeCondition (mainIncomeForm conditions.income)
         , conditionRow "Příběh" (AddCondition (Condition_Story (StoryCondition SHORT))) RemoveStoryCondition (storyForm conditions.story)
-        , conditionRow "Kraj klienta" (AddCondition (Condition_Amount (AmountCondition (Amount.LessThan 0)))) RemoveAmountCondition regionForm
+        , conditionRow "Kraj klienta" (AddCondition (Condition_Region (RegionList []))) RemoveRegionCondition (regionForm conditions.region)
         ]
             ++ amountRowOnlyEnabledForLoans
 
@@ -249,9 +256,14 @@ storyForm ms =
             Html.map StoryMsg <| Story.storyForm s
 
 
-regionForm : Html ModalMsg
-regionForm =
-    text ""
+regionForm : Maybe RegionCondition -> Html ModalMsg
+regionForm mr =
+    case mr of
+        Nothing ->
+            text ""
+
+        Just c ->
+            Html.map RegionMsg <| Region.regionForm c
 
 
 updateInterest : InterestMsg -> MarketplaceFilter -> MarketplaceFilter
@@ -334,6 +346,18 @@ updateRating msg (MarketplaceFilter f) =
 
         newIgnoreWhen =
             { ignoreWhen | rating = Maybe.map (Rating.update msg) ignoreWhen.rating }
+    in
+    MarketplaceFilter { f | ignoreWhen = newIgnoreWhen }
+
+
+updateRegion : RegionMsg -> MarketplaceFilter -> MarketplaceFilter
+updateRegion msg (MarketplaceFilter f) =
+    let
+        { ignoreWhen } =
+            f
+
+        newIgnoreWhen =
+            { ignoreWhen | region = Maybe.map (Region.update msg) ignoreWhen.region }
     in
     MarketplaceFilter { f | ignoreWhen = newIgnoreWhen }
 
