@@ -90,8 +90,8 @@ update msg ((AmountCondition amt) as ac) =
             ac
 
 
-amountForm : Amount -> Html AmountMsg
-amountForm amt =
+amountForm : AmountCondition -> Html AmountMsg
+amountForm (AmountCondition amt) =
     let
         ( ltVal, btwMinVal, btwMaxVal, mtVal ) =
             case amt of

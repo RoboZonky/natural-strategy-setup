@@ -108,8 +108,8 @@ update msg ((InterestCondition i) as ic) =
             ic
 
 
-interestForm : Interest -> Html InterestMsg
-interestForm interest =
+interestForm : InterestCondition -> Html InterestMsg
+interestForm (InterestCondition interest) =
     let
         ( ltVal, btwMinVal, btwMaxVal, mtVal ) =
             case interest of

@@ -202,8 +202,8 @@ amountForm mc =
         Nothing ->
             text ""
 
-        Just (AmountCondition amt) ->
-            Html.map AmountMsg <| Amount.amountForm amt
+        Just c ->
+            Html.map AmountMsg <| Amount.amountForm c
 
 
 interestForm : Maybe InterestCondition -> Html ModalMsg
@@ -212,8 +212,8 @@ interestForm ic =
         Nothing ->
             text ""
 
-        Just (InterestCondition i) ->
-            Html.map InterestMsg <| Interest.interestForm i
+        Just c ->
+            Html.map InterestMsg <| Interest.interestForm c
 
 
 purposeForm : Maybe LoanPurposeCondition -> Html ModalMsg
