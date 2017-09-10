@@ -232,99 +232,80 @@ showFormForNonemptyCondition condWrapper condForm =
 
 
 updateInterest : InterestMsg -> MarketplaceFilter -> MarketplaceFilter
-updateInterest msg (MarketplaceFilter f) =
+updateInterest msg =
     let
-        { ignoreWhen } =
-            f
-
-        newIgnoreWhen =
-            { ignoreWhen | interest = Maybe.map (Interest.update msg) ignoreWhen.interest }
+        interestUpdater conditions =
+            { conditions | interest = Maybe.map (Interest.update msg) conditions.interest }
     in
-    MarketplaceFilter { f | ignoreWhen = newIgnoreWhen }
+    updatePositiveCondition interestUpdater
 
 
 updateAmount : AmountMsg -> MarketplaceFilter -> MarketplaceFilter
-updateAmount msg (MarketplaceFilter f) =
+updateAmount msg =
     let
-        { ignoreWhen } =
-            f
-
-        newIgnoreWhen =
-            { ignoreWhen | amount = Maybe.map (Amount.update msg) ignoreWhen.amount }
+        amountUpdater conditions =
+            { conditions | amount = Maybe.map (Amount.update msg) conditions.amount }
     in
-    MarketplaceFilter { f | ignoreWhen = newIgnoreWhen }
+    updatePositiveCondition amountUpdater
 
 
 updateStory : StoryMsg -> MarketplaceFilter -> MarketplaceFilter
-updateStory msg (MarketplaceFilter f) =
+updateStory msg =
     let
-        { ignoreWhen } =
-            f
-
-        newIgnoreWhen =
-            { ignoreWhen | story = Maybe.map (Story.update msg) ignoreWhen.story }
+        storyUpdater conditions =
+            { conditions | story = Maybe.map (Story.update msg) conditions.story }
     in
-    MarketplaceFilter { f | ignoreWhen = newIgnoreWhen }
+    updatePositiveCondition storyUpdater
 
 
 updatePurpose : PurposeMsg -> MarketplaceFilter -> MarketplaceFilter
-updatePurpose msg (MarketplaceFilter f) =
+updatePurpose msg =
     let
-        { ignoreWhen } =
-            f
-
-        newIgnoreWhen =
-            { ignoreWhen | purpose = Maybe.map (LoanPurpose.update msg) ignoreWhen.purpose }
+        purposeUpdater conditions =
+            { conditions | purpose = Maybe.map (LoanPurpose.update msg) conditions.purpose }
     in
-    MarketplaceFilter { f | ignoreWhen = newIgnoreWhen }
+    updatePositiveCondition purposeUpdater
 
 
 updateLoanTerm : LoanTermMsg -> MarketplaceFilter -> MarketplaceFilter
-updateLoanTerm msg (MarketplaceFilter f) =
+updateLoanTerm msg =
     let
-        { ignoreWhen } =
-            f
-
-        newIgnoreWhen =
-            { ignoreWhen | term = Maybe.map (LoanTerm.update msg) ignoreWhen.term }
+        loanTermUpdater conditions =
+            { conditions | term = Maybe.map (LoanTerm.update msg) conditions.term }
     in
-    MarketplaceFilter { f | ignoreWhen = newIgnoreWhen }
+    updatePositiveCondition loanTermUpdater
 
 
 updateMainIncome : MainIncomeMsg -> MarketplaceFilter -> MarketplaceFilter
-updateMainIncome msg (MarketplaceFilter f) =
+updateMainIncome msg =
     let
-        { ignoreWhen } =
-            f
-
-        newIgnoreWhen =
-            { ignoreWhen | income = Maybe.map (MainIncome.update msg) ignoreWhen.income }
+        mainIncomeUpdater conditions =
+            { conditions | income = Maybe.map (MainIncome.update msg) conditions.income }
     in
-    MarketplaceFilter { f | ignoreWhen = newIgnoreWhen }
+    updatePositiveCondition mainIncomeUpdater
 
 
 updateRating : RatingMsg -> MarketplaceFilter -> MarketplaceFilter
-updateRating msg (MarketplaceFilter f) =
+updateRating msg =
     let
-        { ignoreWhen } =
-            f
-
-        newIgnoreWhen =
-            { ignoreWhen | rating = Maybe.map (Rating.update msg) ignoreWhen.rating }
+        regionUpdater conditions =
+            { conditions | rating = Maybe.map (Rating.update msg) conditions.rating }
     in
-    MarketplaceFilter { f | ignoreWhen = newIgnoreWhen }
+    updatePositiveCondition regionUpdater
 
 
 updateRegion : RegionMsg -> MarketplaceFilter -> MarketplaceFilter
-updateRegion msg (MarketplaceFilter f) =
+updateRegion msg =
     let
-        { ignoreWhen } =
-            f
-
-        newIgnoreWhen =
-            { ignoreWhen | region = Maybe.map (Region.update msg) ignoreWhen.region }
+        regionUpdater conditions =
+            { conditions | region = Maybe.map (Region.update msg) conditions.region }
     in
-    MarketplaceFilter { f | ignoreWhen = newIgnoreWhen }
+    updatePositiveCondition regionUpdater
+
+
+updatePositiveCondition : (Conditions -> Conditions) -> MarketplaceFilter -> MarketplaceFilter
+updatePositiveCondition conditionsUpdater (MarketplaceFilter f) =
+    MarketplaceFilter { f | ignoreWhen = conditionsUpdater f.ignoreWhen }
 
 
 conditionRow : String -> ModalMsg -> ModalMsg -> Html ModalMsg -> Html ModalMsg

@@ -208,46 +208,6 @@ setInterestCondition c cs =
     { cs | interest = Just c }
 
 
-removePositiveAmountCondition : MarketplaceFilter -> MarketplaceFilter
-removePositiveAmountCondition (MarketplaceFilter mf) =
-    MarketplaceFilter { mf | ignoreWhen = removeAmountCondition mf.ignoreWhen }
-
-
-removePositiveStoryCondition : MarketplaceFilter -> MarketplaceFilter
-removePositiveStoryCondition (MarketplaceFilter mf) =
-    MarketplaceFilter { mf | ignoreWhen = removeStoryCondition mf.ignoreWhen }
-
-
-removePositiveInterestCondition : MarketplaceFilter -> MarketplaceFilter
-removePositiveInterestCondition (MarketplaceFilter mf) =
-    MarketplaceFilter { mf | ignoreWhen = removeInterestCondition mf.ignoreWhen }
-
-
-removePositivePurposeCondition : MarketplaceFilter -> MarketplaceFilter
-removePositivePurposeCondition (MarketplaceFilter mf) =
-    MarketplaceFilter { mf | ignoreWhen = removePurposeCondition mf.ignoreWhen }
-
-
-removePositiveTermCondition : MarketplaceFilter -> MarketplaceFilter
-removePositiveTermCondition (MarketplaceFilter mf) =
-    MarketplaceFilter { mf | ignoreWhen = removeTermCondition mf.ignoreWhen }
-
-
-removePositiveIncomeCondition : MarketplaceFilter -> MarketplaceFilter
-removePositiveIncomeCondition (MarketplaceFilter mf) =
-    MarketplaceFilter { mf | ignoreWhen = removeIncomeCondition mf.ignoreWhen }
-
-
-removePositiveRatingCondition : MarketplaceFilter -> MarketplaceFilter
-removePositiveRatingCondition (MarketplaceFilter mf) =
-    MarketplaceFilter { mf | ignoreWhen = removeRatingCondition mf.ignoreWhen }
-
-
-removePositiveRegionCondition : MarketplaceFilter -> MarketplaceFilter
-removePositiveRegionCondition (MarketplaceFilter mf) =
-    MarketplaceFilter { mf | ignoreWhen = removeRegionCondition mf.ignoreWhen }
-
-
 removeAmountCondition : Conditions -> Conditions
 removeAmountCondition cs =
     { cs | amount = Nothing }
@@ -286,6 +246,51 @@ removeRatingCondition cs =
 removeRegionCondition : Conditions -> Conditions
 removeRegionCondition cs =
     { cs | region = Nothing }
+
+
+removePositiveAmountCondition : MarketplaceFilter -> MarketplaceFilter
+removePositiveAmountCondition =
+    modifyPositiveConditions removeAmountCondition
+
+
+removePositiveStoryCondition : MarketplaceFilter -> MarketplaceFilter
+removePositiveStoryCondition =
+    modifyPositiveConditions removeStoryCondition
+
+
+removePositiveInterestCondition : MarketplaceFilter -> MarketplaceFilter
+removePositiveInterestCondition =
+    modifyPositiveConditions removeInterestCondition
+
+
+removePositivePurposeCondition : MarketplaceFilter -> MarketplaceFilter
+removePositivePurposeCondition =
+    modifyPositiveConditions removePurposeCondition
+
+
+removePositiveTermCondition : MarketplaceFilter -> MarketplaceFilter
+removePositiveTermCondition =
+    modifyPositiveConditions removeTermCondition
+
+
+removePositiveIncomeCondition : MarketplaceFilter -> MarketplaceFilter
+removePositiveIncomeCondition =
+    modifyPositiveConditions removeIncomeCondition
+
+
+removePositiveRatingCondition : MarketplaceFilter -> MarketplaceFilter
+removePositiveRatingCondition =
+    modifyPositiveConditions removeRatingCondition
+
+
+removePositiveRegionCondition : MarketplaceFilter -> MarketplaceFilter
+removePositiveRegionCondition =
+    modifyPositiveConditions removeRegionCondition
+
+
+modifyPositiveConditions : (Conditions -> Conditions) -> MarketplaceFilter -> MarketplaceFilter
+modifyPositiveConditions updater (MarketplaceFilter mf) =
+    MarketplaceFilter { mf | ignoreWhen = updater mf.ignoreWhen }
 
 
 conditionsToList : Conditions -> List Condition
