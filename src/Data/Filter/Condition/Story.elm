@@ -4,7 +4,6 @@ module Data.Filter.Condition.Story
         , StoryCondition(..)
         , StoryMsg
         , defaultStoryCondition
-        , map
         , renderStoryCondition
         , storyForm
         , update
@@ -55,18 +54,13 @@ type StoryMsg
     = SetStory Story
 
 
-map : (Story -> Story) -> StoryCondition -> StoryCondition
-map f (StoryCondition s) =
-    StoryCondition (f s)
-
-
-update : StoryMsg -> Story -> Story
+update : StoryMsg -> StoryCondition -> StoryCondition
 update (SetStory s) _ =
-    s
+    StoryCondition s
 
 
-storyForm : Story -> Html StoryMsg
-storyForm currentStory =
+storyForm : StoryCondition -> Html StoryMsg
+storyForm (StoryCondition currentStory) =
     div [] <| List.map (storyRadio currentStory) [ SHORT, BELOW_AVERAGE, AVERAGE, ABOVE_AVERAGE ]
 
 

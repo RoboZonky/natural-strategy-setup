@@ -187,83 +187,48 @@ positiveConditionsForm filteredItem conditions =
 
 
 ratingForm : Maybe RatingCondition -> Html ModalMsg
-ratingForm mc =
-    case mc of
-        Nothing ->
-            text ""
-
-        Just c ->
-            Html.map RatingMsg <| Rating.ratingForm c
+ratingForm =
+    showFormForNonemptyCondition RatingMsg Rating.ratingForm
 
 
 amountForm : Maybe AmountCondition -> Html ModalMsg
-amountForm mc =
-    case mc of
-        Nothing ->
-            text ""
-
-        Just c ->
-            Html.map AmountMsg <| Amount.amountForm c
+amountForm =
+    showFormForNonemptyCondition AmountMsg Amount.amountForm
 
 
 interestForm : Maybe InterestCondition -> Html ModalMsg
-interestForm ic =
-    case ic of
-        Nothing ->
-            text ""
-
-        Just c ->
-            Html.map InterestMsg <| Interest.interestForm c
+interestForm =
+    showFormForNonemptyCondition InterestMsg Interest.interestForm
 
 
 purposeForm : Maybe LoanPurposeCondition -> Html ModalMsg
-purposeForm mp =
-    case mp of
-        Nothing ->
-            text ""
-
-        Just c ->
-            Html.map PurposeMsg <| LoanPurpose.loanPurposeForm c
+purposeForm =
+    showFormForNonemptyCondition PurposeMsg LoanPurpose.loanPurposeForm
 
 
 termForm : Maybe TermCondition -> Html ModalMsg
-termForm mt =
-    case mt of
-        Nothing ->
-            text ""
-
-        Just c ->
-            Html.map LoanTermMsg <| LoanTerm.loanTermForm c
+termForm =
+    showFormForNonemptyCondition LoanTermMsg LoanTerm.loanTermForm
 
 
 mainIncomeForm : Maybe MainIncomeCondition -> Html ModalMsg
-mainIncomeForm mc =
-    case mc of
-        Nothing ->
-            text ""
-
-        Just c ->
-            Html.map MainIncomeMsg <| MainIncome.mainIncomeForm c
+mainIncomeForm =
+    showFormForNonemptyCondition MainIncomeMsg MainIncome.mainIncomeForm
 
 
 storyForm : Maybe StoryCondition -> Html ModalMsg
-storyForm ms =
-    case ms of
-        Nothing ->
-            text ""
-
-        Just (StoryCondition s) ->
-            Html.map StoryMsg <| Story.storyForm s
+storyForm =
+    showFormForNonemptyCondition StoryMsg Story.storyForm
 
 
 regionForm : Maybe RegionCondition -> Html ModalMsg
-regionForm mr =
-    case mr of
-        Nothing ->
-            text ""
+regionForm =
+    showFormForNonemptyCondition RegionMsg Region.regionForm
 
-        Just c ->
-            Html.map RegionMsg <| Region.regionForm c
+
+showFormForNonemptyCondition : (condMsg -> ModalMsg) -> (condition -> Html condMsg) -> Maybe condition -> Html ModalMsg
+showFormForNonemptyCondition condWrapper condForm =
+    Maybe.withDefault (text "") << Maybe.map (Html.map condWrapper << condForm)
 
 
 updateInterest : InterestMsg -> MarketplaceFilter -> MarketplaceFilter
@@ -297,7 +262,7 @@ updateStory msg (MarketplaceFilter f) =
             f
 
         newIgnoreWhen =
-            { ignoreWhen | story = Maybe.map (Story.map (Story.update msg)) ignoreWhen.story }
+            { ignoreWhen | story = Maybe.map (Story.update msg) ignoreWhen.story }
     in
     MarketplaceFilter { f | ignoreWhen = newIgnoreWhen }
 
