@@ -12,6 +12,7 @@ import Html exposing (Attribute, Html, div, text)
 import Html.Attributes as Attr exposing (class, size, style)
 import Html.Events exposing (onSubmit)
 import Types exposing (..)
+import Util
 
 
 form : Investment.Size -> InvestmentsPerRating -> Accordion.Card Msg
@@ -113,7 +114,7 @@ inputCell : List (Attribute Msg) -> Int -> (String -> Msg) -> Html Msg
 inputCell extraAttrs val msg =
     Input.number
         [ Input.small
-        , Input.value (toString val)
+        , Input.value <| Util.zeroToEmpty val
         , Input.onInput msg
         , Input.attrs <| extraAttrs ++ [ size 4, Attr.min "0", Attr.max "1000000" ]
         ]

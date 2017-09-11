@@ -14,6 +14,7 @@ import Html exposing (Html, div, text)
 import Html.Attributes as Attr exposing (class, size, style, value)
 import Html.Events exposing (onSubmit)
 import Types exposing (..)
+import Util
 
 
 form : Portfolio -> PortfolioShares -> Accordion.Card Msg
@@ -127,7 +128,7 @@ portfolioShareEditableRow ( rtg, ( mi, mx ) ) =
         inputCell val msg =
             Input.number
                 [ Input.small
-                , Input.value (toString val)
+                , Input.value (Util.zeroToEmpty val)
                 , Input.onInput msg
                 , Input.attrs <| [ size 2, Attr.min "0", Attr.max "100" ]
                 ]

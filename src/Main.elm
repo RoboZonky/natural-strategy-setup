@@ -133,7 +133,9 @@ update msg model =
 
 updateStrategyIfValidInt : String -> (Int -> StrategyConfiguration) -> StrategyConfiguration -> StrategyConfiguration
 updateStrategyIfValidInt intStr strategyUpdater strategyConfig =
-    String.toInt intStr
+    intStr
+        |> Util.emptyToZero
+        |> String.toInt
         |> Result.map (\parsedInt -> strategyUpdater parsedInt)
         |> Result.withDefault strategyConfig
 
