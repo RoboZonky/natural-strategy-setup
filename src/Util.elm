@@ -51,3 +51,9 @@ emptyToZero s =
         "0"
     else
         s
+
+
+(=>) : a -> b -> ( a, b )
+(=>) =
+    (,)
+infixl 0 =>

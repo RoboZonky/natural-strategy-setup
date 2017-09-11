@@ -9,6 +9,7 @@ module Data.Filter
         , emptyConditions
         , emptyFilter
         , filtereedItemFromString
+        , isValid
         , removePositiveAmountCondition
         , removePositiveIncomeCondition
         , removePositiveInterestCondition
@@ -21,6 +22,7 @@ module Data.Filter
         , renderFilters
         , renderMarketplaceFilter
         , setFilteredItem
+        , validationErrors
         )
 
 import Data.Filter.Condition.Amount exposing (AmountCondition, renderAmountCondition)
@@ -57,6 +59,20 @@ emptyFilter =
         , ignoreWhen = emptyConditions
         , butNotWhen = emptyConditions
         }
+
+
+isValid : MarketplaceFilter -> Bool
+isValid =
+    List.isEmpty << validationErrors
+
+
+validationErrors : MarketplaceFilter -> List String
+validationErrors (MarketplaceFilter mf) =
+    -- TODO other validations
+    if List.isEmpty <| conditionsToList mf.ignoreWhen then
+        [ "Filtr musí obsahovat aspoň jednu podmínku" ]
+    else
+        []
 
 
 setFilteredItem : FilteredItem -> MarketplaceFilter -> MarketplaceFilter

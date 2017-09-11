@@ -16,10 +16,11 @@ import Data.Filter.Condition.MainIncome as MainIncome exposing (MainIncome(..), 
 import Data.Filter.Condition.Rating as Rating exposing (RatingCondition(..), RatingMsg)
 import Data.Filter.Condition.Region as Region exposing (Region(..), RegionCondition(..), RegionMsg)
 import Data.Filter.Condition.Story as Story exposing (Story(..), StoryCondition(..), StoryMsg)
-import Html exposing (Html, div, hr, text)
-import Html.Attributes exposing (class, value)
+import Html exposing (Html, div, hr, li, text, ul)
+import Html.Attributes exposing (class, style, value)
 import Html.Events exposing (onClick, onSubmit)
 import Types exposing (..)
+import Util exposing ((=>))
 
 
 type alias State =
@@ -35,73 +36,76 @@ initialState =
     }
 
 
-update : ModalMsg -> State -> State
+update : ModalMsg -> State -> ( State, Maybe MarketplaceFilter )
 update msg state =
     case msg of
         FilteredItemChange item ->
-            { state | editedFilter = removeAmountConditionIfNotFilteringLoan item <| setFilteredItem item state.editedFilter }
+            { state | editedFilter = removeAmountConditionIfNotFilteringLoan item <| setFilteredItem item state.editedFilter } => Nothing
 
-        OpenOrClose st ->
-            { state | openCloseState = st }
+        ModalStateMsg st ->
+            { state | editedFilter = Filter.emptyFilter, openCloseState = st } => Nothing
 
         InterestMsg msg ->
-            { state | editedFilter = updateInterest msg state.editedFilter }
+            { state | editedFilter = updateInterest msg state.editedFilter } => Nothing
 
         AmountMsg msg ->
-            { state | editedFilter = updateAmount msg state.editedFilter }
+            { state | editedFilter = updateAmount msg state.editedFilter } => Nothing
 
         StoryMsg msg ->
-            { state | editedFilter = updateStory msg state.editedFilter }
+            { state | editedFilter = updateStory msg state.editedFilter } => Nothing
 
         PurposeMsg msg ->
-            { state | editedFilter = updatePurpose msg state.editedFilter }
+            { state | editedFilter = updatePurpose msg state.editedFilter } => Nothing
 
         LoanTermMsg msg ->
-            { state | editedFilter = updateLoanTerm msg state.editedFilter }
+            { state | editedFilter = updateLoanTerm msg state.editedFilter } => Nothing
 
         MainIncomeMsg msg ->
-            { state | editedFilter = updateMainIncome msg state.editedFilter }
+            { state | editedFilter = updateMainIncome msg state.editedFilter } => Nothing
 
         RatingMsg msg ->
-            { state | editedFilter = updateRating msg state.editedFilter }
+            { state | editedFilter = updateRating msg state.editedFilter } => Nothing
 
         RegionMsg msg ->
-            { state | editedFilter = updateRegion msg state.editedFilter }
+            { state | editedFilter = updateRegion msg state.editedFilter } => Nothing
 
         AddCondition c ->
-            { state | editedFilter = Filter.addPositiveCondition c state.editedFilter }
+            { state | editedFilter = Filter.addPositiveCondition c state.editedFilter } => Nothing
 
         RemoveInterestCondition ->
-            { state | editedFilter = Filter.removePositiveInterestCondition state.editedFilter }
+            { state | editedFilter = Filter.removePositiveInterestCondition state.editedFilter } => Nothing
 
         RemoveAmountCondition ->
-            { state | editedFilter = Filter.removePositiveAmountCondition state.editedFilter }
+            { state | editedFilter = Filter.removePositiveAmountCondition state.editedFilter } => Nothing
 
         RemoveStoryCondition ->
-            { state | editedFilter = Filter.removePositiveStoryCondition state.editedFilter }
+            { state | editedFilter = Filter.removePositiveStoryCondition state.editedFilter } => Nothing
 
         RemovePurposeCondition ->
-            { state | editedFilter = Filter.removePositivePurposeCondition state.editedFilter }
+            { state | editedFilter = Filter.removePositivePurposeCondition state.editedFilter } => Nothing
 
         RemoveTermCondition ->
-            { state | editedFilter = Filter.removePositiveTermCondition state.editedFilter }
+            { state | editedFilter = Filter.removePositiveTermCondition state.editedFilter } => Nothing
 
         RemoveMainIncomeCondition ->
-            { state | editedFilter = Filter.removePositiveIncomeCondition state.editedFilter }
+            { state | editedFilter = Filter.removePositiveIncomeCondition state.editedFilter } => Nothing
 
         RemoveRatingCondition ->
-            { state | editedFilter = Filter.removePositiveRatingCondition state.editedFilter }
+            { state | editedFilter = Filter.removePositiveRatingCondition state.editedFilter } => Nothing
 
         RemoveRegionCondition ->
-            { state | editedFilter = Filter.removePositiveRegionCondition state.editedFilter }
+            { state | editedFilter = Filter.removePositiveRegionCondition state.editedFilter } => Nothing
+
+        SaveFilter ->
+            { state | editedFilter = Filter.emptyFilter, openCloseState = Modal.hiddenState } => Just state.editedFilter
 
         ModalNoOp ->
-            state
+            state => Nothing
 
 
 view : State -> Html ModalMsg
 view { editedFilter, openCloseState } =
-    Modal.config OpenOrClose
+    Modal.config ModalStateMsg
         |> Modal.large
         |> Modal.h5 [] [ text "Vytvořit filtr" ]
         |> Modal.body []
@@ -110,12 +114,13 @@ view { editedFilter, openCloseState } =
         |> Modal.footer []
             [ Button.button
                 [ Button.primary
-                , Button.attrs [ onClick <| OpenOrClose Modal.hiddenState ]
+                , Button.disabled (not <| Filter.isValid editedFilter)
+                , Button.attrs [ onClick SaveFilter ]
                 ]
                 [ text "Přidat" ]
             , Button.button
                 [ Button.danger
-                , Button.attrs [ onClick <| OpenOrClose Modal.hiddenState ]
+                , Button.attrs [ onClick <| ModalStateMsg Modal.hiddenState ]
                 ]
                 [ text "Zrušit" ]
             ]
@@ -123,7 +128,18 @@ view { editedFilter, openCloseState } =
 
 
 modalBody : MarketplaceFilter -> Html ModalMsg
-modalBody (MarketplaceFilter state) =
+modalBody ((MarketplaceFilter state) as mf) =
+    let
+        validationErrors =
+            Filter.validationErrors mf
+
+        previewOrValidationErrors =
+            if List.isEmpty validationErrors then
+                text <| renderMarketplaceFilter mf
+            else
+                ul [ style [ ( "color", "red" ) ] ] <|
+                    List.map (\e -> li [] [ text e ]) validationErrors
+    in
     Grid.containerFluid []
         [ Grid.row []
             [ Grid.col
@@ -131,7 +147,7 @@ modalBody (MarketplaceFilter state) =
                 [ whatToFilterForm
                 , positiveConditionsForm state.whatToFilter state.ignoreWhen
                 , hr [] []
-                , text <| renderMarketplaceFilter (MarketplaceFilter state)
+                , previewOrValidationErrors
                 ]
             ]
         ]
@@ -169,21 +185,31 @@ positiveConditionsForm filteredItem conditions =
         amountRowOnlyEnabledForLoans =
             case filteredItem of
                 Loan ->
-                    [ conditionRow "Výše úvěru" (AddCondition (Condition_Amount (AmountCondition (Amount.LessThan 0)))) RemoveAmountCondition (amountForm conditions.amount) ]
+                    [ conditionRow "Výše úvěru" (subformEnabled conditions.amount) (Condition_Amount (AmountCondition (Amount.LessThan 0))) RemoveAmountCondition (amountForm conditions.amount) ]
 
                 _ ->
                     []
     in
     div [] <|
-        [ conditionRow "Rating" (AddCondition (Condition_Rating (RatingList []))) RemoveRatingCondition (ratingForm conditions.rating)
-        , conditionRow "Úrok" (AddCondition (Condition_Interest (InterestCondition (Interest.LessThan 0)))) RemoveInterestCondition (interestForm conditions.interest)
-        , conditionRow "Účel úvěru" (AddCondition (Condition_Purpose (LoanPurposeList []))) RemovePurposeCondition (purposeForm conditions.purpose)
-        , conditionRow "Délka úvěru" (AddCondition (Condition_Term (TermCondition (LoanTerm.LessThan 0)))) RemoveTermCondition (termForm conditions.term)
-        , conditionRow "Zdroj příjmů klienta" (AddCondition (Condition_Income (MainIncomeList []))) RemoveMainIncomeCondition (mainIncomeForm conditions.income)
-        , conditionRow "Příběh" (AddCondition (Condition_Story (StoryCondition SHORT))) RemoveStoryCondition (storyForm conditions.story)
-        , conditionRow "Kraj klienta" (AddCondition (Condition_Region (RegionList []))) RemoveRegionCondition (regionForm conditions.region)
+        [ conditionRow "Rating" (subformEnabled conditions.rating) (Condition_Rating (RatingList [])) RemoveRatingCondition (ratingForm conditions.rating)
+        , conditionRow "Úrok" (subformEnabled conditions.interest) (Condition_Interest (InterestCondition (Interest.LessThan 0))) RemoveInterestCondition (interestForm conditions.interest)
+        , conditionRow "Účel úvěru" (subformEnabled conditions.purpose) (Condition_Purpose (LoanPurposeList [])) RemovePurposeCondition (purposeForm conditions.purpose)
+        , conditionRow "Délka úvěru" (subformEnabled conditions.term) (Condition_Term (TermCondition (LoanTerm.LessThan 0))) RemoveTermCondition (termForm conditions.term)
+        , conditionRow "Zdroj příjmů klienta" (subformEnabled conditions.income) (Condition_Income (MainIncomeList [])) RemoveMainIncomeCondition (mainIncomeForm conditions.income)
+        , conditionRow "Příběh" (subformEnabled conditions.story) (Condition_Story (StoryCondition SHORT)) RemoveStoryCondition (storyForm conditions.story)
+        , conditionRow "Kraj klienta" (subformEnabled conditions.region) (Condition_Region (RegionList [])) RemoveRegionCondition (regionForm conditions.region)
         ]
             ++ amountRowOnlyEnabledForLoans
+
+
+subformEnabled : Maybe a -> Bool
+subformEnabled mCondition =
+    case mCondition of
+        Nothing ->
+            False
+
+        _ ->
+            True
 
 
 ratingForm : Maybe RatingCondition -> Html ModalMsg
@@ -308,17 +334,17 @@ updatePositiveCondition conditionsUpdater (MarketplaceFilter f) =
     MarketplaceFilter { f | ignoreWhen = conditionsUpdater f.ignoreWhen }
 
 
-conditionRow : String -> ModalMsg -> ModalMsg -> Html ModalMsg -> Html ModalMsg
-conditionRow conditionName addCondMsg removeCondMsg subform =
+conditionRow : String -> Bool -> Condition -> ModalMsg -> Html ModalMsg -> Html ModalMsg
+conditionRow conditionName isSubformEnabled condition removeCondMsg subform =
     let
         onChk checked =
             if checked then
-                addCondMsg
+                AddCondition condition
             else
                 removeCondMsg
     in
     Grid.row []
-        [ Grid.col [ Col.xs3 ] [ Checkbox.checkbox [ Checkbox.onCheck onChk ] conditionName ]
+        [ Grid.col [ Col.xs3 ] [ Checkbox.checkbox [ Checkbox.checked isSubformEnabled, Checkbox.onCheck onChk ] conditionName ]
         , Grid.col [ Col.xs9 ] [ subform ]
         ]
 

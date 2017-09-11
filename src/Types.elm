@@ -35,7 +35,7 @@ type Msg
 
 type ModalMsg
     = FilteredItemChange FilteredItem
-    | OpenOrClose Modal.State
+    | ModalStateMsg Modal.State
     | InterestMsg InterestMsg
     | AmountMsg AmountMsg
     | StoryMsg StoryMsg
@@ -53,4 +53,5 @@ type ModalMsg
     | RemoveMainIncomeCondition
     | RemoveRatingCondition
     | RemoveRegionCondition
+    | SaveFilter
     | ModalNoOp

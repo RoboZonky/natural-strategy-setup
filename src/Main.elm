@@ -110,7 +110,22 @@ update msg model =
             { model | accordionState = state }
 
         ModalMsg msg ->
-            { model | filterCreationState = FilterCreationModal.update msg model.filterCreationState }
+            let
+                ( filterCreationState, maybeNewFilter ) =
+                    FilterCreationModal.update msg model.filterCreationState
+
+                strategyUpdater =
+                    case maybeNewFilter of
+                        Nothing ->
+                            identity
+
+                        Just newFilter ->
+                            addBuyFilter newFilter
+            in
+            { model
+                | filterCreationState = filterCreationState
+                , strategyConfig = strategyUpdater model.strategyConfig
+            }
 
         NoOp ->
             model

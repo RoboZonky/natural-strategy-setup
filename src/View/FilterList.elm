@@ -10,7 +10,7 @@ import Data.Filter exposing (MarketplaceFilter, renderMarketplaceFilter)
 import Html exposing (Html, button, div, h2, h3, pre, span, text)
 import Html.Attributes exposing (class, href, style)
 import Html.Events exposing (onClick)
-import Types exposing (ModalMsg(OpenOrClose), Msg(ModalMsg, RemoveBuyFilter))
+import Types exposing (ModalMsg(ModalStateMsg), Msg(ModalMsg, RemoveBuyFilter))
 
 
 form : List MarketplaceFilter -> Accordion.Card Msg
@@ -54,6 +54,6 @@ filterCreationControls =
     Card.custom <|
         Button.button
             [ Button.primary
-            , Button.attrs [ onClick <| ModalMsg (OpenOrClose Modal.visibleState) ]
+            , Button.attrs [ onClick <| ModalMsg (ModalStateMsg Modal.visibleState) ]
             ]
             [ text "Přidat Filtr" ]

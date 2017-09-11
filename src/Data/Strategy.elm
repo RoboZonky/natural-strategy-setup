@@ -11,7 +11,6 @@ import Data.PortfolioStructure as PortfolioStructure exposing (PortfolioShare, P
 import Data.PortfolioStructure.Predefined as PredefinedShares
 import Data.TargetBalance as TargetBalance exposing (TargetBalance, defaultTargetBalance)
 import Data.TargetPortfolioSize as TargetPortfolioSize exposing (TargetPortfolioSize)
-import Tmp
 import Util
 
 
@@ -46,7 +45,7 @@ defaultStrategyConfiguration =
         }
     , portfolioShares = PredefinedShares.conservativeShares
     , investmentSizeOverrides = Investment.defaultInvestmentsPerRating ( 200, 200 )
-    , buyFilters = Tmp.sampleFilters
+    , buyFilters = []
     , sellFilters = []
     }
 
