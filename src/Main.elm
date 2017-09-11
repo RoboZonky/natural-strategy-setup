@@ -6,9 +6,11 @@ import Data.InvestmentShare as InvestmentShare exposing (InvestmentShare(..))
 import Data.Strategy exposing (..)
 import Data.TargetBalance as TargetBalance exposing (TargetBalance(TargetBalance))
 import Data.TargetPortfolioSize as TargetPortfolioSize exposing (..)
-import Html exposing (Html, h1, text)
+import Html exposing (Html, a, footer, h1, text)
+import Html.Attributes exposing (class, href)
 import Types exposing (..)
 import Util
+import Version
 import View.ConfigPreview as ConfigPreview
 import View.Filter.FilterCreationModal as FilterCreationModal
 import View.Strategy as Strategy
@@ -148,4 +150,15 @@ view { strategyConfig, accordionState, filterCreationState } =
             [ Strategy.form strategyConfig accordionState filterCreationState
             , ConfigPreview.view strategyConfig
             ]
+        , infoFooter
+        ]
+
+
+infoFooter : Html Msg
+infoFooter =
+    footer [ class "text-center mt-2" ]
+        [ text "Implemented by "
+        , a [ href "http://janhrcek.cz" ] [ text "Jan Hrček" ]
+        , text ", deployment based on "
+        , a [ href Version.githubCommitLink ] [ text Version.commitHash ]
         ]

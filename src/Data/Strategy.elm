@@ -12,6 +12,7 @@ import Data.PortfolioStructure.Predefined as PredefinedShares
 import Data.TargetBalance as TargetBalance exposing (TargetBalance, defaultTargetBalance)
 import Data.TargetPortfolioSize as TargetPortfolioSize exposing (TargetPortfolioSize)
 import Util
+import Version
 
 
 type alias StrategyConfiguration =
@@ -179,7 +180,8 @@ renderStrategyConfiguration strategy =
     case strategy of
         { generalSettings, portfolioShares, investmentSizeOverrides, buyFilters } ->
             Util.joinNonemptyLines
-                [ renderGeneralSettings generalSettings
+                [ Version.strategyComment
+                , renderGeneralSettings generalSettings
                 , PortfolioStructure.renderPortfolioShares generalSettings.portfolio portfolioShares
                 , Investment.renderInvestments generalSettings.defaultInvestmentSize investmentSizeOverrides
                 , Filters.renderFilters buyFilters
