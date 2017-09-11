@@ -57,3 +57,11 @@ emptyToZero s =
 (=>) =
     (,)
 infixl 0 =>
+
+
+validate : Bool -> String -> List String
+validate errorCondition error =
+    if errorCondition then
+        [ error ]
+    else
+        []

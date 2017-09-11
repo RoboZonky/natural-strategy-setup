@@ -7,6 +7,7 @@ module Data.Filter.Condition.Region
         , regionForm
         , renderRegionCondition
         , update
+        , validationErrors
         )
 
 import Bootstrap.Form.Checkbox as Checkbox
@@ -99,6 +100,11 @@ renderRegionCondition (RegionList list) =
 renderRegionList : List Region -> String
 renderRegionList =
     Util.orList regionToString
+
+
+validationErrors : RegionCondition -> List String
+validationErrors (RegionList rlist) =
+    Util.validate (List.isEmpty rlist) "Kraj klienta: zvolte aspoň jeden"
 
 
 type RegionMsg

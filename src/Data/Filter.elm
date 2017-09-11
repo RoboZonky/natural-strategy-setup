@@ -10,6 +10,7 @@ module Data.Filter
         , emptyFilter
         , filtereedItemFromString
         , isValid
+        , marketplaceFilterValidationErrors
         , removePositiveAmountCondition
         , removePositiveIncomeCondition
         , removePositiveInterestCondition
@@ -22,16 +23,15 @@ module Data.Filter
         , renderFilters
         , renderMarketplaceFilter
         , setFilteredItem
-        , validationErrors
         )
 
-import Data.Filter.Condition.Amount exposing (AmountCondition, renderAmountCondition)
-import Data.Filter.Condition.Interest exposing (InterestCondition, renderInterestCondition)
-import Data.Filter.Condition.LoanPurpose exposing (LoanPurposeCondition, renderLoanPurposeCondition)
-import Data.Filter.Condition.LoanTerm exposing (TermCondition, renderTermCondition)
-import Data.Filter.Condition.MainIncome exposing (MainIncomeCondition, renderIncomeCondition)
-import Data.Filter.Condition.Rating exposing (RatingCondition, renderRatingCondition)
-import Data.Filter.Condition.Region exposing (RegionCondition, renderRegionCondition)
+import Data.Filter.Condition.Amount as Amount exposing (AmountCondition, renderAmountCondition)
+import Data.Filter.Condition.Interest as Interest exposing (InterestCondition, renderInterestCondition)
+import Data.Filter.Condition.LoanPurpose as LoanPurpose exposing (LoanPurposeCondition, renderLoanPurposeCondition)
+import Data.Filter.Condition.LoanTerm as LoanTerm exposing (TermCondition, renderTermCondition)
+import Data.Filter.Condition.MainIncome as MainIncome exposing (MainIncomeCondition, renderIncomeCondition)
+import Data.Filter.Condition.Rating as Rating exposing (RatingCondition, renderRatingCondition)
+import Data.Filter.Condition.Region as Region exposing (RegionCondition, renderRegionCondition)
 import Data.Filter.Condition.Story exposing (StoryCondition, renderStoryCondition)
 import Util
 
@@ -63,16 +63,49 @@ emptyFilter =
 
 isValid : MarketplaceFilter -> Bool
 isValid =
-    List.isEmpty << validationErrors
+    List.isEmpty << marketplaceFilterValidationErrors
 
 
-validationErrors : MarketplaceFilter -> List String
-validationErrors (MarketplaceFilter mf) =
-    -- TODO other validations
-    if List.isEmpty <| conditionsToList mf.ignoreWhen then
-        [ "Filtr musí obsahovat aspoň jednu podmínku" ]
-    else
-        []
+marketplaceFilterValidationErrors : MarketplaceFilter -> List String
+marketplaceFilterValidationErrors (MarketplaceFilter mf) =
+    let
+        atLeastOnePositiveCondition =
+            Util.validate (List.isEmpty <| conditionsToList mf.ignoreWhen) "Filtr musí obsahovat aspoň jednu podmínku"
+    in
+    atLeastOnePositiveCondition ++ conditionsValidationErrors mf.ignoreWhen
+
+
+conditionsValidationErrors : Conditions -> List String
+conditionsValidationErrors =
+    List.concat << List.map conditionValidationError << conditionsToList
+
+
+conditionValidationError : Condition -> List String
+conditionValidationError c =
+    case c of
+        Condition_Region regionCond ->
+            Region.validationErrors regionCond
+
+        Condition_Rating ratingCond ->
+            Rating.validationErrors ratingCond
+
+        Condition_Income incomeCond ->
+            MainIncome.validationErrors incomeCond
+
+        Condition_Purpose loanPurposeCond ->
+            LoanPurpose.validationErrors loanPurposeCond
+
+        Condition_Story storyCond ->
+            [{- Story condition can't be invalid -> valid. errors list always empty -}]
+
+        Condition_Term termCond ->
+            LoanTerm.validationErrors termCond
+
+        Condition_Amount amountCond ->
+            Amount.validationErrors amountCond
+
+        Condition_Interest interestCond ->
+            Interest.validationErrors interestCond
 
 
 setFilteredItem : FilteredItem -> MarketplaceFilter -> MarketplaceFilter

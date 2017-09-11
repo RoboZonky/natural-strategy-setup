@@ -7,6 +7,7 @@ module Data.Filter.Condition.Interest
         , interestToString
         , renderInterestCondition
         , update
+        , validationErrors
         )
 
 import Bootstrap.Form as Form
@@ -26,11 +27,6 @@ type Interest
 
 type InterestCondition
     = InterestCondition Interest
-
-
-map : (Interest -> Interest) -> InterestCondition -> InterestCondition
-map f (InterestCondition c) =
-    InterestCondition (f c)
 
 
 defaultInterestCondition : InterestCondition
@@ -67,6 +63,31 @@ floatToString =
                 c
         )
         << toString
+
+
+validationErrors : InterestCondition -> List String
+validationErrors (InterestCondition ic) =
+    case ic of
+        LessThan maxBound ->
+            validatePercent maxBound
+
+        Between minBound maxBound ->
+            validatePercent minBound
+                ++ validatePercent maxBound
+                ++ validateMinNotGtMax minBound maxBound
+
+        MoreThan minBound ->
+            validatePercent minBound
+
+
+validatePercent : Float -> List String
+validatePercent x =
+    Util.validate (x < 0 || 100 < x) "Úrok: musí být v rozmezí 0 až 100%"
+
+
+validateMinNotGtMax : Float -> Float -> List String
+validateMinNotGtMax minBound maxBound =
+    Util.validate (minBound > maxBound) "Úrok: minimum nesmí být větší než maximum"
 
 
 type InterestMsg

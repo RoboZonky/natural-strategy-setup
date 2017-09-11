@@ -10,6 +10,7 @@ module Data.Filter.Condition.Rating
         , ratingToString
         , renderRatingCondition
         , update
+        , validationErrors
         )
 
 import Bootstrap.Form.Checkbox as Checkbox
@@ -107,6 +108,11 @@ type SimplifiedRatingCondition
     = SimplifiedRatingList (List Rating)
     | BetterThan Rating
     | WorseThan Rating
+
+
+validationErrors : RatingCondition -> List String
+validationErrors (RatingList rlist) =
+    Util.validate (List.isEmpty rlist) "Rating: zvolte aspoň jeden"
 
 
 renderRatingCondition : RatingCondition -> String

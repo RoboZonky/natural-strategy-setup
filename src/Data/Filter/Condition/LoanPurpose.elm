@@ -7,6 +7,7 @@ module Data.Filter.Condition.LoanPurpose
         , loanPurposeForm
         , renderLoanPurposeCondition
         , update
+        , validationErrors
         )
 
 import Bootstrap.Form.Checkbox as Checkbox
@@ -79,6 +80,11 @@ renderLoanPurposeCondition (LoanPurposeList list) =
 renderLoandPurposeList : List LoanPurpose -> String
 renderLoandPurposeList =
     Util.orList loanPurposeToString
+
+
+validationErrors : LoanPurposeCondition -> List String
+validationErrors (LoanPurposeList rlist) =
+    Util.validate (List.isEmpty rlist) "Účel úvěru: zvolte aspoň jeden"
 
 
 type PurposeMsg

@@ -7,6 +7,7 @@ module Data.Filter.Condition.Amount
         , defaultAmountCondition
         , renderAmountCondition
         , update
+        , validationErrors
         )
 
 import Bootstrap.Form as Form
@@ -49,6 +50,29 @@ amountToString amount =
 
         LessThan upperBound ->
             "nedosahuje " ++ toString upperBound
+
+
+validationErrors : AmountCondition -> List String
+validationErrors (AmountCondition a) =
+    case a of
+        LessThan x ->
+            validateInt x
+
+        Between x y ->
+            validateInt x ++ validateInt y ++ validateMinNotGtMax x y
+
+        MoreThan x ->
+            validateInt x
+
+
+validateInt : Int -> List String
+validateInt x =
+    Util.validate (x < 0) "Výše úvěru: musí být kladné číslo"
+
+
+validateMinNotGtMax : Int -> Int -> List String
+validateMinNotGtMax minBound maxBound =
+    Util.validate (minBound > maxBound) "Výše úvěru: minimum nesmí být větší než maximum"
 
 
 type AmountMsg

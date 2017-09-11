@@ -7,6 +7,7 @@ module Data.Filter.Condition.LoanTerm
         , loanTermForm
         , renderTermCondition
         , update
+        , validationErrors
         )
 
 import Bootstrap.Form as Form
@@ -49,6 +50,29 @@ loanTermToString loanTerm =
 renderTermCondition : TermCondition -> String
 renderTermCondition (TermCondition term) =
     "délka " ++ loanTermToString term ++ " měsíců"
+
+
+validationErrors : TermCondition -> List String
+validationErrors (TermCondition t) =
+    case t of
+        LessThan x ->
+            validateInt x
+
+        Between x y ->
+            validateInt x ++ validateInt y ++ validateMinNotGtMax x y
+
+        MoreThan x ->
+            validateInt x
+
+
+validateInt : Int -> List String
+validateInt x =
+    Util.validate (x < 0) "Délka úvěru: musí být kladné číslo"
+
+
+validateMinNotGtMax : Int -> Int -> List String
+validateMinNotGtMax minBound maxBound =
+    Util.validate (minBound > maxBound) "Délka úvěru: minimum nesmí být větší než maximum"
 
 
 type LoanTermMsg

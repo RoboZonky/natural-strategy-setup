@@ -7,6 +7,7 @@ module Data.Filter.Condition.MainIncome
         , mainIncomeForm
         , renderIncomeCondition
         , update
+        , validationErrors
         )
 
 import Bootstrap.Form.Checkbox as Checkbox
@@ -79,6 +80,11 @@ renderIncomeCondition (MainIncomeList list) =
 renderMainIncomeList : List MainIncome -> String
 renderMainIncomeList =
     Util.orList mainIncomeToString
+
+
+validationErrors : MainIncomeCondition -> List String
+validationErrors (MainIncomeList rlist) =
+    Util.validate (List.isEmpty rlist) "Zdroj příjmů klienta: zvolte aspoň jeden"
 
 
 type MainIncomeMsg

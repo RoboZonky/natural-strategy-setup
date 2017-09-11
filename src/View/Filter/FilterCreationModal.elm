@@ -131,7 +131,7 @@ modalBody : MarketplaceFilter -> Html ModalMsg
 modalBody ((MarketplaceFilter state) as mf) =
     let
         validationErrors =
-            Filter.validationErrors mf
+            Filter.marketplaceFilterValidationErrors mf
 
         previewOrValidationErrors =
             if List.isEmpty validationErrors then
