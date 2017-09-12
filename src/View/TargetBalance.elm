@@ -56,7 +56,7 @@ form targetBalance =
                     , Input.onInput TargetBalanceChanged
                     , Input.disabled isUnspecified
                     , valueAttribute
-                    , Input.attrs [ Attr.min "200", Attr.max "100000000", class "mx-1" ]
+                    , Input.attrs [ Attr.min defaultValue, Attr.max "100000000", class "mx-1" ]
                     ]
                 , text " Kč."
                 ]

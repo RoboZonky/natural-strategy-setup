@@ -20,10 +20,7 @@ renderTargetBalance : TargetBalance -> String
 renderTargetBalance targetBalance =
     case targetBalance of
         TargetBalance balance ->
-            if balance /= 200 then
-                "Investovat pouze pokud disponibilní zůstatek přesáhne " ++ toString balance ++ " Kč."
-            else
-                ""
+            "Investovat pouze pokud disponibilní zůstatek přesáhne " ++ toString balance ++ " Kč."
 
         NotSpecified ->
             ""
