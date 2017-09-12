@@ -6,8 +6,8 @@ import Data.InvestmentShare as InvestmentShare exposing (InvestmentShare(..))
 import Data.Strategy exposing (..)
 import Data.TargetBalance as TargetBalance exposing (TargetBalance(TargetBalance))
 import Data.TargetPortfolioSize as TargetPortfolioSize exposing (..)
-import Html exposing (Html, a, footer, h1, text)
-import Html.Attributes exposing (class, href)
+import Html exposing (Html, a, div, footer, h1, text)
+import Html.Attributes exposing (class, href, style)
 import Types exposing (..)
 import Util
 import Version
@@ -156,9 +156,11 @@ view { strategyConfig, accordionState, filterCreationState } =
 
 infoFooter : Html Msg
 infoFooter =
-    footer [ class "text-center mt-2" ]
-        [ text "Implemented by "
+    footer [ class "text-center mt-2", style [ ( "color", "gray" ) ] ]
+        [ text "Autor "
         , a [ href "http://janhrcek.cz" ] [ text "Jan Hrček" ]
-        , text ", deployment based on "
+        , text ". Běžící verze "
         , a [ href Version.githubCommitLink ] [ text Version.commitHash ]
+        , text ". Nahlásit chybu na "
+        , a [ href "https://github.com/RoboZonky/natural-strategy-setup/issues" ] [ text "stránce projektu" ]
         ]
