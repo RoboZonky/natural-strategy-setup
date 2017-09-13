@@ -16,11 +16,13 @@ import Data.Filter.Condition.MainIncome as MainIncome exposing (MainIncome(..), 
 import Data.Filter.Condition.Rating as Rating exposing (RatingCondition(..), RatingMsg)
 import Data.Filter.Condition.Region as Region exposing (Region(..), RegionCondition(..), RegionMsg)
 import Data.Filter.Condition.Story as Story exposing (Story(..), StoryCondition(..), StoryMsg)
+import Data.Tooltip as Tooltip
 import Html exposing (Html, div, hr, li, text, ul)
 import Html.Attributes exposing (class, style, value)
 import Html.Events exposing (onClick, onSubmit)
 import Types exposing (..)
 import Util exposing ((=>))
+import View.Tooltip as Tooltip
 
 
 type alias State =
@@ -96,6 +98,10 @@ update msg state =
         RemoveRegionCondition ->
             { state | editedFilter = Filter.removePositiveRegionCondition state.editedFilter } => Nothing
 
+        ModalTooltipMsg tipId tooltipState ->
+            {- This case is handled at the level of Main's update -}
+            state => Nothing
+
         SaveFilter ->
             { state | editedFilter = Filter.emptyFilter, openCloseState = Modal.hiddenState } => Just state.editedFilter
 
@@ -103,11 +109,14 @@ update msg state =
             state => Nothing
 
 
-view : State -> Html ModalMsg
-view { editedFilter, openCloseState } =
+view : State -> Tooltip.States -> Html ModalMsg
+view { editedFilter, openCloseState } tooltipStates =
     Modal.config ModalStateMsg
         |> Modal.large
-        |> Modal.h5 [] [ text "Vytvořit filtr" ]
+        |> Modal.h5 []
+            [ text "Vytvořit filtr"
+            , Tooltip.popoverTipForModal Tooltip.filterCreationTip tooltipStates
+            ]
         |> Modal.body []
             [ modalBody editedFilter
             ]

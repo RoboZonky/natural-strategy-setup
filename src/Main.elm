@@ -6,7 +6,8 @@ import Data.InvestmentShare as InvestmentShare exposing (InvestmentShare(..))
 import Data.Strategy exposing (..)
 import Data.TargetBalance as TargetBalance exposing (TargetBalance(TargetBalance))
 import Data.TargetPortfolioSize as TargetPortfolioSize exposing (..)
-import Html exposing (Html, a, div, footer, h1, text)
+import Data.Tooltip as Tooltip
+import Html exposing (Html, a, footer, h1, text)
 import Html.Attributes exposing (class, href, style)
 import Types exposing (..)
 import Util
@@ -20,6 +21,7 @@ type alias Model =
     { strategyConfig : StrategyConfiguration
     , accordionState : Accordion.State
     , filterCreationState : FilterCreationModal.State
+    , tooltipStates : Tooltip.States
     }
 
 
@@ -28,6 +30,7 @@ initialModel =
     { strategyConfig = defaultStrategyConfiguration
     , accordionState = Accordion.initialState
     , filterCreationState = FilterCreationModal.initialState
+    , tooltipStates = Tooltip.initialStates
     }
 
 
@@ -111,6 +114,12 @@ update msg model =
         AccordionMsg state ->
             { model | accordionState = state }
 
+        TooltipMsg tipId tooltipState ->
+            { model | tooltipStates = Tooltip.update tipId tooltipState model.tooltipStates }
+
+        ModalMsg (ModalTooltipMsg tipId tooltipState) ->
+            { model | tooltipStates = Tooltip.update tipId tooltipState model.tooltipStates }
+
         ModalMsg msg ->
             let
                 ( filterCreationState, maybeNewFilter ) =
@@ -143,11 +152,11 @@ updateStrategyIfValidInt intStr strategyUpdater strategyConfig =
 
 
 view : Model -> Html Msg
-view { strategyConfig, accordionState, filterCreationState } =
+view { strategyConfig, accordionState, filterCreationState, tooltipStates } =
     Grid.containerFluid []
         [ h1 [] [ text "Konfigurace strategie" ]
         , Grid.row []
-            [ Strategy.form strategyConfig accordionState filterCreationState
+            [ Strategy.form strategyConfig accordionState filterCreationState tooltipStates
             , ConfigPreview.view strategyConfig
             ]
         , infoFooter

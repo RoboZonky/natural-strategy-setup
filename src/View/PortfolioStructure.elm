@@ -10,19 +10,26 @@ import Bootstrap.Table as Table
 import Data.Filter.Condition.Rating as Rating
 import Data.Portfolio as Portfolio exposing (Portfolio(..))
 import Data.PortfolioStructure exposing (PortfolioShare, PortfolioShares, Share)
+import Data.Tooltip as Tooltip
 import Html exposing (Html, div, text)
 import Html.Attributes as Attr exposing (class, size, style, value)
 import Html.Events exposing (onSubmit)
 import Types exposing (..)
 import Util
+import View.Tooltip as Tooltip
 
 
-form : Portfolio -> PortfolioShares -> Accordion.Card Msg
-form portfolio shares =
+form : Portfolio -> PortfolioShares -> Tooltip.States -> Accordion.Card Msg
+form portfolio shares tooltipStates =
     Accordion.card
         { id = "portfolioStructureCard"
         , options = []
-        , header = Accordion.headerH4 [] <| Accordion.toggle [] [ text "Struktura portfolia" ]
+        , header =
+            Accordion.headerH4 [] <|
+                Accordion.toggle []
+                    [ text "Struktura portfolia"
+                    , Tooltip.popoverTip Tooltip.portfolioStructureTip tooltipStates
+                    ]
         , blocks =
             [ Accordion.block []
                 [ defaultPortfolioForm

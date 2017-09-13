@@ -4,6 +4,7 @@ import Bootstrap.Accordion as Accordion
 import Bootstrap.Grid as Grid
 import Bootstrap.Grid.Col as Col
 import Data.Strategy exposing (..)
+import Data.Tooltip as Tooltip
 import Html exposing (Html, text)
 import Types exposing (..)
 import View.Confirmation as Confirmation
@@ -16,29 +17,29 @@ import View.TargetBalance as TargetBalance
 import View.TargetPortfolioSize as TargetPortfolioSize
 
 
-form : StrategyConfiguration -> Accordion.State -> FilterCreationModal.State -> Grid.Column Msg
-form config accordionState filterCreationState =
+form : StrategyConfiguration -> Accordion.State -> FilterCreationModal.State -> Tooltip.States -> Grid.Column Msg
+form config accordionState filterCreationState tooltipStates =
     Grid.col
         [ Col.xs6 ]
-        [ strategyForm config accordionState
-        , Html.map ModalMsg <| FilterCreationModal.view filterCreationState
+        [ strategyForm config accordionState tooltipStates
+        , Html.map ModalMsg <| FilterCreationModal.view filterCreationState tooltipStates
         ]
 
 
-strategyForm : StrategyConfiguration -> Accordion.State -> Html Msg
-strategyForm { generalSettings, portfolioShares, investmentSizeOverrides, buyFilters, sellFilters } accordionState =
+strategyForm : StrategyConfiguration -> Accordion.State -> Tooltip.States -> Html Msg
+strategyForm { generalSettings, portfolioShares, investmentSizeOverrides, buyFilters, sellFilters } accordionState tooltipStates =
     Accordion.config AccordionMsg
         |> Accordion.cards
-            [ generalSettingsCard generalSettings
-            , PortfolioStructure.form generalSettings.portfolio portfolioShares
+            [ generalSettingsCard generalSettings tooltipStates
+            , PortfolioStructure.form generalSettings.portfolio portfolioShares tooltipStates
             , Investment.form generalSettings.defaultInvestmentSize investmentSizeOverrides
-            , FilterList.form buyFilters
+            , FilterList.form buyFilters tooltipStates
             ]
         |> Accordion.view accordionState
 
 
-generalSettingsCard : GeneralSettings -> Accordion.Card Msg
-generalSettingsCard { targetPortfolioSize, defaultInvestmentShare, defaultTargetBalance, confirmationSettings } =
+generalSettingsCard : GeneralSettings -> Tooltip.States -> Accordion.Card Msg
+generalSettingsCard { targetPortfolioSize, defaultInvestmentShare, defaultTargetBalance, confirmationSettings } tooltipStates =
     Accordion.card
         { id = "generalSettigsCard"
         , options = []
@@ -48,7 +49,7 @@ generalSettingsCard { targetPortfolioSize, defaultInvestmentShare, defaultTarget
                 [ TargetPortfolioSize.form targetPortfolioSize
                 , InvestmentShare.form defaultInvestmentShare
                 , TargetBalance.form defaultTargetBalance
-                , Confirmation.form confirmationSettings
+                , Confirmation.form confirmationSettings tooltipStates
                 ]
             ]
         }

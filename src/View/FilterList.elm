@@ -7,18 +7,25 @@ import Bootstrap.Grid as Grid
 import Bootstrap.Grid.Col as Col
 import Bootstrap.Modal as Modal
 import Data.Filter exposing (MarketplaceFilter, renderMarketplaceFilter)
+import Data.Tooltip as Tooltip
 import Html exposing (Html, button, div, h2, h3, pre, span, text)
 import Html.Attributes exposing (class, href, style)
 import Html.Events exposing (onClick)
 import Types exposing (ModalMsg(ModalStateMsg), Msg(ModalMsg, RemoveBuyFilter))
+import View.Tooltip as Tooltip
 
 
-form : List MarketplaceFilter -> Accordion.Card Msg
-form filters =
+form : List MarketplaceFilter -> Tooltip.States -> Accordion.Card Msg
+form filters tooltipStates =
     Accordion.card
         { id = "buyFiltersCard"
         , options = []
-        , header = Accordion.headerH4 [] <| Accordion.toggle [] [ text "Filtrování tržiště" ]
+        , header =
+            Accordion.headerH4 [] <|
+                Accordion.toggle []
+                    [ text "Filtrování tržiště"
+                    , Tooltip.popoverTip Tooltip.filterListTip tooltipStates
+                    ]
         , blocks =
             [ Accordion.block [] [ filtersView filters, filterCreationControls ] ]
         }
