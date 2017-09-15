@@ -43,7 +43,7 @@ viewFilter index mf =
             span [ onClick (RemoveBuyFilter index), class "float-right" ] [ text "✖" ]
 
         filterText =
-            span [ style [ ( "white-space", "pre" ) ] ] [ text <| renderMarketplaceFilter mf ]
+            span [] [ text <| renderMarketplaceFilter mf ]
     in
     Card.config []
         |> Card.block [ Card.blockAttrs [ class "smaller-pad" ] ]
