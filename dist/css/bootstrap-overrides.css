@@ -1,0 +1,4 @@
+/* Used to make filters in filter list more compact */
+.card-block.smaller-pad {
+  padding: 0.5rem!important;
+}

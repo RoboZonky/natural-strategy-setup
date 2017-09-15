@@ -46,7 +46,7 @@ viewFilter index mf =
             span [ style [ ( "white-space", "pre" ) ] ] [ text <| renderMarketplaceFilter mf ]
     in
     Card.config []
-        |> Card.block []
+        |> Card.block [ Card.blockAttrs [ class "smaller-pad" ] ]
             [ Card.custom <|
                 Grid.row []
                     [ Grid.col [ Col.xs11 ] [ filterText ]
