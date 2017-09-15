@@ -9,6 +9,7 @@ import Data.TargetPortfolioSize as TargetPortfolioSize exposing (..)
 import Data.Tooltip as Tooltip
 import Html exposing (Html, a, footer, h1, text)
 import Html.Attributes exposing (class, href, style)
+import Slider exposing (SliderStates)
 import Types exposing (..)
 import Util
 import Version
@@ -22,6 +23,7 @@ type alias Model =
     , accordionState : Accordion.State
     , filterCreationState : FilterCreationModal.State
     , tooltipStates : Tooltip.States
+    , sliderStates : SliderStates
     }
 
 
@@ -31,16 +33,23 @@ initialModel =
     , accordionState = Accordion.initialState
     , filterCreationState = FilterCreationModal.initialState
     , tooltipStates = Tooltip.initialStates
+    , sliderStates = Slider.initialSliderStates
     }
 
 
 main : Program Never Model Msg
 main =
-    Html.beginnerProgram
-        { model = initialModel
+    Html.program
+        { init = ( initialModel, Cmd.none )
         , update = update
         , view = view
+        , subscriptions = subscriptions
         }
+
+
+subscriptions : Model -> Sub Msg
+subscriptions { sliderStates } =
+    Slider.sliderChangeSubscription sliderStates
 
 
 updateStrategy : (StrategyConfiguration -> StrategyConfiguration) -> Model -> Model
@@ -48,11 +57,16 @@ updateStrategy strategyUpdater model =
     { model | strategyConfig = strategyUpdater model.strategyConfig }
 
 
-update : Msg -> Model -> Model
+update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
+    ( updateHelper msg model, Cmd.none )
+
+
+updateHelper : Msg -> Model -> Model
+updateHelper msg model =
     case msg of
         PortfolioChanged portfolio ->
-            updateStrategy (setPortfolio portfolio) model
+            updateStrategy (setPortfolio portfolio) { model | sliderStates = Slider.initialSliderStates }
 
         TargetPortfolioSizeChanged targetSizeStr ->
             let
@@ -87,11 +101,18 @@ update msg model =
         ConfirmationFormMsg msg ->
             updateStrategy (updateNotificationSettings msg) model
 
-        ChangePortfolioShareMin rating newMinStr ->
-            updateStrategy (updateStrategyIfValidInt newMinStr (\newMin -> setPortfolioShareMin rating newMin model.strategyConfig)) model
+        ChangePortfolioSharePercentage rating sliderMsg ->
+            let
+                newSliderStates =
+                    Slider.updateSliders rating sliderMsg model.sliderStates
 
-        ChangePortfolioShareMax rating newMaxStr ->
-            updateStrategy (updateStrategyIfValidInt newMaxStr (\newMax -> setPortfolioShareMax rating newMax model.strategyConfig)) model
+                newRange =
+                    Slider.getSliderRangeFor rating newSliderStates
+
+                newModel =
+                    updateStrategy (setPortfolioShareRange rating newRange) model
+            in
+            { newModel | sliderStates = newSliderStates }
 
         ChangeInvestmentMin rating newMinStr ->
             updateStrategy (updateStrategyIfValidInt newMinStr (\newMin -> setInvestmentMin rating newMin model.strategyConfig)) model
@@ -152,11 +173,11 @@ updateStrategyIfValidInt intStr strategyUpdater strategyConfig =
 
 
 view : Model -> Html Msg
-view { strategyConfig, accordionState, filterCreationState, tooltipStates } =
+view { strategyConfig, accordionState, filterCreationState, tooltipStates, sliderStates } =
     Grid.containerFluid []
         [ h1 [] [ text "Konfigurace strategie" ]
         , Grid.row []
-            [ Strategy.form strategyConfig accordionState filterCreationState tooltipStates
+            [ Strategy.form strategyConfig accordionState filterCreationState tooltipStates sliderStates
             , ConfigPreview.view strategyConfig
             ]
         , infoFooter

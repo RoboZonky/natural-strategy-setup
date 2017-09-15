@@ -37,14 +37,14 @@ type alias GeneralSettings =
 defaultStrategyConfiguration : StrategyConfiguration
 defaultStrategyConfiguration =
     { generalSettings =
-        { portfolio = Portfolio.Conservative
+        { portfolio = Portfolio.Empty
         , targetPortfolioSize = TargetPortfolioSize.NotSpecified
         , defaultInvestmentSize = Investment.defaultSize
         , defaultInvestmentShare = InvestmentShare.NotSpecified
         , defaultTargetBalance = TargetBalance.NotSpecified
         , confirmationSettings = Confirmation.confirmationsDisabled
         }
-    , portfolioShares = PredefinedShares.conservativeShares
+    , portfolioShares = PredefinedShares.emptyShares
     , investmentSizeOverrides = Investment.defaultInvestmentsPerRating ( 200, 200 )
     , buyFilters = []
     , sellFilters = []
@@ -93,20 +93,11 @@ updateNotificationSettings msg ({ generalSettings } as config) =
     }
 
 
-setPortfolioShareMin : Rating -> Int -> StrategyConfiguration -> StrategyConfiguration
-setPortfolioShareMin rtg newMin config =
+setPortfolioShareRange : Rating -> Share -> StrategyConfiguration -> StrategyConfiguration
+setPortfolioShareRange rtg newRange config =
     let
         sharesUpdater =
-            AllDict.update rtg (Maybe.map (\( mi, ma ) -> ( newMin, max ma newMin {- automatically bump ma when newMin exceeds it -} )))
-    in
-    { config | portfolioShares = sharesUpdater config.portfolioShares }
-
-
-setPortfolioShareMax : Rating -> Int -> StrategyConfiguration -> StrategyConfiguration
-setPortfolioShareMax rtg newMax config =
-    let
-        sharesUpdater =
-            AllDict.update rtg (Maybe.map (\( mi, ma ) -> ( mi, newMax )))
+            AllDict.update rtg (Maybe.map (\_ -> newRange))
     in
     { config | portfolioShares = sharesUpdater config.portfolioShares }
 

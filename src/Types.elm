@@ -14,14 +14,14 @@ import Data.Filter.Condition.Region exposing (RegionMsg)
 import Data.Filter.Condition.Story exposing (StoryMsg)
 import Data.Portfolio exposing (Portfolio)
 import Data.Tooltip exposing (TipId)
+import RangeSlider
 
 
 type Msg
     = PortfolioChanged Portfolio
     | TargetPortfolioSizeChanged String
     | TargetPortfolioShareChanged String
-    | ChangePortfolioShareMin Rating String
-    | ChangePortfolioShareMax Rating String
+    | ChangePortfolioSharePercentage Rating RangeSlider.Msg
     | ConfirmationFormMsg Rating.RatingMsg
     | ChangeInvestmentMin Rating String
     | ChangeInvestmentMax Rating String

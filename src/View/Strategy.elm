@@ -6,6 +6,7 @@ import Bootstrap.Grid.Col as Col
 import Data.Strategy exposing (..)
 import Data.Tooltip as Tooltip
 import Html exposing (Html, text)
+import Slider exposing (SliderStates)
 import Types exposing (..)
 import View.Confirmation as Confirmation
 import View.Filter.FilterCreationModal as FilterCreationModal
@@ -17,21 +18,21 @@ import View.TargetBalance as TargetBalance
 import View.TargetPortfolioSize as TargetPortfolioSize
 
 
-form : StrategyConfiguration -> Accordion.State -> FilterCreationModal.State -> Tooltip.States -> Grid.Column Msg
-form config accordionState filterCreationState tooltipStates =
+form : StrategyConfiguration -> Accordion.State -> FilterCreationModal.State -> Tooltip.States -> SliderStates -> Grid.Column Msg
+form config accordionState filterCreationState tooltipStates sliderStates =
     Grid.col
         [ Col.xs6 ]
-        [ strategyForm config accordionState tooltipStates
+        [ strategyForm config accordionState tooltipStates sliderStates
         , Html.map ModalMsg <| FilterCreationModal.view filterCreationState tooltipStates
         ]
 
 
-strategyForm : StrategyConfiguration -> Accordion.State -> Tooltip.States -> Html Msg
-strategyForm { generalSettings, portfolioShares, investmentSizeOverrides, buyFilters, sellFilters } accordionState tooltipStates =
+strategyForm : StrategyConfiguration -> Accordion.State -> Tooltip.States -> SliderStates -> Html Msg
+strategyForm { generalSettings, portfolioShares, investmentSizeOverrides, buyFilters, sellFilters } accordionState tooltipStates sliderStates =
     Accordion.config AccordionMsg
         |> Accordion.cards
             [ generalSettingsCard generalSettings tooltipStates
-            , PortfolioStructure.form generalSettings.portfolio portfolioShares tooltipStates
+            , PortfolioStructure.form generalSettings.portfolio portfolioShares tooltipStates sliderStates
             , Investment.form generalSettings.defaultInvestmentSize investmentSizeOverrides
             , FilterList.form buyFilters tooltipStates
             ]

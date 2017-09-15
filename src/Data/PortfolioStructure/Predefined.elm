@@ -6,14 +6,14 @@ module Data.PortfolioStructure.Predefined
         , progressiveShares
         )
 
-import AllDict as Dict
+import AllDict
 import Data.Filter.Condition.Rating as Rating exposing (Rating(..))
 import Data.PortfolioStructure exposing (PortfolioShares)
 
 
 conservativeShares : PortfolioShares
 conservativeShares =
-    Dict.fromList Rating.hash
+    AllDict.fromList Rating.hash
         [ ( A_Double_Star, ( 3, 3 ) )
         , ( A_Star, ( 6, 6 ) )
         , ( A_Double_Plus, ( 16, 16 ) )
@@ -27,7 +27,7 @@ conservativeShares =
 
 balancedShares : PortfolioShares
 balancedShares =
-    Dict.fromList Rating.hash
+    AllDict.fromList Rating.hash
         [ ( A_Double_Star, ( 1, 1 ) )
         , ( A_Star, ( 3, 3 ) )
         , ( A_Double_Plus, ( 17, 17 ) )
@@ -41,7 +41,7 @@ balancedShares =
 
 progressiveShares : PortfolioShares
 progressiveShares =
-    Dict.fromList Rating.hash
+    AllDict.fromList Rating.hash
         [ ( A_Double_Star, ( 0, 0 ) )
         , ( A_Star, ( 2, 2 ) )
         , ( A_Double_Plus, ( 13, 13 ) )
@@ -55,7 +55,7 @@ progressiveShares =
 
 emptyShares : PortfolioShares
 emptyShares =
-    Dict.fromList Rating.hash
+    AllDict.fromList Rating.hash
         [ ( A_Double_Star, ( 0, 0 ) )
         , ( A_Star, ( 0, 0 ) )
         , ( A_Double_Plus, ( 0, 0 ) )
