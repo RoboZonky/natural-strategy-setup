@@ -15,7 +15,7 @@ form settings tooltipStates =
     Card.custom <|
         Form.group []
             [ legend []
-                [ text "Potvrzovat mobilem investice do úvěrů s ratingem "
+                [ text "Potvrzovat mobilem investice do úvěrů s ratingem"
                 , Tooltip.popoverTip Tooltip.confirmationTip tooltipStates
                 ]
             , Html.map ConfirmationFormMsg <| Rating.ratingForm settings
