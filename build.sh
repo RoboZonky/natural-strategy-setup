@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 elm make --warn src/Main.elm --output dist/js/elm.js
 
 # Hardcode current commit hash into distribution
