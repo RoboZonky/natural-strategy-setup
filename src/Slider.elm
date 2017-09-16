@@ -19,7 +19,7 @@ percentageSlider =
     RangeSlider.init
         |> setStepSize (Just 1.0)
         |> setFormatter (\value -> toString value ++ "%")
-        |> setDimensions 150 57
+        |> setDimensions 300 57
         |> setExtents 0 100
         |> setValues 0 0
 

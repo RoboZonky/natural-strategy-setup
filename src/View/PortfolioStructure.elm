@@ -5,6 +5,8 @@ import Bootstrap.Accordion as Accordion
 import Bootstrap.Card as Card
 import Bootstrap.Form as Form
 import Bootstrap.Form.Select as Select
+import Bootstrap.Grid as Grid
+import Bootstrap.Grid.Col as Col
 import Bootstrap.Table as Table
 import Data.Filter.Condition.Rating as Rating exposing (ratingToString)
 import Data.Portfolio as Portfolio exposing (Portfolio(..))
@@ -13,6 +15,7 @@ import Data.Tooltip as Tooltip
 import Html exposing (Html, div, text)
 import Html.Attributes as Attr exposing (class, selected, size, style, value)
 import Html.Events exposing (onSubmit)
+import Plot
 import RangeSlider
 import Slider exposing (SliderStates)
 import Types exposing (..)
@@ -45,11 +48,23 @@ form portfolio shares tooltipStates sliderStates =
                     div []
                         [ defaultPortfolioForm portfolio
                         , text <| contentDescription ++ " požadovaný procentuální podíl aktuální zůstatkové částky investovaný do půjček v daném ratingu"
-                        , sharesTableOrSliders
+                        , Grid.row []
+                            [ Grid.col [ Col.xs6 ]
+                                [ sharesTableOrSliders ]
+                            , Grid.col [ Col.xs6 ]
+                                [ plotShares shares ]
+                            ]
                         ]
                 ]
             ]
         }
+
+
+plotShares : PortfolioShares -> Html Msg
+plotShares shares =
+    Plot.viewBars
+        (Plot.groups (List.map (\( rtg, ( mi, ma ) ) -> Plot.group (ratingToString rtg) [ toFloat mi, toFloat ma ])))
+        (Dict.toList shares)
 
 
 defaultPortfolioForm : Portfolio -> Html Msg
@@ -90,12 +105,12 @@ portfolioSharesTable shares =
                     , Table.th [] [ text "Do (%)" ]
                     ]
                 ]
-        , tbody = Table.tbody [] <| List.map portfolioShareReadOnlyRow <| Dict.toList shares
+        , tbody = Table.tbody [] <| List.map portfolioShareRow <| Dict.toList shares
         }
 
 
-portfolioShareReadOnlyRow : PortfolioShare -> Table.Row Msg
-portfolioShareReadOnlyRow ( rtg, ( mi, mx ) ) =
+portfolioShareRow : PortfolioShare -> Table.Row Msg
+portfolioShareRow ( rtg, ( mi, mx ) ) =
     Table.tr []
         [ Table.td [] [ text <| Rating.ratingToString rtg ]
         , Table.td [] [ text <| toString mi ]
