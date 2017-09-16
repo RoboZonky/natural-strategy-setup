@@ -1,4 +1,4 @@
-module Data.Filter.Condition.Rating
+module Data.Filter.Conditions.Rating
     exposing
         ( Rating(..)
         , RatingCondition(..)

@@ -1,8 +1,8 @@
-module Data.Filter.Condition.LoanPurpose
+module Data.Filter.Conditions.LoanPurpose
     exposing
         ( LoanPurpose(..)
         , LoanPurposeCondition(..)
-        , PurposeMsg
+        , LoanPurposeMsg
         , defaultLoanPurposeCondition
         , loanPurposeForm
         , renderLoanPurposeCondition
@@ -87,12 +87,12 @@ validationErrors (LoanPurposeList rlist) =
     Util.validate (List.isEmpty rlist) "Účel úvěru: zvolte aspoň jeden"
 
 
-type PurposeMsg
+type LoanPurposeMsg
     = AddPurpose LoanPurpose
     | RemovePurpose LoanPurpose
 
 
-update : PurposeMsg -> LoanPurposeCondition -> LoanPurposeCondition
+update : LoanPurposeMsg -> LoanPurposeCondition -> LoanPurposeCondition
 update msg (LoanPurposeList plist) =
     case msg of
         AddPurpose p ->
@@ -102,14 +102,14 @@ update msg (LoanPurposeList plist) =
             LoanPurposeList (List.filter (\pu -> pu /= p) plist)
 
 
-loanPurposeForm : LoanPurposeCondition -> Html PurposeMsg
+loanPurposeForm : LoanPurposeCondition -> Html LoanPurposeMsg
 loanPurposeForm (LoanPurposeList plist) =
     allPurposes
         |> List.map (\p -> loanPurposeCheckbox p (List.member p plist))
         |> div []
 
 
-loanPurposeCheckbox : LoanPurpose -> Bool -> Html PurposeMsg
+loanPurposeCheckbox : LoanPurpose -> Bool -> Html LoanPurposeMsg
 loanPurposeCheckbox purpose isEnabled =
     Checkbox.checkbox
         [ Checkbox.onCheck

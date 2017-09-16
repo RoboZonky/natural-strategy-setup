@@ -7,7 +7,7 @@ module Data.PortfolioStructure.Predefined
         )
 
 import AllDict
-import Data.Filter.Condition.Rating as Rating exposing (Rating(..))
+import Data.Filter.Conditions.Rating as Rating exposing (Rating(..))
 import Data.PortfolioStructure exposing (PortfolioShares)
 
 

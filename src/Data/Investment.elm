@@ -10,7 +10,7 @@ module Data.Investment
         )
 
 import AllDict exposing (AllDict)
-import Data.Filter.Condition.Rating as Rating exposing (Rating, ratingToString)
+import Data.Filter.Conditions.Rating as Rating exposing (Rating, ratingToString)
 import Util
 
 

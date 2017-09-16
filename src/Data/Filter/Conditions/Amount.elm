@@ -1,4 +1,4 @@
-module Data.Filter.Condition.Amount
+module Data.Filter.Conditions.Amount
     exposing
         ( Amount(..)
         , AmountCondition(..)

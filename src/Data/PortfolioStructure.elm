@@ -8,7 +8,7 @@ module Data.PortfolioStructure
         )
 
 import AllDict as Dict exposing (AllDict)
-import Data.Filter.Condition.Rating as Rating exposing (Rating(..))
+import Data.Filter.Conditions.Rating as Rating exposing (Rating(..))
 import Data.Portfolio exposing (Portfolio(Empty))
 import Util
 

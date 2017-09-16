@@ -8,7 +8,7 @@ module Slider
         )
 
 import AllDict exposing (AllDict)
-import Data.Filter.Condition.Rating as Rating exposing (Rating(..))
+import Data.Filter.Conditions.Rating as Rating exposing (Rating(..))
 import Data.PortfolioStructure exposing (Share)
 import RangeSlider exposing (RangeSlider, setDimensions, setExtents, setFormatter, setStepSize, setValues)
 import Types

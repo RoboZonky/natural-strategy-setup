@@ -3,7 +3,7 @@ module Data.Strategy exposing (..)
 import AllDict
 import Data.Confirmation as Confirmation exposing (ConfirmationSettings)
 import Data.Filter as Filters exposing (MarketplaceFilter)
-import Data.Filter.Condition.Rating as Rating exposing (Rating(..), RatingMsg)
+import Data.Filter.Conditions.Rating as Rating exposing (Rating(..), RatingMsg)
 import Data.Investment as Investment exposing (InvestmentsPerRating, Size)
 import Data.InvestmentShare as InvestmentShare exposing (InvestmentShare)
 import Data.Portfolio as Portfolio exposing (Portfolio(..))

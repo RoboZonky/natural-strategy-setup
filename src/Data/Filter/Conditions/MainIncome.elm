@@ -1,11 +1,11 @@
-module Data.Filter.Condition.MainIncome
+module Data.Filter.Conditions.MainIncome
     exposing
         ( MainIncome(..)
         , MainIncomeCondition(..)
         , MainIncomeMsg
         , defaultIncomeCondition
         , mainIncomeForm
-        , renderIncomeCondition
+        , renderMainIncomeCondition
         , update
         , validationErrors
         )
@@ -72,14 +72,9 @@ allIncomesList =
     [ EMPLOYMENT, ENTREPRENEUR, LIBERAL_PROFESSION, MATERNITY_LEAVE, PENSION, SELF_EMPLOYMENT, STUDENT, UNEMPLOYED, OTHER ]
 
 
-renderIncomeCondition : MainIncomeCondition -> String
-renderIncomeCondition (MainIncomeList list) =
-    "klient je " ++ renderMainIncomeList list
-
-
-renderMainIncomeList : List MainIncome -> String
-renderMainIncomeList =
-    Util.orList mainIncomeToString
+renderMainIncomeCondition : MainIncomeCondition -> String
+renderMainIncomeCondition (MainIncomeList list) =
+    "klient je " ++ Util.orList mainIncomeToString list
 
 
 validationErrors : MainIncomeCondition -> List String

@@ -3,15 +3,16 @@ module Types exposing (..)
 import Bootstrap.Accordion as Accordion
 import Bootstrap.Modal as Modal
 import Bootstrap.Popover as Popover
-import Data.Filter exposing (Condition, FilteredItem, MarketplaceFilter)
-import Data.Filter.Condition.Amount exposing (AmountMsg)
-import Data.Filter.Condition.Interest exposing (InterestMsg)
-import Data.Filter.Condition.LoanPurpose exposing (PurposeMsg)
-import Data.Filter.Condition.LoanTerm exposing (LoanTermMsg)
-import Data.Filter.Condition.MainIncome exposing (MainIncomeMsg)
-import Data.Filter.Condition.Rating as Rating exposing (Rating, RatingMsg)
-import Data.Filter.Condition.Region exposing (RegionMsg)
-import Data.Filter.Condition.Story exposing (StoryMsg)
+import Data.Filter exposing (FilteredItem, MarketplaceFilter)
+import Data.Filter.Conditions exposing (Condition)
+import Data.Filter.Conditions.Amount exposing (AmountMsg)
+import Data.Filter.Conditions.Interest exposing (InterestMsg)
+import Data.Filter.Conditions.LoanPurpose exposing (LoanPurposeMsg)
+import Data.Filter.Conditions.LoanTerm exposing (LoanTermMsg)
+import Data.Filter.Conditions.MainIncome exposing (MainIncomeMsg)
+import Data.Filter.Conditions.Rating as Rating exposing (Rating, RatingMsg)
+import Data.Filter.Conditions.Region exposing (RegionMsg)
+import Data.Filter.Conditions.Story exposing (StoryMsg)
 import Data.Portfolio exposing (Portfolio)
 import Data.Tooltip exposing (TipId)
 import RangeSlider
@@ -42,7 +43,7 @@ type ModalMsg
     | InterestMsg InterestMsg
     | AmountMsg AmountMsg
     | StoryMsg StoryMsg
-    | PurposeMsg PurposeMsg
+    | LoanPurposeMsg LoanPurposeMsg
     | LoanTermMsg LoanTermMsg
     | MainIncomeMsg MainIncomeMsg
     | RatingMsg RatingMsg

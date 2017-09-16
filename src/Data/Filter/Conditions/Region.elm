@@ -1,4 +1,4 @@
-module Data.Filter.Condition.Region
+module Data.Filter.Conditions.Region
     exposing
         ( Region(..)
         , RegionCondition(..)

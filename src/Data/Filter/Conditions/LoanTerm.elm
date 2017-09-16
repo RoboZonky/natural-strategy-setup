@@ -1,11 +1,11 @@
-module Data.Filter.Condition.LoanTerm
+module Data.Filter.Conditions.LoanTerm
     exposing
         ( LoanTerm(..)
+        , LoanTermCondition(..)
         , LoanTermMsg
-        , TermCondition(..)
         , defaultTermCondition
         , loanTermForm
-        , renderTermCondition
+        , renderLoanTermCondition
         , update
         , validationErrors
         )
@@ -25,13 +25,13 @@ type LoanTerm
     | MoreThan Int
 
 
-type TermCondition
-    = TermCondition LoanTerm
+type LoanTermCondition
+    = LoanTermCondition LoanTerm
 
 
-defaultTermCondition : TermCondition
+defaultTermCondition : LoanTermCondition
 defaultTermCondition =
-    TermCondition (MoreThan 0)
+    LoanTermCondition (MoreThan 0)
 
 
 loanTermToString : LoanTerm -> String
@@ -47,13 +47,13 @@ loanTermToString loanTerm =
             "přesahuje " ++ toString minBound
 
 
-renderTermCondition : TermCondition -> String
-renderTermCondition (TermCondition term) =
+renderLoanTermCondition : LoanTermCondition -> String
+renderLoanTermCondition (LoanTermCondition term) =
     "délka " ++ loanTermToString term ++ " měsíců"
 
 
-validationErrors : TermCondition -> List String
-validationErrors (TermCondition t) =
+validationErrors : LoanTermCondition -> List String
+validationErrors (LoanTermCondition t) =
     case t of
         LessThan x ->
             validateInt x
@@ -95,28 +95,28 @@ whichEnabled loanTerm =
             ( False, False, True )
 
 
-update : LoanTermMsg -> TermCondition -> TermCondition
-update msg (TermCondition term) =
+update : LoanTermMsg -> LoanTermCondition -> LoanTermCondition
+update msg (LoanTermCondition term) =
     case msg of
         SetLessThan hi ->
-            emptyToZero hi |> String.toInt |> Result.map LessThan |> Result.withDefault term |> TermCondition
+            emptyToZero hi |> String.toInt |> Result.map LessThan |> Result.withDefault term |> LoanTermCondition
 
         SetBetween loStr hiStr ->
             emptyToZero loStr
                 |> String.toInt
                 |> Result.andThen (\lo -> emptyToZero hiStr |> String.toInt |> Result.map (\hi -> Between lo hi))
                 |> Result.withDefault term
-                |> TermCondition
+                |> LoanTermCondition
 
         SetMoreThan lo ->
-            emptyToZero lo |> String.toInt |> Result.map MoreThan |> Result.withDefault term |> TermCondition
+            emptyToZero lo |> String.toInt |> Result.map MoreThan |> Result.withDefault term |> LoanTermCondition
 
         LoanTermNoOp ->
-            TermCondition term
+            LoanTermCondition term
 
 
-loanTermForm : TermCondition -> Html LoanTermMsg
-loanTermForm (TermCondition loanTerm) =
+loanTermForm : LoanTermCondition -> Html LoanTermMsg
+loanTermForm (LoanTermCondition loanTerm) =
     let
         ( ltVal, btwMinVal, btwMaxVal, mtVal ) =
             case loanTerm of

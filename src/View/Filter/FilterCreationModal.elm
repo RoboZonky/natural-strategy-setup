@@ -7,15 +7,16 @@ import Bootstrap.Form.Select as Select
 import Bootstrap.Grid as Grid
 import Bootstrap.Grid.Col as Col
 import Bootstrap.Modal as Modal
-import Data.Filter as Filter exposing (Condition(..), Conditions, FilteredItem(..), MarketplaceFilter(..), renderMarketplaceFilter, setFilteredItem)
-import Data.Filter.Condition.Amount as Amount exposing (AmountCondition(..))
-import Data.Filter.Condition.Interest as Interest exposing (InterestCondition(..))
-import Data.Filter.Condition.LoanPurpose as LoanPurpose exposing (LoanPurposeCondition(..))
-import Data.Filter.Condition.LoanTerm as LoanTerm exposing (TermCondition(..))
-import Data.Filter.Condition.MainIncome as MainIncome exposing (MainIncomeCondition(..))
-import Data.Filter.Condition.Rating as Rating exposing (RatingCondition(..))
-import Data.Filter.Condition.Region as Region exposing (RegionCondition(..))
-import Data.Filter.Condition.Story as Story exposing (Story(SHORT), StoryCondition(..))
+import Data.Filter as Filter exposing (FilteredItem(..), MarketplaceFilter(..), renderMarketplaceFilter, setFilteredItem)
+import Data.Filter.Conditions exposing (..)
+import Data.Filter.Conditions.Amount as Amount exposing (AmountCondition(..))
+import Data.Filter.Conditions.Interest as Interest exposing (InterestCondition(..))
+import Data.Filter.Conditions.LoanPurpose as LoanPurpose exposing (LoanPurposeCondition(..))
+import Data.Filter.Conditions.LoanTerm as LoanTerm exposing (LoanTermCondition(..))
+import Data.Filter.Conditions.MainIncome as MainIncome exposing (MainIncomeCondition(..))
+import Data.Filter.Conditions.Rating as Rating exposing (RatingCondition(..))
+import Data.Filter.Conditions.Region as Region exposing (RegionCondition(..))
+import Data.Filter.Conditions.Story as Story exposing (Story(SHORT), StoryCondition(..))
 import Data.Tooltip as Tooltip
 import Html exposing (Html, div, hr, li, text, ul)
 import Html.Attributes exposing (class, style, value)
@@ -61,55 +62,55 @@ updateHelp msg state =
             { state | editedFilter = Filter.emptyFilter, openCloseState = st }
 
         RatingMsg msg ->
-            { state | editedFilter = updatePositiveCondition (Filter.updateRating msg) state.editedFilter }
+            { state | editedFilter = updatePositiveCondition (updateRating msg) state.editedFilter }
 
         InterestMsg msg ->
-            { state | editedFilter = updatePositiveCondition (Filter.updateInterest msg) state.editedFilter }
+            { state | editedFilter = updatePositiveCondition (updateInterest msg) state.editedFilter }
 
-        PurposeMsg msg ->
-            { state | editedFilter = updatePositiveCondition (Filter.updatePurpose msg) state.editedFilter }
+        LoanPurposeMsg msg ->
+            { state | editedFilter = updatePositiveCondition (updatePurpose msg) state.editedFilter }
 
         LoanTermMsg msg ->
-            { state | editedFilter = updatePositiveCondition (Filter.updateLoanTerm msg) state.editedFilter }
+            { state | editedFilter = updatePositiveCondition (updateLoanTerm msg) state.editedFilter }
 
         MainIncomeMsg msg ->
-            { state | editedFilter = updatePositiveCondition (Filter.updateMainIncome msg) state.editedFilter }
+            { state | editedFilter = updatePositiveCondition (updateMainIncome msg) state.editedFilter }
 
         StoryMsg msg ->
-            { state | editedFilter = updatePositiveCondition (Filter.updateStory msg) state.editedFilter }
+            { state | editedFilter = updatePositiveCondition (updateStory msg) state.editedFilter }
 
         AmountMsg msg ->
-            { state | editedFilter = updatePositiveCondition (Filter.updateAmount msg) state.editedFilter }
+            { state | editedFilter = updatePositiveCondition (updateAmount msg) state.editedFilter }
 
         RegionMsg msg ->
-            { state | editedFilter = updatePositiveCondition (Filter.updateRegion msg) state.editedFilter }
+            { state | editedFilter = updatePositiveCondition (updateRegion msg) state.editedFilter }
 
         AddCondition c ->
             { state | editedFilter = Filter.addPositiveCondition c state.editedFilter }
 
         RemoveInterestCondition ->
-            { state | editedFilter = updatePositiveCondition Filter.removeInterestCondition state.editedFilter }
+            { state | editedFilter = updatePositiveCondition removeInterestCondition state.editedFilter }
 
         RemoveAmountCondition ->
-            { state | editedFilter = updatePositiveCondition Filter.removeAmountCondition state.editedFilter }
+            { state | editedFilter = updatePositiveCondition removeAmountCondition state.editedFilter }
 
         RemoveStoryCondition ->
-            { state | editedFilter = updatePositiveCondition Filter.removeStoryCondition state.editedFilter }
+            { state | editedFilter = updatePositiveCondition removeStoryCondition state.editedFilter }
 
         RemovePurposeCondition ->
-            { state | editedFilter = updatePositiveCondition Filter.removePurposeCondition state.editedFilter }
+            { state | editedFilter = updatePositiveCondition removePurposeCondition state.editedFilter }
 
         RemoveTermCondition ->
-            { state | editedFilter = updatePositiveCondition Filter.removeLoanTermCondition state.editedFilter }
+            { state | editedFilter = updatePositiveCondition removeLoanTermCondition state.editedFilter }
 
         RemoveMainIncomeCondition ->
-            { state | editedFilter = updatePositiveCondition Filter.removeMainIncomeCondition state.editedFilter }
+            { state | editedFilter = updatePositiveCondition removeMainIncomeCondition state.editedFilter }
 
         RemoveRatingCondition ->
-            { state | editedFilter = updatePositiveCondition Filter.removeRatingCondition state.editedFilter }
+            { state | editedFilter = updatePositiveCondition removeRatingCondition state.editedFilter }
 
         RemoveRegionCondition ->
-            { state | editedFilter = updatePositiveCondition Filter.removeRegionCondition state.editedFilter }
+            { state | editedFilter = updatePositiveCondition removeRegionCondition state.editedFilter }
 
         ModalTooltipMsg tipId tooltipState ->
             {- This case is handled at the level of Main's update -}
@@ -216,7 +217,7 @@ positiveConditionsForm filteredItem conditions =
         [ conditionRow "Rating" (subformEnabled conditions.rating) (Condition_Rating (RatingList [])) RemoveRatingCondition (ratingForm conditions.rating)
         , conditionRow "Úrok" (subformEnabled conditions.interest) (Condition_Interest (InterestCondition (Interest.LessThan 0))) RemoveInterestCondition (interestForm conditions.interest)
         , conditionRow "Účel úvěru" (subformEnabled conditions.purpose) (Condition_Purpose (LoanPurposeList [])) RemovePurposeCondition (purposeForm conditions.purpose)
-        , conditionRow "Délka úvěru" (subformEnabled conditions.term) (Condition_Term (TermCondition (LoanTerm.LessThan 0))) RemoveTermCondition (termForm conditions.term)
+        , conditionRow "Délka úvěru" (subformEnabled conditions.term) (Condition_Term (LoanTermCondition (LoanTerm.LessThan 0))) RemoveTermCondition (termForm conditions.term)
         , conditionRow "Zdroj příjmů klienta" (subformEnabled conditions.income) (Condition_Income (MainIncomeList [])) RemoveMainIncomeCondition (mainIncomeForm conditions.income)
         , conditionRow "Příběh" (subformEnabled conditions.story) (Condition_Story (StoryCondition SHORT)) RemoveStoryCondition (storyForm conditions.story)
         , conditionRow "Kraj klienta" (subformEnabled conditions.region) (Condition_Region (RegionList [])) RemoveRegionCondition (regionForm conditions.region)
@@ -251,10 +252,10 @@ interestForm =
 
 purposeForm : Maybe LoanPurposeCondition -> Html ModalMsg
 purposeForm =
-    showFormForNonemptyCondition PurposeMsg LoanPurpose.loanPurposeForm
+    showFormForNonemptyCondition LoanPurposeMsg LoanPurpose.loanPurposeForm
 
 
-termForm : Maybe TermCondition -> Html ModalMsg
+termForm : Maybe LoanTermCondition -> Html ModalMsg
 termForm =
     showFormForNonemptyCondition LoanTermMsg LoanTerm.loanTermForm
 
@@ -302,6 +303,6 @@ conditionRow conditionName isSubformEnabled condition removeCondMsg subform =
 removeAmountConditionIfNotFilteringLoan : FilteredItem -> Conditions -> Conditions
 removeAmountConditionIfNotFilteringLoan filteredItem cs =
     if filteredItem /= Loan then
-        Filter.removeAmountCondition cs
+        removeAmountCondition cs
     else
         cs

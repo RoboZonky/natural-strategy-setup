@@ -8,7 +8,7 @@ import Bootstrap.Form.Select as Select
 import Bootstrap.Grid as Grid
 import Bootstrap.Grid.Col as Col
 import Bootstrap.Table as Table
-import Data.Filter.Condition.Rating as Rating exposing (ratingToString)
+import Data.Filter.Conditions.Rating as Rating exposing (ratingToString)
 import Data.Portfolio as Portfolio exposing (Portfolio(..))
 import Data.PortfolioStructure exposing (PortfolioShare, PortfolioShares, Share)
 import Data.Tooltip as Tooltip

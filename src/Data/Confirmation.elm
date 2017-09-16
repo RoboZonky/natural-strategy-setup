@@ -5,7 +5,7 @@ module Data.Confirmation
         , renderConfirmation
         )
 
-import Data.Filter.Condition.Rating as Rating exposing (Rating, RatingCondition(..))
+import Data.Filter.Conditions.Rating as Rating exposing (Rating, RatingCondition(..))
 
 
 type alias ConfirmationSettings =
