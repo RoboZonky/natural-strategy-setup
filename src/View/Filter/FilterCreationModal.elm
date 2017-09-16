@@ -8,108 +8,121 @@ import Bootstrap.Grid as Grid
 import Bootstrap.Grid.Col as Col
 import Bootstrap.Modal as Modal
 import Data.Filter as Filter exposing (Condition(..), Conditions, FilteredItem(..), MarketplaceFilter(..), renderMarketplaceFilter, setFilteredItem)
-import Data.Filter.Condition.Amount as Amount exposing (Amount(..), AmountCondition(..), AmountMsg)
-import Data.Filter.Condition.Interest as Interest exposing (Interest(..), InterestCondition(..), InterestMsg)
-import Data.Filter.Condition.LoanPurpose as LoanPurpose exposing (LoanPurposeCondition(..), PurposeMsg)
-import Data.Filter.Condition.LoanTerm as LoanTerm exposing (LoanTermMsg, TermCondition(..))
-import Data.Filter.Condition.MainIncome as MainIncome exposing (MainIncome(..), MainIncomeCondition(..), MainIncomeMsg)
-import Data.Filter.Condition.Rating as Rating exposing (RatingCondition(..), RatingMsg)
-import Data.Filter.Condition.Region as Region exposing (Region(..), RegionCondition(..), RegionMsg)
-import Data.Filter.Condition.Story as Story exposing (Story(..), StoryCondition(..), StoryMsg)
+import Data.Filter.Condition.Amount as Amount exposing (AmountCondition(..))
+import Data.Filter.Condition.Interest as Interest exposing (InterestCondition(..))
+import Data.Filter.Condition.LoanPurpose as LoanPurpose exposing (LoanPurposeCondition(..))
+import Data.Filter.Condition.LoanTerm as LoanTerm exposing (TermCondition(..))
+import Data.Filter.Condition.MainIncome as MainIncome exposing (MainIncomeCondition(..))
+import Data.Filter.Condition.Rating as Rating exposing (RatingCondition(..))
+import Data.Filter.Condition.Region as Region exposing (RegionCondition(..))
+import Data.Filter.Condition.Story as Story exposing (Story(SHORT), StoryCondition(..))
 import Data.Tooltip as Tooltip
 import Html exposing (Html, div, hr, li, text, ul)
 import Html.Attributes exposing (class, style, value)
 import Html.Events exposing (onClick, onSubmit)
 import Types exposing (..)
-import Util exposing ((=>))
 import View.Tooltip as Tooltip
 
 
-type alias State =
+type alias Model =
     { editedFilter : MarketplaceFilter
+    , withException : Bool
     , openCloseState : Modal.State
     }
 
 
-initialState : State
+initialState : Model
 initialState =
     { editedFilter = Filter.emptyFilter
+    , withException = False
     , openCloseState = Modal.hiddenState
     }
 
 
-update : ModalMsg -> State -> ( State, Maybe MarketplaceFilter )
+update : ModalMsg -> Model -> ( Model, Maybe MarketplaceFilter )
 update msg state =
     case msg of
+        SaveFilter ->
+            ( updateHelp msg state, Just state.editedFilter )
+
+        _ ->
+            ( updateHelp msg state, Nothing )
+
+
+{-| Inner modal messages that don't produce Filter to be added to the main app's model
+-}
+updateHelp : ModalMsg -> Model -> Model
+updateHelp msg state =
+    case msg of
         FilteredItemChange item ->
-            { state | editedFilter = removeAmountConditionIfNotFilteringLoan item <| setFilteredItem item state.editedFilter } => Nothing
+            { state | editedFilter = updatePositiveCondition (removeAmountConditionIfNotFilteringLoan item) <| setFilteredItem item state.editedFilter }
 
         ModalStateMsg st ->
-            { state | editedFilter = Filter.emptyFilter, openCloseState = st } => Nothing
-
-        InterestMsg msg ->
-            { state | editedFilter = updateInterest msg state.editedFilter } => Nothing
-
-        AmountMsg msg ->
-            { state | editedFilter = updateAmount msg state.editedFilter } => Nothing
-
-        StoryMsg msg ->
-            { state | editedFilter = updateStory msg state.editedFilter } => Nothing
-
-        PurposeMsg msg ->
-            { state | editedFilter = updatePurpose msg state.editedFilter } => Nothing
-
-        LoanTermMsg msg ->
-            { state | editedFilter = updateLoanTerm msg state.editedFilter } => Nothing
-
-        MainIncomeMsg msg ->
-            { state | editedFilter = updateMainIncome msg state.editedFilter } => Nothing
+            { state | editedFilter = Filter.emptyFilter, openCloseState = st }
 
         RatingMsg msg ->
-            { state | editedFilter = updateRating msg state.editedFilter } => Nothing
+            { state | editedFilter = updatePositiveCondition (Filter.updateRating msg) state.editedFilter }
+
+        InterestMsg msg ->
+            { state | editedFilter = updatePositiveCondition (Filter.updateInterest msg) state.editedFilter }
+
+        PurposeMsg msg ->
+            { state | editedFilter = updatePositiveCondition (Filter.updatePurpose msg) state.editedFilter }
+
+        LoanTermMsg msg ->
+            { state | editedFilter = updatePositiveCondition (Filter.updateLoanTerm msg) state.editedFilter }
+
+        MainIncomeMsg msg ->
+            { state | editedFilter = updatePositiveCondition (Filter.updateMainIncome msg) state.editedFilter }
+
+        StoryMsg msg ->
+            { state | editedFilter = updatePositiveCondition (Filter.updateStory msg) state.editedFilter }
+
+        AmountMsg msg ->
+            { state | editedFilter = updatePositiveCondition (Filter.updateAmount msg) state.editedFilter }
 
         RegionMsg msg ->
-            { state | editedFilter = updateRegion msg state.editedFilter } => Nothing
+            { state | editedFilter = updatePositiveCondition (Filter.updateRegion msg) state.editedFilter }
 
         AddCondition c ->
-            { state | editedFilter = Filter.addPositiveCondition c state.editedFilter } => Nothing
+            { state | editedFilter = Filter.addPositiveCondition c state.editedFilter }
 
         RemoveInterestCondition ->
-            { state | editedFilter = Filter.removePositiveInterestCondition state.editedFilter } => Nothing
+            { state | editedFilter = updatePositiveCondition Filter.removeInterestCondition state.editedFilter }
 
         RemoveAmountCondition ->
-            { state | editedFilter = Filter.removePositiveAmountCondition state.editedFilter } => Nothing
+            { state | editedFilter = updatePositiveCondition Filter.removeAmountCondition state.editedFilter }
 
         RemoveStoryCondition ->
-            { state | editedFilter = Filter.removePositiveStoryCondition state.editedFilter } => Nothing
+            { state | editedFilter = updatePositiveCondition Filter.removeStoryCondition state.editedFilter }
 
         RemovePurposeCondition ->
-            { state | editedFilter = Filter.removePositivePurposeCondition state.editedFilter } => Nothing
+            { state | editedFilter = updatePositiveCondition Filter.removePurposeCondition state.editedFilter }
 
         RemoveTermCondition ->
-            { state | editedFilter = Filter.removePositiveTermCondition state.editedFilter } => Nothing
+            { state | editedFilter = updatePositiveCondition Filter.removeLoanTermCondition state.editedFilter }
 
         RemoveMainIncomeCondition ->
-            { state | editedFilter = Filter.removePositiveIncomeCondition state.editedFilter } => Nothing
+            { state | editedFilter = updatePositiveCondition Filter.removeMainIncomeCondition state.editedFilter }
 
         RemoveRatingCondition ->
-            { state | editedFilter = Filter.removePositiveRatingCondition state.editedFilter } => Nothing
+            { state | editedFilter = updatePositiveCondition Filter.removeRatingCondition state.editedFilter }
 
         RemoveRegionCondition ->
-            { state | editedFilter = Filter.removePositiveRegionCondition state.editedFilter } => Nothing
+            { state | editedFilter = updatePositiveCondition Filter.removeRegionCondition state.editedFilter }
 
         ModalTooltipMsg tipId tooltipState ->
             {- This case is handled at the level of Main's update -}
-            state => Nothing
+            state
 
         SaveFilter ->
-            { state | editedFilter = Filter.emptyFilter, openCloseState = Modal.hiddenState } => Just state.editedFilter
+            { state | editedFilter = Filter.emptyFilter, openCloseState = Modal.hiddenState }
 
         ModalNoOp ->
-            state => Nothing
+            state
 
 
-view : State -> Tooltip.States -> Html ModalMsg
+view : Model -> Tooltip.States -> Html ModalMsg
 view { editedFilter, openCloseState } tooltipStates =
     Modal.config ModalStateMsg
         |> Modal.large
@@ -266,78 +279,6 @@ showFormForNonemptyCondition condWrapper condForm =
     Maybe.withDefault (text "") << Maybe.map (Html.map condWrapper << condForm)
 
 
-updateInterest : InterestMsg -> MarketplaceFilter -> MarketplaceFilter
-updateInterest msg =
-    let
-        interestUpdater conditions =
-            { conditions | interest = Maybe.map (Interest.update msg) conditions.interest }
-    in
-    updatePositiveCondition interestUpdater
-
-
-updateAmount : AmountMsg -> MarketplaceFilter -> MarketplaceFilter
-updateAmount msg =
-    let
-        amountUpdater conditions =
-            { conditions | amount = Maybe.map (Amount.update msg) conditions.amount }
-    in
-    updatePositiveCondition amountUpdater
-
-
-updateStory : StoryMsg -> MarketplaceFilter -> MarketplaceFilter
-updateStory msg =
-    let
-        storyUpdater conditions =
-            { conditions | story = Maybe.map (Story.update msg) conditions.story }
-    in
-    updatePositiveCondition storyUpdater
-
-
-updatePurpose : PurposeMsg -> MarketplaceFilter -> MarketplaceFilter
-updatePurpose msg =
-    let
-        purposeUpdater conditions =
-            { conditions | purpose = Maybe.map (LoanPurpose.update msg) conditions.purpose }
-    in
-    updatePositiveCondition purposeUpdater
-
-
-updateLoanTerm : LoanTermMsg -> MarketplaceFilter -> MarketplaceFilter
-updateLoanTerm msg =
-    let
-        loanTermUpdater conditions =
-            { conditions | term = Maybe.map (LoanTerm.update msg) conditions.term }
-    in
-    updatePositiveCondition loanTermUpdater
-
-
-updateMainIncome : MainIncomeMsg -> MarketplaceFilter -> MarketplaceFilter
-updateMainIncome msg =
-    let
-        mainIncomeUpdater conditions =
-            { conditions | income = Maybe.map (MainIncome.update msg) conditions.income }
-    in
-    updatePositiveCondition mainIncomeUpdater
-
-
-updateRating : RatingMsg -> MarketplaceFilter -> MarketplaceFilter
-updateRating msg =
-    let
-        regionUpdater conditions =
-            { conditions | rating = Maybe.map (Rating.update msg) conditions.rating }
-    in
-    updatePositiveCondition regionUpdater
-
-
-updateRegion : RegionMsg -> MarketplaceFilter -> MarketplaceFilter
-updateRegion msg =
-    let
-        regionUpdater conditions =
-            { conditions | region = Maybe.map (Region.update msg) conditions.region }
-    in
-    updatePositiveCondition regionUpdater
-
-
 updatePositiveCondition : (Conditions -> Conditions) -> MarketplaceFilter -> MarketplaceFilter
 updatePositiveCondition conditionsUpdater (MarketplaceFilter f) =
     MarketplaceFilter { f | ignoreWhen = conditionsUpdater f.ignoreWhen }
@@ -358,9 +299,9 @@ conditionRow conditionName isSubformEnabled condition removeCondMsg subform =
         ]
 
 
-removeAmountConditionIfNotFilteringLoan : FilteredItem -> MarketplaceFilter -> MarketplaceFilter
-removeAmountConditionIfNotFilteringLoan filteredItem mf =
+removeAmountConditionIfNotFilteringLoan : FilteredItem -> Conditions -> Conditions
+removeAmountConditionIfNotFilteringLoan filteredItem cs =
     if filteredItem /= Loan then
-        Filter.removePositiveAmountCondition mf
+        Filter.removeAmountCondition cs
     else
-        mf
+        cs

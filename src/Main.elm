@@ -21,7 +21,7 @@ import View.Strategy as Strategy
 type alias Model =
     { strategyConfig : StrategyConfiguration
     , accordionState : Accordion.State
-    , filterCreationState : FilterCreationModal.State
+    , filterCreationState : FilterCreationModal.Model
     , tooltipStates : Tooltip.States
     , sliderStates : SliderStates
     }

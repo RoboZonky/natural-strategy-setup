@@ -53,12 +53,6 @@ emptyToZero s =
         s
 
 
-(=>) : a -> b -> ( a, b )
-(=>) =
-    (,)
-infixl 0 =>
-
-
 validate : Bool -> String -> List String
 validate errorCondition error =
     if errorCondition then

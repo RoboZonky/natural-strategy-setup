@@ -18,7 +18,7 @@ import View.TargetBalance as TargetBalance
 import View.TargetPortfolioSize as TargetPortfolioSize
 
 
-form : StrategyConfiguration -> Accordion.State -> FilterCreationModal.State -> Tooltip.States -> SliderStates -> Grid.Column Msg
+form : StrategyConfiguration -> Accordion.State -> FilterCreationModal.Model -> Tooltip.States -> SliderStates -> Grid.Column Msg
 form config accordionState filterCreationState tooltipStates sliderStates =
     Grid.col
         [ Col.xs6 ]

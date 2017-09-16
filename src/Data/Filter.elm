@@ -11,28 +11,36 @@ module Data.Filter
         , filtereedItemFromString
         , isValid
         , marketplaceFilterValidationErrors
-        , removePositiveAmountCondition
-        , removePositiveIncomeCondition
-        , removePositiveInterestCondition
-        , removePositivePurposeCondition
-        , removePositiveRatingCondition
-        , removePositiveRegionCondition
-        , removePositiveStoryCondition
-        , removePositiveTermCondition
+        , removeAmountCondition
+        , removeInterestCondition
+        , removeLoanTermCondition
+        , removeMainIncomeCondition
+        , removePurposeCondition
+        , removeRatingCondition
+        , removeRegionCondition
+        , removeStoryCondition
         , renderFilteredItem
         , renderFilters
         , renderMarketplaceFilter
         , setFilteredItem
+        , updateAmount
+        , updateInterest
+        , updateLoanTerm
+        , updateMainIncome
+        , updatePurpose
+        , updateRating
+        , updateRegion
+        , updateStory
         )
 
-import Data.Filter.Condition.Amount as Amount exposing (AmountCondition, renderAmountCondition)
-import Data.Filter.Condition.Interest as Interest exposing (InterestCondition, renderInterestCondition)
-import Data.Filter.Condition.LoanPurpose as LoanPurpose exposing (LoanPurposeCondition, renderLoanPurposeCondition)
-import Data.Filter.Condition.LoanTerm as LoanTerm exposing (TermCondition, renderTermCondition)
-import Data.Filter.Condition.MainIncome as MainIncome exposing (MainIncomeCondition, renderIncomeCondition)
-import Data.Filter.Condition.Rating as Rating exposing (RatingCondition, renderRatingCondition)
-import Data.Filter.Condition.Region as Region exposing (RegionCondition, renderRegionCondition)
-import Data.Filter.Condition.Story exposing (StoryCondition, renderStoryCondition)
+import Data.Filter.Condition.Amount as Amount exposing (AmountCondition, AmountMsg, renderAmountCondition)
+import Data.Filter.Condition.Interest as Interest exposing (InterestCondition, InterestMsg, renderInterestCondition)
+import Data.Filter.Condition.LoanPurpose as LoanPurpose exposing (LoanPurposeCondition, PurposeMsg, renderLoanPurposeCondition)
+import Data.Filter.Condition.LoanTerm as LoanTerm exposing (LoanTermMsg, TermCondition, renderTermCondition)
+import Data.Filter.Condition.MainIncome as MainIncome exposing (MainIncomeCondition, MainIncomeMsg, renderIncomeCondition)
+import Data.Filter.Condition.Rating as Rating exposing (RatingCondition, RatingMsg, renderRatingCondition)
+import Data.Filter.Condition.Region as Region exposing (RegionCondition, RegionMsg, renderRegionCondition)
+import Data.Filter.Condition.Story as Story exposing (StoryCondition, StoryMsg, renderStoryCondition)
 import Util
 
 
@@ -257,6 +265,46 @@ setInterestCondition c cs =
     { cs | interest = Just c }
 
 
+updateInterest : InterestMsg -> Conditions -> Conditions
+updateInterest msg conditions =
+    { conditions | interest = Maybe.map (Interest.update msg) conditions.interest }
+
+
+updateAmount : AmountMsg -> Conditions -> Conditions
+updateAmount msg conditions =
+    { conditions | amount = Maybe.map (Amount.update msg) conditions.amount }
+
+
+updateStory : StoryMsg -> Conditions -> Conditions
+updateStory msg conditions =
+    { conditions | story = Maybe.map (Story.update msg) conditions.story }
+
+
+updatePurpose : PurposeMsg -> Conditions -> Conditions
+updatePurpose msg conditions =
+    { conditions | purpose = Maybe.map (LoanPurpose.update msg) conditions.purpose }
+
+
+updateLoanTerm : LoanTermMsg -> Conditions -> Conditions
+updateLoanTerm msg conditions =
+    { conditions | term = Maybe.map (LoanTerm.update msg) conditions.term }
+
+
+updateMainIncome : MainIncomeMsg -> Conditions -> Conditions
+updateMainIncome msg conditions =
+    { conditions | income = Maybe.map (MainIncome.update msg) conditions.income }
+
+
+updateRating : RatingMsg -> Conditions -> Conditions
+updateRating msg conditions =
+    { conditions | rating = Maybe.map (Rating.update msg) conditions.rating }
+
+
+updateRegion : RegionMsg -> Conditions -> Conditions
+updateRegion msg conditions =
+    { conditions | region = Maybe.map (Region.update msg) conditions.region }
+
+
 removeAmountCondition : Conditions -> Conditions
 removeAmountCondition cs =
     { cs | amount = Nothing }
@@ -277,13 +325,13 @@ removePurposeCondition cs =
     { cs | purpose = Nothing }
 
 
-removeTermCondition : Conditions -> Conditions
-removeTermCondition cs =
+removeLoanTermCondition : Conditions -> Conditions
+removeLoanTermCondition cs =
     { cs | term = Nothing }
 
 
-removeIncomeCondition : Conditions -> Conditions
-removeIncomeCondition cs =
+removeMainIncomeCondition : Conditions -> Conditions
+removeMainIncomeCondition cs =
     { cs | income = Nothing }
 
 
@@ -295,51 +343,6 @@ removeRatingCondition cs =
 removeRegionCondition : Conditions -> Conditions
 removeRegionCondition cs =
     { cs | region = Nothing }
-
-
-removePositiveAmountCondition : MarketplaceFilter -> MarketplaceFilter
-removePositiveAmountCondition =
-    modifyPositiveConditions removeAmountCondition
-
-
-removePositiveStoryCondition : MarketplaceFilter -> MarketplaceFilter
-removePositiveStoryCondition =
-    modifyPositiveConditions removeStoryCondition
-
-
-removePositiveInterestCondition : MarketplaceFilter -> MarketplaceFilter
-removePositiveInterestCondition =
-    modifyPositiveConditions removeInterestCondition
-
-
-removePositivePurposeCondition : MarketplaceFilter -> MarketplaceFilter
-removePositivePurposeCondition =
-    modifyPositiveConditions removePurposeCondition
-
-
-removePositiveTermCondition : MarketplaceFilter -> MarketplaceFilter
-removePositiveTermCondition =
-    modifyPositiveConditions removeTermCondition
-
-
-removePositiveIncomeCondition : MarketplaceFilter -> MarketplaceFilter
-removePositiveIncomeCondition =
-    modifyPositiveConditions removeIncomeCondition
-
-
-removePositiveRatingCondition : MarketplaceFilter -> MarketplaceFilter
-removePositiveRatingCondition =
-    modifyPositiveConditions removeRatingCondition
-
-
-removePositiveRegionCondition : MarketplaceFilter -> MarketplaceFilter
-removePositiveRegionCondition =
-    modifyPositiveConditions removeRegionCondition
-
-
-modifyPositiveConditions : (Conditions -> Conditions) -> MarketplaceFilter -> MarketplaceFilter
-modifyPositiveConditions updater (MarketplaceFilter mf) =
-    MarketplaceFilter { mf | ignoreWhen = updater mf.ignoreWhen }
 
 
 conditionsToList : Conditions -> List Condition
