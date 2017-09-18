@@ -7,21 +7,15 @@ import Bootstrap.Form.Select as Select
 import Bootstrap.Grid as Grid
 import Bootstrap.Grid.Col as Col
 import Bootstrap.Modal as Modal
+import Bootstrap.Tab as Tab
 import Data.Filter as Filter exposing (FilteredItem(..), MarketplaceFilter(..), renderMarketplaceFilter, setFilteredItem)
-import Data.Filter.Conditions exposing (..)
-import Data.Filter.Conditions.Amount as Amount exposing (AmountCondition(..))
-import Data.Filter.Conditions.Interest as Interest exposing (InterestCondition(..))
-import Data.Filter.Conditions.LoanPurpose as LoanPurpose exposing (LoanPurposeCondition(..))
-import Data.Filter.Conditions.LoanTerm as LoanTerm exposing (LoanTermCondition(..))
-import Data.Filter.Conditions.MainIncome as MainIncome exposing (MainIncomeCondition(..))
-import Data.Filter.Conditions.Rating as Rating exposing (RatingCondition(..))
-import Data.Filter.Conditions.Region as Region exposing (RegionCondition(..))
-import Data.Filter.Conditions.Story as Story exposing (Story(SHORT), StoryCondition(..))
+import Data.Filter.Conditions as Conditions exposing (..)
 import Data.Tooltip as Tooltip
 import Html exposing (Html, div, hr, li, text, ul)
 import Html.Attributes exposing (class, style, value)
 import Html.Events exposing (onClick, onSubmit)
 import Types exposing (..)
+import View.Filter.Conditions as Conditions exposing (conditionsForm)
 import View.Tooltip as Tooltip
 
 
@@ -29,6 +23,7 @@ type alias Model =
     { editedFilter : MarketplaceFilter
     , withException : Bool
     , openCloseState : Modal.State
+    , tabState : Tab.State
     }
 
 
@@ -37,6 +32,7 @@ initialState =
     { editedFilter = Filter.emptyFilter
     , withException = False
     , openCloseState = Modal.hiddenState
+    , tabState = Tab.initialState
     }
 
 
@@ -56,65 +52,26 @@ updateHelp : ModalMsg -> Model -> Model
 updateHelp msg state =
     case msg of
         FilteredItemChange item ->
-            { state | editedFilter = updatePositiveCondition (removeAmountConditionIfNotFilteringLoan item) <| setFilteredItem item state.editedFilter }
+            { state | editedFilter = Filter.updatePositiveConditions (removeAmountConditionIfNotFilteringLoan item) <| setFilteredItem item state.editedFilter }
 
         ModalStateMsg st ->
             { state | editedFilter = Filter.emptyFilter, openCloseState = st }
 
-        RatingMsg msg ->
-            { state | editedFilter = updatePositiveCondition (updateRating msg) state.editedFilter }
+        PositiveConditionsChange condMsg ->
+            { state | editedFilter = Filter.updatePositiveConditions (Conditions.update condMsg) state.editedFilter }
 
-        InterestMsg msg ->
-            { state | editedFilter = updatePositiveCondition (updateInterest msg) state.editedFilter }
+        NegativeConditionsChange condMsg ->
+            { state | editedFilter = Filter.updateNegativeConditions (Conditions.update condMsg) state.editedFilter }
 
-        LoanPurposeMsg msg ->
-            { state | editedFilter = updatePositiveCondition (updatePurpose msg) state.editedFilter }
-
-        LoanTermMsg msg ->
-            { state | editedFilter = updatePositiveCondition (updateLoanTerm msg) state.editedFilter }
-
-        MainIncomeMsg msg ->
-            { state | editedFilter = updatePositiveCondition (updateMainIncome msg) state.editedFilter }
-
-        StoryMsg msg ->
-            { state | editedFilter = updatePositiveCondition (updateStory msg) state.editedFilter }
-
-        AmountMsg msg ->
-            { state | editedFilter = updatePositiveCondition (updateAmount msg) state.editedFilter }
-
-        RegionMsg msg ->
-            { state | editedFilter = updatePositiveCondition (updateRegion msg) state.editedFilter }
-
-        AddCondition c ->
-            { state | editedFilter = Filter.addPositiveCondition c state.editedFilter }
-
-        RemoveInterestCondition ->
-            { state | editedFilter = updatePositiveCondition removeInterestCondition state.editedFilter }
-
-        RemoveAmountCondition ->
-            { state | editedFilter = updatePositiveCondition removeAmountCondition state.editedFilter }
-
-        RemoveStoryCondition ->
-            { state | editedFilter = updatePositiveCondition removeStoryCondition state.editedFilter }
-
-        RemovePurposeCondition ->
-            { state | editedFilter = updatePositiveCondition removePurposeCondition state.editedFilter }
-
-        RemoveTermCondition ->
-            { state | editedFilter = updatePositiveCondition removeLoanTermCondition state.editedFilter }
-
-        RemoveMainIncomeCondition ->
-            { state | editedFilter = updatePositiveCondition removeMainIncomeCondition state.editedFilter }
-
-        RemoveRatingCondition ->
-            { state | editedFilter = updatePositiveCondition removeRatingCondition state.editedFilter }
-
-        RemoveRegionCondition ->
-            { state | editedFilter = updatePositiveCondition removeRegionCondition state.editedFilter }
+        ToggleException flag ->
+            { state | withException = flag }
 
         ModalTooltipMsg tipId tooltipState ->
             {- This case is handled at the level of Main's update -}
             state
+
+        TabMsg tabState ->
+            { state | tabState = tabState }
 
         SaveFilter ->
             { state | editedFilter = Filter.emptyFilter, openCloseState = Modal.hiddenState }
@@ -124,7 +81,7 @@ updateHelp msg state =
 
 
 view : Model -> Tooltip.States -> Html ModalMsg
-view { editedFilter, openCloseState } tooltipStates =
+view { editedFilter, openCloseState, tabState, withException } tooltipStates =
     Modal.config ModalStateMsg
         |> Modal.large
         |> Modal.h5 []
@@ -132,10 +89,15 @@ view { editedFilter, openCloseState } tooltipStates =
             , Tooltip.popoverTipForModal Tooltip.filterCreationTip tooltipStates
             ]
         |> Modal.body []
-            [ modalBody editedFilter
-            ]
+            [ modalBody editedFilter withException tabState ]
         |> Modal.footer []
-            [ Button.button
+            [ Checkbox.checkbox
+                [ Checkbox.onCheck ToggleException
+                , Checkbox.checked withException
+                , Checkbox.inline
+                ]
+                "Filtr s výjimkou"
+            , Button.button
                 [ Button.primary
                 , Button.disabled (not <| Filter.isValid editedFilter)
                 , Button.attrs [ onClick SaveFilter ]
@@ -150,8 +112,8 @@ view { editedFilter, openCloseState } tooltipStates =
         |> Modal.view openCloseState
 
 
-modalBody : MarketplaceFilter -> Html ModalMsg
-modalBody ((MarketplaceFilter state) as mf) =
+modalBody : MarketplaceFilter -> Bool -> Tab.State -> Html ModalMsg
+modalBody ((MarketplaceFilter state) as mf) withException tabState =
     let
         validationErrors =
             Filter.marketplaceFilterValidationErrors mf
@@ -162,18 +124,47 @@ modalBody ((MarketplaceFilter state) as mf) =
             else
                 ul [ style [ ( "color", "red" ) ] ] <|
                     List.map (\e -> li [] [ text e ]) validationErrors
+
+        positiveTab =
+            Tab.item
+                { id = "tab1"
+                , link = Tab.link [] [ text "Podmínky filtru" ]
+                , pane = Tab.pane [] [ Html.map PositiveConditionsChange <| conditionsForm state.whatToFilter state.ignoreWhen ]
+                }
+
+        exceptionTab =
+            Tab.item
+                { id = "tab2"
+                , link = Tab.link [] [ text "Podmínky výjimky" ]
+                , pane = Tab.pane [] [ Html.map NegativeConditionsChange <| conditionsForm state.whatToFilter state.butNotWhen ]
+                }
+
+        tabItems =
+            if withException then
+                [ positiveTab, exceptionTab ]
+            else
+                [ positiveTab ]
     in
     Grid.containerFluid []
         [ Grid.row []
             [ Grid.col
                 [ Col.xs12 ]
                 [ whatToFilterForm
-                , positiveConditionsForm state.whatToFilter state.ignoreWhen
+                , bodyWithTabs tabItems tabState
                 , hr [] []
                 , previewOrValidationErrors
                 ]
             ]
         ]
+
+
+bodyWithTabs : List (Tab.Item ModalMsg) -> Tab.State -> Html ModalMsg
+bodyWithTabs tabItems tabState =
+    Tab.config TabMsg
+        |> Tab.withAnimation
+        --|> Tab.center
+        |> Tab.items tabItems
+        |> Tab.view tabState
 
 
 whatToFilterForm : Html ModalMsg
@@ -200,104 +191,6 @@ whatToFilterSelect =
         , Select.attrs [ class "mx-1" ]
         ]
         optionList
-
-
-positiveConditionsForm : FilteredItem -> Conditions -> Html ModalMsg
-positiveConditionsForm filteredItem conditions =
-    let
-        amountRowOnlyEnabledForLoans =
-            case filteredItem of
-                Loan ->
-                    [ conditionRow "Výše úvěru" (subformEnabled conditions.amount) (Condition_Amount (AmountCondition (Amount.LessThan 0))) RemoveAmountCondition (amountForm conditions.amount) ]
-
-                _ ->
-                    []
-    in
-    div [] <|
-        [ conditionRow "Rating" (subformEnabled conditions.rating) (Condition_Rating (RatingList [])) RemoveRatingCondition (ratingForm conditions.rating)
-        , conditionRow "Úrok" (subformEnabled conditions.interest) (Condition_Interest (InterestCondition (Interest.LessThan 0))) RemoveInterestCondition (interestForm conditions.interest)
-        , conditionRow "Účel úvěru" (subformEnabled conditions.purpose) (Condition_Purpose (LoanPurposeList [])) RemovePurposeCondition (purposeForm conditions.purpose)
-        , conditionRow "Délka úvěru" (subformEnabled conditions.term) (Condition_Term (LoanTermCondition (LoanTerm.LessThan 0))) RemoveTermCondition (termForm conditions.term)
-        , conditionRow "Zdroj příjmů klienta" (subformEnabled conditions.income) (Condition_Income (MainIncomeList [])) RemoveMainIncomeCondition (mainIncomeForm conditions.income)
-        , conditionRow "Příběh" (subformEnabled conditions.story) (Condition_Story (StoryCondition SHORT)) RemoveStoryCondition (storyForm conditions.story)
-        , conditionRow "Kraj klienta" (subformEnabled conditions.region) (Condition_Region (RegionList [])) RemoveRegionCondition (regionForm conditions.region)
-        ]
-            ++ amountRowOnlyEnabledForLoans
-
-
-subformEnabled : Maybe a -> Bool
-subformEnabled mCondition =
-    case mCondition of
-        Nothing ->
-            False
-
-        _ ->
-            True
-
-
-ratingForm : Maybe RatingCondition -> Html ModalMsg
-ratingForm =
-    showFormForNonemptyCondition RatingMsg Rating.ratingForm
-
-
-amountForm : Maybe AmountCondition -> Html ModalMsg
-amountForm =
-    showFormForNonemptyCondition AmountMsg Amount.amountForm
-
-
-interestForm : Maybe InterestCondition -> Html ModalMsg
-interestForm =
-    showFormForNonemptyCondition InterestMsg Interest.interestForm
-
-
-purposeForm : Maybe LoanPurposeCondition -> Html ModalMsg
-purposeForm =
-    showFormForNonemptyCondition LoanPurposeMsg LoanPurpose.loanPurposeForm
-
-
-termForm : Maybe LoanTermCondition -> Html ModalMsg
-termForm =
-    showFormForNonemptyCondition LoanTermMsg LoanTerm.loanTermForm
-
-
-mainIncomeForm : Maybe MainIncomeCondition -> Html ModalMsg
-mainIncomeForm =
-    showFormForNonemptyCondition MainIncomeMsg MainIncome.mainIncomeForm
-
-
-storyForm : Maybe StoryCondition -> Html ModalMsg
-storyForm =
-    showFormForNonemptyCondition StoryMsg Story.storyForm
-
-
-regionForm : Maybe RegionCondition -> Html ModalMsg
-regionForm =
-    showFormForNonemptyCondition RegionMsg Region.regionForm
-
-
-showFormForNonemptyCondition : (condMsg -> ModalMsg) -> (condition -> Html condMsg) -> Maybe condition -> Html ModalMsg
-showFormForNonemptyCondition condWrapper condForm =
-    Maybe.withDefault (text "") << Maybe.map (Html.map condWrapper << condForm)
-
-
-updatePositiveCondition : (Conditions -> Conditions) -> MarketplaceFilter -> MarketplaceFilter
-updatePositiveCondition conditionsUpdater (MarketplaceFilter f) =
-    MarketplaceFilter { f | ignoreWhen = conditionsUpdater f.ignoreWhen }
-
-
-conditionRow : String -> Bool -> Condition -> ModalMsg -> Html ModalMsg -> Html ModalMsg
-conditionRow conditionName isSubformEnabled condition removeCondMsg subform =
-    let
-        onChk checked =
-            if checked then
-                AddCondition condition
-            else
-                removeCondMsg
-    in
-    Grid.row []
-        [ Grid.col [ Col.xs3 ] [ Checkbox.checkbox [ Checkbox.checked isSubformEnabled, Checkbox.onCheck onChk ] conditionName ]
-        , Grid.col [ Col.xs9 ] [ subform ]
-        ]
 
 
 removeAmountConditionIfNotFilteringLoan : FilteredItem -> Conditions -> Conditions

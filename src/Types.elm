@@ -3,19 +3,13 @@ module Types exposing (..)
 import Bootstrap.Accordion as Accordion
 import Bootstrap.Modal as Modal
 import Bootstrap.Popover as Popover
+import Bootstrap.Tab as Tab
 import Data.Filter exposing (FilteredItem, MarketplaceFilter)
-import Data.Filter.Conditions exposing (Condition)
-import Data.Filter.Conditions.Amount exposing (AmountMsg)
-import Data.Filter.Conditions.Interest exposing (InterestMsg)
-import Data.Filter.Conditions.LoanPurpose exposing (LoanPurposeMsg)
-import Data.Filter.Conditions.LoanTerm exposing (LoanTermMsg)
-import Data.Filter.Conditions.MainIncome exposing (MainIncomeMsg)
 import Data.Filter.Conditions.Rating as Rating exposing (Rating, RatingMsg)
-import Data.Filter.Conditions.Region exposing (RegionMsg)
-import Data.Filter.Conditions.Story exposing (StoryMsg)
 import Data.Portfolio exposing (Portfolio)
 import Data.Tooltip exposing (TipId)
 import RangeSlider
+import View.Filter.Conditions as Conditions
 
 
 type Msg
@@ -40,23 +34,10 @@ type Msg
 type ModalMsg
     = FilteredItemChange FilteredItem
     | ModalStateMsg Modal.State
-    | InterestMsg InterestMsg
-    | AmountMsg AmountMsg
-    | StoryMsg StoryMsg
-    | LoanPurposeMsg LoanPurposeMsg
-    | LoanTermMsg LoanTermMsg
-    | MainIncomeMsg MainIncomeMsg
-    | RatingMsg RatingMsg
-    | RegionMsg RegionMsg
-    | AddCondition Condition
-    | RemoveInterestCondition
-    | RemoveAmountCondition
-    | RemoveStoryCondition
-    | RemovePurposeCondition
-    | RemoveTermCondition
-    | RemoveMainIncomeCondition
-    | RemoveRatingCondition
-    | RemoveRegionCondition
+    | PositiveConditionsChange Conditions.Msg
+    | NegativeConditionsChange Conditions.Msg
     | ModalTooltipMsg TipId Popover.State
+    | TabMsg Tab.State
+    | ToggleException Bool
     | SaveFilter
     | ModalNoOp

@@ -2,6 +2,7 @@ module Main exposing (..)
 
 import Bootstrap.Accordion as Accordion
 import Bootstrap.Grid as Grid
+import Bootstrap.Tab as Tab
 import Data.InvestmentShare as InvestmentShare exposing (InvestmentShare(..))
 import Data.Strategy exposing (..)
 import Data.TargetBalance as TargetBalance exposing (TargetBalance(TargetBalance))
@@ -48,10 +49,11 @@ main =
 
 
 subscriptions : Model -> Sub Msg
-subscriptions { sliderStates, accordionState } =
+subscriptions { sliderStates, accordionState, filterCreationState } =
     Sub.batch
         [ Slider.sliderChangeSubscription sliderStates
         , Accordion.subscriptions accordionState AccordionMsg
+        , Tab.subscriptions filterCreationState.tabState (ModalMsg << TabMsg)
         ]
 
 

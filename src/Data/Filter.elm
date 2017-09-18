@@ -12,6 +12,8 @@ module Data.Filter
         , renderFilters
         , renderMarketplaceFilter
         , setFilteredItem
+        , updateNegativeConditions
+        , updatePositiveConditions
         )
 
 import Data.Filter.Conditions exposing (..)
@@ -70,6 +72,16 @@ addPositiveCondition c (MarketplaceFilter mf) =
 addNegativeCondition : Condition -> MarketplaceFilter -> MarketplaceFilter
 addNegativeCondition c (MarketplaceFilter mf) =
     MarketplaceFilter { mf | butNotWhen = addCondition c mf.butNotWhen }
+
+
+updatePositiveConditions : (Conditions -> Conditions) -> MarketplaceFilter -> MarketplaceFilter
+updatePositiveConditions conditionsUpdater (MarketplaceFilter f) =
+    MarketplaceFilter { f | ignoreWhen = conditionsUpdater f.ignoreWhen }
+
+
+updateNegativeConditions : (Conditions -> Conditions) -> MarketplaceFilter -> MarketplaceFilter
+updateNegativeConditions conditionsUpdater (MarketplaceFilter f) =
+    MarketplaceFilter { f | butNotWhen = conditionsUpdater f.butNotWhen }
 
 
 renderMarketplaceFilter : MarketplaceFilter -> String
