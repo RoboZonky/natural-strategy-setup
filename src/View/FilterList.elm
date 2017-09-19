@@ -59,8 +59,16 @@ viewFilter index mf =
 filterCreationControls : Card.BlockItem Msg
 filterCreationControls =
     Card.custom <|
-        Button.button
-            [ Button.primary
-            , Button.attrs [ onClick <| ModalMsg (ModalStateMsg Modal.visibleState) ]
+        div []
+            [ Button.button
+                [ Button.primary
+                , Button.onClick <| ModalMsg <| ModalStateMsg False Modal.visibleState
+                , Button.attrs [ class "mr-1" ]
+                ]
+                [ text "Přidat Filtr" ]
+            , Button.button
+                [ Button.primary
+                , Button.onClick <| ModalMsg <| ModalStateMsg True Modal.visibleState
+                ]
+                [ text "Přidat Filtr s Výjimkou" ]
             ]
-            [ text "Přidat Filtr" ]

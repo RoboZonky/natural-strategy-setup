@@ -33,11 +33,10 @@ type Msg
 
 type ModalMsg
     = FilteredItemChange FilteredItem
-    | ModalStateMsg Modal.State
+    | ModalStateMsg Bool Modal.State
     | PositiveConditionsChange Conditions.Msg
     | NegativeConditionsChange Conditions.Msg
     | ModalTooltipMsg TipId Popover.State
     | TabMsg Tab.State
-    | ToggleException Bool
     | SaveFilter
     | ModalNoOp

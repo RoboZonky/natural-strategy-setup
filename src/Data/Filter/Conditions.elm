@@ -114,9 +114,9 @@ renderCondition condition =
             renderInterestCondition interestCond
 
 
-conditionsValidationErrors : Conditions -> List String
-conditionsValidationErrors =
-    List.concat << List.map conditionValidationError << conditionsToList
+conditionsValidationErrors : String -> Conditions -> List String
+conditionsValidationErrors errorPrefix =
+    List.map (\e -> errorPrefix ++ e) << List.concat << List.map conditionValidationError << conditionsToList
 
 
 conditionValidationError : Condition -> List String

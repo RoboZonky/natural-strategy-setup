@@ -2,7 +2,6 @@ module View.Filter.FilterCreationModal exposing (..)
 
 import Bootstrap.Button as Button
 import Bootstrap.Form as Form
-import Bootstrap.Form.Checkbox as Checkbox
 import Bootstrap.Form.Select as Select
 import Bootstrap.Grid as Grid
 import Bootstrap.Grid.Col as Col
@@ -54,17 +53,14 @@ updateHelp msg state =
         FilteredItemChange item ->
             { state | editedFilter = Filter.updatePositiveConditions (removeAmountConditionIfNotFilteringLoan item) <| setFilteredItem item state.editedFilter }
 
-        ModalStateMsg st ->
-            { state | editedFilter = Filter.emptyFilter, openCloseState = st }
+        ModalStateMsg withException st ->
+            { state | editedFilter = Filter.emptyFilter, openCloseState = st, withException = withException }
 
         PositiveConditionsChange condMsg ->
             { state | editedFilter = Filter.updatePositiveConditions (Conditions.update condMsg) state.editedFilter }
 
         NegativeConditionsChange condMsg ->
             { state | editedFilter = Filter.updateNegativeConditions (Conditions.update condMsg) state.editedFilter }
-
-        ToggleException flag ->
-            { state | withException = flag }
 
         ModalTooltipMsg tipId tooltipState ->
             {- This case is handled at the level of Main's update -}
@@ -82,22 +78,20 @@ updateHelp msg state =
 
 view : Model -> Tooltip.States -> Html ModalMsg
 view { editedFilter, openCloseState, tabState, withException } tooltipStates =
-    Modal.config ModalStateMsg
+    let
+        modalTitle =
+            if withException then
+                "Vytvořit filtr s výjimkou"
+            else
+                "Vytvořit filtr"
+    in
+    Modal.config (ModalStateMsg withException)
         |> Modal.large
-        |> Modal.h5 []
-            [ text "Vytvořit filtr"
-            , Tooltip.popoverTipForModal Tooltip.filterCreationTip tooltipStates
-            ]
+        |> modalHeader withException tooltipStates
         |> Modal.body []
             [ modalBody editedFilter withException tabState ]
         |> Modal.footer []
-            [ Checkbox.checkbox
-                [ Checkbox.onCheck ToggleException
-                , Checkbox.checked withException
-                , Checkbox.inline
-                ]
-                "Filtr s výjimkou"
-            , Button.button
+            [ Button.button
                 [ Button.primary
                 , Button.disabled (not <| Filter.isValid editedFilter)
                 , Button.attrs [ onClick SaveFilter ]
@@ -105,11 +99,25 @@ view { editedFilter, openCloseState, tabState, withException } tooltipStates =
                 [ text "Přidat" ]
             , Button.button
                 [ Button.danger
-                , Button.attrs [ onClick <| ModalStateMsg Modal.hiddenState ]
+                , Button.attrs [ onClick <| ModalStateMsg withException Modal.hiddenState ]
                 ]
                 [ text "Zrušit" ]
             ]
         |> Modal.view openCloseState
+
+
+modalHeader : Bool -> Tooltip.States -> Modal.Config ModalMsg -> Modal.Config ModalMsg
+modalHeader withException tooltipStates =
+    if withException then
+        Modal.h5 []
+            [ text "Vytvořit filtr s výjimkou"
+            , Tooltip.popoverTipForModal Tooltip.complexFilterCreationTip tooltipStates
+            ]
+    else
+        Modal.h5 []
+            [ text "Vytvořit filtr"
+            , Tooltip.popoverTipForModal Tooltip.simpleFilterCreationTip tooltipStates
+            ]
 
 
 modalBody : MarketplaceFilter -> Bool -> Tab.State -> Html ModalMsg
@@ -125,32 +133,18 @@ modalBody ((MarketplaceFilter state) as mf) withException tabState =
                 ul [ style [ ( "color", "red" ) ] ] <|
                     List.map (\e -> li [] [ text e ]) validationErrors
 
-        positiveTab =
-            Tab.item
-                { id = "tab1"
-                , link = Tab.link [] [ text "Podmínky filtru" ]
-                , pane = Tab.pane [] [ Html.map PositiveConditionsChange <| conditionsForm state.whatToFilter state.ignoreWhen ]
-                }
-
-        exceptionTab =
-            Tab.item
-                { id = "tab2"
-                , link = Tab.link [] [ text "Podmínky výjimky" ]
-                , pane = Tab.pane [] [ Html.map NegativeConditionsChange <| conditionsForm state.whatToFilter state.butNotWhen ]
-                }
-
-        tabItems =
+        conditionsFormBody =
             if withException then
-                [ positiveTab, exceptionTab ]
+                bodyWithTabs mf tabState
             else
-                [ positiveTab ]
+                simpleBody mf
     in
     Grid.containerFluid []
         [ Grid.row []
             [ Grid.col
                 [ Col.xs12 ]
                 [ whatToFilterForm
-                , bodyWithTabs tabItems tabState
+                , conditionsFormBody
                 , hr [] []
                 , previewOrValidationErrors
                 ]
@@ -158,13 +152,28 @@ modalBody ((MarketplaceFilter state) as mf) withException tabState =
         ]
 
 
-bodyWithTabs : List (Tab.Item ModalMsg) -> Tab.State -> Html ModalMsg
-bodyWithTabs tabItems tabState =
+bodyWithTabs : MarketplaceFilter -> Tab.State -> Html ModalMsg
+bodyWithTabs (MarketplaceFilter state) tabState =
     Tab.config TabMsg
         |> Tab.withAnimation
-        --|> Tab.center
-        |> Tab.items tabItems
+        |> Tab.items
+            [ Tab.item
+                { id = "tab1"
+                , link = Tab.link [] [ text "Podmínky filtru" ]
+                , pane = Tab.pane [] [ simpleBody (MarketplaceFilter state) ]
+                }
+            , Tab.item
+                { id = "tab2"
+                , link = Tab.link [] [ text "Podmínky výjimky" ]
+                , pane = Tab.pane [] [ Html.map NegativeConditionsChange <| conditionsForm state.whatToFilter state.butNotWhen ]
+                }
+            ]
         |> Tab.view tabState
+
+
+simpleBody : MarketplaceFilter -> Html ModalMsg
+simpleBody (MarketplaceFilter state) =
+    Html.map PositiveConditionsChange <| conditionsForm state.whatToFilter state.ignoreWhen
 
 
 whatToFilterForm : Html ModalMsg

@@ -56,7 +56,9 @@ marketplaceFilterValidationErrors (MarketplaceFilter mf) =
         atLeastOnePositiveCondition =
             Util.validate (List.isEmpty <| conditionsToList mf.ignoreWhen) "Filtr musí obsahovat aspoň jednu podmínku"
     in
-    atLeastOnePositiveCondition ++ conditionsValidationErrors mf.ignoreWhen
+    atLeastOnePositiveCondition
+        ++ conditionsValidationErrors "" mf.ignoreWhen
+        ++ conditionsValidationErrors "Výjimka - " mf.butNotWhen
 
 
 setFilteredItem : FilteredItem -> MarketplaceFilter -> MarketplaceFilter
