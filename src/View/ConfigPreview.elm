@@ -16,13 +16,16 @@ view model =
     let
         strategyString =
             Strategy.renderStrategyConfiguration model
+
+        strategyStringRowCount =
+            List.length <| String.lines strategyString
     in
     Grid.col
         [ Col.xs6 ]
         [ Grid.row []
             [ Grid.col []
                 [ Textarea.textarea
-                    [ Textarea.rows 40
+                    [ Textarea.rows <| strategyStringRowCount + 1
                     , Textarea.value strategyString
                     , Textarea.attrs [ readonly True, style [ ( "width", "100%" ) ] ]
                     ]
