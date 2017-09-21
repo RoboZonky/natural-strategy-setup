@@ -6,7 +6,7 @@ import Bootstrap.Card as Card
 import Bootstrap.Grid as Grid
 import Bootstrap.Grid.Col as Col
 import Bootstrap.Modal as Modal
-import Data.Filter exposing (MarketplaceFilter, renderMarketplaceFilter)
+import Data.Filter exposing (FilteredItem(..), MarketplaceFilter, renderMarketplaceFilter)
 import Data.Tooltip as Tooltip
 import Html exposing (Html, button, div, h2, h3, pre, span, text)
 import Html.Attributes exposing (class, href, style)
@@ -58,17 +58,18 @@ viewFilter index mf =
 
 filterCreationControls : Card.BlockItem Msg
 filterCreationControls =
+    let
+        creationButton filteredItem buttonText =
+            Button.button
+                [ Button.primary
+                , Button.onClick <| ModalMsg <| ModalStateMsg filteredItem Modal.visibleState
+                , Button.attrs [ class "mx-1" ]
+                ]
+                [ text buttonText ]
+    in
     Card.custom <|
         div []
-            [ Button.button
-                [ Button.primary
-                , Button.onClick <| ModalMsg <| ModalStateMsg False Modal.visibleState
-                , Button.attrs [ class "mr-1" ]
-                ]
-                [ text "Přidat Filtr" ]
-            , Button.button
-                [ Button.primary
-                , Button.onClick <| ModalMsg <| ModalStateMsg True Modal.visibleState
-                ]
-                [ text "Přidat Filtr s Výjimkou" ]
+            [ creationButton Loan "Ignorovat Úvěry"
+            , creationButton Participation "Ignorovat Participace"
+            , creationButton Loan_And_Participation "Ignorovat Vše"
             ]

@@ -6,7 +6,9 @@ module Data.Filter
         , addPositiveCondition
         , emptyFilter
         , filtereedItemFromString
+        , getFilteredItem
         , isValid
+        , itemToPluralString
         , marketplaceFilterValidationErrors
         , renderFilteredItem
         , renderFilters
@@ -66,6 +68,11 @@ setFilteredItem newItem (MarketplaceFilter mf) =
     MarketplaceFilter { mf | whatToFilter = newItem }
 
 
+getFilteredItem : MarketplaceFilter -> FilteredItem
+getFilteredItem (MarketplaceFilter { whatToFilter }) =
+    whatToFilter
+
+
 addPositiveCondition : Condition -> MarketplaceFilter -> MarketplaceFilter
 addPositiveCondition c (MarketplaceFilter mf) =
     MarketplaceFilter { mf | ignoreWhen = addCondition c mf.ignoreWhen }
@@ -118,6 +125,19 @@ renderFilteredItem item =
 
         Loan ->
             "úvěr"
+
+
+itemToPluralString : FilteredItem -> String
+itemToPluralString item =
+    case item of
+        Loan ->
+            "Půjčky"
+
+        Participation ->
+            "Participace"
+
+        Loan_And_Participation ->
+            "Půjčky i participace"
 
 
 filtereedItemFromString : String -> FilteredItem

@@ -3,7 +3,6 @@ module Types exposing (..)
 import Bootstrap.Accordion as Accordion
 import Bootstrap.Modal as Modal
 import Bootstrap.Popover as Popover
-import Bootstrap.Tab as Tab
 import Data.Filter exposing (FilteredItem, MarketplaceFilter)
 import Data.Filter.Conditions.Rating as Rating exposing (Rating, RatingMsg)
 import Data.Portfolio exposing (Portfolio)
@@ -32,11 +31,10 @@ type Msg
 
 
 type ModalMsg
-    = FilteredItemChange FilteredItem
-    | ModalStateMsg Bool Modal.State
+    = TogglePositiveNegativeSubform
+    | ModalStateMsg FilteredItem Modal.State
     | PositiveConditionsChange Conditions.Msg
     | NegativeConditionsChange Conditions.Msg
     | ModalTooltipMsg TipId Popover.State
-    | TabMsg Tab.State
     | SaveFilter
     | ModalNoOp

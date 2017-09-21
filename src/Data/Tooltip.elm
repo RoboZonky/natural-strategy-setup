@@ -2,14 +2,13 @@ module Data.Tooltip
     exposing
         ( States
         , TipId
-        , complexFilterCreationTip
         , confirmationTip
+        , filterCreationTip
         , filterListTip
         , getState
         , getTooltipText
         , initialStates
         , portfolioStructureTip
-        , simpleFilterCreationTip
         , update
         )
 
@@ -26,14 +25,8 @@ knownTooltips =
     [ ( portfolioStructureTip, "Struktura portfolia definuje požadované rozložení zůstatkové částky do úvěrů na základě ratingu. Můžete zvolit jedno ze tří předdefinovaných portfolií (konzervativní, balancované, progresivní) nebo zvolte prázné a vyplňte požadované procentuální podíly sami." )
     , ( confirmationTip, "Úvěry s ratingem A, B, C a D jsou velmi žádané a v prvních minutách po uvedení na tržiště jsou chráněny CAPTCHA. Pokud pro ně nezapnete mobilní notifikace, robotovi se je s největší pravděpodobností nepodaří zainvestovat." )
     , ( filterListTip, "Filtry umožňují ignorovat některé úvěry (a participace) na tržišti. Daný úvěr (či participace) bude ignorován, pokud splní podmínky ALESPOŇ JEDNOHO jednoho z Vámi definovaných filtrů" )
-    , ( simpleFilterCreationTip, simpleFilterTip )
-    , ( complexFilterCreationTip, simpleFilterTip ++ " Pokud však zároveň splní VŠECHNY podmínky výjimky, ignorován nebude." )
+    , ( filterCreationTip, "Filtr specifikuje jednu nebo více podmínek určujících, kdy má být úvěr (či participace) ignorován. Daný úvěr (či participace) bude ignorován, pokud splní VŠECHNY podmínky, které zde zvolíte.  Pokud však zároveň splní VŠECHNY podmínky výjimky, ignorován nebude." )
     ]
-
-
-simpleFilterTip : String
-simpleFilterTip =
-    "Filtr specifikuje jednu nebo více podmínek určujících, kdy má být úvěr (či participace) ignorován. Daný úvěr (či participace) bude ignorován, pokud splní VŠECHNY podmínky, které zde zvolíte."
 
 
 internalTipsDict : Dict Int String
@@ -84,11 +77,6 @@ filterListTip =
     TipId 3
 
 
-simpleFilterCreationTip : TipId
-simpleFilterCreationTip =
+filterCreationTip : TipId
+filterCreationTip =
     TipId 4
-
-
-complexFilterCreationTip : TipId
-complexFilterCreationTip =
-    TipId 5
