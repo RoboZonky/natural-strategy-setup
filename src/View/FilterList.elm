@@ -69,7 +69,8 @@ filterCreationControls =
     in
     Card.custom <|
         div []
-            [ creationButton Loan "Ignorovat Úvěry"
-            , creationButton Participation "Ignorovat Participace"
-            , creationButton Loan_And_Participation "Ignorovat Vše"
+            [ text "Přidat filtr pro "
+            , creationButton Loan "Úvěry"
+            , creationButton Participation "Participace"
+            , creationButton Loan_And_Participation "Obojí"
             ]

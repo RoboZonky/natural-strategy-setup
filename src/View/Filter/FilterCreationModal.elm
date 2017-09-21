@@ -70,7 +70,7 @@ updateHelp msg model =
 view : Model -> Tooltip.States -> Html ModalMsg
 view { editedFilter, openCloseState, editingPositiveSubform } tooltipStates =
     let
-        middleButtonText =
+        exceptionButtonText =
             if editingPositiveSubform then
                 "Přidat Výjimku >>"
             else
@@ -95,15 +95,15 @@ view { editedFilter, openCloseState, editingPositiveSubform } tooltipStates =
                 [ text "Zrušit" ]
             , Button.button
                 [ Button.success
-                , Button.attrs [ onClick TogglePositiveNegativeSubform ]
-                ]
-                [ text middleButtonText ]
-            , Button.button
-                [ Button.primary
                 , Button.disabled (not <| Filter.isValid editedFilter)
                 , Button.attrs [ onClick SaveFilter ]
                 ]
                 [ text "Uložit" ]
+            , Button.button
+                [ Button.secondary
+                , Button.attrs [ onClick TogglePositiveNegativeSubform ]
+                ]
+                [ text exceptionButtonText ]
             ]
         |> Modal.view openCloseState
 
