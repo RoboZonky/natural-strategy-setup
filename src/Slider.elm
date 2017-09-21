@@ -51,14 +51,7 @@ sliderChangeSubscription allSliderStates =
 
 updateSliders : Rating -> RangeSlider.Msg -> SliderStates -> SliderStates
 updateSliders rtg msg allSliderStates =
-    let
-        prevState =
-            AllDict.get rtg allSliderStates |> Maybe.withDefault percentageSlider
-
-        ( newState, commandNoneSoWeCanSafelyIgnoreIt {- See https://github.com/stephenreddek/elm-range-slider/issues/6 -} ) =
-            RangeSlider.update prevState msg
-    in
-    AllDict.insert rtg newState allSliderStates
+    AllDict.update rtg (Maybe.map (RangeSlider.update msg)) allSliderStates
 
 
 getSliderRangeFor : Rating -> SliderStates -> Share
