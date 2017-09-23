@@ -67,7 +67,7 @@ validationErrors (LoanTermCondition t) =
 
 validateInt : Int -> List String
 validateInt x =
-    Util.validate (x < 0) "Délka úvěru: musí být kladné číslo"
+    Util.validate (x < 0 || 84 < x) "Délka úvěru: musí být v rozmezí 0 až 84"
 
 
 validateMinNotGtMax : Int -> Int -> List String

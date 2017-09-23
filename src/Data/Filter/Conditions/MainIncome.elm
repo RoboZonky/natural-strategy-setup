@@ -3,6 +3,7 @@ module Data.Filter.Conditions.MainIncome
         ( MainIncome(..)
         , MainIncomeCondition(..)
         , MainIncomeMsg
+        , allIncomes
         , defaultIncomeCondition
         , mainIncomeForm
         , renderMainIncomeCondition
@@ -67,8 +68,8 @@ mainIncomeToString mainIncome =
             "jiné"
 
 
-allIncomesList : List MainIncome
-allIncomesList =
+allIncomes : List MainIncome
+allIncomes =
     [ EMPLOYMENT, ENTREPRENEUR, LIBERAL_PROFESSION, MATERNITY_LEAVE, PENSION, SELF_EMPLOYMENT, STUDENT, UNEMPLOYED, OTHER ]
 
 
@@ -99,7 +100,7 @@ update msg (MainIncomeList ilist) =
 
 mainIncomeForm : MainIncomeCondition -> Html MainIncomeMsg
 mainIncomeForm (MainIncomeList plist) =
-    allIncomesList
+    allIncomes
         |> List.map (\p -> mainIncomeCheckbox p (List.member p plist))
         |> div []
 

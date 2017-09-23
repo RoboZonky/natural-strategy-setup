@@ -7,7 +7,7 @@ module Data.PortfolioStructure
         , renderPortfolioShares
         )
 
-import AllDict as Dict exposing (AllDict)
+import AllDict exposing (AllDict)
 import Data.Filter.Conditions.Rating as Rating exposing (Rating(..))
 import Data.Portfolio exposing (Portfolio(Empty))
 import Util
@@ -43,7 +43,7 @@ renderPortfolioShares portfolio shares =
     case portfolio of
         -- Only render this section when user "overrides" predefined DefaultPortfolios
         Empty ->
-            Dict.toList shares
+            AllDict.toList shares
                 -- Only render share in the config when maximum > 0
                 |> List.filter (\( _, ( _, mx ) ) -> mx > 0)
                 |> List.map renderPortfolioShare

@@ -3,6 +3,7 @@ module Data.Filter.Conditions.Region
         ( Region(..)
         , RegionCondition(..)
         , RegionMsg
+        , allRegions
         , defaultRegionCondition
         , regionForm
         , renderRegionCondition

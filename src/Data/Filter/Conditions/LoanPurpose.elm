@@ -3,6 +3,7 @@ module Data.Filter.Conditions.LoanPurpose
         ( LoanPurpose(..)
         , LoanPurposeCondition(..)
         , LoanPurposeMsg
+        , allPurposes
         , defaultLoanPurposeCondition
         , loanPurposeForm
         , renderLoanPurposeCondition

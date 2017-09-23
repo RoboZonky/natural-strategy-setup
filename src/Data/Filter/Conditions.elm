@@ -42,8 +42,8 @@ type alias Conditions =
     , purpose : Maybe LoanPurposeCondition
     , story : Maybe StoryCondition
     , term : Maybe LoanTermCondition
-    , amount : Maybe AmountCondition
     , interest : Maybe InterestCondition
+    , amount : Maybe AmountCondition
     }
 
 

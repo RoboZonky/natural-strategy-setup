@@ -30,16 +30,7 @@ type alias SliderStates =
 
 initialSliderStates : SliderStates
 initialSliderStates =
-    AllDict.fromList Rating.hash
-        [ ( A_Double_Star, percentageSlider )
-        , ( A_Star, percentageSlider )
-        , ( A_Double_Plus, percentageSlider )
-        , ( A_Plus, percentageSlider )
-        , ( A, percentageSlider )
-        , ( B, percentageSlider )
-        , ( C, percentageSlider )
-        , ( D, percentageSlider )
-        ]
+    AllDict.fromList Rating.hash <| List.map (\r -> ( r, percentageSlider )) Rating.allRatings
 
 
 sliderChangeSubscription : SliderStates -> Sub Types.Msg
