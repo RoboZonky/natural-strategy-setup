@@ -1,15 +1,15 @@
-module Test.RandomStrategy exposing (strategyConfigurationGen)
+module Test.RandomStrategy exposing (..)
 
-import AllDict exposing (AllDict)
+import AllDict
 import Data.Confirmation exposing (ConfirmationSettings)
 import Data.Filter exposing (FilteredItem(..), MarketplaceFilter(..))
 import Data.Filter.Conditions exposing (Conditions)
 import Data.Filter.Conditions.Amount as Amount exposing (AmountCondition(AmountCondition))
-import Data.Filter.Conditions.Interest as Interest exposing (Interest, InterestCondition(..))
+import Data.Filter.Conditions.Interest as Interest exposing (InterestCondition(..))
 import Data.Filter.Conditions.LoanPurpose as LoanPurpose exposing (LoanPurposeCondition(LoanPurposeList))
 import Data.Filter.Conditions.LoanTerm as LoanTerm exposing (LoanTermCondition(..))
 import Data.Filter.Conditions.MainIncome as MainIncome exposing (MainIncomeCondition(..))
-import Data.Filter.Conditions.Rating as Rating exposing (Rating, RatingCondition(RatingList))
+import Data.Filter.Conditions.Rating as Rating exposing (RatingCondition(RatingList))
 import Data.Filter.Conditions.Region as Region exposing (RegionCondition(RegionList))
 import Data.Filter.Conditions.Story exposing (Story(..), StoryCondition(StoryCondition))
 import Data.Investment as Investment exposing (InvestmentsPerRating)
@@ -21,6 +21,7 @@ import Data.TargetBalance as TargetBalance exposing (TargetBalance(..))
 import Data.TargetPortfolioSize as TargetPortfoliSize exposing (TargetPortfolioSize(TargetPortfolioSize))
 import Random exposing (Generator)
 import Random.Extra as Random
+import Random.List
 
 
 strategyConfigurationGen : Generator StrategyConfiguration
@@ -113,6 +114,7 @@ participationConditions =
 
 conditionsPartSharedByAllFilteredItems : Generator (Maybe AmountCondition -> Conditions)
 conditionsPartSharedByAllFilteredItems =
+    -- TODO this sometimes generates empty conditions, which can't be created in UI - prevent that
     Random.map Conditions (maybeCondition regionConditionGen)
         |> Random.andMap (maybeCondition ratingConditionGen)
         |> Random.andMap (maybeCondition incomeConditionGen)
@@ -129,22 +131,22 @@ maybeCondition cgen =
 
 regionConditionGen : Generator RegionCondition
 regionConditionGen =
-    randomSubset Region.allRegions |> Random.map RegionList
+    randomNonemptySubset Region.allRegions |> Random.map RegionList
 
 
 ratingConditionGen : Generator RatingCondition
 ratingConditionGen =
-    randomSubset Rating.allRatings |> Random.map RatingList
+    randomNonemptySubset Rating.allRatings |> Random.map RatingList
 
 
 incomeConditionGen : Generator MainIncomeCondition
 incomeConditionGen =
-    randomSubset MainIncome.allIncomes |> Random.map MainIncomeList
+    randomNonemptySubset MainIncome.allIncomes |> Random.map MainIncomeList
 
 
 purposeConditionGen : Generator LoanPurposeCondition
 purposeConditionGen =
-    randomSubset LoanPurpose.allPurposes |> Random.map LoanPurposeList
+    randomNonemptySubset LoanPurpose.allPurposes |> Random.map LoanPurposeList
 
 
 storyConditionGen : Generator StoryCondition
@@ -156,13 +158,16 @@ storyConditionGen =
 termConditionGen : Generator LoanTermCondition
 termConditionGen =
     let
+        minLoanTerm =
+            0
+
         maxLoanTerm =
             84
     in
     Random.choices
-        [ Random.map LoanTerm.LessThan (Random.int 0 maxLoanTerm)
-        , Random.int 0 maxLoanTerm |> Random.andThen (\mi -> Random.int mi maxLoanTerm |> Random.map (\mx -> LoanTerm.Between mi mx))
-        , Random.map LoanTerm.MoreThan (Random.int 0 maxLoanTerm)
+        [ Random.map LoanTerm.LessThan (Random.int (minLoanTerm + 1 {- 0 is invalid, as parser subtract 1 -}) (maxLoanTerm + 1))
+        , Random.int minLoanTerm maxLoanTerm |> Random.andThen (\mi -> Random.int mi maxLoanTerm |> Random.map (\mx -> LoanTerm.Between mi mx))
+        , Random.map LoanTerm.MoreThan (Random.int minLoanTerm (maxLoanTerm - 1 {- max is invalid, as parser adds 1 -}))
         ]
         |> Random.map LoanTermCondition
 
@@ -234,21 +239,27 @@ targetBalanceGen =
 
 confirmationSettingsGen : Generator ConfirmationSettings
 confirmationSettingsGen =
-    randomSubset Rating.allRatings |> Random.map RatingList
+    randomNonemptySubset Rating.allRatings |> Random.map RatingList
 
 
-randomSubset : List a -> Generator (List a)
-randomSubset whatToSamleFrom =
-    Random.list (List.length whatToSamleFrom) Random.bool
+randomNonemptySubset : List a -> Generator (List a)
+randomNonemptySubset whatToSamleFrom =
+    let
+        totalElemCount =
+            List.length whatToSamleFrom
+    in
+    Random.int 1 totalElemCount
+        |> Random.map (\selectedElemCount -> List.repeat selectedElemCount True ++ List.repeat (totalElemCount - selectedElemCount) False)
+        |> Random.andThen (\bools -> Random.List.shuffle bools)
         |> Random.map
             (\bools ->
                 List.map2 (,) bools whatToSamleFrom
                     |> List.filterMap
                         (\( flag, thing ) ->
                             if flag then
-                                Nothing
-                            else
                                 Just thing
+                            else
+                                Nothing
                         )
             )
 

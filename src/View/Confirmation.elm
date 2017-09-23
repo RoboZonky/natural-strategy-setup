@@ -2,10 +2,10 @@ module View.Confirmation exposing (form)
 
 import Bootstrap.Card as Card
 import Bootstrap.Form as Form
-import Data.Confirmation as Confirmation exposing (ConfirmationSettings)
-import Data.Filter.Conditions.Rating as Rating exposing (RatingCondition(RatingList))
+import Data.Confirmation exposing (ConfirmationSettings)
+import Data.Filter.Conditions.Rating as Rating
 import Data.Tooltip as Tooltip
-import Html exposing (Html, fieldset, legend, p, text)
+import Html exposing (legend, text)
 import Types exposing (..)
 import View.Tooltip as Tooltip
 

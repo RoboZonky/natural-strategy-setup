@@ -14,7 +14,7 @@ module Data.Filter.Conditions.Rating
         )
 
 import Bootstrap.Form.Checkbox as Checkbox
-import Html exposing (Html, div, input, label, text)
+import Html exposing (Html, div)
 import List.Extra as List
 import Util
 

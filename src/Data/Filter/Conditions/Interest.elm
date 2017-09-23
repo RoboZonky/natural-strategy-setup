@@ -29,11 +29,6 @@ type InterestCondition
     = InterestCondition Interest
 
 
-defaultInterestCondition : InterestCondition
-defaultInterestCondition =
-    InterestCondition (MoreThan 0)
-
-
 interestToString : Interest -> String
 interestToString interest =
     case interest of
@@ -111,7 +106,7 @@ whichEnabled interest =
 
 
 update : InterestMsg -> InterestCondition -> InterestCondition
-update msg ((InterestCondition i) as ic) =
+update msg ic =
     case msg of
         SetLessThan hi ->
             emptyToZero hi |> String.toFloat |> Result.map (InterestCondition << LessThan) |> Result.withDefault ic

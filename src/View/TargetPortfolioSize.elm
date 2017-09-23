@@ -5,7 +5,7 @@ import Bootstrap.Form as Form
 import Bootstrap.Form.Input as Input
 import Bootstrap.Form.Radio as Radio
 import Data.TargetPortfolioSize exposing (TargetPortfolioSize(..))
-import Html exposing (Html, legend, text)
+import Html exposing (legend, text)
 import Html.Attributes as Attr exposing (class)
 import Html.Events exposing (onSubmit)
 import Types exposing (..)

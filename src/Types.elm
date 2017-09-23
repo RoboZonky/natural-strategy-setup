@@ -4,7 +4,7 @@ import Bootstrap.Accordion as Accordion
 import Bootstrap.Modal as Modal
 import Bootstrap.Popover as Popover
 import Data.Filter exposing (FilteredItem, MarketplaceFilter)
-import Data.Filter.Conditions.Rating as Rating exposing (Rating, RatingMsg)
+import Data.Filter.Conditions.Rating as Rating exposing (Rating)
 import Data.Portfolio exposing (Portfolio)
 import Data.Tooltip exposing (TipId)
 import RangeSlider

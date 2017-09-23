@@ -6,8 +6,8 @@ import Bootstrap.Form.Textarea as Textarea
 import Bootstrap.Grid as Grid
 import Bootstrap.Grid.Col as Col
 import Data.Strategy as Strategy exposing (StrategyConfiguration)
-import Html exposing (Html, a, div, text, textarea)
-import Html.Attributes exposing (cols, downloadAs, href, readonly, rows, style, value, width)
+import Html exposing (text)
+import Html.Attributes exposing (downloadAs, href, readonly, style)
 import Types exposing (..)
 
 

@@ -2,7 +2,7 @@ module Test.TestApp exposing (..)
 
 import Data.Strategy as Strategy
 import Html exposing (Html, button, div, input, text, textarea)
-import Html.Attributes exposing (cols, id, readonly, rows, style, type_, value)
+import Html.Attributes exposing (cols, id, readonly, rows, type_, value)
 import Html.Events exposing (onClick, onInput)
 import Random
 import Test.RandomStrategy as RandomStrategy
@@ -56,7 +56,7 @@ view seed =
             []
         , div []
             [ button [ onClick PrevSeed ] [ text "Previous Seed" ]
-            , input [ onInput SetSeed, type_ "text", value (toString seed) ] []
+            , input [ onInput SetSeed, type_ "text", value (toString seed), id "seed" ] []
             , button [ onClick NextSeed, id "nextSeedButton" ] [ text "Next Seed" ]
             ]
         ]

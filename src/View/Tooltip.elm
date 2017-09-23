@@ -9,8 +9,8 @@ import Json.Decode
 import Types exposing (ModalMsg(ModalNoOp, ModalTooltipMsg), Msg(NoOp, TooltipMsg))
 
 
-icon : Int -> Html a
-icon width =
+icon : Html a
+icon =
     i
         [ class "fa fa-question-circle ml-1"
         , style [ ( "font-size", "18px" ), ( "color", "gray" ) ]
@@ -20,12 +20,12 @@ icon width =
 
 popoverTip : TipId -> Tooltip.States -> Html Msg
 popoverTip =
-    popover TooltipMsg NoOp (icon 18)
+    popover TooltipMsg NoOp icon
 
 
 popoverTipForModal : TipId -> Tooltip.States -> Html ModalMsg
 popoverTipForModal =
-    popover ModalTooltipMsg ModalNoOp (icon 18)
+    popover ModalTooltipMsg ModalNoOp icon
 
 
 {-| Tip in a rectangle that is hidden by default and is displayed by hovering mouse over elementToHoverOn

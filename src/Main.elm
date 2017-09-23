@@ -48,7 +48,7 @@ main =
 
 
 subscriptions : Model -> Sub Msg
-subscriptions { sliderStates, accordionState, filterCreationState } =
+subscriptions { sliderStates, accordionState } =
     Sub.batch
         [ Slider.sliderChangeSubscription sliderStates
         , Accordion.subscriptions accordionState AccordionMsg

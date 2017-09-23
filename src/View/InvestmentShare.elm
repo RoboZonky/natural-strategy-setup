@@ -5,9 +5,9 @@ import Bootstrap.Form as Form
 import Bootstrap.Form.Input as Input
 import Bootstrap.Form.Radio as Radio
 import Data.InvestmentShare exposing (InvestmentShare(..))
-import Html exposing (Html, div, fieldset, input, label, legend, text)
-import Html.Attributes as Attr exposing (checked, class, disabled, name, style, type_, value)
-import Html.Events exposing (onClick, onInput, onSubmit)
+import Html exposing (div, legend, text)
+import Html.Attributes as Attr exposing (class, disabled, style)
+import Html.Events exposing (onInput, onSubmit)
 import Types exposing (..)
 import Util
 

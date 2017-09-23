@@ -1,6 +1,6 @@
 module View.Investment exposing (form)
 
-import AllDict exposing (AllDict)
+import AllDict
 import Bootstrap.Accordion as Accordion
 import Bootstrap.Card as Card
 import Bootstrap.Form as Form

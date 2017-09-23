@@ -5,7 +5,7 @@ import Bootstrap.Form as Form
 import Bootstrap.Form.Input as Input
 import Bootstrap.Form.Radio as Radio
 import Data.TargetBalance exposing (TargetBalance(..))
-import Html exposing (Html, div, legend, text)
+import Html exposing (div, legend, text)
 import Html.Attributes as Attr exposing (class, style)
 import Html.Events exposing (onSubmit)
 import Types exposing (..)

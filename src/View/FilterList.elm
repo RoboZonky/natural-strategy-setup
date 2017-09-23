@@ -8,8 +8,8 @@ import Bootstrap.Grid.Col as Col
 import Bootstrap.Modal as Modal
 import Data.Filter exposing (FilteredItem(..), MarketplaceFilter, renderMarketplaceFilter)
 import Data.Tooltip as Tooltip
-import Html exposing (Html, button, div, h2, h3, pre, span, text)
-import Html.Attributes exposing (class, href, style)
+import Html exposing (Html, div, span, text)
+import Html.Attributes exposing (class)
 import Html.Events exposing (onClick)
 import Types exposing (ModalMsg(ModalStateMsg), Msg(ModalMsg, RemoveBuyFilter))
 import View.Tooltip as Tooltip

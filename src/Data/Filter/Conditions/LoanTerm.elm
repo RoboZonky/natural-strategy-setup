@@ -13,7 +13,7 @@ module Data.Filter.Conditions.LoanTerm
 import Bootstrap.Form as Form
 import Bootstrap.Form.Input as Input
 import Bootstrap.Form.Radio as Radio
-import Html exposing (Attribute, Html, text)
+import Html exposing (Html, text)
 import Html.Attributes as Attr exposing (class)
 import Html.Events exposing (onSubmit)
 import Util exposing (emptyToZero, zeroToEmpty)
@@ -56,18 +56,18 @@ validationErrors : LoanTermCondition -> List String
 validationErrors (LoanTermCondition t) =
     case t of
         LessThan x ->
-            validateInt x
+            validateInRange 1 85 x
 
         Between x y ->
-            validateInt x ++ validateInt y ++ validateMinNotGtMax x y
+            validateInRange 0 84 x ++ validateInRange 0 84 y ++ validateMinNotGtMax x y
 
         MoreThan x ->
-            validateInt x
+            validateInRange 0 83 x
 
 
-validateInt : Int -> List String
-validateInt x =
-    Util.validate (x < 0 || 84 < x) "Délka úvěru: musí být v rozmezí 0 až 84"
+validateInRange : Int -> Int -> Int -> List String
+validateInRange minValid maxValid x =
+    Util.validate (x < minValid || maxValid < x) <| "Délka úvěru: musí být v rozmezí " ++ toString minValid ++ " až " ++ toString maxValid
 
 
 validateMinNotGtMax : Int -> Int -> List String

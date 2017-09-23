@@ -4,12 +4,12 @@ import AllDict
 import Data.Confirmation as Confirmation exposing (ConfirmationSettings)
 import Data.Filter as Filters exposing (MarketplaceFilter)
 import Data.Filter.Conditions.Rating as Rating exposing (Rating(..), RatingMsg)
-import Data.Investment as Investment exposing (InvestmentsPerRating, Size)
+import Data.Investment as Investment exposing (InvestmentsPerRating)
 import Data.InvestmentShare as InvestmentShare exposing (InvestmentShare)
 import Data.Portfolio as Portfolio exposing (Portfolio(..))
-import Data.PortfolioStructure as PortfolioStructure exposing (PortfolioShare, PortfolioShares, Share)
+import Data.PortfolioStructure as PortfolioStructure exposing (PortfolioShares, Share)
 import Data.PortfolioStructure.Predefined as PredefinedShares
-import Data.TargetBalance as TargetBalance exposing (TargetBalance, defaultTargetBalance)
+import Data.TargetBalance as TargetBalance exposing (TargetBalance)
 import Data.TargetPortfolioSize as TargetPortfolioSize exposing (TargetPortfolioSize)
 import Util
 import Version
@@ -106,7 +106,7 @@ setInvestmentMin : Rating -> Int -> StrategyConfiguration -> StrategyConfigurati
 setInvestmentMin rtg newMin config =
     let
         invUpdater =
-            AllDict.update rtg (Maybe.map (\( mi, ma ) -> ( newMin, max ma newMin {- automatically bump ma when newMin exceeds it -} )))
+            AllDict.update rtg (Maybe.map (\( _, ma ) -> ( newMin, max ma newMin {- automatically bump ma when newMin exceeds it -} )))
     in
     { config | investmentSizeOverrides = invUpdater config.investmentSizeOverrides }
 
@@ -115,7 +115,7 @@ setInvestmentMax : Rating -> Int -> StrategyConfiguration -> StrategyConfigurati
 setInvestmentMax rtg newMax config =
     let
         invUpdater =
-            AllDict.update rtg (Maybe.map (\( mi, ma ) -> ( mi, newMax )))
+            AllDict.update rtg (Maybe.map (\( mi, _ ) -> ( mi, newMax )))
     in
     { config | investmentSizeOverrides = invUpdater config.investmentSizeOverrides }
 

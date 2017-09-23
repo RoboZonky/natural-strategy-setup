@@ -13,7 +13,7 @@ module Data.Filter.Conditions.Amount
 import Bootstrap.Form as Form
 import Bootstrap.Form.Input as Input
 import Bootstrap.Form.Radio as Radio
-import Html exposing (Attribute, Html, text)
+import Html exposing (Html, text)
 import Html.Attributes as Attr exposing (class)
 import Html.Events exposing (onSubmit)
 import Util exposing (emptyToZero, zeroToEmpty)
@@ -96,7 +96,7 @@ whichEnabled amt =
 
 
 update : AmountMsg -> AmountCondition -> AmountCondition
-update msg ((AmountCondition amt) as ac) =
+update msg ac =
     case msg of
         SetLessThan hi ->
             emptyToZero hi |> String.toInt |> Result.map (AmountCondition << LessThan) |> Result.withDefault ac

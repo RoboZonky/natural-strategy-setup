@@ -7,8 +7,8 @@ import Bootstrap.Modal as Modal
 import Data.Filter as Filter exposing (FilteredItem(..), MarketplaceFilter(..), getFilteredItem, renderMarketplaceFilter, setFilteredItem)
 import Data.Tooltip as Tooltip
 import Html exposing (Html, div, hr, li, text, ul)
-import Html.Attributes exposing (class, style, value)
-import Html.Events exposing (onClick, onSubmit)
+import Html.Attributes exposing (style)
+import Html.Events exposing (onClick)
 import Types exposing (..)
 import View.Filter.Conditions as Conditions exposing (conditionsForm)
 import View.Tooltip as Tooltip
@@ -56,7 +56,7 @@ updateHelp msg model =
         NegativeConditionsChange condMsg ->
             { model | editedFilter = Filter.updateNegativeConditions (Conditions.update condMsg) model.editedFilter }
 
-        ModalTooltipMsg tipId tooltipState ->
+        ModalTooltipMsg _ _ ->
             {- This case is handled at the level of Main's update -}
             model
 

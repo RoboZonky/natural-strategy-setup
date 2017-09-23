@@ -4,7 +4,7 @@ import Bootstrap.Form.Checkbox as Checkbox
 import Bootstrap.Grid as Grid
 import Bootstrap.Grid.Col as Col
 import Data.Filter exposing (FilteredItem(Loan))
-import Data.Filter.Conditions as Conditions exposing (..)
+import Data.Filter.Conditions exposing (..)
 import Data.Filter.Conditions.Amount as Amount exposing (Amount(..), AmountCondition(..), AmountMsg)
 import Data.Filter.Conditions.Interest as Interest exposing (Interest(..), InterestCondition(..), InterestMsg)
 import Data.Filter.Conditions.LoanPurpose as LoanPurpose exposing (LoanPurpose(..), LoanPurposeCondition(..), LoanPurposeMsg)

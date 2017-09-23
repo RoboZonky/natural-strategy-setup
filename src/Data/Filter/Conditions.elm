@@ -134,7 +134,7 @@ conditionValidationError c =
         Condition_Purpose loanPurposeCond ->
             LoanPurpose.validationErrors loanPurposeCond
 
-        Condition_Story storyCond ->
+        Condition_Story _ ->
             [{- Story condition can't be invalid -> valid. errors list always empty -}]
 
         Condition_Term termCond ->

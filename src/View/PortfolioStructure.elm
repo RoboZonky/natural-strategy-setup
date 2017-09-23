@@ -10,10 +10,10 @@ import Bootstrap.Grid.Col as Col
 import Bootstrap.Table as Table
 import Data.Filter.Conditions.Rating as Rating exposing (ratingToString)
 import Data.Portfolio as Portfolio exposing (Portfolio(..))
-import Data.PortfolioStructure exposing (PortfolioShare, PortfolioShares, Share)
+import Data.PortfolioStructure exposing (PortfolioShare, PortfolioShares)
 import Data.Tooltip as Tooltip
 import Html exposing (Html, div, text)
-import Html.Attributes as Attr exposing (class, selected, size, style, value)
+import Html.Attributes exposing (class, selected, style, value)
 import Html.Events exposing (onSubmit)
 import Plot
 import RangeSlider
