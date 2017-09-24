@@ -3,7 +3,7 @@ module Test.RandomStrategy exposing (..)
 import AllDict
 import Data.Confirmation exposing (ConfirmationSettings)
 import Data.Filter exposing (FilteredItem(..), MarketplaceFilter(..))
-import Data.Filter.Conditions exposing (Conditions)
+import Data.Filter.Conditions exposing (Condition(..), Conditions, addCondition, emptyConditions)
 import Data.Filter.Conditions.Amount as Amount exposing (AmountCondition(AmountCondition))
 import Data.Filter.Conditions.Interest as Interest exposing (InterestCondition(..))
 import Data.Filter.Conditions.LoanPurpose as LoanPurpose exposing (LoanPurposeCondition(LoanPurposeList))
@@ -93,69 +93,70 @@ marketplaceFilterGen =
             (\item ->
                 case item of
                     Loan ->
-                        Random.map2 (\pos neg -> MarketplaceFilter { whatToFilter = Loan, ignoreWhen = pos, butNotWhen = neg }) loanConditions loanConditions
+                        Random.map2 (\pos neg -> MarketplaceFilter { whatToFilter = Loan, ignoreWhen = pos, butNotWhen = neg })
+                            (loanConditions 1)
+                            (loanConditions 0)
 
                     other ->
-                        Random.map2 (\pos neg -> MarketplaceFilter { whatToFilter = other, ignoreWhen = pos, butNotWhen = neg }) participationConditions participationConditions
+                        Random.map2 (\pos neg -> MarketplaceFilter { whatToFilter = other, ignoreWhen = pos, butNotWhen = neg })
+                            (participationConditions 1)
+                            (participationConditions 0)
             )
 
 
-loanConditions : Generator Conditions
-loanConditions =
-    conditionsPartSharedByAllFilteredItems
-        |> Random.andMap (maybeCondition amountConditionGen)
+loanConditions : Int -> Generator Conditions
+loanConditions minimumConditions =
+    subset minimumConditions
+        (amountConditionGen :: conditionsSharedByAllFilteredItems)
+        |> Random.andThen (Random.combine >> Random.map (List.foldl addCondition emptyConditions))
 
 
-participationConditions : Generator Conditions
-participationConditions =
-    conditionsPartSharedByAllFilteredItems
-        |> Random.andMap (Random.constant Nothing)
+participationConditions : Int -> Generator Conditions
+participationConditions minimumConditions =
+    subset minimumConditions
+        conditionsSharedByAllFilteredItems
+        |> Random.andThen (Random.combine >> Random.map (List.foldl addCondition emptyConditions))
 
 
-conditionsPartSharedByAllFilteredItems : Generator (Maybe AmountCondition -> Conditions)
-conditionsPartSharedByAllFilteredItems =
-    -- TODO this sometimes generates empty conditions, which can't be created in UI - prevent that
-    Random.map Conditions (maybeCondition regionConditionGen)
-        |> Random.andMap (maybeCondition ratingConditionGen)
-        |> Random.andMap (maybeCondition incomeConditionGen)
-        |> Random.andMap (maybeCondition purposeConditionGen)
-        |> Random.andMap (maybeCondition storyConditionGen)
-        |> Random.andMap (maybeCondition termConditionGen)
-        |> Random.andMap (maybeCondition interestConditionGen)
+conditionsSharedByAllFilteredItems : List (Generator Condition)
+conditionsSharedByAllFilteredItems =
+    [ regionConditionGen
+    , ratingConditionGen
+    , incomeConditionGen
+    , purposeConditionGen
+    , storyConditionGen
+    , termConditionGen
+    , interestConditionGen
+    ]
 
 
-maybeCondition : Generator cond -> Generator (Maybe cond)
-maybeCondition cgen =
-    Random.frequency [ ( 1, Random.constant Nothing ), ( 1, Random.map Just cgen ) ]
-
-
-regionConditionGen : Generator RegionCondition
+regionConditionGen : Generator Condition
 regionConditionGen =
-    randomNonemptySubset Region.allRegions |> Random.map RegionList
+    nonemptySubset Region.allRegions |> Random.map (RegionList >> Condition_Region)
 
 
-ratingConditionGen : Generator RatingCondition
+ratingConditionGen : Generator Condition
 ratingConditionGen =
-    randomNonemptySubset Rating.allRatings |> Random.map RatingList
+    nonemptySubset Rating.allRatings |> Random.map (RatingList >> Condition_Rating)
 
 
-incomeConditionGen : Generator MainIncomeCondition
+incomeConditionGen : Generator Condition
 incomeConditionGen =
-    randomNonemptySubset MainIncome.allIncomes |> Random.map MainIncomeList
+    nonemptySubset MainIncome.allIncomes |> Random.map (MainIncomeList >> Condition_Income)
 
 
-purposeConditionGen : Generator LoanPurposeCondition
+purposeConditionGen : Generator Condition
 purposeConditionGen =
-    randomNonemptySubset LoanPurpose.allPurposes |> Random.map LoanPurposeList
+    nonemptySubset LoanPurpose.allPurposes |> Random.map (LoanPurposeList >> Condition_Purpose)
 
 
-storyConditionGen : Generator StoryCondition
+storyConditionGen : Generator Condition
 storyConditionGen =
     Random.sample [ SHORT, BELOW_AVERAGE, AVERAGE, ABOVE_AVERAGE ]
-        |> Random.map (Maybe.withDefault SHORT >> StoryCondition)
+        |> Random.map (Maybe.withDefault SHORT >> StoryCondition >> Condition_Story)
 
 
-termConditionGen : Generator LoanTermCondition
+termConditionGen : Generator Condition
 termConditionGen =
     let
         minLoanTerm =
@@ -169,10 +170,10 @@ termConditionGen =
         , Random.int minLoanTerm maxLoanTerm |> Random.andThen (\mi -> Random.int mi maxLoanTerm |> Random.map (\mx -> LoanTerm.Between mi mx))
         , Random.map LoanTerm.MoreThan (Random.int minLoanTerm (maxLoanTerm - 1 {- max is invalid, as parser adds 1 -}))
         ]
-        |> Random.map LoanTermCondition
+        |> Random.map (LoanTermCondition >> Condition_Term)
 
 
-amountConditionGen : Generator AmountCondition
+amountConditionGen : Generator Condition
 amountConditionGen =
     let
         maxAmount =
@@ -183,17 +184,17 @@ amountConditionGen =
         , Random.int 0 maxAmount |> Random.andThen (\mi -> Random.int mi maxAmount |> Random.map (\mx -> Amount.Between mi mx))
         , Random.map Amount.MoreThan (Random.int 0 maxAmount)
         ]
-        |> Random.map AmountCondition
+        |> Random.map (AmountCondition >> Condition_Amount)
 
 
-interestConditionGen : Generator InterestCondition
+interestConditionGen : Generator Condition
 interestConditionGen =
     Random.choices
         [ Random.map Interest.LessThan (Random.float 0 100)
         , Random.float 0 100 |> Random.andThen (\mi -> Random.float mi 100 |> Random.map (\mx -> Interest.Between mi mx))
         , Random.map Interest.MoreThan (Random.float 0 100)
         ]
-        |> Random.map InterestCondition
+        |> Random.map (InterestCondition >> Condition_Interest)
 
 
 filteredItemGen : Generator FilteredItem
@@ -239,16 +240,21 @@ targetBalanceGen =
 
 confirmationSettingsGen : Generator ConfirmationSettings
 confirmationSettingsGen =
-    randomNonemptySubset Rating.allRatings |> Random.map RatingList
+    nonemptySubset Rating.allRatings |> Random.map RatingList
 
 
-randomNonemptySubset : List a -> Generator (List a)
-randomNonemptySubset whatToSamleFrom =
+nonemptySubset : List a -> Generator (List a)
+nonemptySubset =
+    subset 1
+
+
+subset : Int -> List a -> Generator (List a)
+subset minimumElements whatToSamleFrom =
     let
         totalElemCount =
             List.length whatToSamleFrom
     in
-    Random.int 1 totalElemCount
+    Random.int minimumElements totalElemCount
         |> Random.map (\selectedElemCount -> List.repeat selectedElemCount True ++ List.repeat (totalElemCount - selectedElemCount) False)
         |> Random.andThen (\bools -> Random.List.shuffle bools)
         |> Random.map
