@@ -77,42 +77,50 @@ investment0to5kRange =
 
 buyFiltersGen : Generator (List MarketplaceFilter)
 buyFiltersGen =
-    Random.rangeLengthList 0 10 marketplaceFilterGen
+    Random.rangeLengthList 0 10 buyFilterGen
 
 
 sellFiltersGen : Generator (List MarketplaceFilter)
 sellFiltersGen =
-    -- TODO generate list of SecondaryMarketplaceFilter
-    Random.constant []
+    Random.rangeLengthList 0 10 sellFilterGen
 
 
-marketplaceFilterGen : Generator MarketplaceFilter
-marketplaceFilterGen =
+buyFilterGen : Generator MarketplaceFilter
+buyFilterGen =
     filteredItemGen
-        |> Random.andThen
-            (\item ->
-                case item of
-                    Loan ->
-                        Random.map2 (\pos neg -> MarketplaceFilter { whatToFilter = Loan, ignoreWhen = pos, butNotWhen = neg })
-                            (loanConditions 1)
-                            (loanConditions 0)
-
-                    other ->
-                        Random.map2 (\pos neg -> MarketplaceFilter { whatToFilter = other, ignoreWhen = pos, butNotWhen = neg })
-                            (participationConditions 1)
-                            (participationConditions 0)
-            )
+        |> Random.andThen filterGen
 
 
-loanConditions : Int -> Generator Conditions
-loanConditions minimumConditions =
+sellFilterGen : Generator MarketplaceFilter
+sellFilterGen =
+    filterGen Participation_To_Sell
+
+
+filterGen : FilteredItem -> Generator MarketplaceFilter
+filterGen filteredItem =
+    let
+        conditionsGen =
+            case filteredItem of
+                Loan ->
+                    loanConditionsGen
+
+                _ ->
+                    participationConditionsGen
+    in
+    Random.map2 (\pos neg -> MarketplaceFilter { whatToFilter = filteredItem, ignoreWhen = pos, butNotWhen = neg })
+        (conditionsGen 1)
+        (conditionsGen 0)
+
+
+loanConditionsGen : Int -> Generator Conditions
+loanConditionsGen minimumConditions =
     subset minimumConditions
         (amountConditionGen :: conditionsSharedByAllFilteredItems)
         |> Random.andThen (Random.combine >> Random.map (List.foldl addCondition emptyConditions))
 
 
-participationConditions : Int -> Generator Conditions
-participationConditions minimumConditions =
+participationConditionsGen : Int -> Generator Conditions
+participationConditionsGen minimumConditions =
     subset minimumConditions
         conditionsSharedByAllFilteredItems
         |> Random.andThen (Random.combine >> Random.map (List.foldl addCondition emptyConditions))
@@ -199,6 +207,7 @@ interestConditionGen =
 
 filteredItemGen : Generator FilteredItem
 filteredItemGen =
+    {- Intentionally NOT generating Participation_To_Sell - we're only generating items for BUY filters -}
     Random.sample [ Loan, Participation, Loan_And_Participation ]
         |> Random.map (Maybe.withDefault Loan)
 

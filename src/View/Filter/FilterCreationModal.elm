@@ -4,7 +4,7 @@ import Bootstrap.Button as Button
 import Bootstrap.Grid as Grid
 import Bootstrap.Grid.Col as Col
 import Bootstrap.Modal as Modal
-import Data.Filter as Filter exposing (FilteredItem(..), MarketplaceFilter(..), getFilteredItem, renderMarketplaceFilter, setFilteredItem)
+import Data.Filter as Filter exposing (FilteredItem(..), MarketplaceFilter(..), getFilteredItem, renderBuyFilter, renderSellFilter, setFilteredItem)
 import Data.Tooltip as Tooltip
 import Html exposing (Html, div, hr, li, text, ul)
 import Html.Attributes exposing (style)
@@ -31,12 +31,16 @@ initialState =
 
 update : ModalMsg -> Model -> ( Model, Maybe MarketplaceFilter )
 update msg model =
+    let
+        newModel =
+            updateHelp msg model
+    in
     case msg of
         SaveFilter ->
-            ( updateHelp msg model, Just model.editedFilter )
+            ( newModel, Just model.editedFilter )
 
         _ ->
-            ( updateHelp msg model, Nothing )
+            ( newModel, Nothing )
 
 
 {-| Inner modal messages that don't produce Filter to be added to the main app's model
@@ -76,14 +80,22 @@ view { editedFilter, openCloseState, editingPositiveSubform } tooltipStates =
             else
                 "<< Zpět"
 
+        ( modalTitle, tooltipKey ) =
+            case getFilteredItem editedFilter of
+                Participation_To_Sell ->
+                    ( "Vytvořit pravidlo pro prodej", Tooltip.sellFilterCreationTip )
+
+                _ ->
+                    ( "Vytvořit filtr", Tooltip.buyFilterCreationTip )
+
         stateChangeMsg =
             ModalStateMsg <| getFilteredItem editedFilter
     in
     Modal.config stateChangeMsg
         |> Modal.large
         |> Modal.h5 []
-            [ text "Vytvořit filtr"
-            , Tooltip.popoverTipForModal Tooltip.filterCreationTip tooltipStates
+            [ text modalTitle
+            , Tooltip.popoverTipForModal tooltipKey tooltipStates
             ]
         |> Modal.body []
             [ modalBody editedFilter editingPositiveSubform ]
@@ -114,32 +126,53 @@ modalBody ((MarketplaceFilter filter) as mf) editingPositiveSubform =
         validationErrors =
             Filter.marketplaceFilterValidationErrors mf
 
+        filterRenderer =
+            case getFilteredItem mf of
+                Participation_To_Sell ->
+                    renderSellFilter
+
+                _ ->
+                    renderBuyFilter
+
         previewOrValidationErrors =
             if List.isEmpty validationErrors then
-                text <| renderMarketplaceFilter mf
+                text <| filterRenderer mf
             else
                 ul [ style [ ( "color", "red" ) ] ] <|
                     List.map (\e -> li [] [ text e ]) validationErrors
 
         conditionsSubform =
             if editingPositiveSubform then
-                div []
-                    [ text <| "Nastavte podmínky filtru. " ++ Filter.itemToPluralString filter.whatToFilter ++ " splňující všechny podmínky budou ignorovány."
-                    , Html.map PositiveConditionsChange <| conditionsForm filter.whatToFilter filter.ignoreWhen
-                    ]
+                Html.map PositiveConditionsChange <| conditionsForm filter.whatToFilter filter.ignoreWhen
             else
-                div []
-                    [ text <| "Nastavte výjimku. " ++ Filter.itemToPluralString filter.whatToFilter ++ " splňující všechny podmínky výjimky NEBUDOU filtrem odstraněny."
-                    , Html.map NegativeConditionsChange <| conditionsForm filter.whatToFilter filter.butNotWhen
-                    ]
+                Html.map NegativeConditionsChange <| conditionsForm filter.whatToFilter filter.butNotWhen
     in
     Grid.containerFluid []
         [ Grid.row []
             [ Grid.col
                 [ Col.xs12 ]
-                [ conditionsSubform
+                [ div []
+                    [ text <| whatToDoText filter.whatToFilter editingPositiveSubform
+                    , conditionsSubform
+                    ]
                 , hr [] []
                 , previewOrValidationErrors
                 ]
             ]
         ]
+
+
+whatToDoText : FilteredItem -> Bool -> String
+whatToDoText filteredItem editingPositiveSubform =
+    case ( filteredItem, editingPositiveSubform ) of
+        ( Participation_To_Sell, True ) ->
+            "Nastavte podmínky pravidla pro prodej Participací. Participace splňující všechny podmínky budou prodány."
+
+        ( Participation_To_Sell, False ) ->
+            "Nastavte výjimku pravidla pro prodej Participací. Participace splňující všechny podmínky výjimky NEBUDOU prodány."
+
+        ( _, True ) ->
+            "Nastavte podmínky filtru. " ++ Filter.itemToPluralString filteredItem ++ " splňující všechny podmínky budou ignorovány."
+
+        ( _, False ) ->
+            "Nastavte výjimku. " ++ Filter.itemToPluralString filteredItem ++ " splňující všechny podmínky výjimky NEBUDOU filtrem ignorovány."

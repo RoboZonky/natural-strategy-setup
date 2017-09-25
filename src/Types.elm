@@ -3,7 +3,7 @@ module Types exposing (..)
 import Bootstrap.Accordion as Accordion
 import Bootstrap.Modal as Modal
 import Bootstrap.Popover as Popover
-import Data.Filter exposing (FilteredItem, MarketplaceFilter)
+import Data.Filter exposing (FilteredItem)
 import Data.Filter.Conditions.Rating as Rating exposing (Rating)
 import Data.Portfolio exposing (Portfolio)
 import Data.Tooltip exposing (TipId)
@@ -22,8 +22,8 @@ type Msg
     | ChangeDefaultInvestmentMin String
     | ChangeDefaultInvestmentMax String
     | TargetBalanceChanged String
-    | AddBuyFilter MarketplaceFilter
     | RemoveBuyFilter Int
+    | RemoveSellFilter Int
     | AccordionMsg Accordion.State
     | ModalMsg ModalMsg
     | TooltipMsg TipId Popover.State

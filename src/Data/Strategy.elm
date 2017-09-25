@@ -156,6 +156,11 @@ removeBuyFilter index config =
     { config | buyFilters = removeItemWithIndex index config.buyFilters }
 
 
+removeSellFilter : Int -> StrategyConfiguration -> StrategyConfiguration
+removeSellFilter index config =
+    { config | sellFilters = removeItemWithIndex index config.sellFilters }
+
+
 removeItemWithIndex : Int -> List a -> List a
 removeItemWithIndex i xs =
     List.take i xs ++ List.drop (i + 1) xs
@@ -166,16 +171,22 @@ addBuyFilter newFilter config =
     { config | buyFilters = config.buyFilters ++ [ newFilter ] }
 
 
+addSellFilter : MarketplaceFilter -> StrategyConfiguration -> StrategyConfiguration
+addSellFilter newFilter config =
+    { config | sellFilters = config.sellFilters ++ [ newFilter ] }
+
+
 renderStrategyConfiguration : StrategyConfiguration -> String
 renderStrategyConfiguration strategy =
     case strategy of
-        { generalSettings, portfolioShares, investmentSizeOverrides, buyFilters } ->
+        { generalSettings, portfolioShares, investmentSizeOverrides, buyFilters, sellFilters } ->
             Util.joinNonemptyLines
                 [ Version.strategyComment
                 , renderGeneralSettings generalSettings
                 , PortfolioStructure.renderPortfolioShares generalSettings.portfolio portfolioShares
                 , Investment.renderInvestments generalSettings.defaultInvestmentSize investmentSizeOverrides
-                , Filters.renderFilters buyFilters
+                , Filters.renderBuyFilters buyFilters
+                , Filters.renderSellFilters sellFilters
                 ]
 
 

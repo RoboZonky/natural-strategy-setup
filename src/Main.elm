@@ -2,6 +2,7 @@ module Main exposing (..)
 
 import Bootstrap.Accordion as Accordion
 import Bootstrap.Grid as Grid
+import Data.Filter exposing (FilteredItem(Participation_To_Sell), getFilteredItem)
 import Data.InvestmentShare as InvestmentShare exposing (InvestmentShare(..))
 import Data.Strategy exposing (..)
 import Data.TargetBalance as TargetBalance exposing (TargetBalance(TargetBalance))
@@ -129,11 +130,11 @@ updateHelper msg model =
         ChangeDefaultInvestmentMax newMaxStr ->
             updateStrategy (updateStrategyIfValidInt newMaxStr (\newMax -> setDefaultInvestmentMax newMax model.strategyConfig)) model
 
-        AddBuyFilter newFilter ->
-            updateStrategy (addBuyFilter newFilter) model
-
         RemoveBuyFilter index ->
             updateStrategy (removeBuyFilter index) model
+
+        RemoveSellFilter index ->
+            updateStrategy (removeSellFilter index) model
 
         AccordionMsg state ->
             { model | accordionState = state }
@@ -155,7 +156,12 @@ updateHelper msg model =
                             identity
 
                         Just newFilter ->
-                            addBuyFilter newFilter
+                            case getFilteredItem newFilter of
+                                Participation_To_Sell ->
+                                    addSellFilter newFilter
+
+                                _ ->
+                                    addBuyFilter newFilter
             in
             { model
                 | filterCreationState = filterCreationState

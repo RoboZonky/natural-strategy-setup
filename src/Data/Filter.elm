@@ -5,14 +5,15 @@ module Data.Filter
         , addNegativeCondition
         , addPositiveCondition
         , emptyFilter
-        , filtereedItemFromString
         , getFilteredItem
         , isValid
         , itemToPluralString
         , marketplaceFilterValidationErrors
+        , renderBuyFilter
+        , renderBuyFilters
         , renderFilteredItem
-        , renderFilters
-        , renderMarketplaceFilter
+        , renderSellFilter
+        , renderSellFilters
         , setFilteredItem
         , updateNegativeConditions
         , updatePositiveConditions
@@ -20,14 +21,6 @@ module Data.Filter
 
 import Data.Filter.Conditions exposing (..)
 import Util
-
-
-renderFilters : List MarketplaceFilter -> String
-renderFilters filters =
-    if List.isEmpty filters then
-        ""
-    else
-        Util.joinNonemptyLines <| "\n- Filtrování tržiště" :: List.map renderMarketplaceFilter filters
 
 
 type MarketplaceFilter
@@ -45,6 +38,24 @@ emptyFilter =
         , ignoreWhen = emptyConditions
         , butNotWhen = emptyConditions
         }
+
+
+renderBuyFilters : List MarketplaceFilter -> String
+renderBuyFilters =
+    renderFilters "\n- Filtrování tržiště" renderBuyFilter
+
+
+renderSellFilters : List MarketplaceFilter -> String
+renderSellFilters =
+    renderFilters "\n- Prodej participací" renderSellFilter
+
+
+renderFilters : String -> (MarketplaceFilter -> String) -> List MarketplaceFilter -> String
+renderFilters heading filterRenderer filters =
+    if List.isEmpty filters then
+        ""
+    else
+        Util.joinNonemptyLines <| heading :: List.map filterRenderer filters
 
 
 isValid : MarketplaceFilter -> Bool
@@ -74,13 +85,13 @@ getFilteredItem (MarketplaceFilter { whatToFilter }) =
 
 
 addPositiveCondition : Condition -> MarketplaceFilter -> MarketplaceFilter
-addPositiveCondition c (MarketplaceFilter mf) =
-    MarketplaceFilter { mf | ignoreWhen = addCondition c mf.ignoreWhen }
+addPositiveCondition c =
+    updatePositiveConditions (addCondition c)
 
 
 addNegativeCondition : Condition -> MarketplaceFilter -> MarketplaceFilter
-addNegativeCondition c (MarketplaceFilter mf) =
-    MarketplaceFilter { mf | butNotWhen = addCondition c mf.butNotWhen }
+addNegativeCondition c =
+    updateNegativeConditions (addCondition c)
 
 
 updatePositiveConditions : (Conditions -> Conditions) -> MarketplaceFilter -> MarketplaceFilter
@@ -93,8 +104,18 @@ updateNegativeConditions conditionsUpdater (MarketplaceFilter f) =
     MarketplaceFilter { f | butNotWhen = conditionsUpdater f.butNotWhen }
 
 
-renderMarketplaceFilter : MarketplaceFilter -> String
-renderMarketplaceFilter (MarketplaceFilter { whatToFilter, ignoreWhen, butNotWhen }) =
+renderBuyFilter : MarketplaceFilter -> String
+renderBuyFilter mf =
+    "Ignorovat " ++ renderFilteredItem (getFilteredItem mf) ++ renderCommonPartOfBuyAndSellFilters mf
+
+
+renderSellFilter : MarketplaceFilter -> String
+renderSellFilter mf =
+    "Prodat participaci" ++ renderCommonPartOfBuyAndSellFilters mf
+
+
+renderCommonPartOfBuyAndSellFilters : MarketplaceFilter -> String
+renderCommonPartOfBuyAndSellFilters (MarketplaceFilter { ignoreWhen, butNotWhen }) =
     let
         negativePart =
             if List.isEmpty (conditionsToList butNotWhen) then
@@ -105,13 +126,14 @@ renderMarketplaceFilter (MarketplaceFilter { whatToFilter, ignoreWhen, butNotWhe
         positivePart =
             renderConditionList <| conditionsToList ignoreWhen
     in
-    "Ignorovat " ++ renderFilteredItem whatToFilter ++ ", kde: " ++ positivePart ++ negativePart
+    ", kde: " ++ positivePart ++ negativePart
 
 
 type FilteredItem
     = Loan
     | Participation
     | Loan_And_Participation
+    | Participation_To_Sell
 
 
 renderFilteredItem : FilteredItem -> String
@@ -126,6 +148,9 @@ renderFilteredItem item =
         Loan ->
             "úvěr"
 
+        Participation_To_Sell ->
+            "participace na prodej"
+
 
 itemToPluralString : FilteredItem -> String
 itemToPluralString item =
@@ -139,15 +164,5 @@ itemToPluralString item =
         Loan_And_Participation ->
             "Půjčky i participace"
 
-
-filtereedItemFromString : String -> FilteredItem
-filtereedItemFromString s =
-    case s of
-        "Loan_And_Participation" ->
-            Loan_And_Participation
-
-        "Participation" ->
-            Participation
-
-        _ ->
-            Loan
+        Participation_To_Sell ->
+            "Participace na prodej"

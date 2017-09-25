@@ -1,4 +1,4 @@
-module View.FilterList exposing (form)
+module View.SellFilterList exposing (form)
 
 import Bootstrap.Accordion as Accordion
 import Bootstrap.Button as Button
@@ -6,25 +6,25 @@ import Bootstrap.Card as Card
 import Bootstrap.Grid as Grid
 import Bootstrap.Grid.Col as Col
 import Bootstrap.Modal as Modal
-import Data.Filter exposing (FilteredItem(..), MarketplaceFilter, renderMarketplaceFilter)
+import Data.Filter exposing (FilteredItem(..), MarketplaceFilter, renderSellFilter)
 import Data.Tooltip as Tooltip
 import Html exposing (Html, div, span, text)
 import Html.Attributes exposing (class)
 import Html.Events exposing (onClick)
-import Types exposing (ModalMsg(ModalStateMsg), Msg(ModalMsg, RemoveBuyFilter))
+import Types exposing (ModalMsg(ModalStateMsg), Msg(ModalMsg, RemoveSellFilter))
 import View.Tooltip as Tooltip
 
 
 form : List MarketplaceFilter -> Tooltip.States -> Accordion.Card Msg
 form filters tooltipStates =
     Accordion.card
-        { id = "buyFiltersCard"
+        { id = "sellFiltersCard"
         , options = []
         , header =
             Accordion.headerH4 [] <|
                 Accordion.toggle []
-                    [ text "Filtrování tržiště"
-                    , Tooltip.popoverTip Tooltip.filterListTip tooltipStates
+                    [ text "Sekundární trh"
+                    , Tooltip.popoverTip Tooltip.sellFilterListTip tooltipStates
                     ]
         , blocks =
             [ Accordion.block [] [ filtersView filters, filterCreationControls ] ]
@@ -40,10 +40,10 @@ viewFilter : Int -> MarketplaceFilter -> Html Msg
 viewFilter index mf =
     let
         removeButton =
-            span [ onClick (RemoveBuyFilter index), class "float-right" ] [ text "✖" ]
+            span [ onClick (RemoveSellFilter index), class "float-right" ] [ text "✖" ]
 
         filterText =
-            span [] [ text <| renderMarketplaceFilter mf ]
+            span [] [ text <| renderSellFilter mf ]
     in
     Card.config []
         |> Card.block [ Card.blockAttrs [ class "smaller-pad" ] ]
@@ -58,19 +58,12 @@ viewFilter index mf =
 
 filterCreationControls : Card.BlockItem Msg
 filterCreationControls =
-    let
-        creationButton filteredItem buttonText =
-            Button.button
-                [ Button.primary
-                , Button.onClick <| ModalMsg <| ModalStateMsg filteredItem Modal.visibleState
-                , Button.attrs [ class "mx-1" ]
-                ]
-                [ text buttonText ]
-    in
     Card.custom <|
         div []
-            [ text "Přidat filtr pro "
-            , creationButton Loan "Úvěry"
-            , creationButton Participation "Participace"
-            , creationButton Loan_And_Participation "Obojí"
+            [ Button.button
+                [ Button.primary
+                , Button.onClick <| ModalMsg <| ModalStateMsg Participation_To_Sell Modal.visibleState
+                , Button.attrs [ class "mx-1" ]
+                ]
+                [ text "Přidat pravidlo pro prodej" ]
             ]
