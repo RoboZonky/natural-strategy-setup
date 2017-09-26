@@ -3,6 +3,7 @@ module Main exposing (..)
 import Bootstrap.Accordion as Accordion
 import Bootstrap.Grid as Grid
 import Data.Filter exposing (FilteredItem(Participation_To_Sell), getFilteredItem)
+import Data.Investment as Investment
 import Data.InvestmentShare as InvestmentShare exposing (InvestmentShare(..))
 import Data.Strategy exposing (..)
 import Data.TargetBalance as TargetBalance exposing (TargetBalance(TargetBalance))
@@ -49,8 +50,12 @@ main =
 
 
 subscriptions : Model -> Sub Msg
-subscriptions { sliderStates } =
-    Slider.sliderChangeSubscription sliderStates
+subscriptions { sliderStates, strategyConfig } =
+    Sub.batch
+        [ Slider.sliderChangeSubscription sliderStates
+        , Investment.investmentSlidersSubscriptions strategyConfig.investmentSizeOverrides
+        , Investment.defaultInvestmentSliderSubscription strategyConfig.generalSettings.defaultInvestmentSize
+        ]
 
 
 updateStrategy : (StrategyConfiguration -> StrategyConfiguration) -> Model -> Model
@@ -115,17 +120,11 @@ updateHelper msg model =
             in
             { newModel | sliderStates = newSliderStates }
 
-        ChangeInvestmentMin rating newMinStr ->
-            updateStrategy (updateStrategyIfValidInt newMinStr (\newMin -> setInvestmentMin rating newMin model.strategyConfig)) model
+        ChangeInvestment rating sliderMsg ->
+            updateStrategy (setInvestment rating sliderMsg) model
 
-        ChangeInvestmentMax rating newMaxStr ->
-            updateStrategy (updateStrategyIfValidInt newMaxStr (\newMax -> setInvestmentMax rating newMax model.strategyConfig)) model
-
-        ChangeDefaultInvestmentMin newMinStr ->
-            updateStrategy (updateStrategyIfValidInt newMinStr (\newMin -> setDefaultInvestmentMin newMin model.strategyConfig)) model
-
-        ChangeDefaultInvestmentMax newMaxStr ->
-            updateStrategy (updateStrategyIfValidInt newMaxStr (\newMax -> setDefaultInvestmentMax newMax model.strategyConfig)) model
+        ChangeDefaultInvestment sliderMsg ->
+            updateStrategy (setDefaultInvestment sliderMsg) model
 
         RemoveBuyFilter index ->
             updateStrategy (removeBuyFilter index) model

@@ -17,10 +17,8 @@ type Msg
     | TargetPortfolioShareChanged String
     | ChangePortfolioSharePercentage Rating RangeSlider.Msg
     | ConfirmationFormMsg Rating.RatingMsg
-    | ChangeInvestmentMin Rating String
-    | ChangeInvestmentMax Rating String
-    | ChangeDefaultInvestmentMin String
-    | ChangeDefaultInvestmentMax String
+    | ChangeInvestment Rating RangeSlider.Msg
+    | ChangeDefaultInvestment RangeSlider.Msg
     | TargetBalanceChanged String
     | RemoveBuyFilter Int
     | RemoveSellFilter Int

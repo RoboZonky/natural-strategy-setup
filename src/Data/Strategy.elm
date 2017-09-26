@@ -11,6 +11,7 @@ import Data.PortfolioStructure as PortfolioStructure exposing (PortfolioShares, 
 import Data.PortfolioStructure.Predefined as PredefinedShares
 import Data.TargetBalance as TargetBalance exposing (TargetBalance)
 import Data.TargetPortfolioSize as TargetPortfolioSize exposing (TargetPortfolioSize)
+import RangeSlider
 import Util
 import Version
 
@@ -45,7 +46,7 @@ defaultStrategyConfiguration =
         , confirmationSettings = Confirmation.confirmationsDisabled
         }
     , portfolioShares = PredefinedShares.emptyShares
-    , investmentSizeOverrides = Investment.defaultInvestmentsPerRating ( 200, 200 )
+    , investmentSizeOverrides = Investment.defaultInvestmentsPerRating Investment.defaultSize
     , buyFilters = []
     , sellFilters = []
     }
@@ -102,45 +103,29 @@ setPortfolioShareRange rtg newRange config =
     { config | portfolioShares = sharesUpdater config.portfolioShares }
 
 
-setInvestmentMin : Rating -> Int -> StrategyConfiguration -> StrategyConfiguration
-setInvestmentMin rtg newMin config =
+setInvestment : Rating -> RangeSlider.Msg -> StrategyConfiguration -> StrategyConfiguration
+setInvestment rtg msg config =
     let
-        invUpdater =
-            AllDict.update rtg (Maybe.map (\( _, ma ) -> ( newMin, max ma newMin {- automatically bump ma when newMin exceeds it -} )))
+        investmentUpdater : InvestmentsPerRating -> InvestmentsPerRating
+        investmentUpdater =
+            AllDict.update rtg (Maybe.map (RangeSlider.update msg))
     in
-    { config | investmentSizeOverrides = invUpdater config.investmentSizeOverrides }
+    { config | investmentSizeOverrides = investmentUpdater config.investmentSizeOverrides }
 
 
-setInvestmentMax : Rating -> Int -> StrategyConfiguration -> StrategyConfiguration
-setInvestmentMax rtg newMax config =
+setDefaultInvestment : RangeSlider.Msg -> StrategyConfiguration -> StrategyConfiguration
+setDefaultInvestment msg config =
     let
-        invUpdater =
-            AllDict.update rtg (Maybe.map (\( mi, _ ) -> ( mi, newMax )))
-    in
-    { config | investmentSizeOverrides = invUpdater config.investmentSizeOverrides }
+        setDefaultInvestment : RangeSlider.Msg -> GeneralSettings -> GeneralSettings
+        setDefaultInvestment msg generalSettings =
+            { generalSettings | defaultInvestmentSize = RangeSlider.update msg generalSettings.defaultInvestmentSize }
 
-
-setDefaultInvestmentMin : Int -> StrategyConfiguration -> StrategyConfiguration
-setDefaultInvestmentMin newMin config =
-    let
-        setMin newMin generalSettings =
-            { generalSettings | defaultInvestmentSize = ( newMin, max (Tuple.second generalSettings.defaultInvestmentSize) newMin ) }
+        newGeneralSettings =
+            setDefaultInvestment msg config.generalSettings
     in
     { config
-        | generalSettings = setMin newMin config.generalSettings
-        , investmentSizeOverrides = Investment.defaultInvestmentsPerRating ( newMin, max (Tuple.second config.generalSettings.defaultInvestmentSize) newMin )
-    }
-
-
-setDefaultInvestmentMax : Int -> StrategyConfiguration -> StrategyConfiguration
-setDefaultInvestmentMax newMax config =
-    let
-        setMax newMax generalSettings =
-            { generalSettings | defaultInvestmentSize = ( Tuple.first generalSettings.defaultInvestmentSize, newMax ) }
-    in
-    { config
-        | generalSettings = setMax newMax config.generalSettings
-        , investmentSizeOverrides = Investment.defaultInvestmentsPerRating ( Tuple.first config.generalSettings.defaultInvestmentSize, newMax )
+        | generalSettings = newGeneralSettings
+        , investmentSizeOverrides = Investment.defaultInvestmentsPerRating newGeneralSettings.defaultInvestmentSize
     }
 
 

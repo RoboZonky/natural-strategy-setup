@@ -72,7 +72,7 @@ investmentsPerRatingGen =
 
 investment0to5kRange : Generator Investment.Size
 investment0to5kRange =
-    Random.int 0 25 |> Random.andThen (\from -> Random.int from 25 |> Random.map (\to -> ( 200 * from, 200 * to )))
+    Random.int 0 25 |> Random.andThen (\from -> Random.int from 25 |> Random.map (\to -> Investment.size (200 * from) (200 * to)))
 
 
 buyFiltersGen : Generator (List MarketplaceFilter)

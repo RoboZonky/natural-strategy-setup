@@ -36,9 +36,10 @@ class TestApp {
         return driver.findElement(By.id("seed")).getAttribute("value");
     }
 
-    public void close() {
-        LogEntries logs = driver.manage().logs().get("browser");
-        logs.forEach(logEntry -> System.out.println(logEntry));
+    public LogEntries getBrowserConsoleLogs() {
+        return driver.manage().logs().get("browser");
+    }
+    public void  close() {
         driver.close();
     }
 }

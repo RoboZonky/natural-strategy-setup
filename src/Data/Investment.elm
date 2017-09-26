@@ -2,20 +2,21 @@ module Data.Investment
     exposing
         ( InvestmentsPerRating
         , Size
+        , defaultInvestmentSliderSubscription
         , defaultInvestmentsPerRating
         , defaultSize
+        , investmentSlidersSubscriptions
         , renderDefaultInvestmentSize
         , renderInvestment
         , renderInvestments
+        , size
         )
 
 import AllDict exposing (AllDict)
 import Data.Filter.Conditions.Rating as Rating exposing (Rating, ratingToString)
+import RangeSlider exposing (RangeSlider, setDimensions, setExtents, setFormatter, setStepSize, setValues)
+import Types
 import Util
-
-
-type InvestmentPerRating
-    = InvestmentPerRating Rating Size
 
 
 type alias InvestmentsPerRating =
@@ -28,25 +29,17 @@ defaultInvestmentsPerRating defaultSize =
 
 
 type alias Size =
-    ( Int, Int )
-
-
-defaultSize : Size
-defaultSize =
-    ( 200, 200 )
+    RangeSlider
 
 
 renderDefaultInvestmentSize : Size -> String
-renderDefaultInvestmentSize investmentSize =
-    if investmentSize /= defaultSize then
-        "Běžná výše investice je" ++ investmentSizeToString investmentSize ++ " Kč."
-    else
-        ""
+renderDefaultInvestmentSize size =
+    "Běžná výše investice je" ++ investmentSizeToString size ++ " Kč."
 
 
-renderInvestment : InvestmentPerRating -> String
-renderInvestment (InvestmentPerRating rating investmentSize) =
-    "Do úvěrů v ratingu " ++ ratingToString rating ++ " investovat" ++ investmentSizeToString investmentSize ++ " Kč."
+renderInvestment : ( Rating, Size ) -> String
+renderInvestment ( rating, size ) =
+    "Do úvěrů v ratingu " ++ ratingToString rating ++ " investovat" ++ investmentSizeToString size ++ " Kč."
 
 
 renderInvestments : Size -> InvestmentsPerRating -> String
@@ -56,17 +49,52 @@ renderInvestments defaultSize investments =
     else
         AllDict.toList investments
             --filter our sizes equal to default size
-            |> List.filter (\( _, invSize ) -> invSize /= defaultSize)
-            |> List.map (\( rating, invSize ) -> InvestmentPerRating rating invSize)
+            |> List.filter (\( _, invSize ) -> toIntRange invSize /= toIntRange defaultSize)
             |> List.map renderInvestment
             |> Util.renderNonemptySection "\n- Výše investice"
 
 
 investmentSizeToString : Size -> String
-investmentSizeToString ( mini, maxi ) =
+investmentSizeToString size =
+    let
+        ( mini, maxi ) =
+            toIntRange size
+    in
     if mini == maxi then
         " " ++ toString mini
     else if mini == 0 then
         " až " ++ toString maxi
     else
         " " ++ toString mini ++ " až " ++ toString maxi
+
+
+size : Int -> Int -> Size
+size from to =
+    RangeSlider.init
+        |> setStepSize (Just 200)
+        |> setFormatter (\value -> toString value ++ "Kč")
+        |> setDimensions 300 57
+        |> setExtents 0 5000
+        |> setValues (toFloat from) (toFloat to)
+
+
+defaultSize : Size
+defaultSize =
+    size 200 200
+
+
+investmentSlidersSubscriptions : InvestmentsPerRating -> Sub Types.Msg
+investmentSlidersSubscriptions iprSliderStates =
+    AllDict.toList iprSliderStates
+        |> List.map (\( rtg, sliderState ) -> Sub.map (Types.ChangeInvestment rtg) (RangeSlider.subscriptions sliderState))
+        |> Sub.batch
+
+
+defaultInvestmentSliderSubscription : Size -> Sub Types.Msg
+defaultInvestmentSliderSubscription =
+    Sub.map Types.ChangeDefaultInvestment << RangeSlider.subscriptions
+
+
+toIntRange : Size -> ( Int, Int )
+toIntRange =
+    RangeSlider.getValues >> (\( a, b ) -> ( round a, round b ))

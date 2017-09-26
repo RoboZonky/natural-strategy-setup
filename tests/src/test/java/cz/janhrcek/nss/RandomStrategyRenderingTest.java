@@ -5,8 +5,13 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.logging.LogEntry;
 
 import java.io.IOException;
+import java.util.List;
+import java.util.logging.Level;
+
+import static org.junit.Assert.assertTrue;
 
 public class RandomStrategyRenderingTest {
 
@@ -25,6 +30,10 @@ public class RandomStrategyRenderingTest {
                         + renderedStrategy + "\nException was\n" + e.toString());
             }
         }
+
+        List<LogEntry> errorsAndWarnings = testApp.getBrowserConsoleLogs().filter(Level.WARNING);
+        errorsAndWarnings.forEach(System.out::println);
+        assertTrue("Browser console log shouldn't contain errors", errorsAndWarnings.isEmpty());
     }
 
     @After
