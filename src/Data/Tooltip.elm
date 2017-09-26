@@ -26,10 +26,10 @@ knownTooltips : List ( TipId, String )
 knownTooltips =
     [ ( portfolioStructureTip, "Struktura portfolia definuje požadované rozložení zůstatkové částky do úvěrů na základě ratingu. Můžete zvolit jedno ze tří předdefinovaných portfolií (konzervativní, balancované, progresivní) nebo zvolte prázné a vyplňte požadované procentuální podíly sami." )
     , ( confirmationTip, "Úvěry s ratingem A, B, C a D jsou velmi žádané a v prvních minutách po uvedení na tržiště jsou chráněny CAPTCHA. Pokud pro ně nezapnete mobilní notifikace, robotovi se je s největší pravděpodobností nepodaří zainvestovat." )
-    , ( buyFilterListTip, "Filtry umožňují ignorovat některé úvěry (a participace) na tržišti. Daný úvěr (či participace) bude ignorován, pokud splní podmínky alespoň jednoho z Vámi definovaných filtrů." )
-    , ( sellFilterListTip, "Pravidla definované v této sekci určují které Vámi vlastněné participace si přejete prodávat." )
-    , ( buyFilterCreationTip, "Filtr se skládá z jedné nebo více podmínek určujících, kdy má být úvěr (či participace) na primárním tržišti ignorován. Daný úvěr (či participace) bude ignorován, pokud splní všechny podmínky, které zde zvolíte.  Pokud však zároveň splní všechny podmínky výjimky, ignorován nebude." )
-    , ( sellFilterCreationTip, "Pravidlo pro prodej se skládá z jedné či více podmínek. Robot se bude prodávat participace, které splňují všechny zvolené podmínky." )
+    , ( buyFilterListTip, "Pravidla pro nákup umožňují ignorovat některé položky (úvěry či participace) na tržišti. Daná položka bude ignorována pokud splní podmínky alespoň jednoho z Vámi definovaných pravidel." )
+    , ( sellFilterListTip, "Pravidla pro prodej určují které Vámi vlastněné participace má robot prodávat. Daná participace bude prodána pokud splní podmínky alespoň jednoho z Vámi definovaných pravidel." )
+    , ( buyFilterCreationTip, "Pravidla pro nákup určují které položky na tržišti (úvěry či participace) mají být ignorovány. Daná položka bude ignorována pokud splní všechny podmínky pravidla. Pokud však zároveň splní všechny podmínky výjimky, ignorována nebude." )
+    , ( sellFilterCreationTip, "Pravidla pro prodej určují které participace má robot prodávat. Daná participace bude prodána pokud splní všechny podmínky pravidla. Pokud však zároveň splní všechny podmínky výjimky, prodána nebude." )
     ]
 
 

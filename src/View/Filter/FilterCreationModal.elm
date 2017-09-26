@@ -86,7 +86,7 @@ view { editedFilter, openCloseState, editingPositiveSubform } tooltipStates =
                     ( "Vytvořit pravidlo pro prodej", Tooltip.sellFilterCreationTip )
 
                 _ ->
-                    ( "Vytvořit filtr", Tooltip.buyFilterCreationTip )
+                    ( "Vytvořit pravidlo pro nákup", Tooltip.buyFilterCreationTip )
 
         stateChangeMsg =
             ModalStateMsg <| getFilteredItem editedFilter
@@ -166,13 +166,13 @@ whatToDoText : FilteredItem -> Bool -> String
 whatToDoText filteredItem editingPositiveSubform =
     case ( filteredItem, editingPositiveSubform ) of
         ( Participation_To_Sell, True ) ->
-            "Nastavte podmínky pravidla pro prodej Participací. Participace splňující všechny podmínky budou prodány."
+            "Nastavte podmínky pravidla. Participace splňující všechny podmínky budou prodány."
 
         ( Participation_To_Sell, False ) ->
-            "Nastavte výjimku pravidla pro prodej Participací. Participace splňující všechny podmínky výjimky NEBUDOU prodány."
+            "Nastavte výjimku pravidla. Participace splňující všechny podmínky výjimky NEBUDOU prodány."
 
         ( _, True ) ->
-            "Nastavte podmínky filtru. " ++ Filter.itemToPluralString filteredItem ++ " splňující všechny podmínky budou ignorovány."
+            "Nastavte podmínky pravidla. " ++ Filter.itemToPluralString filteredItem ++ " splňující všechny podmínky budou ignorovány."
 
         ( _, False ) ->
-            "Nastavte výjimku. " ++ Filter.itemToPluralString filteredItem ++ " splňující všechny podmínky výjimky NEBUDOU filtrem ignorovány."
+            "Nastavte výjimku pravidla. " ++ Filter.itemToPluralString filteredItem ++ " splňující všechny podmínky výjimky NEBUDOU ignorovány."

@@ -35,7 +35,7 @@ form investmentShare =
     in
     Card.custom <|
         Form.group [] <|
-            [ legend [] [ text "Maximální podíl ivestice" ]
+            [ legend [] [ text "Maximální podíl investice" ]
             , Radio.radio
                 [ Radio.checked isUnrestricted
                 , Radio.name "investmentShare"

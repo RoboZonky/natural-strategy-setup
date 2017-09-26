@@ -23,7 +23,7 @@ form filters tooltipStates =
         , header =
             Accordion.headerH4 [] <|
                 Accordion.toggle []
-                    [ text "Filtrování tržiště"
+                    [ text "Pravidla pro nákup"
                     , Tooltip.popoverTip Tooltip.buyFilterListTip tooltipStates
                     ]
         , blocks =
@@ -69,8 +69,8 @@ filterCreationControls =
     in
     Card.custom <|
         div []
-            [ text "Přidat filtr pro "
-            , creationButton Loan "Úvěry"
-            , creationButton Participation "Participace"
-            , creationButton Loan_And_Participation "Obojí"
+            [ text "Přidat pravidlo pro "
+            , creationButton Loan "Primární trh"
+            , creationButton Participation "Sekundární trh"
+            , creationButton Loan_And_Participation "Oba trhy"
             ]

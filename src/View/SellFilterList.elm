@@ -23,7 +23,7 @@ form filters tooltipStates =
         , header =
             Accordion.headerH4 [] <|
                 Accordion.toggle []
-                    [ text "Sekundární trh"
+                    [ text "Pravidla pro prodej"
                     , Tooltip.popoverTip Tooltip.sellFilterListTip tooltipStates
                     ]
         , blocks =
@@ -65,5 +65,5 @@ filterCreationControls =
                 , Button.onClick <| ModalMsg <| ModalStateMsg Participation_To_Sell Modal.visibleState
                 , Button.attrs [ class "mx-1" ]
                 ]
-                [ text "Přidat pravidlo pro prodej" ]
+                [ text "Přidat pravidlo" ]
             ]

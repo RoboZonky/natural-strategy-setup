@@ -67,7 +67,7 @@ marketplaceFilterValidationErrors : MarketplaceFilter -> List String
 marketplaceFilterValidationErrors (MarketplaceFilter mf) =
     let
         atLeastOnePositiveCondition =
-            Util.validate (List.isEmpty <| conditionsToList mf.ignoreWhen) "Filtr musí obsahovat aspoň jednu podmínku"
+            Util.validate (List.isEmpty <| conditionsToList mf.ignoreWhen) "Pravidlo musí obsahovat aspoň jednu podmínku"
     in
     atLeastOnePositiveCondition
         ++ conditionsValidationErrors "" mf.ignoreWhen
