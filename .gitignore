@@ -6,4 +6,4 @@ target
 .idea
 *.iml
 chromedriver
-
+chromedriver_linux64.zip
