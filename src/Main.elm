@@ -49,11 +49,8 @@ main =
 
 
 subscriptions : Model -> Sub Msg
-subscriptions { sliderStates, accordionState } =
-    Sub.batch
-        [ Slider.sliderChangeSubscription sliderStates
-        , Accordion.subscriptions accordionState AccordionMsg
-        ]
+subscriptions { sliderStates } =
+    Slider.sliderChangeSubscription sliderStates
 
 
 updateStrategy : (StrategyConfiguration -> StrategyConfiguration) -> Model -> Model

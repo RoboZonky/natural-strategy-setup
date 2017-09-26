@@ -31,7 +31,6 @@ form config accordionState filterCreationState tooltipStates sliderStates =
 strategyForm : StrategyConfiguration -> Accordion.State -> Tooltip.States -> SliderStates -> Html Msg
 strategyForm { generalSettings, portfolioShares, investmentSizeOverrides, buyFilters, sellFilters } accordionState tooltipStates sliderStates =
     Accordion.config AccordionMsg
-        |> Accordion.withAnimation
         |> Accordion.cards
             [ generalSettingsCard generalSettings tooltipStates
             , PortfolioStructure.form generalSettings.portfolio portfolioShares tooltipStates sliderStates
