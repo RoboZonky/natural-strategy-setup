@@ -31,6 +31,7 @@ import Data.PortfolioStructure.Predefined as PredefinedShares
 import Data.TargetBalance as TargetBalance exposing (TargetBalance)
 import Data.TargetPortfolioSize as TargetPortfolioSize exposing (TargetPortfolioSize)
 import RangeSlider
+import Time.DateTime exposing (DateTime)
 import Util
 import Version
 
@@ -181,12 +182,12 @@ addSellFilter newFilter config =
     { config | sellFilters = config.sellFilters ++ [ newFilter ] }
 
 
-renderStrategyConfiguration : StrategyConfiguration -> String
-renderStrategyConfiguration strategy =
+renderStrategyConfiguration : DateTime -> StrategyConfiguration -> String
+renderStrategyConfiguration generatedOn strategy =
     case strategy of
         { generalSettings, portfolioShares, investmentSizeOverrides, buyFilters, sellFilters } ->
             Util.joinNonemptyLines
-                [ Version.strategyComment
+                [ Version.strategyComment generatedOn
                 , renderGeneralSettings generalSettings
                 , PortfolioStructure.renderPortfolioShares generalSettings.portfolio portfolioShares
                 , Investment.renderInvestments generalSettings.defaultInvestmentSize investmentSizeOverrides

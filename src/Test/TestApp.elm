@@ -6,6 +6,7 @@ import Html.Attributes exposing (cols, id, readonly, rows, type_, value)
 import Html.Events exposing (onClick, onInput)
 import Random
 import Test.RandomStrategy as RandomStrategy
+import Time.DateTime
 
 
 type Msg
@@ -43,7 +44,7 @@ view seed =
             Random.step RandomStrategy.strategyConfigurationGen (Random.initialSeed seed)
 
         strategyString =
-            Strategy.renderStrategyConfiguration randomStrategyConfig
+            Strategy.renderStrategyConfiguration Time.DateTime.epoch randomStrategyConfig
     in
     div []
         [ textarea

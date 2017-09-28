@@ -12,6 +12,9 @@ import Data.TargetPortfolioSize as TargetPortfolioSize exposing (..)
 import Data.Tooltip as Tooltip
 import Html exposing (Html, a, footer, h1, text)
 import Html.Attributes exposing (class, href, style)
+import Task
+import Time
+import Time.DateTime as DateTime exposing (DateTime)
 import Types exposing (..)
 import Util
 import Version
@@ -25,6 +28,7 @@ type alias Model =
     , accordionState : Accordion.State
     , filterCreationState : FilterCreationModal.Model
     , tooltipStates : Tooltip.States
+    , generatedOn : DateTime
     }
 
 
@@ -34,13 +38,14 @@ initialModel =
     , accordionState = Accordion.initialState
     , filterCreationState = FilterCreationModal.initialState
     , tooltipStates = Tooltip.initialStates
+    , generatedOn = DateTime.epoch
     }
 
 
 main : Program Never Model Msg
 main =
     Html.program
-        { init = ( initialModel, Cmd.none )
+        { init = ( initialModel, Task.perform SetDateTime Time.now )
         , update = update
         , view = view
         , subscriptions = subscriptions
@@ -152,6 +157,9 @@ updateHelper msg model =
                 , strategyConfig = strategyUpdater model.strategyConfig
             }
 
+        SetDateTime timestamp ->
+            { model | generatedOn = DateTime.fromTimestamp timestamp }
+
         NoOp ->
             model
 
@@ -166,12 +174,12 @@ updateStrategyIfValidInt intStr strategyUpdater strategyConfig =
 
 
 view : Model -> Html Msg
-view { strategyConfig, accordionState, filterCreationState, tooltipStates } =
+view { strategyConfig, accordionState, filterCreationState, tooltipStates, generatedOn } =
     Grid.containerFluid []
         [ h1 [] [ text "Konfigurace strategie" ]
         , Grid.row []
             [ Strategy.form strategyConfig accordionState filterCreationState tooltipStates
-            , ConfigPreview.view strategyConfig
+            , ConfigPreview.view generatedOn strategyConfig
             ]
         , infoFooter
         ]

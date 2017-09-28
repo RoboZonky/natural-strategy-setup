@@ -8,6 +8,7 @@ import Data.Filter.Conditions.Rating as Rating exposing (Rating)
 import Data.Portfolio exposing (Portfolio)
 import Data.Tooltip exposing (TipId)
 import RangeSlider
+import Time exposing (Time)
 import View.Filter.Conditions as Conditions
 
 
@@ -25,6 +26,7 @@ type Msg
     | AccordionMsg Accordion.State
     | ModalMsg ModalMsg
     | TooltipMsg TipId Popover.State
+    | SetDateTime Time
     | NoOp
 
 

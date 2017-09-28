@@ -8,11 +8,12 @@ import Bootstrap.Grid.Col as Col
 import Data.Strategy as Strategy exposing (StrategyConfiguration)
 import Html exposing (text)
 import Html.Attributes exposing (downloadAs, href, readonly, style)
+import Time.DateTime exposing (DateTime)
 import Types exposing (..)
 
 
-view : StrategyConfiguration -> Grid.Column Msg
-view strategyConfig =
+view : DateTime -> StrategyConfiguration -> Grid.Column Msg
+view generatedOn strategyConfig =
     let
         strategyValidationErrors =
             Strategy.validateStrategyConfiguration strategyConfig
@@ -22,7 +23,7 @@ view strategyConfig =
 
         previewText =
             if isValidStrategy then
-                Strategy.renderStrategyConfiguration strategyConfig
+                Strategy.renderStrategyConfiguration generatedOn strategyConfig
             else
                 String.join "\n" <| "Konfigurace nemůže být zobrazena, protože formulář obsahuje chyby:" :: strategyValidationErrors
 
