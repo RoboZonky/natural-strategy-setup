@@ -6,7 +6,6 @@ import Bootstrap.Grid.Col as Col
 import Data.Strategy exposing (..)
 import Data.Tooltip as Tooltip
 import Html exposing (Html, text)
-import Slider exposing (SliderStates)
 import Types exposing (..)
 import View.BuyFilterList as BuyFilterList
 import View.Confirmation as Confirmation
@@ -19,21 +18,21 @@ import View.TargetBalance as TargetBalance
 import View.TargetPortfolioSize as TargetPortfolioSize
 
 
-form : StrategyConfiguration -> Accordion.State -> FilterCreationModal.Model -> Tooltip.States -> SliderStates -> Grid.Column Msg
-form config accordionState filterCreationState tooltipStates sliderStates =
+form : StrategyConfiguration -> Accordion.State -> FilterCreationModal.Model -> Tooltip.States -> Grid.Column Msg
+form config accordionState filterCreationState tooltipStates =
     Grid.col
         [ Col.xs6 ]
-        [ strategyForm config accordionState tooltipStates sliderStates
+        [ strategyForm config accordionState tooltipStates
         , Html.map ModalMsg <| FilterCreationModal.view filterCreationState tooltipStates
         ]
 
 
-strategyForm : StrategyConfiguration -> Accordion.State -> Tooltip.States -> SliderStates -> Html Msg
-strategyForm { generalSettings, portfolioShares, investmentSizeOverrides, buyFilters, sellFilters } accordionState tooltipStates sliderStates =
+strategyForm : StrategyConfiguration -> Accordion.State -> Tooltip.States -> Html Msg
+strategyForm { generalSettings, portfolioShares, investmentSizeOverrides, buyFilters, sellFilters } accordionState tooltipStates =
     Accordion.config AccordionMsg
         |> Accordion.cards
             [ generalSettingsCard generalSettings tooltipStates
-            , PortfolioStructure.form generalSettings.portfolio portfolioShares tooltipStates sliderStates
+            , PortfolioStructure.form generalSettings.portfolio portfolioShares tooltipStates
             , Investment.form generalSettings.defaultInvestmentSize investmentSizeOverrides
             , BuyFilterList.form buyFilters tooltipStates
             , SellFilterList.form sellFilters tooltipStates

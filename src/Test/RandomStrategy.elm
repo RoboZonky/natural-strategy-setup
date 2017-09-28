@@ -15,7 +15,7 @@ import Data.Filter.Conditions.Story exposing (Story(..), StoryCondition(StoryCon
 import Data.Investment as Investment exposing (InvestmentsPerRating)
 import Data.InvestmentShare as InvestmentShare exposing (InvestmentShare(..))
 import Data.Portfolio exposing (Portfolio(..))
-import Data.PortfolioStructure exposing (PortfolioShares)
+import Data.PortfolioStructure as PortfolioStructure exposing (PortfolioShares)
 import Data.Strategy exposing (GeneralSettings, StrategyConfiguration)
 import Data.TargetBalance as TargetBalance exposing (TargetBalance(..))
 import Data.TargetPortfolioSize as TargetPortfoliSize exposing (TargetPortfolioSize(TargetPortfolioSize))
@@ -55,7 +55,7 @@ portfolioSharesGen =
             )
         |> Random.map
             (\sharesList ->
-                List.map2 (\rtg share -> ( rtg, share )) Rating.allRatings sharesList
+                List.map2 (\rtg ( from, to ) -> ( rtg, PortfolioStructure.percentageShare from to )) Rating.allRatings sharesList
                     |> AllDict.fromList Rating.hash
             )
 

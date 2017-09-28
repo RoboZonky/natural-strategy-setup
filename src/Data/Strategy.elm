@@ -7,7 +7,7 @@ import Data.Filter.Conditions.Rating as Rating exposing (Rating(..), RatingMsg)
 import Data.Investment as Investment exposing (InvestmentsPerRating)
 import Data.InvestmentShare as InvestmentShare exposing (InvestmentShare)
 import Data.Portfolio as Portfolio exposing (Portfolio(..))
-import Data.PortfolioStructure as PortfolioStructure exposing (PortfolioShares, Share)
+import Data.PortfolioStructure as PortfolioStructure exposing (PortfolioShares)
 import Data.PortfolioStructure.Predefined as PredefinedShares
 import Data.TargetBalance as TargetBalance exposing (TargetBalance)
 import Data.TargetPortfolioSize as TargetPortfolioSize exposing (TargetPortfolioSize)
@@ -38,14 +38,14 @@ type alias GeneralSettings =
 defaultStrategyConfiguration : StrategyConfiguration
 defaultStrategyConfiguration =
     { generalSettings =
-        { portfolio = Portfolio.Empty
+        { portfolio = Portfolio.Conservative
         , targetPortfolioSize = TargetPortfolioSize.NotSpecified
         , defaultInvestmentSize = Investment.defaultSize
         , defaultInvestmentShare = InvestmentShare.NotSpecified
         , defaultTargetBalance = TargetBalance.NotSpecified
         , confirmationSettings = Confirmation.confirmationsDisabled
         }
-    , portfolioShares = PredefinedShares.emptyShares
+    , portfolioShares = PredefinedShares.conservativeShares
     , investmentSizeOverrides = Investment.defaultInvestmentsPerRating Investment.defaultSize
     , buyFilters = []
     , sellFilters = []
@@ -94,11 +94,12 @@ updateNotificationSettings msg ({ generalSettings } as config) =
     }
 
 
-setPortfolioShareRange : Rating -> Share -> StrategyConfiguration -> StrategyConfiguration
-setPortfolioShareRange rtg newRange config =
+setPortfolioShareRange : Rating -> RangeSlider.Msg -> StrategyConfiguration -> StrategyConfiguration
+setPortfolioShareRange rtg msg config =
     let
+        sharesUpdater : PortfolioShares -> PortfolioShares
         sharesUpdater =
-            AllDict.update rtg (Maybe.map (\_ -> newRange))
+            AllDict.update rtg (Maybe.map (RangeSlider.update msg))
     in
     { config | portfolioShares = sharesUpdater config.portfolioShares }
 

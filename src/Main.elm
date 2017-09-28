@@ -5,13 +5,13 @@ import Bootstrap.Grid as Grid
 import Data.Filter exposing (FilteredItem(Participation_To_Sell), getFilteredItem)
 import Data.Investment as Investment
 import Data.InvestmentShare as InvestmentShare exposing (InvestmentShare(..))
+import Data.PortfolioStructure as PortfolioStructure
 import Data.Strategy exposing (..)
 import Data.TargetBalance as TargetBalance exposing (TargetBalance(TargetBalance))
 import Data.TargetPortfolioSize as TargetPortfolioSize exposing (..)
 import Data.Tooltip as Tooltip
 import Html exposing (Html, a, footer, h1, text)
 import Html.Attributes exposing (class, href, style)
-import Slider exposing (SliderStates)
 import Types exposing (..)
 import Util
 import Version
@@ -25,7 +25,6 @@ type alias Model =
     , accordionState : Accordion.State
     , filterCreationState : FilterCreationModal.Model
     , tooltipStates : Tooltip.States
-    , sliderStates : SliderStates
     }
 
 
@@ -35,7 +34,6 @@ initialModel =
     , accordionState = Accordion.initialState
     , filterCreationState = FilterCreationModal.initialState
     , tooltipStates = Tooltip.initialStates
-    , sliderStates = Slider.initialSliderStates
     }
 
 
@@ -50,9 +48,9 @@ main =
 
 
 subscriptions : Model -> Sub Msg
-subscriptions { sliderStates, strategyConfig } =
+subscriptions { strategyConfig } =
     Sub.batch
-        [ Slider.sliderChangeSubscription sliderStates
+        [ PortfolioStructure.portfolioSlidersSubscription strategyConfig.portfolioShares
         , Investment.investmentSlidersSubscriptions strategyConfig.investmentSizeOverrides
         , Investment.defaultInvestmentSliderSubscription strategyConfig.generalSettings.defaultInvestmentSize
         ]
@@ -72,7 +70,7 @@ updateHelper : Msg -> Model -> Model
 updateHelper msg model =
     case msg of
         PortfolioChanged portfolio ->
-            updateStrategy (setPortfolio portfolio) { model | sliderStates = Slider.initialSliderStates }
+            updateStrategy (setPortfolio portfolio) model
 
         TargetPortfolioSizeChanged targetSizeStr ->
             let
@@ -108,17 +106,7 @@ updateHelper msg model =
             updateStrategy (updateNotificationSettings msg) model
 
         ChangePortfolioSharePercentage rating sliderMsg ->
-            let
-                newSliderStates =
-                    Slider.updateSliders rating sliderMsg model.sliderStates
-
-                newRange =
-                    Slider.getSliderRangeFor rating newSliderStates
-
-                newModel =
-                    updateStrategy (setPortfolioShareRange rating newRange) model
-            in
-            { newModel | sliderStates = newSliderStates }
+            updateStrategy (setPortfolioShareRange rating sliderMsg) model
 
         ChangeInvestment rating sliderMsg ->
             updateStrategy (setInvestment rating sliderMsg) model
@@ -178,11 +166,11 @@ updateStrategyIfValidInt intStr strategyUpdater strategyConfig =
 
 
 view : Model -> Html Msg
-view { strategyConfig, accordionState, filterCreationState, tooltipStates, sliderStates } =
+view { strategyConfig, accordionState, filterCreationState, tooltipStates } =
     Grid.containerFluid []
         [ h1 [] [ text "Konfigurace strategie" ]
         , Grid.row []
-            [ Strategy.form strategyConfig accordionState filterCreationState tooltipStates sliderStates
+            [ Strategy.form strategyConfig accordionState filterCreationState tooltipStates
             , ConfigPreview.view strategyConfig
             ]
         , infoFooter

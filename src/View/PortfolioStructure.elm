@@ -10,25 +10,24 @@ import Bootstrap.Grid.Col as Col
 import Bootstrap.Table as Table
 import Data.Filter.Conditions.Rating as Rating exposing (ratingToString)
 import Data.Portfolio as Portfolio exposing (Portfolio(..))
-import Data.PortfolioStructure exposing (PortfolioShare, PortfolioShares)
+import Data.PortfolioStructure as PortfoliStructure exposing (PortfolioShare, PortfolioShares)
 import Data.Tooltip as Tooltip
 import Html exposing (Html, div, text)
 import Html.Attributes exposing (class, selected, style, value)
 import Html.Events exposing (onSubmit)
 import Plot
 import RangeSlider
-import Slider exposing (SliderStates)
 import Types exposing (..)
 import View.Tooltip as Tooltip
 
 
-form : Portfolio -> PortfolioShares -> Tooltip.States -> SliderStates -> Accordion.Card Msg
-form portfolio shares tooltipStates sliderStates =
+form : Portfolio -> PortfolioShares -> Tooltip.States -> Accordion.Card Msg
+form portfolio shares tooltipStates =
     let
         ( sharesTableOrSliders, contentDescription ) =
             case portfolio of
                 Empty ->
-                    ( portfolioSharesSliders sliderStates, "Nastavte" )
+                    ( portfolioSharesSliders shares, "Nastavte" )
 
                 _ ->
                     ( portfolioSharesTable shares, "Následující tabulka ukazuje" )
@@ -63,7 +62,17 @@ form portfolio shares tooltipStates sliderStates =
 plotShares : PortfolioShares -> Html Msg
 plotShares shares =
     Plot.viewBars
-        (Plot.groups (List.map (\( rtg, ( mi, ma ) ) -> Plot.group (ratingToString rtg) [ toFloat mi, toFloat ma ])))
+        (Plot.groups
+            (List.map
+                (\( rtg, sliderState ) ->
+                    let
+                        ( mi, ma ) =
+                            PortfoliStructure.toIntRange sliderState
+                    in
+                    Plot.group (ratingToString rtg) [ toFloat mi, toFloat ma ]
+                )
+            )
+        )
         (Dict.toList shares)
 
 
@@ -110,7 +119,11 @@ portfolioSharesTable shares =
 
 
 portfolioShareRow : PortfolioShare -> Table.Row Msg
-portfolioShareRow ( rtg, ( mi, mx ) ) =
+portfolioShareRow ( rtg, share ) =
+    let
+        ( mi, mx ) =
+            PortfoliStructure.toIntRange share
+    in
     Table.tr []
         [ Table.td [] [ text <| Rating.ratingToString rtg ]
         , Table.td [] [ text <| toString mi ]
@@ -118,11 +131,11 @@ portfolioShareRow ( rtg, ( mi, mx ) ) =
         ]
 
 
-portfolioSharesSliders : SliderStates -> Html Msg
-portfolioSharesSliders sliderStates =
+portfolioSharesSliders : PortfolioShares -> Html Msg
+portfolioSharesSliders shares =
     let
         sumOfShareMinimums =
-            Dict.foldr (\_ sliderState sumAcc -> sumAcc + round (Tuple.first <| RangeSlider.getValues sliderState)) 0 sliderStates
+            Dict.foldr (\_ sliderState sumAcc -> sumAcc + round (Tuple.first <| RangeSlider.getValues sliderState)) 0 shares
 
         validationError =
             if sumOfShareMinimums /= 100 then
@@ -132,7 +145,7 @@ portfolioSharesSliders sliderStates =
             else
                 []
     in
-    Dict.toList sliderStates
+    Dict.toList shares
         |> List.map
             (\( rating, sliderState ) ->
                 Form.formInline [ onSubmit NoOp ]
