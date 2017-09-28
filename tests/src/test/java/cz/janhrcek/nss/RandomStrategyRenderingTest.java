@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.logging.Level;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 public class RandomStrategyRenderingTest {
@@ -25,11 +26,14 @@ public class RandomStrategyRenderingTest {
 
             try {
                 GeneratedStrategyVerifier.parseWithAntlr(renderedStrategy);
+                assertEquals("[]", testApp.getValidationErrors());
             } catch (Exception e) {
                 Assert.fail("----- Failed to parse strategy (seed = " + testApp.getStrategySeed() + ") -----\n"
                         + renderedStrategy + "\nException was\n" + e.toString());
             }
         }
+
+
 
         List<LogEntry> errorsAndWarnings = testApp.getBrowserConsoleLogs().filter(Level.WARNING);
         errorsAndWarnings.forEach(System.out::println);

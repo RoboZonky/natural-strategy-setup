@@ -29,6 +29,11 @@ class TestApp {
         return driver.findElement(By.id("renderedStrategy")).getAttribute("value");
     }
 
+    public String getValidationErrors() {
+        WebElement validationErrors = driver.findElement(By.id("validationErrors"));
+        return validationErrors.getText();
+    }
+
     /**
      * @return seed used to generate the strategy returned by previous call to {@link #nextStrategy()}
      */
@@ -39,7 +44,8 @@ class TestApp {
     public LogEntries getBrowserConsoleLogs() {
         return driver.manage().logs().get("browser");
     }
-    public void  close() {
+
+    public void close() {
         driver.close();
     }
 }

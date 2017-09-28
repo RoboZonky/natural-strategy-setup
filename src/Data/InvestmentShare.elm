@@ -2,7 +2,10 @@ module Data.InvestmentShare
     exposing
         ( InvestmentShare(..)
         , renderInvestmentShare
+        , validate
         )
+
+import Util
 
 
 type InvestmentShare
@@ -18,3 +21,13 @@ renderInvestmentShare investmentShare =
 
         NotSpecified ->
             ""
+
+
+validate : InvestmentShare -> List String
+validate s =
+    case s of
+        NotSpecified ->
+            []
+
+        InvestmentSharePercent pct ->
+            Util.validate (pct < 1 || 100 < pct) "Podíl výše úvěru musí být mezi 1 a 100 %"

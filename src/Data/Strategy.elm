@@ -1,4 +1,23 @@
-module Data.Strategy exposing (..)
+module Data.Strategy
+    exposing
+        ( GeneralSettings
+        , StrategyConfiguration
+        , addBuyFilter
+        , addSellFilter
+        , defaultStrategyConfiguration
+        , removeBuyFilter
+        , removeSellFilter
+        , renderStrategyConfiguration
+        , setDefaultInvestment
+        , setDefaultInvestmentShare
+        , setInvestment
+        , setPortfolio
+        , setPortfolioShareRange
+        , setTargetBalance
+        , setTargetPortfolioSize
+        , updateNotificationSettings
+        , validateStrategyConfiguration
+        )
 
 import AllDict
 import Data.Confirmation as Confirmation exposing (ConfirmationSettings)
@@ -186,4 +205,21 @@ renderGeneralSettings generalSettings =
         , InvestmentShare.renderInvestmentShare generalSettings.defaultInvestmentShare
         , TargetBalance.renderTargetBalance generalSettings.defaultTargetBalance
         , Confirmation.renderConfirmation generalSettings.confirmationSettings
+        ]
+
+
+validateStrategyConfiguration : StrategyConfiguration -> List String
+validateStrategyConfiguration strategyConfig =
+    List.concat
+        [ validateGeneralSettings strategyConfig.generalSettings
+        , PortfolioStructure.validate strategyConfig.portfolioShares
+        ]
+
+
+validateGeneralSettings : GeneralSettings -> List String
+validateGeneralSettings generalSettings =
+    List.concat
+        [ TargetPortfolioSize.validate generalSettings.targetPortfolioSize
+        , InvestmentShare.validate generalSettings.defaultInvestmentShare
+        , TargetBalance.validate generalSettings.defaultTargetBalance
         ]

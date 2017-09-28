@@ -4,9 +4,9 @@ import Bootstrap.Card as Card
 import Bootstrap.Form as Form
 import Bootstrap.Form.Input as Input
 import Bootstrap.Form.Radio as Radio
-import Data.InvestmentShare exposing (InvestmentShare(..))
-import Html exposing (div, legend, text)
-import Html.Attributes as Attr exposing (class, disabled, style)
+import Data.InvestmentShare as InvestmentShare exposing (InvestmentShare(..))
+import Html exposing (legend, text)
+import Html.Attributes as Attr exposing (class, disabled)
 import Html.Events exposing (onInput, onSubmit)
 import Types exposing (..)
 import Util
@@ -15,26 +15,19 @@ import Util
 form : InvestmentShare -> Card.BlockItem Msg
 form investmentShare =
     let
-        ( isUnrestricted, inputValue, validationError ) =
+        ( isUnrestricted, inputValue ) =
             case investmentShare of
                 NotSpecified ->
-                    ( True, Input.value defaultValue, [] )
+                    ( True, Input.value defaultValue )
 
                 InvestmentSharePercent pct ->
-                    let
-                        validationError =
-                            if pct < 1 || 100 < pct then
-                                [ div [ style [ ( "color", "red" ) ] ] [ text "Podíl výše úvěru musí být mezi 1 a 100 %" ] ]
-                            else
-                                []
-                    in
-                    ( False
-                    , Input.value <| Util.zeroToEmpty pct
-                    , validationError
-                    )
+                    ( False, Input.value <| Util.zeroToEmpty pct )
+
+        validationErrors =
+            Util.viewErrors <| InvestmentShare.validate investmentShare
     in
     Card.custom <|
-        Form.group [] <|
+        Form.group []
             [ legend [] [ text "Maximální podíl investice" ]
             , Radio.radio
                 [ Radio.checked isUnrestricted
@@ -56,8 +49,8 @@ form investmentShare =
                     ]
                 , text "% výše úvěru."
                 ]
+            , validationErrors
             ]
-                ++ validationError
 
 
 defaultValue : String

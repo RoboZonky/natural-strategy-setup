@@ -4,9 +4,9 @@ import Bootstrap.Card as Card
 import Bootstrap.Form as Form
 import Bootstrap.Form.Input as Input
 import Bootstrap.Form.Radio as Radio
-import Data.TargetBalance exposing (TargetBalance(..))
-import Html exposing (div, legend, text)
-import Html.Attributes as Attr exposing (class, style)
+import Data.TargetBalance as TargetBalance exposing (TargetBalance(..))
+import Html exposing (legend, text)
+import Html.Attributes as Attr exposing (class)
 import Html.Events exposing (onSubmit)
 import Types exposing (..)
 import Util
@@ -15,28 +15,19 @@ import Util
 form : TargetBalance -> Card.BlockItem Msg
 form targetBalance =
     let
-        ( isUnspecified, valueAttribute, validationError ) =
+        ( isUnspecified, valueAttribute ) =
             case targetBalance of
                 NotSpecified ->
-                    ( True, Input.value defaultValue, [] )
+                    ( True, Input.value defaultValue )
 
                 TargetBalance val ->
-                    let
-                        validationError =
-                            if val < 200 then
-                                [ div [ style [ ( "color", "red" ) ] ]
-                                    [ text "Minimální výše investice na Zonky.cz je 200 Kč. Nastovavat nižší hodnotu nemá smysl." ]
-                                ]
-                            else
-                                []
-                    in
-                    ( False
-                    , Input.value <| Util.zeroToEmpty val
-                    , validationError
-                    )
+                    ( False, Input.value <| Util.zeroToEmpty val )
+
+        validationErrors =
+            Util.viewErrors <| TargetBalance.validate targetBalance
     in
     Card.custom <|
-        Form.group [] <|
+        Form.group []
             [ legend [] [ text "Disponibilní zůstatek" ]
             , Radio.radio
                 [ Radio.checked isUnspecified
@@ -60,8 +51,8 @@ form targetBalance =
                     ]
                 , text " Kč."
                 ]
+            , validationErrors
             ]
-                ++ validationError
 
 
 defaultValue : String

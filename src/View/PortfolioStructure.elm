@@ -10,7 +10,7 @@ import Bootstrap.Grid.Col as Col
 import Bootstrap.Table as Table
 import Data.Filter.Conditions.Rating as Rating exposing (ratingToString)
 import Data.Portfolio as Portfolio exposing (Portfolio(..))
-import Data.PortfolioStructure as PortfoliStructure exposing (PortfolioShare, PortfolioShares)
+import Data.PortfolioStructure as PortfolioStructure exposing (PortfolioShare, PortfolioShares)
 import Data.Tooltip as Tooltip
 import Html exposing (Html, div, text)
 import Html.Attributes exposing (class, selected, style, value)
@@ -18,6 +18,7 @@ import Html.Events exposing (onSubmit)
 import Plot
 import RangeSlider
 import Types exposing (..)
+import Util
 import View.Tooltip as Tooltip
 
 
@@ -64,7 +65,7 @@ plotShares shares =
                 (\( rtg, sliderState ) ->
                     let
                         ( mi, ma ) =
-                            PortfoliStructure.toIntRange sliderState
+                            PortfolioStructure.toIntRange sliderState
                     in
                     Plot.group (ratingToString rtg) [ toFloat mi, toFloat ma ]
                 )
@@ -119,7 +120,7 @@ portfolioShareRow : PortfolioShare -> Table.Row Msg
 portfolioShareRow ( rtg, share ) =
     let
         ( mi, mx ) =
-            PortfoliStructure.toIntRange share
+            PortfolioStructure.toIntRange share
     in
     Table.tr []
         [ Table.td [] [ text <| Rating.ratingToString rtg ]
@@ -131,16 +132,8 @@ portfolioShareRow ( rtg, share ) =
 portfolioSharesSliders : PortfolioShares -> Html Msg
 portfolioSharesSliders shares =
     let
-        sumOfShareMinimums =
-            Dict.foldr (\_ sliderState sumAcc -> sumAcc + round (Tuple.first <| RangeSlider.getValues sliderState)) 0 shares
-
-        validationError =
-            if sumOfShareMinimums /= 100 then
-                [ div [ style [ ( "color", "red" ) ] ]
-                    [ text <| "Součet minim musí být přesně 100% (teď je " ++ toString sumOfShareMinimums ++ "%)" ]
-                ]
-            else
-                []
+        validationErrors =
+            Util.viewErrors <| PortfolioStructure.validate shares
     in
     Dict.toList shares
         |> List.map
@@ -150,4 +143,4 @@ portfolioSharesSliders shares =
                     , Html.map (ChangePortfolioSharePercentage rating) <| RangeSlider.view sliderState
                     ]
             )
-        |> (\sliders -> div [] (sliders ++ validationError))
+        |> (\sliders -> div [] (sliders ++ [ validationErrors ]))

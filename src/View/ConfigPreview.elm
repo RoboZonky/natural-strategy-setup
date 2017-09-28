@@ -12,21 +12,30 @@ import Types exposing (..)
 
 
 view : StrategyConfiguration -> Grid.Column Msg
-view model =
+view strategyConfig =
     let
-        strategyString =
-            Strategy.renderStrategyConfiguration model
+        strategyValidationErrors =
+            Strategy.validateStrategyConfiguration strategyConfig
 
-        strategyStringRowCount =
-            List.length <| String.lines strategyString
+        isValidStrategy =
+            List.isEmpty strategyValidationErrors
+
+        previewText =
+            if isValidStrategy then
+                Strategy.renderStrategyConfiguration strategyConfig
+            else
+                String.join "\n" <| "Konfigurace nemůže být zobrazena, protože formulář obsahuje chyby:" :: strategyValidationErrors
+
+        previewTextRowCount =
+            List.length <| String.lines previewText
     in
     Grid.col
         [ Col.xs6 ]
         [ Grid.row []
             [ Grid.col []
                 [ Textarea.textarea
-                    [ Textarea.rows <| strategyStringRowCount + 1
-                    , Textarea.value strategyString
+                    [ Textarea.rows <| previewTextRowCount + 1
+                    , Textarea.value previewText
                     , Textarea.attrs [ readonly True, style [ ( "width", "100%" ) ] ]
                     ]
                 ]
@@ -35,8 +44,9 @@ view model =
             [ Grid.col []
                 [ Button.linkButton
                     [ Button.primary
+                    , Button.disabled <| not isValidStrategy
                     , Button.attrs
-                        [ href <| "data:text/plain;charset=utf-8;base64," ++ Base64.encode strategyString
+                        [ href <| "data:text/plain;charset=utf-8;base64," ++ Base64.encode previewText
                         , downloadAs <| "strategy.txt"
                         ]
                     ]

@@ -4,7 +4,7 @@ import Bootstrap.Card as Card
 import Bootstrap.Form as Form
 import Bootstrap.Form.Input as Input
 import Bootstrap.Form.Radio as Radio
-import Data.TargetPortfolioSize exposing (TargetPortfolioSize(..))
+import Data.TargetPortfolioSize as TargetPortfolioSize exposing (TargetPortfolioSize(..))
 import Html exposing (legend, text)
 import Html.Attributes as Attr exposing (class)
 import Html.Events exposing (onSubmit)
@@ -24,6 +24,9 @@ form targetPortfolioSize =
                     ( False
                     , Input.value <| Util.zeroToEmpty maxBound
                     )
+
+        validationErrors =
+            Util.viewErrors <| TargetPortfolioSize.validate targetPortfolioSize
     in
     Card.custom <|
         Form.group []
@@ -51,6 +54,7 @@ form targetPortfolioSize =
                     ]
                 , text "Kč."
                 ]
+            , validationErrors
             ]
 
 

@@ -1,5 +1,8 @@
 module Util exposing (..)
 
+import Html exposing (Html, div, text)
+import Html.Attributes exposing (style)
+
 
 orList : (a -> String) -> List a -> String
 orList itemToString list =
@@ -59,3 +62,11 @@ validate errorCondition error =
         [ error ]
     else
         []
+
+
+viewErrors : List String -> Html a
+viewErrors errors =
+    if List.isEmpty errors then
+        text ""
+    else
+        div [ style [ ( "color", "red" ) ] ] [ text <| String.join ";" errors ]

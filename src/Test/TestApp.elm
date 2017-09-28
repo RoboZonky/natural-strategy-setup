@@ -1,7 +1,7 @@
 module Test.TestApp exposing (..)
 
 import Data.Strategy as Strategy
-import Html exposing (Html, button, div, input, text, textarea)
+import Html exposing (Html, button, div, input, span, text, textarea)
 import Html.Attributes exposing (cols, id, readonly, rows, type_, value)
 import Html.Events exposing (onClick, onInput)
 import Random
@@ -58,5 +58,9 @@ view seed =
             [ button [ onClick PrevSeed ] [ text "Previous Seed" ]
             , input [ onInput SetSeed, type_ "text", value (toString seed), id "seed" ] []
             , button [ onClick NextSeed, id "nextSeedButton" ] [ text "Next Seed" ]
+            ]
+        , div []
+            [ text <| "Strategy validation errors: "
+            , span [ id "validationErrors" ] [ text <| toString <| Strategy.validateStrategyConfiguration randomStrategyConfig ]
             ]
         ]

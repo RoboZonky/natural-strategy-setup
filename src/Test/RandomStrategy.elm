@@ -235,7 +235,7 @@ investmentShareGen : Generator InvestmentShare
 investmentShareGen =
     Random.frequency
         [ ( 1, Random.constant InvestmentShare.NotSpecified )
-        , ( 2, Random.map InvestmentSharePercent percentageGen )
+        , ( 2, Random.map InvestmentSharePercent <| Random.int 1 100 )
         ]
 
 

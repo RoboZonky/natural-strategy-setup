@@ -2,7 +2,10 @@ module Data.TargetPortfolioSize
     exposing
         ( TargetPortfolioSize(..)
         , renderTargetPortfolioSize
+        , validate
         )
+
+import Util
 
 
 type TargetPortfolioSize
@@ -18,3 +21,13 @@ renderTargetPortfolioSize targetPortfolioSize =
 
         NotSpecified ->
             ""
+
+
+validate : TargetPortfolioSize -> List String
+validate tb =
+    case tb of
+        NotSpecified ->
+            []
+
+        TargetPortfolioSize val ->
+            Util.validate (val < 0) "Cílová zůstatková částka nesmí být záporná."
