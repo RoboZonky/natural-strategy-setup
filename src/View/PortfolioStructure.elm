@@ -36,11 +36,8 @@ form portfolio shares tooltipStates =
         { id = "portfolioStructureCard"
         , options = []
         , header =
-            Accordion.headerH4 [] <|
-                Accordion.toggle []
-                    [ text "Struktura portfolia"
-                    , Tooltip.popoverTip Tooltip.portfolioStructureTip tooltipStates
-                    ]
+            Accordion.headerH4 [] (Accordion.toggle [] [ text "Struktura portfolia" ])
+                |> Accordion.appendHeader [ Tooltip.popoverTip Tooltip.portfolioStructureTip tooltipStates ]
         , blocks =
             [ Accordion.block []
                 [ Card.custom <|

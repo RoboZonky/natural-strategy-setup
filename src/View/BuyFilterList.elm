@@ -21,11 +21,8 @@ form filters tooltipStates =
         { id = "buyFiltersCard"
         , options = []
         , header =
-            Accordion.headerH4 [] <|
-                Accordion.toggle []
-                    [ text "Pravidla pro nákup"
-                    , Tooltip.popoverTip Tooltip.buyFilterListTip tooltipStates
-                    ]
+            Accordion.headerH4 [] (Accordion.toggle [] [ text "Pravidla pro nákup" ])
+                |> Accordion.appendHeader [ Tooltip.popoverTip Tooltip.buyFilterListTip tooltipStates ]
         , blocks =
             [ Accordion.block [] [ filtersView filters, filterCreationControls ] ]
         }
