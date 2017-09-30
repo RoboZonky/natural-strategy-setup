@@ -15,10 +15,10 @@ import Data.Tooltip as Tooltip
 import Html exposing (Html, div, text)
 import Html.Attributes exposing (class, selected, style, value)
 import Html.Events exposing (onSubmit)
-import Plot
 import RangeSlider
 import Types exposing (..)
 import Util
+import View.PortfolioStructure.PieChart exposing (viewChart)
 import View.Tooltip as Tooltip
 
 
@@ -49,29 +49,12 @@ form portfolio shares tooltipStates =
                             [ Grid.col [ Col.xs6 ]
                                 [ sharesTableOrSliders ]
                             , Grid.col [ Col.xs6 ]
-                                [ plotShares shares ]
+                                [ viewChart shares ]
                             ]
                         ]
                 ]
             ]
         }
-
-
-plotShares : PortfolioShares -> Html Msg
-plotShares shares =
-    Plot.viewBars
-        (Plot.groups
-            (List.map
-                (\( rtg, sliderState ) ->
-                    let
-                        ( mi, ma ) =
-                            PortfolioStructure.toIntRange sliderState
-                    in
-                    Plot.group (ratingToString rtg) [ toFloat mi, toFloat ma ]
-                )
-            )
-        )
-        (Dict.toList shares)
 
 
 defaultPortfolioForm : Portfolio -> Html Msg
