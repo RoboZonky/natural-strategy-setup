@@ -4,10 +4,10 @@ import AllDict
 import Array exposing (Array)
 import Data.Filter.Conditions.Rating as Rating
 import Data.PortfolioStructure exposing (PortfolioShares)
-import Html exposing (Html, br, div, h2, input, label)
+import Html exposing (Html)
 import RangeSlider
-import Svg exposing (Svg, g, path, svg, text, text_, tspan)
-import Svg.Attributes exposing (d, dy, fill, height, stroke, style, textAnchor, transform, width, x)
+import Svg exposing (Svg, circle, g, path, svg, text, text_)
+import Svg.Attributes exposing (cx, cy, d, dominantBaseline, fill, height, r, stroke, transform, width, x, y)
 import Visualization.Shape as Shape exposing (defaultPieConfig)
 
 
@@ -27,66 +27,65 @@ colors =
         ]
 
 
-sharesToPieData : PortfolioShares -> List ( String, Float )
-sharesToPieData shares =
+extractMinimumShares : PortfolioShares -> List ( String, Float )
+extractMinimumShares shares =
     let
         rtgLabelToMinPercentage =
-            AllDict.toList shares |> List.map (\( rtg, range ) -> ( Rating.ratingToString rtg, Tuple.first <| RangeSlider.getValues range ))
+            AllDict.toList shares
+                |> List.map
+                    (\( rtg, range ) ->
+                        ( Rating.ratingToString rtg
+                        , Tuple.first <| RangeSlider.getValues range
+                        )
+                    )
 
         remaining =
             100 - List.sum (List.map Tuple.second rtgLabelToMinPercentage)
     in
     rtgLabelToMinPercentage
         ++ [ ( "Neurčeno", remaining ) ]
-        |> List.map
-            (\( lbl, val ) ->
-                ( if val < 1 then
-                    ""
-                  else
-                    lbl
-                , val
-                )
-            )
 
 
 viewChart : PortfolioShares -> Html msg
 viewChart shares =
     let
-        labelPosition =
-            120
-
-        model =
-            sharesToPieData shares
-
         pieData =
-            model
+            extractMinimumShares shares
+
+        pieChart =
+            pieData
                 |> List.map Tuple.second
-                |> Shape.pie
-                    { defaultPieConfig
-                        | sortingFn = \_ _ -> EQ
-                    }
+                |> Shape.pie { defaultPieConfig | sortingFn = \_ _ -> EQ }
+                |> List.indexedMap makeSlice
+                |> g [ transform "translate(110,110)" ]
 
-        makeSlice index datum =
-            path [ d (Shape.arc datum), fill (Maybe.withDefault "#000" <| Array.get index colors), stroke "#fff" ] []
-
-        makeLabel slice ( label, value ) =
-            text_
-                [ transform ("translate" ++ toString (Shape.centroid { slice | innerRadius = labelPosition, outerRadius = labelPosition }))
-                , textAnchor "middle"
-                ]
-                [ tspan [ x "0" ] [ text label ]
-                , tspan [ x "0", dy "1em" ]
-                    [ text <|
-                        if value < 1 then
-                            ""
-                        else
-                            toString (round value) ++ "%"
-                    ]
-                ]
+        legend =
+            pieData
+                |> List.map2 (\color ( rtg, val ) -> ( rtg, val, color )) (Array.toList colors)
+                |> List.filter (\( _, val, _ ) -> val >= 1)
+                |> List.indexedMap makeLegend
+                |> g [ transform "translate(250,25)" ]
     in
-    svg [ width "300px", height "300px" ]
-        [ g [ transform "translate(150,150)" ]
-            [ g [] <| List.indexedMap makeSlice pieData
-            , g [] <| List.map2 makeLabel pieData model
-            ]
+    svg [ width "400px", height "220px" ]
+        [ pieChart
+        , legend
         ]
+
+
+makeLegend : Int -> ( String, Float, String ) -> Svg a
+makeLegend index ( ratingStr, value, color ) =
+    g []
+        [ circle [ r "0.4em", cx "0", cy (toString index ++ "em"), fill color ] []
+        , text_ [ x "1em", y (toString index ++ "em"), dominantBaseline "central" ]
+            [ text <| ratingStr ++ "(" ++ toString (round value) ++ "%)" ]
+        ]
+
+
+makeSlice : Int -> Shape.Arc -> Svg a
+makeSlice index datum =
+    path
+        [ d <| Shape.arc datum
+        , fill <| Maybe.withDefault "#000" <| Array.get index colors
+        , stroke "#fff"
+        ]
+        []
