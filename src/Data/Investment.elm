@@ -2,18 +2,25 @@ module Data.Investment
     exposing
         ( InvestmentsPerRating
         , Size
+        , decoder
         , defaultInvestmentSliderSubscription
         , defaultInvestmentsPerRating
         , defaultSize
+        , encode
+        , encodeSize
         , investmentSlidersSubscriptions
         , renderDefaultInvestmentSize
         , renderInvestment
         , renderInvestments
         , size
+        , sizeDecoder
         )
 
 import AllDict exposing (AllDict)
 import Data.Filter.Conditions.Rating as Rating exposing (Rating, ratingToString)
+import Data.SharedJsonStuff
+import Json.Decode as Decode exposing (Decoder)
+import Json.Encode as Encode exposing (Value)
 import RangeSlider exposing (RangeSlider, setDimensions, setExtents, setFormatter, setStepSize, setValues)
 import Types
 import Util
@@ -98,3 +105,36 @@ defaultInvestmentSliderSubscription =
 toIntRange : Size -> ( Int, Int )
 toIntRange =
     RangeSlider.getValues >> (\( a, b ) -> ( round a, round b ))
+
+
+
+-- JSON
+
+
+encode : InvestmentsPerRating -> Value
+encode =
+    Data.SharedJsonStuff.encodeRatingToSliderDict encodeSize
+
+
+decoder : Decoder InvestmentsPerRating
+decoder =
+    Data.SharedJsonStuff.ratingToSliderDictDecodr sizeDecoder
+
+
+encodeSize : Size -> Value
+encodeSize sz =
+    toIntRange sz |> (\( from, to ) -> Encode.list [ Encode.int from, Encode.int to ])
+
+
+sizeDecoder : Decoder Size
+sizeDecoder =
+    Decode.list Decode.int
+        |> Decode.map
+            (\xs ->
+                case xs of
+                    from :: to :: [] ->
+                        size from to
+
+                    _ ->
+                        size 200 200
+            )

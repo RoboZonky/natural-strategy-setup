@@ -5,6 +5,7 @@ module Data.Strategy
         , addBuyFilter
         , addSellFilter
         , defaultStrategyConfiguration
+        , encodeStrategy
         , removeBuyFilter
         , removeSellFilter
         , renderStrategyConfiguration
@@ -15,6 +16,7 @@ module Data.Strategy
         , setPortfolioShareRange
         , setTargetBalance
         , setTargetPortfolioSize
+        , strategyDecoder
         , updateNotificationSettings
         , validateStrategyConfiguration
         )
@@ -30,6 +32,8 @@ import Data.PortfolioStructure as PortfolioStructure exposing (PortfolioShares)
 import Data.PortfolioStructure.Predefined as PredefinedShares
 import Data.TargetBalance as TargetBalance exposing (TargetBalance)
 import Data.TargetPortfolioSize as TargetPortfolioSize exposing (TargetPortfolioSize)
+import Json.Decode as Decode exposing (Decoder)
+import Json.Encode as Encode exposing (Value)
 import RangeSlider
 import Time.DateTime exposing (DateTime)
 import Util
@@ -224,3 +228,51 @@ validateGeneralSettings generalSettings =
         , InvestmentShare.validate generalSettings.defaultInvestmentShare
         , TargetBalance.validate generalSettings.defaultTargetBalance
         ]
+
+
+
+-- JSON
+
+
+encodeGeneralSettings : GeneralSettings -> Value
+encodeGeneralSettings { portfolio, targetPortfolioSize, defaultInvestmentSize, defaultInvestmentShare, defaultTargetBalance, confirmationSettings } =
+    Encode.object
+        [ ( "portfolio", Portfolio.encode portfolio )
+        , ( "targetPortfolioSize", TargetPortfolioSize.encode targetPortfolioSize )
+        , ( "defaultInvestmentSize", Investment.encodeSize defaultInvestmentSize )
+        , ( "defaultInvestmentShare", InvestmentShare.encode defaultInvestmentShare )
+        , ( "defaultTargetBalance", TargetBalance.encode defaultTargetBalance )
+        , ( "confirmationSettings", Confirmation.encode confirmationSettings )
+        ]
+
+
+generalSettingsDecoder : Decoder GeneralSettings
+generalSettingsDecoder =
+    Decode.map6 GeneralSettings
+        (Decode.field "portfolio" Portfolio.decoder)
+        (Decode.field "targetPortfolioSize" TargetPortfolioSize.decoder)
+        (Decode.field "defaultInvestmentSize" Investment.sizeDecoder)
+        (Decode.field "defaultInvestmentShare" InvestmentShare.decoder)
+        (Decode.field "defaultTargetBalance" TargetBalance.decoder)
+        (Decode.field "confirmationSettings" Confirmation.decoder)
+
+
+encodeStrategy : StrategyConfiguration -> Value
+encodeStrategy { generalSettings, portfolioShares, investmentSizeOverrides, buyFilters, sellFilters } =
+    Encode.object
+        [ ( "generalSettings", encodeGeneralSettings generalSettings )
+        , ( "portfolioShares", PortfolioStructure.encode portfolioShares )
+        , ( "investmentSizeOverrides", Investment.encode investmentSizeOverrides )
+        , ( "buyFilters", Encode.list <| List.map Filters.encodeMarketplaceFilter buyFilters )
+        , ( "sellFilters", Encode.list <| List.map Filters.encodeMarketplaceFilter sellFilters )
+        ]
+
+
+strategyDecoder : Decoder StrategyConfiguration
+strategyDecoder =
+    Decode.map5 StrategyConfiguration
+        (Decode.field "generalSettings" generalSettingsDecoder)
+        (Decode.field "portfolioShares" PortfolioStructure.decoder)
+        (Decode.field "investmentSizeOverrides" Investment.decoder)
+        (Decode.field "buyFilters" (Decode.list Filters.marketplaceFilterDecoder))
+        (Decode.field "sellFilters" (Decode.list Filters.marketplaceFilterDecoder))

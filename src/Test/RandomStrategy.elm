@@ -2,7 +2,7 @@ module Test.RandomStrategy exposing (..)
 
 import AllDict
 import Data.Confirmation exposing (ConfirmationSettings)
-import Data.Filter exposing (FilteredItem(..), MarketplaceFilter(..))
+import Data.Filter exposing (FilteredItem(..), MarketplaceFilter)
 import Data.Filter.Conditions exposing (Condition(..), Conditions, addCondition, emptyConditions)
 import Data.Filter.Conditions.Amount as Amount exposing (AmountCondition(AmountCondition))
 import Data.Filter.Conditions.Interest as Interest exposing (InterestCondition(..))
@@ -107,7 +107,7 @@ filterGen filteredItem =
                 _ ->
                     participationConditionsGen
     in
-    Random.map2 (\pos neg -> MarketplaceFilter { whatToFilter = filteredItem, ignoreWhen = pos, butNotWhen = neg })
+    Random.map2 (\pos neg -> { whatToFilter = filteredItem, ignoreWhen = pos, butNotWhen = neg })
         (conditionsGen 1)
         (conditionsGen 0)
 

@@ -1,7 +1,8 @@
-module Util exposing (..)
+module Util exposing (emptyToZero, enumDecoder, joinNonemptyLines, orList, renderNonemptySection, validate, viewErrors, zeroToEmpty)
 
 import Html exposing (Html, div, text)
 import Html.Attributes exposing (style)
+import Json.Decode as Decode exposing (Decoder)
 
 
 orList : (a -> String) -> List a -> String
@@ -70,3 +71,25 @@ viewErrors errors =
         text ""
     else
         div [ style [ ( "color", "red" ) ] ] [ text <| String.join ";" errors ]
+
+
+
+-- JSON
+
+
+enumDecoder : List a -> Decoder a
+enumDecoder allValues =
+    Decode.string
+        |> Decode.andThen
+            (\str ->
+                List.filter (\val -> toString val == str) allValues
+                    |> List.head
+                    |> (\maybeVal ->
+                            case maybeVal of
+                                Nothing ->
+                                    Decode.fail <| "Unexpected input " ++ str ++ ", was expecting one of " ++ toString allValues
+
+                                Just val ->
+                                    Decode.succeed val
+                       )
+            )

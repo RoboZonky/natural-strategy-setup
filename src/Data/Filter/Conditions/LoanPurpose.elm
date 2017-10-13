@@ -4,7 +4,9 @@ module Data.Filter.Conditions.LoanPurpose
         , LoanPurposeCondition(..)
         , LoanPurposeMsg
         , allPurposes
+        , conditionDecoder
         , defaultLoanPurposeCondition
+        , encodeCondition
         , loanPurposeForm
         , renderLoanPurposeCondition
         , update
@@ -13,6 +15,8 @@ module Data.Filter.Conditions.LoanPurpose
 
 import Bootstrap.Form.Checkbox as Checkbox
 import Html exposing (Html, div)
+import Json.Decode as Decode exposing (Decoder)
+import Json.Encode as Encode exposing (Value)
 import Util
 
 
@@ -124,3 +128,23 @@ loanPurposeCheckbox purpose isEnabled =
         , Checkbox.inline
         ]
         (loanPurposeToString purpose)
+
+
+encodeLoanPurpose : LoanPurpose -> Value
+encodeLoanPurpose =
+    Encode.string << toString
+
+
+encodeCondition : LoanPurposeCondition -> Value
+encodeCondition (LoanPurposeList lps) =
+    Encode.list <| List.map encodeLoanPurpose lps
+
+
+loanPurposeDecoder : Decoder LoanPurpose
+loanPurposeDecoder =
+    Util.enumDecoder allPurposes
+
+
+conditionDecoder : Decoder LoanPurposeCondition
+conditionDecoder =
+    Decode.map LoanPurposeList <| Decode.list loanPurposeDecoder

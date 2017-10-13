@@ -6,7 +6,7 @@ import Data.Filter exposing (FilteredItem(Participation_To_Sell), getFilteredIte
 import Data.Investment as Investment
 import Data.InvestmentShare as InvestmentShare exposing (InvestmentShare(..))
 import Data.PortfolioStructure as PortfolioStructure
-import Data.Strategy exposing (..)
+import Data.Strategy as Strategy exposing (StrategyConfiguration)
 import Data.TargetBalance as TargetBalance exposing (TargetBalance(TargetBalance))
 import Data.TargetPortfolioSize as TargetPortfolioSize exposing (..)
 import Data.Tooltip as Tooltip
@@ -34,7 +34,7 @@ type alias Model =
 
 initialModel : Model
 initialModel =
-    { strategyConfig = defaultStrategyConfiguration
+    { strategyConfig = Strategy.defaultStrategyConfiguration
     , accordionState = Accordion.initialState
     , filterCreationState = FilterCreationModal.initialState
     , tooltipStates = Tooltip.initialStates
@@ -75,7 +75,7 @@ updateHelper : Msg -> Model -> Model
 updateHelper msg model =
     case msg of
         PortfolioChanged portfolio ->
-            updateStrategy (setPortfolio portfolio) model
+            updateStrategy (Strategy.setPortfolio portfolio) model
 
         TargetPortfolioSizeChanged targetSizeStr ->
             let
@@ -85,7 +85,7 @@ updateHelper msg model =
                         |> Result.map TargetPortfolioSize
                         |> Result.withDefault TargetPortfolioSize.NotSpecified
             in
-            updateStrategy (setTargetPortfolioSize targetSize) model
+            updateStrategy (Strategy.setTargetPortfolioSize targetSize) model
 
         TargetPortfolioShareChanged shareStr ->
             let
@@ -95,7 +95,7 @@ updateHelper msg model =
                         |> Result.map InvestmentSharePercent
                         |> Result.withDefault InvestmentShare.NotSpecified
             in
-            updateStrategy (setDefaultInvestmentShare share) model
+            updateStrategy (Strategy.setDefaultInvestmentShare share) model
 
         TargetBalanceChanged newBalanceStr ->
             let
@@ -105,25 +105,25 @@ updateHelper msg model =
                         |> Result.map TargetBalance
                         |> Result.withDefault TargetBalance.NotSpecified
             in
-            updateStrategy (setTargetBalance newBalance) model
+            updateStrategy (Strategy.setTargetBalance newBalance) model
 
         ConfirmationFormMsg msg ->
-            updateStrategy (updateNotificationSettings msg) model
+            updateStrategy (Strategy.updateNotificationSettings msg) model
 
         ChangePortfolioSharePercentage rating sliderMsg ->
-            updateStrategy (setPortfolioShareRange rating sliderMsg) model
+            updateStrategy (Strategy.setPortfolioShareRange rating sliderMsg) model
 
         ChangeInvestment rating sliderMsg ->
-            updateStrategy (setInvestment rating sliderMsg) model
+            updateStrategy (Strategy.setInvestment rating sliderMsg) model
 
         ChangeDefaultInvestment sliderMsg ->
-            updateStrategy (setDefaultInvestment sliderMsg) model
+            updateStrategy (Strategy.setDefaultInvestment sliderMsg) model
 
         RemoveBuyFilter index ->
-            updateStrategy (removeBuyFilter index) model
+            updateStrategy (Strategy.removeBuyFilter index) model
 
         RemoveSellFilter index ->
-            updateStrategy (removeSellFilter index) model
+            updateStrategy (Strategy.removeSellFilter index) model
 
         AccordionMsg state ->
             { model | accordionState = state }
@@ -147,10 +147,10 @@ updateHelper msg model =
                         Just newFilter ->
                             case getFilteredItem newFilter of
                                 Participation_To_Sell ->
-                                    addSellFilter newFilter
+                                    Strategy.addSellFilter newFilter
 
                                 _ ->
-                                    addBuyFilter newFilter
+                                    Strategy.addBuyFilter newFilter
             in
             { model
                 | filterCreationState = filterCreationState
@@ -159,6 +159,12 @@ updateHelper msg model =
 
         SetDateTime timestamp ->
             { model | generatedOn = DateTime.fromTimestamp timestamp }
+
+        ShareStrategy ->
+            -- TODO generate encoded-obfuscated strategy containing URL and show it in UI
+            -- let  _ = Debug.log "Strategy JSON: " <| Json.Encode.encode 0 <| Strategy.encodeStrategy model.strategyConfig
+            -- in
+            model
 
         NoOp ->
             model

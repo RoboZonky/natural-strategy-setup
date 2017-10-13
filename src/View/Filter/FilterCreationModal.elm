@@ -4,7 +4,7 @@ import Bootstrap.Button as Button
 import Bootstrap.Grid as Grid
 import Bootstrap.Grid.Col as Col
 import Bootstrap.Modal as Modal
-import Data.Filter as Filter exposing (FilteredItem(..), MarketplaceFilter(..), getFilteredItem, renderBuyFilter, renderSellFilter, setFilteredItem)
+import Data.Filter as Filter exposing (FilteredItem(..), MarketplaceFilter, getFilteredItem, renderBuyFilter, renderSellFilter, setFilteredItem)
 import Data.Tooltip as Tooltip
 import Html exposing (Html, div, hr, li, text, ul)
 import Html.Attributes exposing (style)
@@ -121,7 +121,7 @@ view { editedFilter, openCloseState, editingPositiveSubform } tooltipStates =
 
 
 modalBody : MarketplaceFilter -> Bool -> Html ModalMsg
-modalBody ((MarketplaceFilter filter) as mf) editingPositiveSubform =
+modalBody mf editingPositiveSubform =
     let
         validationErrors =
             Filter.marketplaceFilterValidationErrors mf
@@ -143,16 +143,16 @@ modalBody ((MarketplaceFilter filter) as mf) editingPositiveSubform =
 
         conditionsSubform =
             if editingPositiveSubform then
-                Html.map PositiveConditionsChange <| conditionsForm filter.whatToFilter filter.ignoreWhen
+                Html.map PositiveConditionsChange <| conditionsForm mf.whatToFilter mf.ignoreWhen
             else
-                Html.map NegativeConditionsChange <| conditionsForm filter.whatToFilter filter.butNotWhen
+                Html.map NegativeConditionsChange <| conditionsForm mf.whatToFilter mf.butNotWhen
     in
     Grid.containerFluid []
         [ Grid.row []
             [ Grid.col
                 [ Col.xs12 ]
                 [ div []
-                    [ text <| whatToDoText filter.whatToFilter editingPositiveSubform
+                    [ text <| whatToDoText mf.whatToFilter editingPositiveSubform
                     , conditionsSubform
                     ]
                 , hr [] []

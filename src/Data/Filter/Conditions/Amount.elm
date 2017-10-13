@@ -4,7 +4,9 @@ module Data.Filter.Conditions.Amount
         , AmountCondition(..)
         , AmountMsg
         , amountForm
+        , conditionDecoder
         , defaultAmountCondition
+        , encodeCondition
         , renderAmountCondition
         , update
         , validationErrors
@@ -16,6 +18,8 @@ import Bootstrap.Form.Radio as Radio
 import Html exposing (Html, text)
 import Html.Attributes as Attr exposing (class)
 import Html.Events exposing (onSubmit)
+import Json.Decode as Decode exposing (Decoder)
+import Json.Encode as Encode exposing (Value)
 import Util exposing (emptyToZero, zeroToEmpty)
 
 
@@ -171,3 +175,50 @@ amountRadio checked msg label =
         , Radio.onClick msg
         ]
         label
+
+
+
+-- JSON
+
+
+encodeAmount : Amount -> Value
+encodeAmount amt =
+    case amt of
+        LessThan x ->
+            Encode.list [ Encode.int 1, Encode.int x ]
+
+        Between x y ->
+            Encode.list [ Encode.int 2, Encode.int x, Encode.int y ]
+
+        MoreThan y ->
+            Encode.list [ Encode.int 3, Encode.int y ]
+
+
+encodeCondition : AmountCondition -> Value
+encodeCondition (AmountCondition c) =
+    encodeAmount c
+
+
+amountDecoder : Decoder Amount
+amountDecoder =
+    Decode.list Decode.int
+        |> Decode.andThen
+            (\ints ->
+                case ints of
+                    [ 1, x ] ->
+                        Decode.succeed <| LessThan x
+
+                    [ 2, x, y ] ->
+                        Decode.succeed <| Between x y
+
+                    [ 3, y ] ->
+                        Decode.succeed <| MoreThan y
+
+                    _ ->
+                        Decode.fail <| "Unable to decode Amount from " ++ toString ints
+            )
+
+
+conditionDecoder : Decoder AmountCondition
+conditionDecoder =
+    Decode.map AmountCondition amountDecoder

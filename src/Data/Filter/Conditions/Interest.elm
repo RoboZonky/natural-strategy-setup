@@ -3,6 +3,8 @@ module Data.Filter.Conditions.Interest
         ( Interest(..)
         , InterestCondition(..)
         , InterestMsg
+        , conditionDecoder
+        , encodeCondition
         , interestForm
         , interestToString
         , renderInterestCondition
@@ -16,6 +18,8 @@ import Bootstrap.Form.Radio as Radio
 import Html exposing (Html, text)
 import Html.Attributes as Attr exposing (class)
 import Html.Events exposing (onSubmit)
+import Json.Decode as Decode exposing (Decoder)
+import Json.Encode as Encode exposing (Value)
 import Util exposing (emptyToZero, zeroToEmpty)
 
 
@@ -181,3 +185,54 @@ interestRadio checked msg label =
         , Radio.onClick msg
         ]
         label
+
+
+
+-- JSON
+
+
+encodeInterest : Interest -> Value
+encodeInterest i =
+    case i of
+        LessThan x ->
+            Encode.object [ ( "type", Encode.int 1 ), ( "val", Encode.float x ) ]
+
+        Between x y ->
+            Encode.object [ ( "type", Encode.int 2 ), ( "from", Encode.float x ), ( "to", Encode.float y ) ]
+
+        MoreThan y ->
+            Encode.object [ ( "type", Encode.int 3 ), ( "val", Encode.float y ) ]
+
+
+encodeCondition : InterestCondition -> Value
+encodeCondition (InterestCondition c) =
+    encodeInterest c
+
+
+interestDecoder : Decoder Interest
+interestDecoder =
+    Decode.field "type" Decode.int
+        |> Decode.andThen
+            (\typ ->
+                case typ of
+                    1 ->
+                        Decode.map LessThan
+                            (Decode.field "val" Decode.float)
+
+                    2 ->
+                        Decode.map2 Between
+                            (Decode.field "from" Decode.float)
+                            (Decode.field "to" Decode.float)
+
+                    3 ->
+                        Decode.map MoreThan
+                            (Decode.field "val" Decode.float)
+
+                    _ ->
+                        Decode.fail <| "Invalid interest type " ++ toString typ
+            )
+
+
+conditionDecoder : Decoder InterestCondition
+conditionDecoder =
+    Decode.map InterestCondition interestDecoder

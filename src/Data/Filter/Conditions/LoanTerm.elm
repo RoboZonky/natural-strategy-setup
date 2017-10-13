@@ -3,7 +3,9 @@ module Data.Filter.Conditions.LoanTerm
         ( LoanTerm(..)
         , LoanTermCondition(..)
         , LoanTermMsg
+        , conditionDecoder
         , defaultTermCondition
+        , encodeCondition
         , loanTermForm
         , renderLoanTermCondition
         , update
@@ -16,6 +18,8 @@ import Bootstrap.Form.Radio as Radio
 import Html exposing (Html, text)
 import Html.Attributes as Attr exposing (class)
 import Html.Events exposing (onSubmit)
+import Json.Decode as Decode exposing (Decoder)
+import Json.Encode as Encode exposing (Value)
 import Util exposing (emptyToZero, zeroToEmpty)
 
 
@@ -172,3 +176,50 @@ loanTermRadio checked msg label =
         , Radio.onClick msg
         ]
         label
+
+
+
+-- JSON
+
+
+encodeLoanTerm : LoanTerm -> Value
+encodeLoanTerm amt =
+    case amt of
+        LessThan x ->
+            Encode.list [ Encode.int 1, Encode.int x ]
+
+        Between x y ->
+            Encode.list [ Encode.int 2, Encode.int x, Encode.int y ]
+
+        MoreThan y ->
+            Encode.list [ Encode.int 3, Encode.int y ]
+
+
+encodeCondition : LoanTermCondition -> Value
+encodeCondition (LoanTermCondition c) =
+    encodeLoanTerm c
+
+
+loanTermDecoder : Decoder LoanTerm
+loanTermDecoder =
+    Decode.list Decode.int
+        |> Decode.andThen
+            (\ints ->
+                case ints of
+                    [ 1, x ] ->
+                        Decode.succeed <| LessThan x
+
+                    [ 2, x, y ] ->
+                        Decode.succeed <| Between x y
+
+                    [ 3, y ] ->
+                        Decode.succeed <| MoreThan y
+
+                    _ ->
+                        Decode.fail <| "Unable to decode LoanTerm from " ++ toString ints
+            )
+
+
+conditionDecoder : Decoder LoanTermCondition
+conditionDecoder =
+    Decode.map LoanTermCondition loanTermDecoder

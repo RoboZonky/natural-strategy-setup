@@ -3,9 +3,11 @@ module Data.Filter.Conditions
         ( Condition(..)
         , Conditions
         , addCondition
+        , conditionsDecoder
         , conditionsToList
         , conditionsValidationErrors
         , emptyConditions
+        , encodeConditions
         , removeAmountCondition
         , removeInterestCondition
         , removeLoanTermCondition
@@ -33,6 +35,8 @@ import Data.Filter.Conditions.MainIncome as MainIncome exposing (MainIncomeCondi
 import Data.Filter.Conditions.Rating as Rating exposing (RatingCondition, RatingMsg, renderRatingCondition)
 import Data.Filter.Conditions.Region as Region exposing (RegionCondition, RegionMsg, renderRegionCondition)
 import Data.Filter.Conditions.Story as Story exposing (StoryCondition, StoryMsg, renderStoryCondition)
+import Json.Decode as Decode exposing (Decoder)
+import Json.Encode as Encode exposing (Value)
 
 
 type alias Conditions =
@@ -327,3 +331,39 @@ removeRatingCondition cs =
 removeRegionCondition : Conditions -> Conditions
 removeRegionCondition cs =
     { cs | region = Nothing }
+
+
+
+-- JSON
+
+
+encodeConditions : Conditions -> Value
+encodeConditions { region, rating, income, purpose, story, term, interest, amount } =
+    Encode.object
+        [ ( "region", encodeMaybe Region.encodeCondition region )
+        , ( "rating", encodeMaybe Rating.encodeCondition rating )
+        , ( "income", encodeMaybe MainIncome.encodeCondition income )
+        , ( "purpose", encodeMaybe LoanPurpose.encodeCondition purpose )
+        , ( "story", encodeMaybe Story.encodeCondition story )
+        , ( "term", encodeMaybe LoanTerm.encodeCondition term )
+        , ( "interest", encodeMaybe Interest.encodeCondition interest )
+        , ( "amount", encodeMaybe Amount.encodeCondition amount )
+        ]
+
+
+encodeMaybe : (a -> Value) -> Maybe a -> Value
+encodeMaybe enc =
+    Maybe.map enc >> Maybe.withDefault Encode.null
+
+
+conditionsDecoder : Decoder Conditions
+conditionsDecoder =
+    Decode.map8 Conditions
+        (Decode.field "region" <| Decode.nullable Region.conditionDecoder)
+        (Decode.field "rating" <| Decode.nullable Rating.conditionDecoder)
+        (Decode.field "income" <| Decode.nullable MainIncome.conditionDecoder)
+        (Decode.field "purpose" <| Decode.nullable LoanPurpose.conditionDecoder)
+        (Decode.field "story" <| Decode.nullable Story.conditionDecoder)
+        (Decode.field "term" <| Decode.nullable LoanTerm.conditionDecoder)
+        (Decode.field "interest" <| Decode.nullable Interest.conditionDecoder)
+        (Decode.field "amount" <| Decode.nullable Amount.conditionDecoder)

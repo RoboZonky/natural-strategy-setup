@@ -27,6 +27,7 @@ type Msg
     | ModalMsg ModalMsg
     | TooltipMsg TipId Popover.State
     | SetDateTime Time
+    | ShareStrategy
     | NoOp
 
 

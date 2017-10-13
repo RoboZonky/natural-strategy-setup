@@ -3,6 +3,8 @@ module Data.PortfolioStructure
         ( PortfolioShare
         , PortfolioShares
         , Share
+        , decoder
+        , encode
         , percentageShare
         , portfolioSlidersSubscription
         , renderPortfolioShare
@@ -14,6 +16,9 @@ module Data.PortfolioStructure
 import AllDict exposing (AllDict)
 import Data.Filter.Conditions.Rating as Rating exposing (Rating(..))
 import Data.Portfolio exposing (Portfolio(Empty))
+import Data.SharedJsonStuff
+import Json.Decode as Decode exposing (Decoder)
+import Json.Encode as Encode exposing (Value)
 import RangeSlider exposing (RangeSlider, setDimensions, setExtents, setFormatter, setStepSize, setValues)
 import Types
 import Util
@@ -92,3 +97,36 @@ validate portfolioShares =
             AllDict.foldr (\_ sliderState sumAcc -> sumAcc + round (Tuple.first <| RangeSlider.getValues sliderState)) 0 portfolioShares
     in
     Util.validate (sumOfShareMinimums /= 100) <| "Součet minim musí být přesně 100% (teď je " ++ toString sumOfShareMinimums ++ "%)"
+
+
+
+-- JSON
+
+
+encode : PortfolioShares -> Value
+encode =
+    Data.SharedJsonStuff.encodeRatingToSliderDict encodeShare
+
+
+decoder : Decoder PortfolioShares
+decoder =
+    Data.SharedJsonStuff.ratingToSliderDictDecodr shareDecoder
+
+
+encodeShare : Share -> Value
+encodeShare sz =
+    toIntRange sz |> (\( from, to ) -> Encode.list [ Encode.int from, Encode.int to ])
+
+
+shareDecoder : Decoder Share
+shareDecoder =
+    Decode.list Decode.int
+        |> Decode.map
+            (\xs ->
+                case xs of
+                    from :: to :: [] ->
+                        percentageShare from to
+
+                    _ ->
+                        percentageShare 200 200
+            )

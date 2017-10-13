@@ -2,10 +2,14 @@ module Data.Confirmation
     exposing
         ( ConfirmationSettings
         , confirmationsDisabled
+        , decoder
+        , encode
         , renderConfirmation
         )
 
 import Data.Filter.Conditions.Rating as Rating exposing (RatingCondition(..))
+import Json.Decode exposing (Decoder)
+import Json.Encode exposing (Value)
 
 
 type alias ConfirmationSettings =
@@ -23,3 +27,17 @@ renderConfirmation (RatingList enabledRatings) =
         ""
     else
         "Potvrzovat mobilem investice do úvěrů, kde " ++ Rating.renderRatingCondition (RatingList enabledRatings) ++ "."
+
+
+
+--JSON
+
+
+encode : ConfirmationSettings -> Value
+encode =
+    Rating.encodeCondition
+
+
+decoder : Decoder ConfirmationSettings
+decoder =
+    Rating.conditionDecoder

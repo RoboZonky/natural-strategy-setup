@@ -52,6 +52,14 @@ view generatedOn strategyConfig =
                         ]
                     ]
                     [ text "Stáhni konfigurační soubor" ]
+
+                -- TODO enable button for sharing strategy URL
+                -- , Button.button
+                --     [ Button.secondary
+                --     , Button.disabled <| not isValidStrategy
+                --     , Button.onClick ShareStrategy
+                --     ]
+                --     [ text "Sdílet Strategii" ]
                 ]
             ]
         ]

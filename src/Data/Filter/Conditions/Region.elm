@@ -4,7 +4,9 @@ module Data.Filter.Conditions.Region
         , RegionCondition(..)
         , RegionMsg
         , allRegions
+        , conditionDecoder
         , defaultRegionCondition
+        , encodeCondition
         , regionForm
         , renderRegionCondition
         , update
@@ -13,6 +15,8 @@ module Data.Filter.Conditions.Region
 
 import Bootstrap.Form.Checkbox as Checkbox
 import Html exposing (Html, div)
+import Json.Decode as Decode exposing (Decoder)
+import Json.Encode as Encode exposing (Value)
 import Util
 
 
@@ -144,3 +148,28 @@ regionCheckbox region isEnabled =
         , Checkbox.inline
         ]
         (regionToString region)
+
+
+
+-- JSON
+
+
+encodeRegion : Region -> Value
+encodeRegion =
+    Encode.string << toString
+
+
+encodeCondition : RegionCondition -> Value
+encodeCondition (RegionList rs) =
+    Encode.list <| List.map encodeRegion rs
+
+
+regionDecoder : Decoder Region
+regionDecoder =
+    Util.enumDecoder allRegions
+
+
+conditionDecoder : Decoder RegionCondition
+conditionDecoder =
+    Decode.map RegionList <|
+        Decode.list regionDecoder

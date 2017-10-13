@@ -4,7 +4,9 @@ module Data.Filter.Conditions.MainIncome
         , MainIncomeCondition(..)
         , MainIncomeMsg
         , allIncomes
+        , conditionDecoder
         , defaultIncomeCondition
+        , encodeCondition
         , mainIncomeForm
         , renderMainIncomeCondition
         , update
@@ -13,6 +15,8 @@ module Data.Filter.Conditions.MainIncome
 
 import Bootstrap.Form.Checkbox as Checkbox
 import Html exposing (Html, div)
+import Json.Decode as Decode exposing (Decoder)
+import Json.Encode as Encode exposing (Value)
 import Util
 
 
@@ -119,3 +123,28 @@ mainIncomeCheckbox income isEnabled =
         , Checkbox.inline
         ]
         (mainIncomeToString income)
+
+
+
+-- JSON
+
+
+encodeMainIncome : MainIncome -> Value
+encodeMainIncome =
+    Encode.string << toString
+
+
+encodeCondition : MainIncomeCondition -> Value
+encodeCondition (MainIncomeList mis) =
+    Encode.list <| List.map encodeMainIncome mis
+
+
+mainIncomeDecoder : Decoder MainIncome
+mainIncomeDecoder =
+    Util.enumDecoder allIncomes
+
+
+conditionDecoder : Decoder MainIncomeCondition
+conditionDecoder =
+    Decode.map MainIncomeList <|
+        Decode.list mainIncomeDecoder

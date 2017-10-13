@@ -4,8 +4,11 @@ module Data.Filter.Conditions.Rating
         , RatingCondition(..)
         , RatingMsg
         , allRatings
+        , conditionDecoder
+        , encodeCondition
         , hash
         , ratingForm
+        , ratingFromString
         , ratingSatisfiesCondition
         , ratingToString
         , renderRatingCondition
@@ -15,6 +18,8 @@ module Data.Filter.Conditions.Rating
 
 import Bootstrap.Form.Checkbox as Checkbox
 import Html exposing (Html, div)
+import Json.Decode as Decode exposing (Decoder)
+import Json.Encode as Encode exposing (Value)
 import List.Extra as List
 import Util
 
@@ -61,6 +66,11 @@ ratingToString r =
 
         D ->
             "D"
+
+
+ratingFromString : String -> Maybe Rating
+ratingFromString s =
+    allRatings |> List.filter (\r -> toString r == s) |> List.head
 
 
 
@@ -201,3 +211,28 @@ ratingCheckbox rating isEnabled =
         , Checkbox.inline
         ]
         (ratingToString rating)
+
+
+
+-- JSON
+
+
+encodeRating : Rating -> Value
+encodeRating =
+    Encode.string << toString
+
+
+encodeCondition : RatingCondition -> Value
+encodeCondition (RatingList rs) =
+    Encode.list <| List.map encodeRating rs
+
+
+ratingDecoder : Decoder Rating
+ratingDecoder =
+    Util.enumDecoder allRatings
+
+
+conditionDecoder : Decoder RatingCondition
+conditionDecoder =
+    Decode.map RatingList <|
+        Decode.list ratingDecoder

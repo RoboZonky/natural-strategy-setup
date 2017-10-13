@@ -3,7 +3,9 @@ module Data.Filter.Conditions.Story
         ( Story(..)
         , StoryCondition(..)
         , StoryMsg
+        , conditionDecoder
         , defaultStoryCondition
+        , encodeCondition
         , renderStoryCondition
         , storyForm
         , update
@@ -11,6 +13,9 @@ module Data.Filter.Conditions.Story
 
 import Bootstrap.Form.Radio as Radio
 import Html exposing (Html, div)
+import Json.Decode as Decode exposing (Decoder)
+import Json.Encode as Encode exposing (Value)
+import Util
 
 
 type Story
@@ -18,6 +23,11 @@ type Story
     | BELOW_AVERAGE
     | AVERAGE
     | ABOVE_AVERAGE
+
+
+allStories : List Story
+allStories =
+    [ SHORT, BELOW_AVERAGE, AVERAGE, ABOVE_AVERAGE ]
 
 
 type StoryCondition
@@ -61,7 +71,7 @@ update (SetStory s) _ =
 
 storyForm : StoryCondition -> Html StoryMsg
 storyForm (StoryCondition currentStory) =
-    div [] <| List.map (storyRadio currentStory) [ SHORT, BELOW_AVERAGE, AVERAGE, ABOVE_AVERAGE ]
+    div [] <| List.map (storyRadio currentStory) allStories
 
 
 storyRadio : Story -> Story -> Html StoryMsg
@@ -72,3 +82,27 @@ storyRadio currentStory thisRadiosStory =
         , Radio.onClick (SetStory thisRadiosStory)
         ]
         (storyToString thisRadiosStory)
+
+
+
+-- JSON
+
+
+encodeStory : Story -> Value
+encodeStory =
+    Encode.string << toString
+
+
+encodeCondition : StoryCondition -> Value
+encodeCondition (StoryCondition s) =
+    encodeStory s
+
+
+storyDecoder : Decoder Story
+storyDecoder =
+    Util.enumDecoder allStories
+
+
+conditionDecoder : Decoder StoryCondition
+conditionDecoder =
+    Decode.map StoryCondition storyDecoder

@@ -1,10 +1,16 @@
 module Data.Portfolio
     exposing
         ( Portfolio(..)
+        , decoder
+        , encode
         , fromString
         , renderPortfolio
         , toString
         )
+
+import Json.Decode exposing (Decoder)
+import Json.Encode as Encode exposing (Value)
+import Util
 
 
 type Portfolio
@@ -49,3 +55,17 @@ fromString str =
 renderPortfolio : Portfolio -> String
 renderPortfolio portfolio =
     "Robot má udržovat " ++ toString portfolio ++ " portfolio."
+
+
+
+-- JSON
+
+
+encode : Portfolio -> Value
+encode =
+    Encode.string << Basics.toString
+
+
+decoder : Decoder Portfolio
+decoder =
+    Util.enumDecoder [ Conservative, Balanced, Progressive, Empty ]

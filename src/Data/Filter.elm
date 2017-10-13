@@ -1,13 +1,15 @@
 module Data.Filter
     exposing
         ( FilteredItem(..)
-        , MarketplaceFilter(..)
+        , MarketplaceFilter
         , addNegativeCondition
         , addPositiveCondition
         , emptyFilter
+        , encodeMarketplaceFilter
         , getFilteredItem
         , isValid
         , itemToPluralString
+        , marketplaceFilterDecoder
         , marketplaceFilterValidationErrors
         , renderBuyFilter
         , renderBuyFilters
@@ -20,24 +22,24 @@ module Data.Filter
         )
 
 import Data.Filter.Conditions exposing (..)
+import Json.Decode as Decode exposing (Decoder)
+import Json.Encode as Encode exposing (Value)
 import Util
 
 
-type MarketplaceFilter
-    = MarketplaceFilter
-        { whatToFilter : FilteredItem
-        , ignoreWhen : Conditions
-        , butNotWhen : Conditions
-        }
+type alias MarketplaceFilter =
+    { whatToFilter : FilteredItem
+    , ignoreWhen : Conditions
+    , butNotWhen : Conditions
+    }
 
 
 emptyFilter : MarketplaceFilter
 emptyFilter =
-    MarketplaceFilter
-        { whatToFilter = Loan
-        , ignoreWhen = emptyConditions
-        , butNotWhen = emptyConditions
-        }
+    { whatToFilter = Loan
+    , ignoreWhen = emptyConditions
+    , butNotWhen = emptyConditions
+    }
 
 
 renderBuyFilters : List MarketplaceFilter -> String
@@ -64,7 +66,7 @@ isValid =
 
 
 marketplaceFilterValidationErrors : MarketplaceFilter -> List String
-marketplaceFilterValidationErrors (MarketplaceFilter mf) =
+marketplaceFilterValidationErrors mf =
     let
         atLeastOnePositiveCondition =
             Util.validate (List.isEmpty <| conditionsToList mf.ignoreWhen) "Pravidlo musí obsahovat aspoň jednu podmínku"
@@ -75,12 +77,12 @@ marketplaceFilterValidationErrors (MarketplaceFilter mf) =
 
 
 setFilteredItem : FilteredItem -> MarketplaceFilter -> MarketplaceFilter
-setFilteredItem newItem (MarketplaceFilter mf) =
-    MarketplaceFilter { mf | whatToFilter = newItem }
+setFilteredItem newItem mf =
+    { mf | whatToFilter = newItem }
 
 
 getFilteredItem : MarketplaceFilter -> FilteredItem
-getFilteredItem (MarketplaceFilter { whatToFilter }) =
+getFilteredItem { whatToFilter } =
     whatToFilter
 
 
@@ -95,13 +97,13 @@ addNegativeCondition c =
 
 
 updatePositiveConditions : (Conditions -> Conditions) -> MarketplaceFilter -> MarketplaceFilter
-updatePositiveConditions conditionsUpdater (MarketplaceFilter f) =
-    MarketplaceFilter { f | ignoreWhen = conditionsUpdater f.ignoreWhen }
+updatePositiveConditions conditionsUpdater mf =
+    { mf | ignoreWhen = conditionsUpdater mf.ignoreWhen }
 
 
 updateNegativeConditions : (Conditions -> Conditions) -> MarketplaceFilter -> MarketplaceFilter
-updateNegativeConditions conditionsUpdater (MarketplaceFilter f) =
-    MarketplaceFilter { f | butNotWhen = conditionsUpdater f.butNotWhen }
+updateNegativeConditions conditionsUpdater mf =
+    { mf | butNotWhen = conditionsUpdater mf.butNotWhen }
 
 
 renderBuyFilter : MarketplaceFilter -> String
@@ -115,7 +117,7 @@ renderSellFilter mf =
 
 
 renderCommonPartOfBuyAndSellFilters : MarketplaceFilter -> String
-renderCommonPartOfBuyAndSellFilters (MarketplaceFilter { ignoreWhen, butNotWhen }) =
+renderCommonPartOfBuyAndSellFilters { ignoreWhen, butNotWhen } =
     let
         negativePart =
             if List.isEmpty (conditionsToList butNotWhen) then
@@ -134,6 +136,11 @@ type FilteredItem
     | Participation
     | Loan_And_Participation
     | Participation_To_Sell
+
+
+allFilteredItems : List FilteredItem
+allFilteredItems =
+    [ Loan, Participation, Loan_And_Participation, Participation_To_Sell ]
 
 
 renderFilteredItem : FilteredItem -> String
@@ -166,3 +173,34 @@ itemToPluralString item =
 
         Participation_To_Sell ->
             "Participace na prodej"
+
+
+
+-- JSON
+
+
+encodeFilteredItem : FilteredItem -> Value
+encodeFilteredItem =
+    Encode.string << toString
+
+
+encodeMarketplaceFilter : MarketplaceFilter -> Value
+encodeMarketplaceFilter { whatToFilter, ignoreWhen, butNotWhen } =
+    Encode.object
+        [ ( "whatToFilter", encodeFilteredItem whatToFilter )
+        , ( "ignoreWhen", encodeConditions ignoreWhen )
+        , ( "butNotWhen", encodeConditions butNotWhen )
+        ]
+
+
+filteredItemDecoder : Decoder FilteredItem
+filteredItemDecoder =
+    Util.enumDecoder allFilteredItems
+
+
+marketplaceFilterDecoder : Decoder MarketplaceFilter
+marketplaceFilterDecoder =
+    Decode.map3 MarketplaceFilter
+        (Decode.field "whatToFilter" filteredItemDecoder)
+        (Decode.field "ignoreWhen" conditionsDecoder)
+        (Decode.field "butNotWhen" conditionsDecoder)
