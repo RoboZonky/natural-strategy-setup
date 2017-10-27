@@ -8,7 +8,7 @@
 
   <properties>
     <selenium.version>3.6.0</selenium.version>
-    <robozonky.version>4.0.0-SNAPSHOT</robozonky.version>
+    <robozonky.version>4.1.0-SNAPSHOT</robozonky.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
 
