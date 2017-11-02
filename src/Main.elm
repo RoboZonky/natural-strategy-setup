@@ -80,30 +80,21 @@ updateHelper msg model =
         TargetPortfolioSizeChanged targetSizeStr ->
             let
                 targetSize =
-                    Util.emptyToZero targetSizeStr
-                        |> String.toInt
-                        |> Result.map TargetPortfolioSize
-                        |> Result.withDefault TargetPortfolioSize.NotSpecified
+                    wrapIntOrEmpty TargetPortfolioSize TargetPortfolioSize.NotSpecified targetSizeStr
             in
             updateStrategy (Strategy.setTargetPortfolioSize targetSize) model
 
         TargetPortfolioShareChanged shareStr ->
             let
                 share =
-                    Util.emptyToZero shareStr
-                        |> String.toInt
-                        |> Result.map InvestmentSharePercent
-                        |> Result.withDefault InvestmentShare.NotSpecified
+                    wrapIntOrEmpty InvestmentSharePercent InvestmentShare.NotSpecified shareStr
             in
             updateStrategy (Strategy.setDefaultInvestmentShare share) model
 
         TargetBalanceChanged newBalanceStr ->
             let
                 newBalance =
-                    Util.emptyToZero newBalanceStr
-                        |> String.toInt
-                        |> Result.map TargetBalance
-                        |> Result.withDefault TargetBalance.NotSpecified
+                    wrapIntOrEmpty TargetBalance TargetBalance.NotSpecified newBalanceStr
             in
             updateStrategy (Strategy.setTargetBalance newBalance) model
 
@@ -170,13 +161,9 @@ updateHelper msg model =
             model
 
 
-updateStrategyIfValidInt : String -> (Int -> StrategyConfiguration) -> StrategyConfiguration -> StrategyConfiguration
-updateStrategyIfValidInt intStr strategyUpdater strategyConfig =
-    intStr
-        |> Util.emptyToZero
-        |> String.toInt
-        |> Result.map (\parsedInt -> strategyUpdater parsedInt)
-        |> Result.withDefault strategyConfig
+wrapIntOrEmpty : (Int -> a) -> a -> String -> a
+wrapIntOrEmpty intWrapper emptyVal str =
+    Util.emptyToZero str |> String.toInt |> Result.map intWrapper |> Result.withDefault emptyVal
 
 
 view : Model -> Html Msg
