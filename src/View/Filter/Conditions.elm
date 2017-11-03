@@ -3,16 +3,16 @@ module View.Filter.Conditions exposing (..)
 import Bootstrap.Form.Checkbox as Checkbox
 import Bootstrap.Grid as Grid
 import Bootstrap.Grid.Col as Col
-import Data.Filter exposing (FilteredItem(Loan))
+import Data.Filter exposing (FilteredItem(..))
 import Data.Filter.Conditions exposing (..)
 import Data.Filter.Conditions.Amount as Amount exposing (Amount(..), AmountCondition(..), AmountMsg)
 import Data.Filter.Conditions.Interest as Interest exposing (Interest(..), InterestCondition(..), InterestMsg)
 import Data.Filter.Conditions.LoanPurpose as LoanPurpose exposing (LoanPurpose(..), LoanPurposeCondition(..), LoanPurposeMsg)
-import Data.Filter.Conditions.LoanTerm as LoanTerm exposing (LoanTerm(..), LoanTermCondition(..), LoanTermMsg)
 import Data.Filter.Conditions.MainIncome as MainIncome exposing (MainIncome(..), MainIncomeCondition(..), MainIncomeMsg)
 import Data.Filter.Conditions.Rating as Rating exposing (Rating(..), RatingCondition(..), RatingMsg)
 import Data.Filter.Conditions.Region as Region exposing (Region(..), RegionCondition(..), RegionMsg)
 import Data.Filter.Conditions.Story as Story exposing (Story(..), StoryCondition(..), StoryMsg)
+import Data.Filter.Conditions.TermMonths as TermMonths exposing (TermMonths(..), TermMonthsCondition(..), TermMonthsMsg)
 import Html exposing (Html, div, text)
 
 
@@ -30,24 +30,30 @@ type alias Model =
 conditionsForm : FilteredItem -> Conditions -> Html Msg
 conditionsForm filteredItem conditions =
     let
-        amountRowOnlyEnabledForLoans =
+        extraRows =
             case filteredItem of
                 Loan ->
                     [ conditionRow conditions "Výše úvěru" (Condition_Amount (AmountCondition (Amount.LessThan 0))) RemoveAmountCondition ]
 
-                _ ->
+                Participation ->
+                    [{- TODO add relative term conditionRow -}]
+
+                Participation_To_Sell ->
+                    [{- TODO add relative term conditionRow -}]
+
+                Loan_And_Participation ->
                     []
     in
     div [] <|
         [ conditionRow conditions "Rating" (Condition_Rating (RatingList [])) RemoveRatingCondition
         , conditionRow conditions "Úrok" (Condition_Interest (InterestCondition (Interest.LessThan 0))) RemoveInterestCondition
         , conditionRow conditions "Účel úvěru" (Condition_Purpose (LoanPurposeList [])) RemovePurposeCondition
-        , conditionRow conditions "Délka úvěru" (Condition_Term (LoanTermCondition (LoanTerm.LessThan 0))) RemoveTermCondition
+        , conditionRow conditions "Délka úvěru (v měsících)" (Condition_Term_Months (TermMonthsCondition (TermMonths.LessThan 0))) RemoveTermCondition
         , conditionRow conditions "Zdroj příjmů klienta" (Condition_Income (MainIncomeList [])) RemoveMainIncomeCondition
         , conditionRow conditions "Příběh" (Condition_Story (StoryCondition SHORT)) RemoveStoryCondition
         , conditionRow conditions "Kraj klienta" (Condition_Region (RegionList [])) RemoveRegionCondition
         ]
-            ++ amountRowOnlyEnabledForLoans
+            ++ extraRows
 
 
 conditionRow : Conditions -> String -> Condition -> Msg -> Html Msg
@@ -73,8 +79,8 @@ conditionRow conditions conditionName condition removeCondMsg =
                 Condition_Purpose _ ->
                     ( subformEnabled conditions.purpose, showFormForNonemptyCondition LoanPurposeMsg LoanPurpose.loanPurposeForm conditions.purpose )
 
-                Condition_Term _ ->
-                    ( subformEnabled conditions.term, showFormForNonemptyCondition LoanTermMsg LoanTerm.loanTermForm conditions.term )
+                Condition_Term_Months _ ->
+                    ( subformEnabled conditions.termMonths, showFormForNonemptyCondition TermMonthsMsg TermMonths.termMonthsForm conditions.termMonths )
 
                 Condition_Region _ ->
                     ( subformEnabled conditions.region, showFormForNonemptyCondition RegionMsg Region.regionForm conditions.region )
@@ -115,7 +121,7 @@ type Msg
     | AmountMsg AmountMsg
     | StoryMsg StoryMsg
     | LoanPurposeMsg LoanPurposeMsg
-    | LoanTermMsg LoanTermMsg
+    | TermMonthsMsg TermMonthsMsg
     | MainIncomeMsg MainIncomeMsg
     | RatingMsg RatingMsg
     | RegionMsg RegionMsg
@@ -142,8 +148,8 @@ update msg model =
         LoanPurposeMsg msg ->
             updatePurpose msg model
 
-        LoanTermMsg msg ->
-            updateLoanTerm msg model
+        TermMonthsMsg msg ->
+            updateTermMonths msg model
 
         MainIncomeMsg msg ->
             updateMainIncome msg model
@@ -173,7 +179,7 @@ update msg model =
             removePurposeCondition model
 
         RemoveTermCondition ->
-            removeLoanTermCondition model
+            removeTermMonthsCondition model
 
         RemoveMainIncomeCondition ->
             removeMainIncomeCondition model

@@ -1,13 +1,13 @@
-module Data.Filter.Conditions.LoanTerm
+module Data.Filter.Conditions.TermMonths
     exposing
-        ( LoanTerm(..)
-        , LoanTermCondition(..)
-        , LoanTermMsg
+        ( TermMonths(..)
+        , TermMonthsCondition(..)
+        , TermMonthsMsg
         , conditionDecoder
-        , defaultTermCondition
+        , defaultTermMonthsCondition
         , encodeCondition
-        , loanTermForm
-        , renderLoanTermCondition
+        , renderTermMonthsCondition
+        , termMonthsForm
         , update
         , validationErrors
         )
@@ -23,24 +23,24 @@ import Json.Encode as Encode exposing (Value)
 import Util exposing (emptyToZero, zeroToEmpty)
 
 
-type LoanTerm
+type TermMonths
     = LessThan Int
     | Between Int Int
     | MoreThan Int
 
 
-type LoanTermCondition
-    = LoanTermCondition LoanTerm
+type TermMonthsCondition
+    = TermMonthsCondition TermMonths
 
 
-defaultTermCondition : LoanTermCondition
-defaultTermCondition =
-    LoanTermCondition (MoreThan 0)
+defaultTermMonthsCondition : TermMonthsCondition
+defaultTermMonthsCondition =
+    TermMonthsCondition (MoreThan 0)
 
 
-loanTermToString : LoanTerm -> String
-loanTermToString loanTerm =
-    case loanTerm of
+termMonthsToString : TermMonths -> String
+termMonthsToString termMonths =
+    case termMonths of
         LessThan maxBound ->
             "nedosahuje " ++ toString maxBound
 
@@ -51,13 +51,13 @@ loanTermToString loanTerm =
             "přesahuje " ++ toString minBound
 
 
-renderLoanTermCondition : LoanTermCondition -> String
-renderLoanTermCondition (LoanTermCondition term) =
-    "délka " ++ loanTermToString term ++ " měsíců"
+renderTermMonthsCondition : TermMonthsCondition -> String
+renderTermMonthsCondition (TermMonthsCondition term) =
+    "délka " ++ termMonthsToString term ++ " měsíců"
 
 
-validationErrors : LoanTermCondition -> List String
-validationErrors (LoanTermCondition t) =
+validationErrors : TermMonthsCondition -> List String
+validationErrors (TermMonthsCondition t) =
     case t of
         LessThan x ->
             validateInRange 1 85 x
@@ -79,16 +79,16 @@ validateMinNotGtMax minBound maxBound =
     Util.validate (minBound > maxBound) "Délka úvěru: minimum nesmí být větší než maximum"
 
 
-type LoanTermMsg
+type TermMonthsMsg
     = SetLessThan String
     | SetBetween String String
     | SetMoreThan String
-    | LoanTermNoOp
+    | TermMonthsNoOp
 
 
-whichEnabled : LoanTerm -> ( Bool, Bool, Bool )
-whichEnabled loanTerm =
-    case loanTerm of
+whichEnabled : TermMonths -> ( Bool, Bool, Bool )
+whichEnabled termMonths =
+    case termMonths of
         LessThan _ ->
             ( True, False, False )
 
@@ -99,31 +99,31 @@ whichEnabled loanTerm =
             ( False, False, True )
 
 
-update : LoanTermMsg -> LoanTermCondition -> LoanTermCondition
-update msg (LoanTermCondition term) =
+update : TermMonthsMsg -> TermMonthsCondition -> TermMonthsCondition
+update msg (TermMonthsCondition term) =
     case msg of
         SetLessThan hi ->
-            emptyToZero hi |> String.toInt |> Result.map LessThan |> Result.withDefault term |> LoanTermCondition
+            emptyToZero hi |> String.toInt |> Result.map LessThan |> Result.withDefault term |> TermMonthsCondition
 
         SetBetween loStr hiStr ->
             emptyToZero loStr
                 |> String.toInt
                 |> Result.andThen (\lo -> emptyToZero hiStr |> String.toInt |> Result.map (\hi -> Between lo hi))
                 |> Result.withDefault term
-                |> LoanTermCondition
+                |> TermMonthsCondition
 
         SetMoreThan lo ->
-            emptyToZero lo |> String.toInt |> Result.map MoreThan |> Result.withDefault term |> LoanTermCondition
+            emptyToZero lo |> String.toInt |> Result.map MoreThan |> Result.withDefault term |> TermMonthsCondition
 
-        LoanTermNoOp ->
-            LoanTermCondition term
+        TermMonthsNoOp ->
+            TermMonthsCondition term
 
 
-loanTermForm : LoanTermCondition -> Html LoanTermMsg
-loanTermForm (LoanTermCondition loanTerm) =
+termMonthsForm : TermMonthsCondition -> Html TermMonthsMsg
+termMonthsForm (TermMonthsCondition termMonths) =
     let
         ( ltVal, btwMinVal, btwMaxVal, mtVal ) =
-            case loanTerm of
+            case termMonths of
                 LessThan x ->
                     ( zeroToEmpty x, "", "", "" )
 
@@ -134,30 +134,30 @@ loanTermForm (LoanTermCondition loanTerm) =
                     ( "", "", "", zeroToEmpty x )
 
         ( ltEnabled, btwEnabled, mtEnabled ) =
-            whichEnabled loanTerm
+            whichEnabled termMonths
     in
-    Form.form [ onSubmit LoanTermNoOp ]
-        [ Form.formInline [ onSubmit LoanTermNoOp ]
-            [ loanTermRadio ltEnabled (SetLessThan "0") "nedosahuje"
+    Form.form [ onSubmit TermMonthsNoOp ]
+        [ Form.formInline [ onSubmit TermMonthsNoOp ]
+            [ termMonthsRadio ltEnabled (SetLessThan "0") "nedosahuje"
             , numericInput SetLessThan ltEnabled ltVal
             , text "měsíců"
             ]
-        , Form.formInline [ onSubmit LoanTermNoOp ]
-            [ loanTermRadio btwEnabled (SetBetween "0" "0") "je"
+        , Form.formInline [ onSubmit TermMonthsNoOp ]
+            [ termMonthsRadio btwEnabled (SetBetween "0" "0") "je"
             , numericInput (\x -> SetBetween x btwMaxVal) btwEnabled btwMinVal
             , text "až"
             , numericInput (\y -> SetBetween btwMinVal y) btwEnabled btwMaxVal
             , text "měsíců"
             ]
-        , Form.formInline [ onSubmit LoanTermNoOp ]
-            [ loanTermRadio mtEnabled (SetMoreThan "0") "přesahuje"
+        , Form.formInline [ onSubmit TermMonthsNoOp ]
+            [ termMonthsRadio mtEnabled (SetMoreThan "0") "přesahuje"
             , numericInput SetMoreThan mtEnabled mtVal
             , text "měsíců"
             ]
         ]
 
 
-numericInput : (String -> LoanTermMsg) -> Bool -> String -> Html LoanTermMsg
+numericInput : (String -> TermMonthsMsg) -> Bool -> String -> Html TermMonthsMsg
 numericInput msg enabled value =
     Input.number
         [ Input.small
@@ -168,10 +168,10 @@ numericInput msg enabled value =
         ]
 
 
-loanTermRadio : Bool -> LoanTermMsg -> String -> Html LoanTermMsg
-loanTermRadio checked msg label =
+termMonthsRadio : Bool -> TermMonthsMsg -> String -> Html TermMonthsMsg
+termMonthsRadio checked msg label =
     Radio.radio
-        [ Radio.name "loanTerm"
+        [ Radio.name "termMonths"
         , Radio.checked checked
         , Radio.onClick msg
         ]
@@ -182,8 +182,8 @@ loanTermRadio checked msg label =
 -- JSON
 
 
-encodeLoanTerm : LoanTerm -> Value
-encodeLoanTerm amt =
+encodeTermMonths : TermMonths -> Value
+encodeTermMonths amt =
     case amt of
         LessThan x ->
             Encode.list [ Encode.int 1, Encode.int x ]
@@ -195,13 +195,13 @@ encodeLoanTerm amt =
             Encode.list [ Encode.int 3, Encode.int y ]
 
 
-encodeCondition : LoanTermCondition -> Value
-encodeCondition (LoanTermCondition c) =
-    encodeLoanTerm c
+encodeCondition : TermMonthsCondition -> Value
+encodeCondition (TermMonthsCondition c) =
+    encodeTermMonths c
 
 
-loanTermDecoder : Decoder LoanTerm
-loanTermDecoder =
+termMonthsDecoder : Decoder TermMonths
+termMonthsDecoder =
     Decode.list Decode.int
         |> Decode.andThen
             (\ints ->
@@ -216,10 +216,10 @@ loanTermDecoder =
                         Decode.succeed <| MoreThan y
 
                     _ ->
-                        Decode.fail <| "Unable to decode LoanTerm from " ++ toString ints
+                        Decode.fail <| "Unable to decode TermMonths from " ++ toString ints
             )
 
 
-conditionDecoder : Decoder LoanTermCondition
+conditionDecoder : Decoder TermMonthsCondition
 conditionDecoder =
-    Decode.map LoanTermCondition loanTermDecoder
+    Decode.map TermMonthsCondition termMonthsDecoder

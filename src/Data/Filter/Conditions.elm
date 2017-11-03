@@ -10,31 +10,31 @@ module Data.Filter.Conditions
         , encodeConditions
         , removeAmountCondition
         , removeInterestCondition
-        , removeLoanTermCondition
         , removeMainIncomeCondition
         , removePurposeCondition
         , removeRatingCondition
         , removeRegionCondition
         , removeStoryCondition
+        , removeTermMonthsCondition
         , renderConditionList
         , updateAmount
         , updateInterest
-        , updateLoanTerm
         , updateMainIncome
         , updatePurpose
         , updateRating
         , updateRegion
         , updateStory
+        , updateTermMonths
         )
 
 import Data.Filter.Conditions.Amount as Amount exposing (AmountCondition, AmountMsg, renderAmountCondition)
 import Data.Filter.Conditions.Interest as Interest exposing (InterestCondition, InterestMsg, renderInterestCondition)
 import Data.Filter.Conditions.LoanPurpose as LoanPurpose exposing (LoanPurposeCondition, LoanPurposeMsg, renderLoanPurposeCondition)
-import Data.Filter.Conditions.LoanTerm as LoanTerm exposing (LoanTermCondition, LoanTermMsg, renderLoanTermCondition)
 import Data.Filter.Conditions.MainIncome as MainIncome exposing (MainIncomeCondition, MainIncomeMsg, renderMainIncomeCondition)
 import Data.Filter.Conditions.Rating as Rating exposing (RatingCondition, RatingMsg, renderRatingCondition)
 import Data.Filter.Conditions.Region as Region exposing (RegionCondition, RegionMsg, renderRegionCondition)
 import Data.Filter.Conditions.Story as Story exposing (StoryCondition, StoryMsg, renderStoryCondition)
+import Data.Filter.Conditions.TermMonths as TermMonths exposing (TermMonthsCondition, TermMonthsMsg, renderTermMonthsCondition)
 import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as Encode exposing (Value)
 
@@ -45,7 +45,7 @@ type alias Conditions =
     , income : Maybe MainIncomeCondition
     , purpose : Maybe LoanPurposeCondition
     , story : Maybe StoryCondition
-    , term : Maybe LoanTermCondition
+    , termMonths : Maybe TermMonthsCondition
     , interest : Maybe InterestCondition
     , amount : Maybe AmountCondition
     }
@@ -57,7 +57,7 @@ type Condition
     | Condition_Income MainIncomeCondition
     | Condition_Purpose LoanPurposeCondition
     | Condition_Story StoryCondition
-    | Condition_Term LoanTermCondition
+    | Condition_Term_Months TermMonthsCondition
     | Condition_Amount AmountCondition
     | Condition_Interest InterestCondition
 
@@ -69,7 +69,7 @@ emptyConditions =
     , income = Nothing
     , purpose = Nothing
     , story = Nothing
-    , term = Nothing
+    , termMonths = Nothing
     , amount = Nothing
     , interest = Nothing
     }
@@ -108,8 +108,8 @@ renderCondition condition =
         Condition_Story storyCond ->
             renderStoryCondition storyCond
 
-        Condition_Term termCond ->
-            renderLoanTermCondition termCond
+        Condition_Term_Months termCond ->
+            renderTermMonthsCondition termCond
 
         Condition_Amount amountCond ->
             renderAmountCondition amountCond
@@ -141,8 +141,8 @@ conditionValidationError c =
         Condition_Story _ ->
             [{- Story condition can't be invalid -> valid. errors list always empty -}]
 
-        Condition_Term termCond ->
-            LoanTerm.validationErrors termCond
+        Condition_Term_Months termCond ->
+            TermMonths.validationErrors termCond
 
         Condition_Amount amountCond ->
             Amount.validationErrors amountCond
@@ -152,7 +152,7 @@ conditionValidationError c =
 
 
 conditionsToList : Conditions -> List Condition
-conditionsToList { region, rating, income, purpose, story, term, amount, interest } =
+conditionsToList { region, rating, income, purpose, story, termMonths, amount, interest } =
     let
         fromMaybe : (a -> Condition) -> Maybe a -> List Condition
         fromMaybe wrap =
@@ -174,7 +174,7 @@ conditionsToList { region, rating, income, purpose, story, term, amount, interes
             fromMaybe Condition_Story story
 
         ter =
-            fromMaybe Condition_Term term
+            fromMaybe Condition_Term_Months termMonths
 
         amo =
             fromMaybe Condition_Amount amount
@@ -203,7 +203,7 @@ addCondition c cs =
         Condition_Story storyCond ->
             setStoryCondition storyCond cs
 
-        Condition_Term termCond ->
+        Condition_Term_Months termCond ->
             setTermCondition termCond cs
 
         Condition_Amount amountCond ->
@@ -238,9 +238,9 @@ setStoryCondition c cs =
     { cs | story = Just c }
 
 
-setTermCondition : LoanTermCondition -> Conditions -> Conditions
+setTermCondition : TermMonthsCondition -> Conditions -> Conditions
 setTermCondition c cs =
-    { cs | term = Just c }
+    { cs | termMonths = Just c }
 
 
 setAmountCondition : AmountCondition -> Conditions -> Conditions
@@ -273,9 +273,9 @@ updatePurpose msg conditions =
     { conditions | purpose = Maybe.map (LoanPurpose.update msg) conditions.purpose }
 
 
-updateLoanTerm : LoanTermMsg -> Conditions -> Conditions
-updateLoanTerm msg conditions =
-    { conditions | term = Maybe.map (LoanTerm.update msg) conditions.term }
+updateTermMonths : TermMonthsMsg -> Conditions -> Conditions
+updateTermMonths msg conditions =
+    { conditions | termMonths = Maybe.map (TermMonths.update msg) conditions.termMonths }
 
 
 updateMainIncome : MainIncomeMsg -> Conditions -> Conditions
@@ -313,9 +313,9 @@ removePurposeCondition cs =
     { cs | purpose = Nothing }
 
 
-removeLoanTermCondition : Conditions -> Conditions
-removeLoanTermCondition cs =
-    { cs | term = Nothing }
+removeTermMonthsCondition : Conditions -> Conditions
+removeTermMonthsCondition cs =
+    { cs | termMonths = Nothing }
 
 
 removeMainIncomeCondition : Conditions -> Conditions
@@ -338,14 +338,14 @@ removeRegionCondition cs =
 
 
 encodeConditions : Conditions -> Value
-encodeConditions { region, rating, income, purpose, story, term, interest, amount } =
+encodeConditions { region, rating, income, purpose, story, termMonths, interest, amount } =
     Encode.object
         [ ( "region", encodeMaybe Region.encodeCondition region )
         , ( "rating", encodeMaybe Rating.encodeCondition rating )
         , ( "income", encodeMaybe MainIncome.encodeCondition income )
         , ( "purpose", encodeMaybe LoanPurpose.encodeCondition purpose )
         , ( "story", encodeMaybe Story.encodeCondition story )
-        , ( "term", encodeMaybe LoanTerm.encodeCondition term )
+        , ( "termMonths", encodeMaybe TermMonths.encodeCondition termMonths )
         , ( "interest", encodeMaybe Interest.encodeCondition interest )
         , ( "amount", encodeMaybe Amount.encodeCondition amount )
         ]
@@ -364,6 +364,6 @@ conditionsDecoder =
         (Decode.field "income" <| Decode.nullable MainIncome.conditionDecoder)
         (Decode.field "purpose" <| Decode.nullable LoanPurpose.conditionDecoder)
         (Decode.field "story" <| Decode.nullable Story.conditionDecoder)
-        (Decode.field "term" <| Decode.nullable LoanTerm.conditionDecoder)
+        (Decode.field "termMonths" <| Decode.nullable TermMonths.conditionDecoder)
         (Decode.field "interest" <| Decode.nullable Interest.conditionDecoder)
         (Decode.field "amount" <| Decode.nullable Amount.conditionDecoder)

@@ -7,11 +7,11 @@ import Data.Filter.Conditions exposing (Condition(..), Conditions, addCondition,
 import Data.Filter.Conditions.Amount as Amount exposing (AmountCondition(AmountCondition))
 import Data.Filter.Conditions.Interest as Interest exposing (InterestCondition(..))
 import Data.Filter.Conditions.LoanPurpose as LoanPurpose exposing (LoanPurposeCondition(LoanPurposeList))
-import Data.Filter.Conditions.LoanTerm as LoanTerm exposing (LoanTermCondition(..))
 import Data.Filter.Conditions.MainIncome as MainIncome exposing (MainIncomeCondition(..))
 import Data.Filter.Conditions.Rating as Rating exposing (RatingCondition(RatingList))
 import Data.Filter.Conditions.Region as Region exposing (RegionCondition(RegionList))
 import Data.Filter.Conditions.Story exposing (Story(..), StoryCondition(StoryCondition))
+import Data.Filter.Conditions.TermMonths as TermMonths exposing (TermMonthsCondition(..))
 import Data.Investment as Investment exposing (InvestmentsPerRating)
 import Data.InvestmentShare as InvestmentShare exposing (InvestmentShare(..))
 import Data.Portfolio exposing (Portfolio(..))
@@ -167,18 +167,18 @@ storyConditionGen =
 termConditionGen : Generator Condition
 termConditionGen =
     let
-        minLoanTerm =
+        minTermMonths =
             0
 
-        maxLoanTerm =
+        maxTermMonths =
             84
     in
     Random.choices
-        [ Random.map LoanTerm.LessThan (Random.int (minLoanTerm + 1 {- 0 is invalid, as parser subtract 1 -}) (maxLoanTerm + 1))
-        , Random.int minLoanTerm maxLoanTerm |> Random.andThen (\mi -> Random.int mi maxLoanTerm |> Random.map (\mx -> LoanTerm.Between mi mx))
-        , Random.map LoanTerm.MoreThan (Random.int minLoanTerm (maxLoanTerm - 1 {- max is invalid, as parser adds 1 -}))
+        [ Random.map TermMonths.LessThan (Random.int (minTermMonths + 1 {- 0 is invalid, as parser subtract 1 -}) (maxTermMonths + 1))
+        , Random.int minTermMonths maxTermMonths |> Random.andThen (\mi -> Random.int mi maxTermMonths |> Random.map (\mx -> TermMonths.Between mi mx))
+        , Random.map TermMonths.MoreThan (Random.int minTermMonths (maxTermMonths - 1 {- max is invalid, as parser adds 1 -}))
         ]
-        |> Random.map (LoanTermCondition >> Condition_Term)
+        |> Random.map (TermMonthsCondition >> Condition_Term_Months)
 
 
 amountConditionGen : Generator Condition
