@@ -29,8 +29,8 @@ module Data.Filter.Conditions
 
 import Data.Filter.Conditions.Amount as Amount exposing (AmountCondition, AmountMsg, renderAmountCondition)
 import Data.Filter.Conditions.Interest as Interest exposing (InterestCondition, InterestMsg, renderInterestCondition)
-import Data.Filter.Conditions.LoanPurpose as LoanPurpose exposing (LoanPurposeCondition, LoanPurposeMsg, renderLoanPurposeCondition)
 import Data.Filter.Conditions.MainIncome as MainIncome exposing (MainIncomeCondition, MainIncomeMsg, renderMainIncomeCondition)
+import Data.Filter.Conditions.Purpose as Purpose exposing (PurposeCondition, PurposeMsg, renderPurposeCondition)
 import Data.Filter.Conditions.Rating as Rating exposing (RatingCondition, RatingMsg, renderRatingCondition)
 import Data.Filter.Conditions.Region as Region exposing (RegionCondition, RegionMsg, renderRegionCondition)
 import Data.Filter.Conditions.Story as Story exposing (StoryCondition, StoryMsg, renderStoryCondition)
@@ -43,7 +43,7 @@ type alias Conditions =
     { region : Maybe RegionCondition
     , rating : Maybe RatingCondition
     , income : Maybe MainIncomeCondition
-    , purpose : Maybe LoanPurposeCondition
+    , purpose : Maybe PurposeCondition
     , story : Maybe StoryCondition
     , termMonths : Maybe TermMonthsCondition
     , interest : Maybe InterestCondition
@@ -55,7 +55,7 @@ type Condition
     = Condition_Region RegionCondition
     | Condition_Rating RatingCondition
     | Condition_Income MainIncomeCondition
-    | Condition_Purpose LoanPurposeCondition
+    | Condition_Purpose PurposeCondition
     | Condition_Story StoryCondition
     | Condition_Term_Months TermMonthsCondition
     | Condition_Amount AmountCondition
@@ -102,8 +102,8 @@ renderCondition condition =
         Condition_Income incomeCond ->
             renderMainIncomeCondition incomeCond
 
-        Condition_Purpose loanPurposeCond ->
-            renderLoanPurposeCondition loanPurposeCond
+        Condition_Purpose purposeCond ->
+            renderPurposeCondition purposeCond
 
         Condition_Story storyCond ->
             renderStoryCondition storyCond
@@ -135,8 +135,8 @@ conditionValidationError c =
         Condition_Income incomeCond ->
             MainIncome.validationErrors incomeCond
 
-        Condition_Purpose loanPurposeCond ->
-            LoanPurpose.validationErrors loanPurposeCond
+        Condition_Purpose purposeCond ->
+            Purpose.validationErrors purposeCond
 
         Condition_Story _ ->
             [{- Story condition can't be invalid -> valid. errors list always empty -}]
@@ -197,8 +197,8 @@ addCondition c cs =
         Condition_Income incomeCond ->
             setIncomeCondition incomeCond cs
 
-        Condition_Purpose loanPurposeCond ->
-            setLoanPurposeCondition loanPurposeCond cs
+        Condition_Purpose purposeCond ->
+            setPurposeCondition purposeCond cs
 
         Condition_Story storyCond ->
             setStoryCondition storyCond cs
@@ -228,8 +228,8 @@ setIncomeCondition c cs =
     { cs | income = Just c }
 
 
-setLoanPurposeCondition : LoanPurposeCondition -> Conditions -> Conditions
-setLoanPurposeCondition c cs =
+setPurposeCondition : PurposeCondition -> Conditions -> Conditions
+setPurposeCondition c cs =
     { cs | purpose = Just c }
 
 
@@ -268,9 +268,9 @@ updateStory msg conditions =
     { conditions | story = Maybe.map (Story.update msg) conditions.story }
 
 
-updatePurpose : LoanPurposeMsg -> Conditions -> Conditions
+updatePurpose : PurposeMsg -> Conditions -> Conditions
 updatePurpose msg conditions =
-    { conditions | purpose = Maybe.map (LoanPurpose.update msg) conditions.purpose }
+    { conditions | purpose = Maybe.map (Purpose.update msg) conditions.purpose }
 
 
 updateTermMonths : TermMonthsMsg -> Conditions -> Conditions
@@ -343,7 +343,7 @@ encodeConditions { region, rating, income, purpose, story, termMonths, interest,
         [ ( "region", encodeMaybe Region.encodeCondition region )
         , ( "rating", encodeMaybe Rating.encodeCondition rating )
         , ( "income", encodeMaybe MainIncome.encodeCondition income )
-        , ( "purpose", encodeMaybe LoanPurpose.encodeCondition purpose )
+        , ( "purpose", encodeMaybe Purpose.encodeCondition purpose )
         , ( "story", encodeMaybe Story.encodeCondition story )
         , ( "termMonths", encodeMaybe TermMonths.encodeCondition termMonths )
         , ( "interest", encodeMaybe Interest.encodeCondition interest )
@@ -362,7 +362,7 @@ conditionsDecoder =
         (Decode.field "region" <| Decode.nullable Region.conditionDecoder)
         (Decode.field "rating" <| Decode.nullable Rating.conditionDecoder)
         (Decode.field "income" <| Decode.nullable MainIncome.conditionDecoder)
-        (Decode.field "purpose" <| Decode.nullable LoanPurpose.conditionDecoder)
+        (Decode.field "purpose" <| Decode.nullable Purpose.conditionDecoder)
         (Decode.field "story" <| Decode.nullable Story.conditionDecoder)
         (Decode.field "termMonths" <| Decode.nullable TermMonths.conditionDecoder)
         (Decode.field "interest" <| Decode.nullable Interest.conditionDecoder)

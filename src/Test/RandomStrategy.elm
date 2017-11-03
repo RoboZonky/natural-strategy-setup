@@ -6,8 +6,8 @@ import Data.Filter exposing (FilteredItem(..), MarketplaceFilter)
 import Data.Filter.Conditions exposing (Condition(..), Conditions, addCondition, emptyConditions)
 import Data.Filter.Conditions.Amount as Amount exposing (AmountCondition(AmountCondition))
 import Data.Filter.Conditions.Interest as Interest exposing (InterestCondition(..))
-import Data.Filter.Conditions.LoanPurpose as LoanPurpose exposing (LoanPurposeCondition(LoanPurposeList))
 import Data.Filter.Conditions.MainIncome as MainIncome exposing (MainIncomeCondition(..))
+import Data.Filter.Conditions.Purpose as Purpose exposing (PurposeCondition(PurposeList))
 import Data.Filter.Conditions.Rating as Rating exposing (RatingCondition(RatingList))
 import Data.Filter.Conditions.Region as Region exposing (RegionCondition(RegionList))
 import Data.Filter.Conditions.Story exposing (Story(..), StoryCondition(StoryCondition))
@@ -155,7 +155,7 @@ incomeConditionGen =
 
 purposeConditionGen : Generator Condition
 purposeConditionGen =
-    nonemptySubset LoanPurpose.allPurposes |> Random.map (LoanPurposeList >> Condition_Purpose)
+    nonemptySubset Purpose.allPurposes |> Random.map (PurposeList >> Condition_Purpose)
 
 
 storyConditionGen : Generator Condition

@@ -7,8 +7,8 @@ import Data.Filter exposing (FilteredItem(..))
 import Data.Filter.Conditions exposing (..)
 import Data.Filter.Conditions.Amount as Amount exposing (Amount(..), AmountCondition(..), AmountMsg)
 import Data.Filter.Conditions.Interest as Interest exposing (Interest(..), InterestCondition(..), InterestMsg)
-import Data.Filter.Conditions.LoanPurpose as LoanPurpose exposing (LoanPurpose(..), LoanPurposeCondition(..), LoanPurposeMsg)
 import Data.Filter.Conditions.MainIncome as MainIncome exposing (MainIncome(..), MainIncomeCondition(..), MainIncomeMsg)
+import Data.Filter.Conditions.Purpose as Purpose exposing (Purpose(..), PurposeCondition(..), PurposeMsg)
 import Data.Filter.Conditions.Rating as Rating exposing (Rating(..), RatingCondition(..), RatingMsg)
 import Data.Filter.Conditions.Region as Region exposing (Region(..), RegionCondition(..), RegionMsg)
 import Data.Filter.Conditions.Story as Story exposing (Story(..), StoryCondition(..), StoryMsg)
@@ -47,7 +47,7 @@ conditionsForm filteredItem conditions =
     div [] <|
         [ conditionRow conditions "Rating" (Condition_Rating (RatingList [])) RemoveRatingCondition
         , conditionRow conditions "Úrok" (Condition_Interest (InterestCondition (Interest.LessThan 0))) RemoveInterestCondition
-        , conditionRow conditions "Účel úvěru" (Condition_Purpose (LoanPurposeList [])) RemovePurposeCondition
+        , conditionRow conditions "Účel úvěru" (Condition_Purpose (PurposeList [])) RemovePurposeCondition
         , conditionRow conditions "Délka úvěru (v měsících)" (Condition_Term_Months (TermMonthsCondition (TermMonths.LessThan 0))) RemoveTermCondition
         , conditionRow conditions "Zdroj příjmů klienta" (Condition_Income (MainIncomeList [])) RemoveMainIncomeCondition
         , conditionRow conditions "Příběh" (Condition_Story (StoryCondition SHORT)) RemoveStoryCondition
@@ -77,7 +77,7 @@ conditionRow conditions conditionName condition removeCondMsg =
                     ( subformEnabled conditions.interest, showFormForNonemptyCondition InterestMsg Interest.interestForm conditions.interest )
 
                 Condition_Purpose _ ->
-                    ( subformEnabled conditions.purpose, showFormForNonemptyCondition LoanPurposeMsg LoanPurpose.loanPurposeForm conditions.purpose )
+                    ( subformEnabled conditions.purpose, showFormForNonemptyCondition PurposeMsg Purpose.purposeForm conditions.purpose )
 
                 Condition_Term_Months _ ->
                     ( subformEnabled conditions.termMonths, showFormForNonemptyCondition TermMonthsMsg TermMonths.termMonthsForm conditions.termMonths )
@@ -120,7 +120,7 @@ type Msg
     = InterestMsg InterestMsg
     | AmountMsg AmountMsg
     | StoryMsg StoryMsg
-    | LoanPurposeMsg LoanPurposeMsg
+    | PurposeMsg PurposeMsg
     | TermMonthsMsg TermMonthsMsg
     | MainIncomeMsg MainIncomeMsg
     | RatingMsg RatingMsg
@@ -145,7 +145,7 @@ update msg model =
         InterestMsg msg ->
             updateInterest msg model
 
-        LoanPurposeMsg msg ->
+        PurposeMsg msg ->
             updatePurpose msg model
 
         TermMonthsMsg msg ->
