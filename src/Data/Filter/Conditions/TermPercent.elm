@@ -1,13 +1,13 @@
-module Data.Filter.Conditions.TermMonths
+module Data.Filter.Conditions.TermPercent
     exposing
-        ( TermMonths(..)
-        , TermMonthsCondition(..)
-        , TermMonthsMsg
+        ( TermPercent(..)
+        , TermPercentCondition(..)
+        , TermPercentMsg
         , conditionDecoder
-        , defaultTermMonthsCondition
+        , defaultTermPercentCondition
         , encodeCondition
-        , renderTermMonthsCondition
-        , termMonthsForm
+        , renderTermPercentCondition
+        , termPercentForm
         , update
         , validationErrors
         )
@@ -23,24 +23,24 @@ import Json.Encode as Encode exposing (Value)
 import Util exposing (emptyToZero, zeroToEmpty)
 
 
-type TermMonths
+type TermPercent
     = LessThan Int
     | Between Int Int
     | MoreThan Int
 
 
-type TermMonthsCondition
-    = TermMonthsCondition TermMonths
+type TermPercentCondition
+    = TermPercentCondition TermPercent
 
 
-defaultTermMonthsCondition : TermMonthsCondition
-defaultTermMonthsCondition =
-    TermMonthsCondition (MoreThan 0)
+defaultTermPercentCondition : TermPercentCondition
+defaultTermPercentCondition =
+    TermPercentCondition (MoreThan 0)
 
 
-termMonthsToString : TermMonths -> String
-termMonthsToString termMonths =
-    case termMonths of
+termPercentToString : TermPercent -> String
+termPercentToString termPercent =
+    case termPercent of
         LessThan maxBound ->
             "nedosahuje " ++ toString maxBound
 
@@ -51,44 +51,44 @@ termMonthsToString termMonths =
             "přesahuje " ++ toString minBound
 
 
-renderTermMonthsCondition : TermMonthsCondition -> String
-renderTermMonthsCondition (TermMonthsCondition term) =
-    "délka " ++ termMonthsToString term ++ " měsíců"
+renderTermPercentCondition : TermPercentCondition -> String
+renderTermPercentCondition (TermPercentCondition term) =
+    "délka " ++ termPercentToString term ++ " % původní délky"
 
 
-validationErrors : TermMonthsCondition -> List String
-validationErrors (TermMonthsCondition t) =
+validationErrors : TermPercentCondition -> List String
+validationErrors (TermPercentCondition t) =
     case t of
         LessThan x ->
-            validateInRange 1 85 x
+            validateInRange 1 100 x
 
         Between x y ->
-            validateInRange 0 84 x ++ validateInRange 0 84 y ++ validateMinNotGtMax x y
+            validateInRange 0 99 x ++ validateInRange 1 100 y ++ validateMinNotGtMax x y
 
         MoreThan x ->
-            validateInRange 0 83 x
+            validateInRange 0 99 x
 
 
 validateInRange : Int -> Int -> Int -> List String
 validateInRange minValid maxValid x =
-    Util.validate (x < minValid || maxValid < x) <| "Délka úvěru v měsících: musí být v rozmezí " ++ toString minValid ++ " až " ++ toString maxValid
+    Util.validate (x < minValid || maxValid < x) <| "Délka úvěru v procentech: musí být v rozmezí " ++ toString minValid ++ " až " ++ toString maxValid
 
 
 validateMinNotGtMax : Int -> Int -> List String
 validateMinNotGtMax minBound maxBound =
-    Util.validate (minBound > maxBound) "Délka úvěru v měsících: minimum nesmí být větší než maximum"
+    Util.validate (minBound > maxBound) "Délka úvěru v procentech: minimum nesmí být větší než maximum"
 
 
-type TermMonthsMsg
+type TermPercentMsg
     = SetLessThan String
     | SetBetween String String
     | SetMoreThan String
-    | TermMonthsNoOp
+    | TermPercentNoOp
 
 
-whichEnabled : TermMonths -> ( Bool, Bool, Bool )
-whichEnabled termMonths =
-    case termMonths of
+whichEnabled : TermPercent -> ( Bool, Bool, Bool )
+whichEnabled termPercent =
+    case termPercent of
         LessThan _ ->
             ( True, False, False )
 
@@ -99,31 +99,31 @@ whichEnabled termMonths =
             ( False, False, True )
 
 
-update : TermMonthsMsg -> TermMonthsCondition -> TermMonthsCondition
-update msg (TermMonthsCondition term) =
+update : TermPercentMsg -> TermPercentCondition -> TermPercentCondition
+update msg (TermPercentCondition term) =
     case msg of
         SetLessThan hi ->
-            emptyToZero hi |> String.toInt |> Result.map LessThan |> Result.withDefault term |> TermMonthsCondition
+            emptyToZero hi |> String.toInt |> Result.map LessThan |> Result.withDefault term |> TermPercentCondition
 
         SetBetween loStr hiStr ->
             emptyToZero loStr
                 |> String.toInt
                 |> Result.andThen (\lo -> emptyToZero hiStr |> String.toInt |> Result.map (\hi -> Between lo hi))
                 |> Result.withDefault term
-                |> TermMonthsCondition
+                |> TermPercentCondition
 
         SetMoreThan lo ->
-            emptyToZero lo |> String.toInt |> Result.map MoreThan |> Result.withDefault term |> TermMonthsCondition
+            emptyToZero lo |> String.toInt |> Result.map MoreThan |> Result.withDefault term |> TermPercentCondition
 
-        TermMonthsNoOp ->
-            TermMonthsCondition term
+        TermPercentNoOp ->
+            TermPercentCondition term
 
 
-termMonthsForm : TermMonthsCondition -> Html TermMonthsMsg
-termMonthsForm (TermMonthsCondition termMonths) =
+termPercentForm : TermPercentCondition -> Html TermPercentMsg
+termPercentForm (TermPercentCondition termPercent) =
     let
         ( ltVal, btwMinVal, btwMaxVal, mtVal ) =
-            case termMonths of
+            case termPercent of
                 LessThan x ->
                     ( zeroToEmpty x, "", "", "" )
 
@@ -134,44 +134,44 @@ termMonthsForm (TermMonthsCondition termMonths) =
                     ( "", "", "", zeroToEmpty x )
 
         ( ltEnabled, btwEnabled, mtEnabled ) =
-            whichEnabled termMonths
+            whichEnabled termPercent
     in
-    Form.form [ onSubmit TermMonthsNoOp ]
-        [ Form.formInline [ onSubmit TermMonthsNoOp ]
-            [ termMonthsRadio ltEnabled (SetLessThan "0") "nedosahuje"
+    Form.form [ onSubmit TermPercentNoOp ]
+        [ Form.formInline [ onSubmit TermPercentNoOp ]
+            [ termPercentRadio ltEnabled (SetLessThan "0") "nedosahuje"
             , numericInput SetLessThan ltEnabled ltVal
-            , text "měsíců"
+            , text "% původní délky"
             ]
-        , Form.formInline [ onSubmit TermMonthsNoOp ]
-            [ termMonthsRadio btwEnabled (SetBetween "0" "0") "je"
+        , Form.formInline [ onSubmit TermPercentNoOp ]
+            [ termPercentRadio btwEnabled (SetBetween "0" "0") "je"
             , numericInput (\x -> SetBetween x btwMaxVal) btwEnabled btwMinVal
             , text "až"
             , numericInput (\y -> SetBetween btwMinVal y) btwEnabled btwMaxVal
-            , text "měsíců"
+            , text "% původní délky"
             ]
-        , Form.formInline [ onSubmit TermMonthsNoOp ]
-            [ termMonthsRadio mtEnabled (SetMoreThan "0") "přesahuje"
+        , Form.formInline [ onSubmit TermPercentNoOp ]
+            [ termPercentRadio mtEnabled (SetMoreThan "0") "přesahuje"
             , numericInput SetMoreThan mtEnabled mtVal
-            , text "měsíců"
+            , text "% původní délky"
             ]
         ]
 
 
-numericInput : (String -> TermMonthsMsg) -> Bool -> String -> Html TermMonthsMsg
+numericInput : (String -> TermPercentMsg) -> Bool -> String -> Html TermPercentMsg
 numericInput msg enabled value =
     Input.number
         [ Input.small
         , Input.onInput msg
         , Input.disabled <| not enabled
         , Input.value value
-        , Input.attrs [ Attr.min "0", Attr.max "85", class "mx-1" ]
+        , Input.attrs [ Attr.min "0", Attr.max "100", class "mx-1" ]
         ]
 
 
-termMonthsRadio : Bool -> TermMonthsMsg -> String -> Html TermMonthsMsg
-termMonthsRadio checked msg label =
+termPercentRadio : Bool -> TermPercentMsg -> String -> Html TermPercentMsg
+termPercentRadio checked msg label =
     Radio.radio
-        [ Radio.name "termMonths"
+        [ Radio.name "termPercent"
         , Radio.checked checked
         , Radio.onClick msg
         ]
@@ -182,8 +182,8 @@ termMonthsRadio checked msg label =
 -- JSON
 
 
-encodeTermMonths : TermMonths -> Value
-encodeTermMonths amt =
+encodeTermPercent : TermPercent -> Value
+encodeTermPercent amt =
     case amt of
         LessThan x ->
             Encode.list [ Encode.int 1, Encode.int x ]
@@ -195,13 +195,13 @@ encodeTermMonths amt =
             Encode.list [ Encode.int 3, Encode.int y ]
 
 
-encodeCondition : TermMonthsCondition -> Value
-encodeCondition (TermMonthsCondition c) =
-    encodeTermMonths c
+encodeCondition : TermPercentCondition -> Value
+encodeCondition (TermPercentCondition c) =
+    encodeTermPercent c
 
 
-termMonthsDecoder : Decoder TermMonths
-termMonthsDecoder =
+termPercentDecoder : Decoder TermPercent
+termPercentDecoder =
     Decode.list Decode.int
         |> Decode.andThen
             (\ints ->
@@ -216,10 +216,10 @@ termMonthsDecoder =
                         Decode.succeed <| MoreThan y
 
                     _ ->
-                        Decode.fail <| "Unable to decode TermMonths from " ++ toString ints
+                        Decode.fail <| "Unable to decode TermPercent from " ++ toString ints
             )
 
 
-conditionDecoder : Decoder TermMonthsCondition
+conditionDecoder : Decoder TermPercentCondition
 conditionDecoder =
-    Decode.map TermMonthsCondition termMonthsDecoder
+    Decode.map TermPercentCondition termPercentDecoder

@@ -15,4 +15,4 @@ fi
 
 elm make src/Test/TestApp.elm --warn --output ${TESTS_DIR}/target/testApp.html
 cd ${TESTS_DIR}
-mvn test -Dmake.elmMakeExecutable=/usr/bin/elm-make
+mvn test

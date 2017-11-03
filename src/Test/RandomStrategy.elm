@@ -12,6 +12,7 @@ import Data.Filter.Conditions.Rating as Rating exposing (RatingCondition(RatingL
 import Data.Filter.Conditions.Region as Region exposing (RegionCondition(RegionList))
 import Data.Filter.Conditions.Story exposing (Story(..), StoryCondition(StoryCondition))
 import Data.Filter.Conditions.TermMonths as TermMonths exposing (TermMonthsCondition(..))
+import Data.Filter.Conditions.TermPercent as TermPercent exposing (TermPercentCondition(..))
 import Data.Investment as Investment exposing (InvestmentsPerRating)
 import Data.InvestmentShare as InvestmentShare exposing (InvestmentShare(..))
 import Data.Portfolio exposing (Portfolio(..))
@@ -98,31 +99,34 @@ sellFilterGen =
 
 filterGen : FilteredItem -> Generator MarketplaceFilter
 filterGen filteredItem =
+    Random.map2 (\pos neg -> { whatToFilter = filteredItem, ignoreWhen = pos, butNotWhen = neg })
+        (conditionsGen 1 filteredItem)
+        (conditionsGen 0 filteredItem)
+
+
+conditionsGen : Int -> FilteredItem -> Generator Conditions
+conditionsGen minConditions filteredItem =
     let
-        conditionsGen =
+        extraConditions =
             case filteredItem of
                 Loan ->
-                    loanConditionsGen
+                    [ amountConditionGen ]
 
-                _ ->
-                    participationConditionsGen
+                Participation ->
+                    [ termPercentConditionGen ]
+
+                Participation_To_Sell ->
+                    [ termPercentConditionGen ]
+
+                Loan_And_Participation ->
+                    []
     in
-    Random.map2 (\pos neg -> { whatToFilter = filteredItem, ignoreWhen = pos, butNotWhen = neg })
-        (conditionsGen 1)
-        (conditionsGen 0)
+    conditionSubsetGen minConditions (conditionsSharedByAllFilteredItems ++ extraConditions)
 
 
-loanConditionsGen : Int -> Generator Conditions
-loanConditionsGen minimumConditions =
-    subset minimumConditions
-        (amountConditionGen :: conditionsSharedByAllFilteredItems)
-        |> Random.andThen (Random.combine >> Random.map (List.foldl addCondition emptyConditions))
-
-
-participationConditionsGen : Int -> Generator Conditions
-participationConditionsGen minimumConditions =
-    subset minimumConditions
-        conditionsSharedByAllFilteredItems
+conditionSubsetGen : Int -> List (Generator Condition) -> Generator Conditions
+conditionSubsetGen minimumConditions conditionsToPick =
+    subset minimumConditions conditionsToPick
         |> Random.andThen (Random.combine >> Random.map (List.foldl addCondition emptyConditions))
 
 
@@ -133,7 +137,7 @@ conditionsSharedByAllFilteredItems =
     , incomeConditionGen
     , purposeConditionGen
     , storyConditionGen
-    , termConditionGen
+    , termMonthsConditionGen
     , interestConditionGen
     ]
 
@@ -164,8 +168,8 @@ storyConditionGen =
         |> Random.map (Maybe.withDefault SHORT >> StoryCondition >> Condition_Story)
 
 
-termConditionGen : Generator Condition
-termConditionGen =
+termMonthsConditionGen : Generator Condition
+termMonthsConditionGen =
     let
         minTermMonths =
             0
@@ -179,6 +183,23 @@ termConditionGen =
         , Random.map TermMonths.MoreThan (Random.int minTermMonths (maxTermMonths - 1 {- max is invalid, as parser adds 1 -}))
         ]
         |> Random.map (TermMonthsCondition >> Condition_Term_Months)
+
+
+termPercentConditionGen : Generator Condition
+termPercentConditionGen =
+    let
+        minTermPercent =
+            0
+
+        maxTermPercent =
+            100
+    in
+    Random.choices
+        [ Random.map TermPercent.LessThan (Random.int (minTermPercent + 1 {- 0 is invalid, as parser subtract 1 -}) (maxTermPercent + 1))
+        , Random.int minTermPercent maxTermPercent |> Random.andThen (\mi -> Random.int mi maxTermPercent |> Random.map (\mx -> TermPercent.Between mi mx))
+        , Random.map TermPercent.MoreThan (Random.int minTermPercent (maxTermPercent - 1 {- max is invalid, as parser adds 1 -}))
+        ]
+        |> Random.map (TermPercentCondition >> Condition_Term_Percent)
 
 
 amountConditionGen : Generator Condition

@@ -1,6 +1,7 @@
 module StrategyEncodingDecoding exposing (..)
 
 import AllDict
+import Data.Filter exposing (FilteredItem(Loan))
 import Data.Filter.Conditions as Conditions exposing (Conditions)
 import Data.Filter.Conditions.Amount as Amount exposing (AmountCondition(AmountCondition))
 import Data.Filter.Conditions.Interest as Interest exposing (InterestCondition(InterestCondition))
@@ -81,7 +82,7 @@ hundredRandomConditions : List Conditions
 hundredRandomConditions =
     Tuple.first <|
         Random.step
-            (Random.list 100 (RS.loanConditionsGen 0))
+            (Random.list 100 (RS.conditionsGen 0 Loan))
             (Random.initialSeed 0)
 
 

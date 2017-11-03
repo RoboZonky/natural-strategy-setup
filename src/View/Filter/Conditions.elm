@@ -13,6 +13,7 @@ import Data.Filter.Conditions.Rating as Rating exposing (Rating(..), RatingCondi
 import Data.Filter.Conditions.Region as Region exposing (Region(..), RegionCondition(..), RegionMsg)
 import Data.Filter.Conditions.Story as Story exposing (Story(..), StoryCondition(..), StoryMsg)
 import Data.Filter.Conditions.TermMonths as TermMonths exposing (TermMonths(..), TermMonthsCondition(..), TermMonthsMsg)
+import Data.Filter.Conditions.TermPercent as TermPercent exposing (TermPercent(..), TermPercentCondition(..), TermPercentMsg)
 import Html exposing (Html, div, text)
 
 
@@ -33,27 +34,38 @@ conditionsForm filteredItem conditions =
         extraRows =
             case filteredItem of
                 Loan ->
-                    [ conditionRow conditions "Výše úvěru" (Condition_Amount (AmountCondition (Amount.LessThan 0))) RemoveAmountCondition ]
+                    [ amountRow ]
 
                 Participation ->
-                    [{- TODO add relative term conditionRow -}]
+                    [ termPercentRow ]
 
                 Participation_To_Sell ->
-                    [{- TODO add relative term conditionRow -}]
+                    [ termPercentRow ]
 
                 Loan_And_Participation ->
                     []
+
+        termPercentRow =
+            conditionRow conditions "Délka úvěru (v procentech)" (Condition_Term_Percent (TermPercentCondition (TermPercent.LessThan 0))) RemoveTermPercentContion
+
+        amountRow =
+            conditionRow conditions "Výše úvěru" (Condition_Amount (AmountCondition (Amount.LessThan 0))) RemoveAmountCondition
     in
     div [] <|
-        [ conditionRow conditions "Rating" (Condition_Rating (RatingList [])) RemoveRatingCondition
-        , conditionRow conditions "Úrok" (Condition_Interest (InterestCondition (Interest.LessThan 0))) RemoveInterestCondition
-        , conditionRow conditions "Účel úvěru" (Condition_Purpose (PurposeList [])) RemovePurposeCondition
-        , conditionRow conditions "Délka úvěru (v měsících)" (Condition_Term_Months (TermMonthsCondition (TermMonths.LessThan 0))) RemoveTermCondition
-        , conditionRow conditions "Zdroj příjmů klienta" (Condition_Income (MainIncomeList [])) RemoveMainIncomeCondition
-        , conditionRow conditions "Příběh" (Condition_Story (StoryCondition SHORT)) RemoveStoryCondition
-        , conditionRow conditions "Kraj klienta" (Condition_Region (RegionList [])) RemoveRegionCondition
-        ]
-            ++ extraRows
+        List.concat
+            [ [ conditionRow conditions "Rating" (Condition_Rating (RatingList [])) RemoveRatingCondition
+              , conditionRow conditions "Úrok" (Condition_Interest (InterestCondition (Interest.LessThan 0))) RemoveInterestCondition
+              , conditionRow conditions "Účel úvěru" (Condition_Purpose (PurposeList [])) RemovePurposeCondition
+              , conditionRow conditions "Délka úvěru (v měsících)" (Condition_Term_Months (TermMonthsCondition (TermMonths.LessThan 0))) RemoveTermMonthsCondition
+              ]
+
+            -- put extra rows "in the middle" to have 'Délka úvěru (v měsících)' and 'Délka úvěru (v procentech)' next to each other"
+            , extraRows
+            , [ conditionRow conditions "Zdroj příjmů klienta" (Condition_Income (MainIncomeList [])) RemoveMainIncomeCondition
+              , conditionRow conditions "Příběh" (Condition_Story (StoryCondition SHORT)) RemoveStoryCondition
+              , conditionRow conditions "Kraj klienta" (Condition_Region (RegionList [])) RemoveRegionCondition
+              ]
+            ]
 
 
 conditionRow : Conditions -> String -> Condition -> Msg -> Html Msg
@@ -81,6 +93,9 @@ conditionRow conditions conditionName condition removeCondMsg =
 
                 Condition_Term_Months _ ->
                     ( subformEnabled conditions.termMonths, showFormForNonemptyCondition TermMonthsMsg TermMonths.termMonthsForm conditions.termMonths )
+
+                Condition_Term_Percent _ ->
+                    ( subformEnabled conditions.termPercent, showFormForNonemptyCondition TermPercentMsg TermPercent.termPercentForm conditions.termPercent )
 
                 Condition_Region _ ->
                     ( subformEnabled conditions.region, showFormForNonemptyCondition RegionMsg Region.regionForm conditions.region )
@@ -122,6 +137,7 @@ type Msg
     | StoryMsg StoryMsg
     | PurposeMsg PurposeMsg
     | TermMonthsMsg TermMonthsMsg
+    | TermPercentMsg TermPercentMsg
     | MainIncomeMsg MainIncomeMsg
     | RatingMsg RatingMsg
     | RegionMsg RegionMsg
@@ -130,7 +146,8 @@ type Msg
     | RemoveAmountCondition
     | RemoveStoryCondition
     | RemovePurposeCondition
-    | RemoveTermCondition
+    | RemoveTermMonthsCondition
+    | RemoveTermPercentContion
     | RemoveMainIncomeCondition
     | RemoveRatingCondition
     | RemoveRegionCondition
@@ -150,6 +167,9 @@ update msg model =
 
         TermMonthsMsg msg ->
             updateTermMonths msg model
+
+        TermPercentMsg msg ->
+            updateTermPercent msg model
 
         MainIncomeMsg msg ->
             updateMainIncome msg model
@@ -178,8 +198,11 @@ update msg model =
         RemovePurposeCondition ->
             removePurposeCondition model
 
-        RemoveTermCondition ->
+        RemoveTermMonthsCondition ->
             removeTermMonthsCondition model
+
+        RemoveTermPercentContion ->
+            removeTermPercentCondition model
 
         RemoveMainIncomeCondition ->
             removeMainIncomeCondition model

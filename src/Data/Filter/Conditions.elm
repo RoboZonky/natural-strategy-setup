@@ -16,6 +16,7 @@ module Data.Filter.Conditions
         , removeRegionCondition
         , removeStoryCondition
         , removeTermMonthsCondition
+        , removeTermPercentCondition
         , renderConditionList
         , updateAmount
         , updateInterest
@@ -25,6 +26,7 @@ module Data.Filter.Conditions
         , updateRegion
         , updateStory
         , updateTermMonths
+        , updateTermPercent
         )
 
 import Data.Filter.Conditions.Amount as Amount exposing (AmountCondition, AmountMsg, renderAmountCondition)
@@ -35,6 +37,7 @@ import Data.Filter.Conditions.Rating as Rating exposing (RatingCondition, Rating
 import Data.Filter.Conditions.Region as Region exposing (RegionCondition, RegionMsg, renderRegionCondition)
 import Data.Filter.Conditions.Story as Story exposing (StoryCondition, StoryMsg, renderStoryCondition)
 import Data.Filter.Conditions.TermMonths as TermMonths exposing (TermMonthsCondition, TermMonthsMsg, renderTermMonthsCondition)
+import Data.Filter.Conditions.TermPercent as TermPercent exposing (TermPercentCondition, TermPercentMsg, renderTermPercentCondition)
 import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as Encode exposing (Value)
 
@@ -46,6 +49,7 @@ type alias Conditions =
     , purpose : Maybe PurposeCondition
     , story : Maybe StoryCondition
     , termMonths : Maybe TermMonthsCondition
+    , termPercent : Maybe TermPercentCondition
     , interest : Maybe InterestCondition
     , amount : Maybe AmountCondition
     }
@@ -58,6 +62,7 @@ type Condition
     | Condition_Purpose PurposeCondition
     | Condition_Story StoryCondition
     | Condition_Term_Months TermMonthsCondition
+    | Condition_Term_Percent TermPercentCondition
     | Condition_Amount AmountCondition
     | Condition_Interest InterestCondition
 
@@ -70,6 +75,7 @@ emptyConditions =
     , purpose = Nothing
     , story = Nothing
     , termMonths = Nothing
+    , termPercent = Nothing
     , amount = Nothing
     , interest = Nothing
     }
@@ -108,8 +114,11 @@ renderCondition condition =
         Condition_Story storyCond ->
             renderStoryCondition storyCond
 
-        Condition_Term_Months termCond ->
-            renderTermMonthsCondition termCond
+        Condition_Term_Months termMonthsCond ->
+            renderTermMonthsCondition termMonthsCond
+
+        Condition_Term_Percent termPercentCond ->
+            renderTermPercentCondition termPercentCond
 
         Condition_Amount amountCond ->
             renderAmountCondition amountCond
@@ -141,8 +150,11 @@ conditionValidationError c =
         Condition_Story _ ->
             [{- Story condition can't be invalid -> valid. errors list always empty -}]
 
-        Condition_Term_Months termCond ->
-            TermMonths.validationErrors termCond
+        Condition_Term_Months termMonthsCond ->
+            TermMonths.validationErrors termMonthsCond
+
+        Condition_Term_Percent termPercentCond ->
+            TermPercent.validationErrors termPercentCond
 
         Condition_Amount amountCond ->
             Amount.validationErrors amountCond
@@ -152,7 +164,7 @@ conditionValidationError c =
 
 
 conditionsToList : Conditions -> List Condition
-conditionsToList { region, rating, income, purpose, story, termMonths, amount, interest } =
+conditionsToList { region, rating, income, purpose, story, termMonths, termPercent, amount, interest } =
     let
         fromMaybe : (a -> Condition) -> Maybe a -> List Condition
         fromMaybe wrap =
@@ -173,8 +185,11 @@ conditionsToList { region, rating, income, purpose, story, termMonths, amount, i
         sto =
             fromMaybe Condition_Story story
 
-        ter =
+        terM =
             fromMaybe Condition_Term_Months termMonths
+
+        terP =
+            fromMaybe Condition_Term_Percent termPercent
 
         amo =
             fromMaybe Condition_Amount amount
@@ -182,7 +197,7 @@ conditionsToList { region, rating, income, purpose, story, termMonths, amount, i
         inte =
             fromMaybe Condition_Interest interest
     in
-    List.concat [ reg, rat, inc, pur, sto, ter, amo, inte ]
+    List.concat [ reg, rat, inc, pur, sto, terM, terP, amo, inte ]
 
 
 addCondition : Condition -> Conditions -> Conditions
@@ -203,8 +218,11 @@ addCondition c cs =
         Condition_Story storyCond ->
             setStoryCondition storyCond cs
 
-        Condition_Term_Months termCond ->
-            setTermCondition termCond cs
+        Condition_Term_Months termMonthsCond ->
+            setTermMonthsCondition termMonthsCond cs
+
+        Condition_Term_Percent termPercentCond ->
+            setTermPercentCondition termPercentCond cs
 
         Condition_Amount amountCond ->
             setAmountCondition amountCond cs
@@ -238,9 +256,14 @@ setStoryCondition c cs =
     { cs | story = Just c }
 
 
-setTermCondition : TermMonthsCondition -> Conditions -> Conditions
-setTermCondition c cs =
+setTermMonthsCondition : TermMonthsCondition -> Conditions -> Conditions
+setTermMonthsCondition c cs =
     { cs | termMonths = Just c }
+
+
+setTermPercentCondition : TermPercentCondition -> Conditions -> Conditions
+setTermPercentCondition c cs =
+    { cs | termPercent = Just c }
 
 
 setAmountCondition : AmountCondition -> Conditions -> Conditions
@@ -276,6 +299,11 @@ updatePurpose msg conditions =
 updateTermMonths : TermMonthsMsg -> Conditions -> Conditions
 updateTermMonths msg conditions =
     { conditions | termMonths = Maybe.map (TermMonths.update msg) conditions.termMonths }
+
+
+updateTermPercent : TermPercentMsg -> Conditions -> Conditions
+updateTermPercent msg conditions =
+    { conditions | termPercent = Maybe.map (TermPercent.update msg) conditions.termPercent }
 
 
 updateMainIncome : MainIncomeMsg -> Conditions -> Conditions
@@ -318,6 +346,11 @@ removeTermMonthsCondition cs =
     { cs | termMonths = Nothing }
 
 
+removeTermPercentCondition : Conditions -> Conditions
+removeTermPercentCondition cs =
+    { cs | termPercent = Nothing }
+
+
 removeMainIncomeCondition : Conditions -> Conditions
 removeMainIncomeCondition cs =
     { cs | income = Nothing }
@@ -338,7 +371,7 @@ removeRegionCondition cs =
 
 
 encodeConditions : Conditions -> Value
-encodeConditions { region, rating, income, purpose, story, termMonths, interest, amount } =
+encodeConditions { region, rating, income, purpose, story, termMonths, termPercent, interest, amount } =
     Encode.object
         [ ( "region", encodeMaybe Region.encodeCondition region )
         , ( "rating", encodeMaybe Rating.encodeCondition rating )
@@ -346,6 +379,7 @@ encodeConditions { region, rating, income, purpose, story, termMonths, interest,
         , ( "purpose", encodeMaybe Purpose.encodeCondition purpose )
         , ( "story", encodeMaybe Story.encodeCondition story )
         , ( "termMonths", encodeMaybe TermMonths.encodeCondition termMonths )
+        , ( "termPercent", encodeMaybe TermPercent.encodeCondition termPercent )
         , ( "interest", encodeMaybe Interest.encodeCondition interest )
         , ( "amount", encodeMaybe Amount.encodeCondition amount )
         ]
@@ -365,5 +399,11 @@ conditionsDecoder =
         (Decode.field "purpose" <| Decode.nullable Purpose.conditionDecoder)
         (Decode.field "story" <| Decode.nullable Story.conditionDecoder)
         (Decode.field "termMonths" <| Decode.nullable TermMonths.conditionDecoder)
+        (Decode.field "termPercent" <| Decode.nullable TermPercent.conditionDecoder)
         (Decode.field "interest" <| Decode.nullable Interest.conditionDecoder)
-        (Decode.field "amount" <| Decode.nullable Amount.conditionDecoder)
+        -- TODO ugly, but Json.Decode doesn't have applicative "ap", and I don't want to depend on additional lib providing that
+        |> Decode.andThen
+            (\conditionsMissingOneField ->
+                Decode.map conditionsMissingOneField
+                    (Decode.field "amount" <| Decode.nullable Amount.conditionDecoder)
+            )
