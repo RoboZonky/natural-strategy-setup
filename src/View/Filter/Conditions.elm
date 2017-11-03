@@ -46,7 +46,7 @@ conditionsForm filteredItem conditions =
                     []
 
         termPercentRow =
-            conditionRow conditions "Délka úvěru (v procentech)" (Condition_Term_Percent (TermPercentCondition (TermPercent.LessThan 0))) RemoveTermPercentContion
+            conditionRow conditions (termConditionLabel filteredItem "(v procentech)") (Condition_Term_Percent (TermPercentCondition (TermPercent.LessThan 0))) RemoveTermPercentContion
 
         amountRow =
             conditionRow conditions "Výše úvěru" (Condition_Amount (AmountCondition (Amount.LessThan 0))) RemoveAmountCondition
@@ -56,7 +56,7 @@ conditionsForm filteredItem conditions =
             [ [ conditionRow conditions "Rating" (Condition_Rating (RatingList [])) RemoveRatingCondition
               , conditionRow conditions "Úrok" (Condition_Interest (InterestCondition (Interest.LessThan 0))) RemoveInterestCondition
               , conditionRow conditions "Účel úvěru" (Condition_Purpose (PurposeList [])) RemovePurposeCondition
-              , conditionRow conditions "Délka úvěru (v měsících)" (Condition_Term_Months (TermMonthsCondition (TermMonths.LessThan 0))) RemoveTermMonthsCondition
+              , conditionRow conditions (termConditionLabel filteredItem "(v měsících)") (Condition_Term_Months (TermMonthsCondition (TermMonths.LessThan 0))) RemoveTermMonthsCondition
               ]
 
             -- put extra rows "in the middle" to have 'Délka úvěru (v měsících)' and 'Délka úvěru (v procentech)' next to each other"
@@ -66,6 +66,16 @@ conditionsForm filteredItem conditions =
               , conditionRow conditions "Kraj klienta" (Condition_Region (RegionList [])) RemoveRegionCondition
               ]
             ]
+
+
+termConditionLabel : FilteredItem -> String -> String
+termConditionLabel filteredItem unitStr =
+    case filteredItem of
+        Loan ->
+            "Délka úvěru " ++ unitStr
+
+        _ ->
+            "Zbývající délka úvěru " ++ unitStr
 
 
 conditionRow : Conditions -> String -> Condition -> Msg -> Html Msg
