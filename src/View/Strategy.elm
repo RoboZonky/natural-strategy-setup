@@ -31,7 +31,7 @@ strategyForm : StrategyConfiguration -> Accordion.State -> Tooltip.States -> Htm
 strategyForm { generalSettings, portfolioShares, investmentSizeOverrides, buyFilters, sellFilters } accordionState tooltipStates =
     Accordion.config AccordionMsg
         |> Accordion.cards
-            [ generalSettingsCard generalSettings tooltipStates
+            [ generalSettingsCard generalSettings
             , PortfolioStructure.form generalSettings.portfolio portfolioShares tooltipStates
             , Investment.form generalSettings.defaultInvestmentSize investmentSizeOverrides
             , BuyFilterList.form buyFilters tooltipStates
@@ -40,8 +40,8 @@ strategyForm { generalSettings, portfolioShares, investmentSizeOverrides, buyFil
         |> Accordion.view accordionState
 
 
-generalSettingsCard : GeneralSettings -> Tooltip.States -> Accordion.Card Msg
-generalSettingsCard { targetPortfolioSize, defaultInvestmentShare, defaultTargetBalance, confirmationSettings } tooltipStates =
+generalSettingsCard : GeneralSettings -> Accordion.Card Msg
+generalSettingsCard { targetPortfolioSize, defaultInvestmentShare, defaultTargetBalance, confirmationSettings } =
     Accordion.card
         { id = "generalSettigsCard"
         , options = []
@@ -51,7 +51,7 @@ generalSettingsCard { targetPortfolioSize, defaultInvestmentShare, defaultTarget
                 [ TargetPortfolioSize.form targetPortfolioSize
                 , InvestmentShare.form defaultInvestmentShare
                 , TargetBalance.form defaultTargetBalance
-                , Confirmation.form confirmationSettings tooltipStates
+                , Confirmation.form confirmationSettings
                 ]
             ]
         }

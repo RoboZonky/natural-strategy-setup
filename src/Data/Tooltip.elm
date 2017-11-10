@@ -4,7 +4,6 @@ module Data.Tooltip
         , TipId
         , buyFilterCreationTip
         , buyFilterListTip
-        , confirmationTip
         , getState
         , getTooltipText
         , initialStates
@@ -25,7 +24,6 @@ type TipId
 knownTooltips : List ( TipId, String )
 knownTooltips =
     [ ( portfolioStructureTip, "Struktura portfolia definuje požadované rozložení zůstatkové částky do úvěrů na základě ratingu. Můžete zvolit jedno ze tří předdefinovaných portfolií (konzervativní, balancované, progresivní) nebo zvolte prázné a vyplňte požadované procentuální podíly sami." )
-    , ( confirmationTip, "Úvěry s ratingem A, B, C a D jsou velmi žádané a v prvních minutách po uvedení na tržiště jsou chráněny CAPTCHA. Pokud pro ně nezapnete mobilní notifikace, robotovi se je s největší pravděpodobností nepodaří zainvestovat." )
     , ( buyFilterListTip, "Pravidla pro nákup umožňují ignorovat některé položky (úvěry či participace) na tržišti. Daná položka bude ignorována pokud splní podmínky alespoň jednoho z Vámi definovaných pravidel." )
     , ( sellFilterListTip, "Pravidla pro prodej určují které Vámi vlastněné participace má robot prodávat. Daná participace bude prodána pokud splní podmínky alespoň jednoho z Vámi definovaných pravidel." )
     , ( buyFilterCreationTip, "Pravidla pro nákup určují které položky na tržišti (úvěry či participace) mají být ignorovány. Daná položka bude ignorována pokud splní všechny podmínky pravidla. Pokud však zároveň splní všechny podmínky výjimky, ignorována nebude." )
@@ -71,26 +69,21 @@ portfolioStructureTip =
     TipId 1
 
 
-confirmationTip : TipId
-confirmationTip =
-    TipId 2
-
-
 sellFilterListTip : TipId
 sellFilterListTip =
-    TipId 3
+    TipId 2
 
 
 buyFilterListTip : TipId
 buyFilterListTip =
-    TipId 4
+    TipId 3
 
 
 buyFilterCreationTip : TipId
 buyFilterCreationTip =
-    TipId 5
+    TipId 4
 
 
 sellFilterCreationTip : TipId
 sellFilterCreationTip =
-    TipId 6
+    TipId 5
