@@ -9,6 +9,8 @@ module Data.Filter.Conditions
         , emptyConditions
         , encodeConditions
         , removeAmountCondition
+        , removeElapsedTermMonthsCondition
+        , removeElapsedTermPercentCondition
         , removeInterestCondition
         , removeMainIncomeCondition
         , removePurposeCondition
@@ -19,6 +21,8 @@ module Data.Filter.Conditions
         , removeTermPercentCondition
         , renderConditionList
         , updateAmount
+        , updateElapsedTermMonths
+        , updateElapsedTermPercent
         , updateInterest
         , updateMainIncome
         , updatePurpose
@@ -30,6 +34,8 @@ module Data.Filter.Conditions
         )
 
 import Data.Filter.Conditions.Amount as Amount exposing (AmountCondition, AmountMsg, renderAmountCondition)
+import Data.Filter.Conditions.ElapsedTermMonths as ElapsedTermMonths exposing (ElapsedTermMonthsCondition, ElapsedTermMonthsMsg, renderElapsedTermMonthsCondition)
+import Data.Filter.Conditions.ElapsedTermPercent as ElapsedTermPercent exposing (ElapsedTermPercentCondition, ElapsedTermPercentMsg, renderElapsedTermPercentCondition)
 import Data.Filter.Conditions.Interest as Interest exposing (InterestCondition, InterestMsg, renderInterestCondition)
 import Data.Filter.Conditions.MainIncome as MainIncome exposing (MainIncomeCondition, MainIncomeMsg, renderMainIncomeCondition)
 import Data.Filter.Conditions.Purpose as Purpose exposing (PurposeCondition, PurposeMsg, renderPurposeCondition)
@@ -38,7 +44,8 @@ import Data.Filter.Conditions.Region as Region exposing (RegionCondition, Region
 import Data.Filter.Conditions.Story as Story exposing (StoryCondition, StoryMsg, renderStoryCondition)
 import Data.Filter.Conditions.TermMonths as TermMonths exposing (TermMonthsCondition, TermMonthsMsg, renderTermMonthsCondition)
 import Data.Filter.Conditions.TermPercent as TermPercent exposing (TermPercentCondition, TermPercentMsg, renderTermPercentCondition)
-import Json.Decode as Decode exposing (Decoder)
+import Json.Decode as Decode exposing (Decoder, field, nullable)
+import Json.Decode.Extra exposing ((|:))
 import Json.Encode as Encode exposing (Value)
 
 
@@ -50,6 +57,8 @@ type alias Conditions =
     , story : Maybe StoryCondition
     , termMonths : Maybe TermMonthsCondition
     , termPercent : Maybe TermPercentCondition
+    , elapsedTermMonths : Maybe ElapsedTermMonthsCondition
+    , elapsedTermPercent : Maybe ElapsedTermPercentCondition
     , interest : Maybe InterestCondition
     , amount : Maybe AmountCondition
     }
@@ -63,6 +72,8 @@ type Condition
     | Condition_Story StoryCondition
     | Condition_Term_Months TermMonthsCondition
     | Condition_Term_Percent TermPercentCondition
+    | Condition_Elapsed_Term_Months ElapsedTermMonthsCondition
+    | Condition_Elapsed_Term_Percent ElapsedTermPercentCondition
     | Condition_Amount AmountCondition
     | Condition_Interest InterestCondition
 
@@ -76,6 +87,8 @@ emptyConditions =
     , story = Nothing
     , termMonths = Nothing
     , termPercent = Nothing
+    , elapsedTermMonths = Nothing
+    , elapsedTermPercent = Nothing
     , amount = Nothing
     , interest = Nothing
     }
@@ -120,6 +133,12 @@ renderCondition condition =
         Condition_Term_Percent termPercentCond ->
             renderTermPercentCondition termPercentCond
 
+        Condition_Elapsed_Term_Months elapsedTermMonthsCond ->
+            renderElapsedTermMonthsCondition elapsedTermMonthsCond
+
+        Condition_Elapsed_Term_Percent elapsedTermPercentCond ->
+            renderElapsedTermPercentCondition elapsedTermPercentCond
+
         Condition_Amount amountCond ->
             renderAmountCondition amountCond
 
@@ -156,6 +175,12 @@ conditionValidationError c =
         Condition_Term_Percent termPercentCond ->
             TermPercent.validationErrors termPercentCond
 
+        Condition_Elapsed_Term_Months elapsedTermMonthsCond ->
+            ElapsedTermMonths.validationErrors elapsedTermMonthsCond
+
+        Condition_Elapsed_Term_Percent elapsedTermPercentCond ->
+            ElapsedTermPercent.validationErrors elapsedTermPercentCond
+
         Condition_Amount amountCond ->
             Amount.validationErrors amountCond
 
@@ -164,7 +189,7 @@ conditionValidationError c =
 
 
 conditionsToList : Conditions -> List Condition
-conditionsToList { region, rating, income, purpose, story, termMonths, termPercent, amount, interest } =
+conditionsToList { region, rating, income, purpose, story, termMonths, termPercent, elapsedTermMonths, elapsedTermPercent, amount, interest } =
     let
         fromMaybe : (a -> Condition) -> Maybe a -> List Condition
         fromMaybe wrap =
@@ -191,13 +216,19 @@ conditionsToList { region, rating, income, purpose, story, termMonths, termPerce
         terP =
             fromMaybe Condition_Term_Percent termPercent
 
+        elTermM =
+            fromMaybe Condition_Elapsed_Term_Months elapsedTermMonths
+
+        elTermP =
+            fromMaybe Condition_Elapsed_Term_Percent elapsedTermPercent
+
         amo =
             fromMaybe Condition_Amount amount
 
         inte =
             fromMaybe Condition_Interest interest
     in
-    List.concat [ reg, rat, inc, pur, sto, terM, terP, amo, inte ]
+    List.concat [ reg, rat, inc, pur, sto, terM, terP, elTermM, elTermP, amo, inte ]
 
 
 addCondition : Condition -> Conditions -> Conditions
@@ -223,6 +254,12 @@ addCondition c cs =
 
         Condition_Term_Percent termPercentCond ->
             setTermPercentCondition termPercentCond cs
+
+        Condition_Elapsed_Term_Months elapsedTermMonthsCond ->
+            setElapsedTermMonthsCondition elapsedTermMonthsCond cs
+
+        Condition_Elapsed_Term_Percent elapsedTermPercentCond ->
+            setElapsedTermPercentCondition elapsedTermPercentCond cs
 
         Condition_Amount amountCond ->
             setAmountCondition amountCond cs
@@ -266,6 +303,16 @@ setTermPercentCondition c cs =
     { cs | termPercent = Just c }
 
 
+setElapsedTermMonthsCondition : ElapsedTermMonthsCondition -> Conditions -> Conditions
+setElapsedTermMonthsCondition c cs =
+    { cs | elapsedTermMonths = Just c }
+
+
+setElapsedTermPercentCondition : ElapsedTermPercentCondition -> Conditions -> Conditions
+setElapsedTermPercentCondition c cs =
+    { cs | elapsedTermPercent = Just c }
+
+
 setAmountCondition : AmountCondition -> Conditions -> Conditions
 setAmountCondition c cs =
     { cs | amount = Just c }
@@ -304,6 +351,16 @@ updateTermMonths msg conditions =
 updateTermPercent : TermPercentMsg -> Conditions -> Conditions
 updateTermPercent msg conditions =
     { conditions | termPercent = Maybe.map (TermPercent.update msg) conditions.termPercent }
+
+
+updateElapsedTermMonths : ElapsedTermMonthsMsg -> Conditions -> Conditions
+updateElapsedTermMonths msg conditions =
+    { conditions | elapsedTermMonths = Maybe.map (ElapsedTermMonths.update msg) conditions.elapsedTermMonths }
+
+
+updateElapsedTermPercent : ElapsedTermPercentMsg -> Conditions -> Conditions
+updateElapsedTermPercent msg conditions =
+    { conditions | elapsedTermPercent = Maybe.map (ElapsedTermPercent.update msg) conditions.elapsedTermPercent }
 
 
 updateMainIncome : MainIncomeMsg -> Conditions -> Conditions
@@ -351,6 +408,16 @@ removeTermPercentCondition cs =
     { cs | termPercent = Nothing }
 
 
+removeElapsedTermMonthsCondition : Conditions -> Conditions
+removeElapsedTermMonthsCondition cs =
+    { cs | elapsedTermMonths = Nothing }
+
+
+removeElapsedTermPercentCondition : Conditions -> Conditions
+removeElapsedTermPercentCondition cs =
+    { cs | elapsedTermPercent = Nothing }
+
+
 removeMainIncomeCondition : Conditions -> Conditions
 removeMainIncomeCondition cs =
     { cs | income = Nothing }
@@ -371,7 +438,7 @@ removeRegionCondition cs =
 
 
 encodeConditions : Conditions -> Value
-encodeConditions { region, rating, income, purpose, story, termMonths, termPercent, interest, amount } =
+encodeConditions { region, rating, income, purpose, story, termMonths, termPercent, elapsedTermMonths, elapsedTermPercent, interest, amount } =
     Encode.object
         [ ( "region", encodeMaybe Region.encodeCondition region )
         , ( "rating", encodeMaybe Rating.encodeCondition rating )
@@ -380,6 +447,8 @@ encodeConditions { region, rating, income, purpose, story, termMonths, termPerce
         , ( "story", encodeMaybe Story.encodeCondition story )
         , ( "termMonths", encodeMaybe TermMonths.encodeCondition termMonths )
         , ( "termPercent", encodeMaybe TermPercent.encodeCondition termPercent )
+        , ( "elapsedTermMonths", encodeMaybe ElapsedTermMonths.encodeCondition elapsedTermMonths )
+        , ( "elapsedTermPercent", encodeMaybe ElapsedTermPercent.encodeCondition elapsedTermPercent )
         , ( "interest", encodeMaybe Interest.encodeCondition interest )
         , ( "amount", encodeMaybe Amount.encodeCondition amount )
         ]
@@ -392,18 +461,15 @@ encodeMaybe enc =
 
 conditionsDecoder : Decoder Conditions
 conditionsDecoder =
-    Decode.map8 Conditions
-        (Decode.field "region" <| Decode.nullable Region.conditionDecoder)
-        (Decode.field "rating" <| Decode.nullable Rating.conditionDecoder)
-        (Decode.field "income" <| Decode.nullable MainIncome.conditionDecoder)
-        (Decode.field "purpose" <| Decode.nullable Purpose.conditionDecoder)
-        (Decode.field "story" <| Decode.nullable Story.conditionDecoder)
-        (Decode.field "termMonths" <| Decode.nullable TermMonths.conditionDecoder)
-        (Decode.field "termPercent" <| Decode.nullable TermPercent.conditionDecoder)
-        (Decode.field "interest" <| Decode.nullable Interest.conditionDecoder)
-        -- TODO ugly, but Json.Decode doesn't have applicative "ap", and I don't want to depend on additional lib providing that
-        |> Decode.andThen
-            (\conditionsMissingOneField ->
-                Decode.map conditionsMissingOneField
-                    (Decode.field "amount" <| Decode.nullable Amount.conditionDecoder)
-            )
+    Decode.succeed Conditions
+        |: (field "region" <| nullable Region.conditionDecoder)
+        |: (field "rating" <| nullable Rating.conditionDecoder)
+        |: (field "income" <| nullable MainIncome.conditionDecoder)
+        |: (field "purpose" <| nullable Purpose.conditionDecoder)
+        |: (field "story" <| nullable Story.conditionDecoder)
+        |: (field "termMonths" <| nullable TermMonths.conditionDecoder)
+        |: (field "termPercent" <| nullable TermPercent.conditionDecoder)
+        |: (field "elapsedTermMonths" <| nullable ElapsedTermMonths.conditionDecoder)
+        |: (field "elapsedTermPercent" <| nullable ElapsedTermPercent.conditionDecoder)
+        |: (field "interest" <| nullable Interest.conditionDecoder)
+        |: (field "amount" <| nullable Amount.conditionDecoder)

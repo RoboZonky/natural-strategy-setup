@@ -5,6 +5,8 @@ import Data.Confirmation exposing (ConfirmationSettings)
 import Data.Filter exposing (FilteredItem(..), MarketplaceFilter)
 import Data.Filter.Conditions exposing (Condition(..), Conditions, addCondition, emptyConditions)
 import Data.Filter.Conditions.Amount as Amount exposing (AmountCondition(AmountCondition))
+import Data.Filter.Conditions.ElapsedTermMonths as ElapsedTermMonths exposing (ElapsedTermMonthsCondition(..))
+import Data.Filter.Conditions.ElapsedTermPercent as ElapsedTermPercent exposing (ElapsedTermPercentCondition(..))
 import Data.Filter.Conditions.Interest as Interest exposing (InterestCondition(..))
 import Data.Filter.Conditions.MainIncome as MainIncome exposing (MainIncomeCondition(..))
 import Data.Filter.Conditions.Purpose as Purpose exposing (PurposeCondition(PurposeList))
@@ -113,10 +115,10 @@ conditionsGen minConditions filteredItem =
                     [ amountConditionGen ]
 
                 Participation ->
-                    [ termPercentConditionGen ]
+                    [ termPercentConditionGen, elapsedTermMonthsConditionGen, elapsedTermPercentConditionGen ]
 
                 Participation_To_Sell ->
-                    [ termPercentConditionGen ]
+                    [ termPercentConditionGen, elapsedTermMonthsConditionGen, elapsedTermPercentConditionGen ]
 
                 Loan_And_Participation ->
                     []
@@ -200,6 +202,40 @@ termPercentConditionGen =
         , Random.map TermPercent.MoreThan (Random.int minTermPercent (maxTermPercent - 1 {- max is invalid, as parser adds 1 -}))
         ]
         |> Random.map (TermPercentCondition >> Condition_Term_Percent)
+
+
+elapsedTermMonthsConditionGen : Generator Condition
+elapsedTermMonthsConditionGen =
+    let
+        minTermMonths =
+            0
+
+        maxTermMonths =
+            84
+    in
+    Random.choices
+        [ Random.map ElapsedTermMonths.LessThan (Random.int (minTermMonths + 1 {- 0 is invalid, as parser subtract 1 -}) (maxTermMonths + 1))
+        , Random.int minTermMonths maxTermMonths |> Random.andThen (\mi -> Random.int mi maxTermMonths |> Random.map (\mx -> ElapsedTermMonths.Between mi mx))
+        , Random.map ElapsedTermMonths.MoreThan (Random.int minTermMonths (maxTermMonths - 1 {- max is invalid, as parser adds 1 -}))
+        ]
+        |> Random.map (ElapsedTermMonthsCondition >> Condition_Elapsed_Term_Months)
+
+
+elapsedTermPercentConditionGen : Generator Condition
+elapsedTermPercentConditionGen =
+    let
+        minTermPercent =
+            0
+
+        maxTermPercent =
+            100
+    in
+    Random.choices
+        [ Random.map ElapsedTermPercent.LessThan (Random.int (minTermPercent + 1 {- 0 is invalid, as parser subtract 1 -}) (maxTermPercent + 1))
+        , percentRangeGen |> Random.map (\( mi, mx ) -> ElapsedTermPercent.Between mi mx)
+        , Random.map ElapsedTermPercent.MoreThan (Random.int minTermPercent (maxTermPercent - 1 {- max is invalid, as parser adds 1 -}))
+        ]
+        |> Random.map (ElapsedTermPercentCondition >> Condition_Elapsed_Term_Percent)
 
 
 amountConditionGen : Generator Condition

@@ -1,11 +1,14 @@
 module View.Filter.Conditions exposing (Model, Msg, form, update)
 
 import Bootstrap.Form.Checkbox as Checkbox
+import Bootstrap.Form.Fieldset as Fieldset
 import Bootstrap.Grid as Grid
 import Bootstrap.Grid.Col as Col
 import Data.Filter exposing (FilteredItem(..))
 import Data.Filter.Conditions exposing (..)
 import Data.Filter.Conditions.Amount as Amount exposing (Amount(..), AmountCondition(..), AmountMsg)
+import Data.Filter.Conditions.ElapsedTermMonths as ElapsedTermMonths exposing (ElapsedTermMonths(..), ElapsedTermMonthsCondition(..), ElapsedTermMonthsMsg)
+import Data.Filter.Conditions.ElapsedTermPercent as ElapsedTermPercent exposing (ElapsedTermPercent(..), ElapsedTermPercentCondition(..), ElapsedTermPercentMsg)
 import Data.Filter.Conditions.Interest as Interest exposing (Interest(..), InterestCondition(..), InterestMsg)
 import Data.Filter.Conditions.MainIncome as MainIncome exposing (MainIncome(..), MainIncomeCondition(..), MainIncomeMsg)
 import Data.Filter.Conditions.Purpose as Purpose exposing (Purpose(..), PurposeCondition(..), PurposeMsg)
@@ -15,6 +18,7 @@ import Data.Filter.Conditions.Story as Story exposing (Story(..), StoryCondition
 import Data.Filter.Conditions.TermMonths as TermMonths exposing (TermMonths(..), TermMonthsCondition(..), TermMonthsMsg)
 import Data.Filter.Conditions.TermPercent as TermPercent exposing (TermPercent(..), TermPercentCondition(..), TermPercentMsg)
 import Html exposing (Html, div, text)
+import Html.Attributes exposing (classList)
 
 
 -- MODEL
@@ -37,35 +41,36 @@ form filteredItem conditions =
                     [ amountRow ]
 
                 Participation ->
-                    [ termPercentRow ]
+                    [ termPercentRow, elapsedTermMonthsRow, elapsedTermPercentRow ]
 
                 Participation_To_Sell ->
-                    [ termPercentRow ]
+                    [ termPercentRow, elapsedTermMonthsRow, elapsedTermPercentRow ]
 
                 Loan_And_Participation ->
                     []
 
-        termPercentRow =
-            conditionRow conditions (termConditionLabel filteredItem "(v procentech)") (Condition_Term_Percent (TermPercentCondition (TermPercent.LessThan 0))) RemoveTermPercentContion
-
         amountRow =
             conditionRow conditions "Výše úvěru" (Condition_Amount (AmountCondition (Amount.LessThan 0))) RemoveAmountCondition
+
+        termPercentRow =
+            conditionRow conditions (termConditionLabel filteredItem "(v %)") (Condition_Term_Percent (TermPercentCondition (TermPercent.LessThan 0))) RemoveTermPercentContion
+
+        elapsedTermMonthsRow =
+            conditionRow conditions "Uhrazeno splátek (v měsících)" (Condition_Elapsed_Term_Months (ElapsedTermMonthsCondition (ElapsedTermMonths.LessThan 0))) RemoveElapsedTermMonthsCondition
+
+        elapsedTermPercentRow =
+            conditionRow conditions "Uhrazeno splátek (v %)" (Condition_Elapsed_Term_Percent (ElapsedTermPercentCondition (ElapsedTermPercent.LessThan 0))) RemoveElapsedTermPercentCondition
     in
     div [] <|
-        List.concat
-            [ [ conditionRow conditions "Rating" (Condition_Rating (RatingList [])) RemoveRatingCondition
-              , conditionRow conditions "Úrok" (Condition_Interest (InterestCondition (Interest.LessThan 0))) RemoveInterestCondition
-              , conditionRow conditions "Účel úvěru" (Condition_Purpose (PurposeList [])) RemovePurposeCondition
-              , conditionRow conditions (termConditionLabel filteredItem "(v měsících)") (Condition_Term_Months (TermMonthsCondition (TermMonths.LessThan 0))) RemoveTermMonthsCondition
-              ]
-
-            -- put extra rows "in the middle" to have 'Délka úvěru (v měsících)' and 'Délka úvěru (v procentech)' next to each other"
-            , extraRows
-            , [ conditionRow conditions "Zdroj příjmů klienta" (Condition_Income (MainIncomeList [])) RemoveMainIncomeCondition
-              , conditionRow conditions "Příběh" (Condition_Story (StoryCondition SHORT)) RemoveStoryCondition
-              , conditionRow conditions "Kraj klienta" (Condition_Region (RegionList [])) RemoveRegionCondition
-              ]
-            ]
+        [ conditionRow conditions "Rating" (Condition_Rating (RatingList [])) RemoveRatingCondition
+        , conditionRow conditions "Úrok" (Condition_Interest (InterestCondition (Interest.LessThan 0))) RemoveInterestCondition
+        , conditionRow conditions "Účel úvěru" (Condition_Purpose (PurposeList [])) RemovePurposeCondition
+        , conditionRow conditions "Zdroj příjmů klienta" (Condition_Income (MainIncomeList [])) RemoveMainIncomeCondition
+        , conditionRow conditions "Příběh" (Condition_Story (StoryCondition SHORT)) RemoveStoryCondition
+        , conditionRow conditions "Kraj klienta" (Condition_Region (RegionList [])) RemoveRegionCondition
+        , conditionRow conditions (termConditionLabel filteredItem "(v měsících)") (Condition_Term_Months (TermMonthsCondition (TermMonths.LessThan 0))) RemoveTermMonthsCondition
+        ]
+            ++ extraRows
 
 
 termConditionLabel : FilteredItem -> String -> String
@@ -107,6 +112,12 @@ conditionRow conditions conditionName condition removeCondMsg =
                 Condition_Term_Percent _ ->
                     ( subformEnabled conditions.termPercent, showFormForNonemptyCondition TermPercentMsg TermPercent.termPercentForm conditions.termPercent )
 
+                Condition_Elapsed_Term_Months _ ->
+                    ( subformEnabled conditions.elapsedTermMonths, showFormForNonemptyCondition ElapsedTermMonthsMsg ElapsedTermMonths.elapsedTermMonthsForm conditions.elapsedTermMonths )
+
+                Condition_Elapsed_Term_Percent _ ->
+                    ( subformEnabled conditions.elapsedTermPercent, showFormForNonemptyCondition ElapsedTermPercentMsg ElapsedTermPercent.elapsedTermPercentForm conditions.elapsedTermPercent )
+
                 Condition_Region _ ->
                     ( subformEnabled conditions.region, showFormForNonemptyCondition RegionMsg Region.regionForm conditions.region )
 
@@ -116,10 +127,16 @@ conditionRow conditions conditionName condition removeCondMsg =
                 Condition_Story _ ->
                     ( subformEnabled conditions.story, showFormForNonemptyCondition StoryMsg Story.storyForm conditions.story )
     in
-    Grid.row []
-        [ Grid.col [ Col.xs3 ] [ Checkbox.checkbox [ Checkbox.checked isSubformEnabled, Checkbox.onCheck onChk ] conditionName ]
-        , Grid.col [ Col.xs9 ] [ subform ]
-        ]
+    Fieldset.config
+        |> Fieldset.asGroup
+        |> Fieldset.attrs [ classList [ ( "condition-row", True ), ( "active", isSubformEnabled ) ] ]
+        |> Fieldset.children
+            [ Grid.row []
+                [ Grid.col [ Col.xs5 ] [ Checkbox.checkbox [ Checkbox.checked isSubformEnabled, Checkbox.onCheck onChk ] conditionName ]
+                , Grid.col [ Col.xs7 ] [ subform ]
+                ]
+            ]
+        |> Fieldset.view
 
 
 subformEnabled : Maybe a -> Bool
@@ -148,6 +165,8 @@ type Msg
     | PurposeMsg PurposeMsg
     | TermMonthsMsg TermMonthsMsg
     | TermPercentMsg TermPercentMsg
+    | ElapsedTermMonthsMsg ElapsedTermMonthsMsg
+    | ElapsedTermPercentMsg ElapsedTermPercentMsg
     | MainIncomeMsg MainIncomeMsg
     | RatingMsg RatingMsg
     | RegionMsg RegionMsg
@@ -158,6 +177,8 @@ type Msg
     | RemovePurposeCondition
     | RemoveTermMonthsCondition
     | RemoveTermPercentContion
+    | RemoveElapsedTermMonthsCondition
+    | RemoveElapsedTermPercentCondition
     | RemoveMainIncomeCondition
     | RemoveRatingCondition
     | RemoveRegionCondition
@@ -180,6 +201,12 @@ update msg model =
 
         TermPercentMsg msg ->
             updateTermPercent msg model
+
+        ElapsedTermMonthsMsg msg ->
+            updateElapsedTermMonths msg model
+
+        ElapsedTermPercentMsg msg ->
+            updateElapsedTermPercent msg model
 
         MainIncomeMsg msg ->
             updateMainIncome msg model
@@ -213,6 +240,12 @@ update msg model =
 
         RemoveTermPercentContion ->
             removeTermPercentCondition model
+
+        RemoveElapsedTermMonthsCondition ->
+            removeElapsedTermMonthsCondition model
+
+        RemoveElapsedTermPercentCondition ->
+            removeElapsedTermPercentCondition model
 
         RemoveMainIncomeCondition ->
             removeMainIncomeCondition model
