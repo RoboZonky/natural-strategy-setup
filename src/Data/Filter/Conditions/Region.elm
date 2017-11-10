@@ -5,10 +5,10 @@ module Data.Filter.Conditions.Region
         , RegionMsg
         , allRegions
         , conditionDecoder
-        , defaultRegionCondition
+        , defaultCondition
         , encodeCondition
-        , regionForm
-        , renderRegionCondition
+        , form
+        , renderCondition
         , update
         , validationErrors
         )
@@ -92,13 +92,13 @@ type RegionCondition
     = RegionList (List Region)
 
 
-defaultRegionCondition : RegionCondition
-defaultRegionCondition =
+defaultCondition : RegionCondition
+defaultCondition =
     RegionList []
 
 
-renderRegionCondition : RegionCondition -> String
-renderRegionCondition (RegionList list) =
+renderCondition : RegionCondition -> String
+renderCondition (RegionList list) =
     "kraj klienta je " ++ renderRegionList list
 
 
@@ -127,8 +127,8 @@ update msg (RegionList rlist) =
             RegionList (List.filter (\ru -> ru /= r) rlist)
 
 
-regionForm : RegionCondition -> Html RegionMsg
-regionForm (RegionList rlist) =
+form : RegionCondition -> Html RegionMsg
+form (RegionList rlist) =
     allRegions
         |> List.map (\p -> regionCheckbox p (List.member p rlist))
         |> div []

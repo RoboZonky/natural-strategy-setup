@@ -4,7 +4,7 @@ module Data.Confirmation
         , confirmationsDisabled
         , decoder
         , encode
-        , renderConfirmation
+        , render
         )
 
 import Data.Filter.Conditions.Rating as Rating exposing (RatingCondition(RatingList))
@@ -21,12 +21,12 @@ confirmationsDisabled =
     RatingList []
 
 
-renderConfirmation : ConfirmationSettings -> String
-renderConfirmation (RatingList enabledRatings) =
+render : ConfirmationSettings -> String
+render (RatingList enabledRatings) =
     if List.isEmpty enabledRatings then
         ""
     else
-        "Potvrzovat mobilem investice do úvěrů, kde " ++ Rating.renderRatingCondition (RatingList enabledRatings) ++ "."
+        "Potvrzovat mobilem investice do úvěrů, kde " ++ Rating.renderCondition (RatingList enabledRatings) ++ "."
 
 
 

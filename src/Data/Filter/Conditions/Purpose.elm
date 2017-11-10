@@ -5,10 +5,10 @@ module Data.Filter.Conditions.Purpose
         , PurposeMsg
         , allPurposes
         , conditionDecoder
-        , defaultPurposeCondition
+        , defaultCondition
         , encodeCondition
-        , purposeForm
-        , renderPurposeCondition
+        , form
+        , renderCondition
         , update
         , validationErrors
         )
@@ -41,8 +41,8 @@ type PurposeCondition
     = PurposeList (List Purpose)
 
 
-defaultPurposeCondition : PurposeCondition
-defaultPurposeCondition =
+defaultCondition : PurposeCondition
+defaultCondition =
     PurposeList []
 
 
@@ -77,8 +77,8 @@ purposeToString purpose =
             "jiné"
 
 
-renderPurposeCondition : PurposeCondition -> String
-renderPurposeCondition (PurposeList list) =
+renderCondition : PurposeCondition -> String
+renderCondition (PurposeList list) =
     "účel je " ++ renderPurposeList list
 
 
@@ -107,8 +107,8 @@ update msg (PurposeList plist) =
             PurposeList (List.filter (\pu -> pu /= p) plist)
 
 
-purposeForm : PurposeCondition -> Html PurposeMsg
-purposeForm (PurposeList plist) =
+form : PurposeCondition -> Html PurposeMsg
+form (PurposeList plist) =
     allPurposes
         |> List.map (\p -> purposeCheckbox p (List.member p plist))
         |> div []

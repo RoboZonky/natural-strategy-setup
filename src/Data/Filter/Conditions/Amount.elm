@@ -3,11 +3,11 @@ module Data.Filter.Conditions.Amount
         ( Amount(Between, LessThan, MoreThan)
         , AmountCondition(AmountCondition)
         , AmountMsg
-        , amountForm
         , conditionDecoder
-        , defaultAmountCondition
+        , defaultCondition
         , encodeCondition
-        , renderAmountCondition
+        , form
+        , renderCondition
         , update
         , validationErrors
         )
@@ -33,13 +33,13 @@ type AmountCondition
     = AmountCondition Amount
 
 
-defaultAmountCondition : AmountCondition
-defaultAmountCondition =
-    AmountCondition (MoreThan 0)
+defaultCondition : AmountCondition
+defaultCondition =
+    AmountCondition (LessThan 0)
 
 
-renderAmountCondition : AmountCondition -> String
-renderAmountCondition (AmountCondition amount) =
+renderCondition : AmountCondition -> String
+renderCondition (AmountCondition amount) =
     "výše " ++ amountToString amount ++ " Kč"
 
 
@@ -118,8 +118,8 @@ update msg ac =
             ac
 
 
-amountForm : AmountCondition -> Html AmountMsg
-amountForm (AmountCondition amt) =
+form : AmountCondition -> Html AmountMsg
+form (AmountCondition amt) =
     let
         ( ltVal, btwMinVal, btwMaxVal, mtVal ) =
             case amt of

@@ -5,10 +5,10 @@ module Data.Filter.Conditions.MainIncome
         , MainIncomeMsg
         , allIncomes
         , conditionDecoder
-        , defaultIncomeCondition
+        , defaultCondition
         , encodeCondition
-        , mainIncomeForm
-        , renderMainIncomeCondition
+        , form
+        , renderCondition
         , update
         , validationErrors
         )
@@ -36,8 +36,8 @@ type MainIncomeCondition
     = MainIncomeList (List MainIncome)
 
 
-defaultIncomeCondition : MainIncomeCondition
-defaultIncomeCondition =
+defaultCondition : MainIncomeCondition
+defaultCondition =
     MainIncomeList []
 
 
@@ -77,8 +77,8 @@ allIncomes =
     [ EMPLOYMENT, ENTREPRENEUR, LIBERAL_PROFESSION, MATERNITY_LEAVE, PENSION, SELF_EMPLOYMENT, STUDENT, UNEMPLOYED, OTHER ]
 
 
-renderMainIncomeCondition : MainIncomeCondition -> String
-renderMainIncomeCondition (MainIncomeList list) =
+renderCondition : MainIncomeCondition -> String
+renderCondition (MainIncomeList list) =
     "klient je " ++ Util.orList mainIncomeToString list
 
 
@@ -102,8 +102,8 @@ update msg (MainIncomeList ilist) =
             MainIncomeList (List.filter (\ii -> ii /= i) ilist)
 
 
-mainIncomeForm : MainIncomeCondition -> Html MainIncomeMsg
-mainIncomeForm (MainIncomeList plist) =
+form : MainIncomeCondition -> Html MainIncomeMsg
+form (MainIncomeList plist) =
     allIncomes
         |> List.map (\p -> mainIncomeCheckbox p (List.member p plist))
         |> div []

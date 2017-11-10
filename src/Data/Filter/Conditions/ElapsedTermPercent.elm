@@ -4,10 +4,10 @@ module Data.Filter.Conditions.ElapsedTermPercent
         , ElapsedTermPercentCondition(..)
         , ElapsedTermPercentMsg
         , conditionDecoder
-        , defaultElapsedTermPercentCondition
-        , elapsedTermPercentForm
+        , defaultCondition
         , encodeCondition
-        , renderElapsedTermPercentCondition
+        , form
+        , renderCondition
         , update
         , validationErrors
         )
@@ -33,9 +33,9 @@ type ElapsedTermPercentCondition
     = ElapsedTermPercentCondition ElapsedTermPercent
 
 
-defaultElapsedTermPercentCondition : ElapsedTermPercentCondition
-defaultElapsedTermPercentCondition =
-    ElapsedTermPercentCondition (MoreThan 0)
+defaultCondition : ElapsedTermPercentCondition
+defaultCondition =
+    ElapsedTermPercentCondition (LessThan 0)
 
 
 elapsedTermPercentToString : ElapsedTermPercent -> String
@@ -51,8 +51,8 @@ elapsedTermPercentToString elapsedTermPercent =
             "více než " ++ toString minBound
 
 
-renderElapsedTermPercentCondition : ElapsedTermPercentCondition -> String
-renderElapsedTermPercentCondition (ElapsedTermPercentCondition term) =
+renderCondition : ElapsedTermPercentCondition -> String
+renderCondition (ElapsedTermPercentCondition term) =
     "uhrazeno " ++ elapsedTermPercentToString term ++ " % splátek"
 
 
@@ -119,8 +119,8 @@ update msg (ElapsedTermPercentCondition term) =
             ElapsedTermPercentCondition term
 
 
-elapsedTermPercentForm : ElapsedTermPercentCondition -> Html ElapsedTermPercentMsg
-elapsedTermPercentForm (ElapsedTermPercentCondition elapsedTermPercent) =
+form : ElapsedTermPercentCondition -> Html ElapsedTermPercentMsg
+form (ElapsedTermPercentCondition elapsedTermPercent) =
     let
         ( ltVal, btwMinVal, btwMaxVal, mtVal ) =
             case elapsedTermPercent of

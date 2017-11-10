@@ -3,7 +3,7 @@ module Data.TargetPortfolioSize
         ( TargetPortfolioSize(..)
         , decoder
         , encode
-        , renderTargetPortfolioSize
+        , render
         , validate
         )
 
@@ -17,8 +17,8 @@ type TargetPortfolioSize
     | TargetPortfolioSize Int
 
 
-renderTargetPortfolioSize : TargetPortfolioSize -> String
-renderTargetPortfolioSize targetPortfolioSize =
+render : TargetPortfolioSize -> String
+render targetPortfolioSize =
     case targetPortfolioSize of
         TargetPortfolioSize maxBound ->
             "Cílová zůstatková částka je " ++ toString maxBound ++ " Kč."

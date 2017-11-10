@@ -4,7 +4,7 @@ module Data.Portfolio
         , decoder
         , encode
         , fromString
-        , renderPortfolio
+        , render
         , toString
         )
 
@@ -52,8 +52,8 @@ fromString str =
             Empty
 
 
-renderPortfolio : Portfolio -> String
-renderPortfolio portfolio =
+render : Portfolio -> String
+render portfolio =
     "Robot má udržovat " ++ toString portfolio ++ " portfolio."
 
 

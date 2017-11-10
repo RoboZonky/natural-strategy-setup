@@ -50,25 +50,25 @@ form filteredItem conditions =
                     []
 
         amountRow =
-            conditionRow conditions "Výše úvěru" (Condition_Amount (AmountCondition (Amount.LessThan 0))) RemoveAmountCondition
+            conditionRow conditions "Výše úvěru" (Condition_Amount Amount.defaultCondition) RemoveAmountCondition
 
         termPercentRow =
-            conditionRow conditions (termConditionLabel filteredItem "(v %)") (Condition_Term_Percent (TermPercentCondition (TermPercent.LessThan 0))) RemoveTermPercentContion
+            conditionRow conditions (termConditionLabel filteredItem "(v %)") (Condition_Term_Percent TermPercent.defaultCondition) RemoveTermPercentContion
 
         elapsedTermMonthsRow =
-            conditionRow conditions "Uhrazeno splátek (v měsících)" (Condition_Elapsed_Term_Months (ElapsedTermMonthsCondition (ElapsedTermMonths.LessThan 0))) RemoveElapsedTermMonthsCondition
+            conditionRow conditions "Uhrazeno splátek (v měsících)" (Condition_Elapsed_Term_Months ElapsedTermMonths.defaultCondition) RemoveElapsedTermMonthsCondition
 
         elapsedTermPercentRow =
-            conditionRow conditions "Uhrazeno splátek (v %)" (Condition_Elapsed_Term_Percent (ElapsedTermPercentCondition (ElapsedTermPercent.LessThan 0))) RemoveElapsedTermPercentCondition
+            conditionRow conditions "Uhrazeno splátek (v %)" (Condition_Elapsed_Term_Percent ElapsedTermPercent.defaultCondition) RemoveElapsedTermPercentCondition
     in
     div [] <|
-        [ conditionRow conditions "Rating" (Condition_Rating (RatingList [])) RemoveRatingCondition
-        , conditionRow conditions "Úrok" (Condition_Interest (InterestCondition (Interest.LessThan 0))) RemoveInterestCondition
-        , conditionRow conditions "Účel úvěru" (Condition_Purpose (PurposeList [])) RemovePurposeCondition
-        , conditionRow conditions "Zdroj příjmů klienta" (Condition_Income (MainIncomeList [])) RemoveMainIncomeCondition
-        , conditionRow conditions "Příběh" (Condition_Story (StoryCondition SHORT)) RemoveStoryCondition
-        , conditionRow conditions "Kraj klienta" (Condition_Region (RegionList [])) RemoveRegionCondition
-        , conditionRow conditions (termConditionLabel filteredItem "(v měsících)") (Condition_Term_Months (TermMonthsCondition (TermMonths.LessThan 0))) RemoveTermMonthsCondition
+        [ conditionRow conditions "Rating" (Condition_Rating Rating.defaultCondition) RemoveRatingCondition
+        , conditionRow conditions "Úrok" (Condition_Interest Interest.defaultCondition) RemoveInterestCondition
+        , conditionRow conditions "Účel úvěru" (Condition_Purpose Purpose.defaultCondition) RemovePurposeCondition
+        , conditionRow conditions "Zdroj příjmů klienta" (Condition_Income MainIncome.defaultCondition) RemoveMainIncomeCondition
+        , conditionRow conditions "Příběh" (Condition_Story Story.defaultCondition) RemoveStoryCondition
+        , conditionRow conditions "Kraj klienta" (Condition_Region Region.defaultCondition) RemoveRegionCondition
+        , conditionRow conditions (termConditionLabel filteredItem "(v měsících)") (Condition_Term_Months TermMonths.defaultCondition) RemoveTermMonthsCondition
         ]
             ++ extraRows
 
@@ -95,37 +95,37 @@ conditionRow conditions conditionName condition removeCondMsg =
         ( isSubformEnabled, subform ) =
             case condition of
                 Condition_Amount _ ->
-                    ( subformEnabled conditions.amount, showFormForNonemptyCondition AmountMsg Amount.amountForm conditions.amount )
+                    ( subformEnabled conditions.amount, showFormForNonemptyCondition AmountMsg Amount.form conditions.amount )
 
                 Condition_Income _ ->
-                    ( subformEnabled conditions.income, showFormForNonemptyCondition MainIncomeMsg MainIncome.mainIncomeForm conditions.income )
+                    ( subformEnabled conditions.income, showFormForNonemptyCondition MainIncomeMsg MainIncome.form conditions.income )
 
                 Condition_Interest _ ->
-                    ( subformEnabled conditions.interest, showFormForNonemptyCondition InterestMsg Interest.interestForm conditions.interest )
+                    ( subformEnabled conditions.interest, showFormForNonemptyCondition InterestMsg Interest.form conditions.interest )
 
                 Condition_Purpose _ ->
-                    ( subformEnabled conditions.purpose, showFormForNonemptyCondition PurposeMsg Purpose.purposeForm conditions.purpose )
+                    ( subformEnabled conditions.purpose, showFormForNonemptyCondition PurposeMsg Purpose.form conditions.purpose )
 
                 Condition_Term_Months _ ->
-                    ( subformEnabled conditions.termMonths, showFormForNonemptyCondition TermMonthsMsg TermMonths.termMonthsForm conditions.termMonths )
+                    ( subformEnabled conditions.termMonths, showFormForNonemptyCondition TermMonthsMsg TermMonths.form conditions.termMonths )
 
                 Condition_Term_Percent _ ->
-                    ( subformEnabled conditions.termPercent, showFormForNonemptyCondition TermPercentMsg TermPercent.termPercentForm conditions.termPercent )
+                    ( subformEnabled conditions.termPercent, showFormForNonemptyCondition TermPercentMsg TermPercent.form conditions.termPercent )
 
                 Condition_Elapsed_Term_Months _ ->
-                    ( subformEnabled conditions.elapsedTermMonths, showFormForNonemptyCondition ElapsedTermMonthsMsg ElapsedTermMonths.elapsedTermMonthsForm conditions.elapsedTermMonths )
+                    ( subformEnabled conditions.elapsedTermMonths, showFormForNonemptyCondition ElapsedTermMonthsMsg ElapsedTermMonths.form conditions.elapsedTermMonths )
 
                 Condition_Elapsed_Term_Percent _ ->
-                    ( subformEnabled conditions.elapsedTermPercent, showFormForNonemptyCondition ElapsedTermPercentMsg ElapsedTermPercent.elapsedTermPercentForm conditions.elapsedTermPercent )
+                    ( subformEnabled conditions.elapsedTermPercent, showFormForNonemptyCondition ElapsedTermPercentMsg ElapsedTermPercent.form conditions.elapsedTermPercent )
 
                 Condition_Region _ ->
-                    ( subformEnabled conditions.region, showFormForNonemptyCondition RegionMsg Region.regionForm conditions.region )
+                    ( subformEnabled conditions.region, showFormForNonemptyCondition RegionMsg Region.form conditions.region )
 
                 Condition_Rating _ ->
-                    ( subformEnabled conditions.rating, showFormForNonemptyCondition RatingMsg Rating.ratingForm conditions.rating )
+                    ( subformEnabled conditions.rating, showFormForNonemptyCondition RatingMsg Rating.form conditions.rating )
 
                 Condition_Story _ ->
-                    ( subformEnabled conditions.story, showFormForNonemptyCondition StoryMsg Story.storyForm conditions.story )
+                    ( subformEnabled conditions.story, showFormForNonemptyCondition StoryMsg Story.form conditions.story )
     in
     Fieldset.config
         |> Fieldset.asGroup

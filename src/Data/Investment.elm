@@ -9,9 +9,8 @@ module Data.Investment
         , encode
         , encodeSize
         , investmentSlidersSubscriptions
-        , renderDefaultInvestmentSize
-        , renderInvestment
         , renderInvestments
+        , renderSize
         , size
         , sizeDecoder
         )
@@ -39,8 +38,8 @@ type alias Size =
     RangeSlider
 
 
-renderDefaultInvestmentSize : Size -> String
-renderDefaultInvestmentSize size =
+renderSize : Size -> String
+renderSize size =
     "Běžná výše investice je" ++ investmentSizeToString size ++ " Kč."
 
 

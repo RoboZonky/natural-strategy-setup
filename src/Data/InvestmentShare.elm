@@ -3,7 +3,7 @@ module Data.InvestmentShare
         ( InvestmentShare(..)
         , decoder
         , encode
-        , renderInvestmentShare
+        , render
         , validate
         )
 
@@ -17,8 +17,8 @@ type InvestmentShare
     | Percent Int
 
 
-renderInvestmentShare : InvestmentShare -> String
-renderInvestmentShare investmentShare =
+render : InvestmentShare -> String
+render investmentShare =
     case investmentShare of
         Percent share ->
             "Investovat maximálně " ++ toString share ++ " % výše úvěru."

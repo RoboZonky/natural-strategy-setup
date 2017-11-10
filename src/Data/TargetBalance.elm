@@ -4,7 +4,7 @@ module Data.TargetBalance
         , decoder
         , defaultTargetBalance
         , encode
-        , renderTargetBalance
+        , render
         , validate
         )
 
@@ -23,8 +23,8 @@ defaultTargetBalance =
     TargetBalance 200
 
 
-renderTargetBalance : TargetBalance -> String
-renderTargetBalance targetBalance =
+render : TargetBalance -> String
+render targetBalance =
     case targetBalance of
         TargetBalance balance ->
             "Investovat pouze pokud disponibilní zůstatek přesáhne " ++ toString balance ++ " Kč."

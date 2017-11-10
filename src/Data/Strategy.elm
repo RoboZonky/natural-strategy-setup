@@ -29,7 +29,7 @@ import Data.Investment as Investment exposing (InvestmentsPerRating)
 import Data.InvestmentShare as InvestmentShare exposing (InvestmentShare)
 import Data.Portfolio as Portfolio exposing (Portfolio(..))
 import Data.PortfolioStructure as PortfolioStructure exposing (PortfolioShares)
-import Data.PortfolioStructure.Predefined as PredefinedShares
+import Data.PortfolioStructure.PredefinedShares as PredefinedShares
 import Data.TargetBalance as TargetBalance exposing (TargetBalance)
 import Data.TargetPortfolioSize as TargetPortfolioSize exposing (TargetPortfolioSize)
 import Json.Decode as Decode exposing (Decoder)
@@ -69,7 +69,7 @@ defaultStrategyConfiguration =
         , defaultTargetBalance = TargetBalance.NotSpecified
         , confirmationSettings = Confirmation.confirmationsDisabled
         }
-    , portfolioShares = PredefinedShares.conservativeShares
+    , portfolioShares = PredefinedShares.conservative
     , investmentSizeOverrides = Investment.defaultInvestmentsPerRating Investment.defaultSize
     , buyFilters = []
     , sellFilters = []
@@ -82,16 +82,16 @@ setPortfolio portfolio strategy =
         portfolioShares =
             case portfolio of
                 Conservative ->
-                    PredefinedShares.conservativeShares
+                    PredefinedShares.conservative
 
                 Balanced ->
-                    PredefinedShares.balancedShares
+                    PredefinedShares.balanced
 
                 Progressive ->
-                    PredefinedShares.progressiveShares
+                    PredefinedShares.progressive
 
                 Empty ->
-                    PredefinedShares.emptyShares
+                    PredefinedShares.empty
     in
     case strategy of
         { generalSettings } as settings ->
@@ -204,12 +204,12 @@ renderGeneralSettings : GeneralSettings -> String
 renderGeneralSettings generalSettings =
     Util.joinNonemptyLines
         [ "- Obecná nastavení"
-        , Portfolio.renderPortfolio generalSettings.portfolio
-        , TargetPortfolioSize.renderTargetPortfolioSize generalSettings.targetPortfolioSize
-        , Investment.renderDefaultInvestmentSize generalSettings.defaultInvestmentSize
-        , InvestmentShare.renderInvestmentShare generalSettings.defaultInvestmentShare
-        , TargetBalance.renderTargetBalance generalSettings.defaultTargetBalance
-        , Confirmation.renderConfirmation generalSettings.confirmationSettings
+        , Portfolio.render generalSettings.portfolio
+        , TargetPortfolioSize.render generalSettings.targetPortfolioSize
+        , Investment.renderSize generalSettings.defaultInvestmentSize
+        , InvestmentShare.render generalSettings.defaultInvestmentShare
+        , TargetBalance.render generalSettings.defaultTargetBalance
+        , Confirmation.render generalSettings.confirmationSettings
         ]
 
 

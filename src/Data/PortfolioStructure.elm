@@ -7,7 +7,6 @@ module Data.PortfolioStructure
         , encode
         , percentageShare
         , portfolioSlidersSubscription
-        , renderPortfolioShare
         , renderPortfolioShares
         , toIntRange
         , validate

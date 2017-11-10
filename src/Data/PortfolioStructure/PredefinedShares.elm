@@ -1,9 +1,9 @@
-module Data.PortfolioStructure.Predefined
+module Data.PortfolioStructure.PredefinedShares
     exposing
-        ( balancedShares
-        , conservativeShares
-        , emptyShares
-        , progressiveShares
+        ( balanced
+        , conservative
+        , empty
+        , progressive
         )
 
 import AllDict
@@ -11,8 +11,8 @@ import Data.Filter.Conditions.Rating as Rating exposing (Rating(..))
 import Data.PortfolioStructure exposing (PortfolioShares)
 
 
-conservativeShares : PortfolioShares
-conservativeShares =
+conservative : PortfolioShares
+conservative =
     initShares
         [ ( A_Double_Star, 3 )
         , ( A_Star, 6 )
@@ -25,8 +25,8 @@ conservativeShares =
         ]
 
 
-balancedShares : PortfolioShares
-balancedShares =
+balanced : PortfolioShares
+balanced =
     initShares
         [ ( A_Double_Star, 1 )
         , ( A_Star, 3 )
@@ -39,8 +39,8 @@ balancedShares =
         ]
 
 
-progressiveShares : PortfolioShares
-progressiveShares =
+progressive : PortfolioShares
+progressive =
     initShares
         [ ( A_Double_Star, 0 )
         , ( A_Star, 2 )
@@ -53,8 +53,8 @@ progressiveShares =
         ]
 
 
-emptyShares : PortfolioShares
-emptyShares =
+empty : PortfolioShares
+empty =
     initShares
         [ ( A_Double_Star, 0 )
         , ( A_Star, 0 )

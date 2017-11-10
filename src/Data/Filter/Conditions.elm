@@ -33,17 +33,17 @@ module Data.Filter.Conditions
         , updateTermPercent
         )
 
-import Data.Filter.Conditions.Amount as Amount exposing (AmountCondition, AmountMsg, renderAmountCondition)
-import Data.Filter.Conditions.ElapsedTermMonths as ElapsedTermMonths exposing (ElapsedTermMonthsCondition, ElapsedTermMonthsMsg, renderElapsedTermMonthsCondition)
-import Data.Filter.Conditions.ElapsedTermPercent as ElapsedTermPercent exposing (ElapsedTermPercentCondition, ElapsedTermPercentMsg, renderElapsedTermPercentCondition)
-import Data.Filter.Conditions.Interest as Interest exposing (InterestCondition, InterestMsg, renderInterestCondition)
-import Data.Filter.Conditions.MainIncome as MainIncome exposing (MainIncomeCondition, MainIncomeMsg, renderMainIncomeCondition)
-import Data.Filter.Conditions.Purpose as Purpose exposing (PurposeCondition, PurposeMsg, renderPurposeCondition)
-import Data.Filter.Conditions.Rating as Rating exposing (RatingCondition, RatingMsg, renderRatingCondition)
-import Data.Filter.Conditions.Region as Region exposing (RegionCondition, RegionMsg, renderRegionCondition)
-import Data.Filter.Conditions.Story as Story exposing (StoryCondition, StoryMsg, renderStoryCondition)
-import Data.Filter.Conditions.TermMonths as TermMonths exposing (TermMonthsCondition, TermMonthsMsg, renderTermMonthsCondition)
-import Data.Filter.Conditions.TermPercent as TermPercent exposing (TermPercentCondition, TermPercentMsg, renderTermPercentCondition)
+import Data.Filter.Conditions.Amount as Amount exposing (AmountCondition, AmountMsg)
+import Data.Filter.Conditions.ElapsedTermMonths as ElapsedTermMonths exposing (ElapsedTermMonthsCondition, ElapsedTermMonthsMsg)
+import Data.Filter.Conditions.ElapsedTermPercent as ElapsedTermPercent exposing (ElapsedTermPercentCondition, ElapsedTermPercentMsg)
+import Data.Filter.Conditions.Interest as Interest exposing (InterestCondition, InterestMsg)
+import Data.Filter.Conditions.MainIncome as MainIncome exposing (MainIncomeCondition, MainIncomeMsg)
+import Data.Filter.Conditions.Purpose as Purpose exposing (PurposeCondition, PurposeMsg)
+import Data.Filter.Conditions.Rating as Rating exposing (RatingCondition, RatingMsg)
+import Data.Filter.Conditions.Region as Region exposing (RegionCondition, RegionMsg)
+import Data.Filter.Conditions.Story as Story exposing (StoryCondition, StoryMsg)
+import Data.Filter.Conditions.TermMonths as TermMonths exposing (TermMonthsCondition, TermMonthsMsg)
+import Data.Filter.Conditions.TermPercent as TermPercent exposing (TermPercentCondition, TermPercentMsg)
 import Json.Decode as Decode exposing (Decoder, field, nullable)
 import Json.Decode.Extra exposing ((|:))
 import Json.Encode as Encode exposing (Value)
@@ -112,38 +112,38 @@ addDotIfNotEmpty s =
 renderCondition : Condition -> String
 renderCondition condition =
     case condition of
-        Condition_Region regionCond ->
-            renderRegionCondition regionCond
+        Condition_Region c ->
+            Region.renderCondition c
 
-        Condition_Rating ratingCond ->
-            renderRatingCondition ratingCond
+        Condition_Rating c ->
+            Rating.renderCondition c
 
-        Condition_Income incomeCond ->
-            renderMainIncomeCondition incomeCond
+        Condition_Income c ->
+            MainIncome.renderCondition c
 
-        Condition_Purpose purposeCond ->
-            renderPurposeCondition purposeCond
+        Condition_Purpose c ->
+            Purpose.renderCondition c
 
-        Condition_Story storyCond ->
-            renderStoryCondition storyCond
+        Condition_Story c ->
+            Story.renderCondition c
 
-        Condition_Term_Months termMonthsCond ->
-            renderTermMonthsCondition termMonthsCond
+        Condition_Term_Months c ->
+            TermMonths.renderCondition c
 
-        Condition_Term_Percent termPercentCond ->
-            renderTermPercentCondition termPercentCond
+        Condition_Term_Percent c ->
+            TermPercent.renderCondition c
 
-        Condition_Elapsed_Term_Months elapsedTermMonthsCond ->
-            renderElapsedTermMonthsCondition elapsedTermMonthsCond
+        Condition_Elapsed_Term_Months c ->
+            ElapsedTermMonths.renderCondition c
 
-        Condition_Elapsed_Term_Percent elapsedTermPercentCond ->
-            renderElapsedTermPercentCondition elapsedTermPercentCond
+        Condition_Elapsed_Term_Percent c ->
+            ElapsedTermPercent.renderCondition c
 
-        Condition_Amount amountCond ->
-            renderAmountCondition amountCond
+        Condition_Amount c ->
+            Amount.renderCondition c
 
-        Condition_Interest interestCond ->
-            renderInterestCondition interestCond
+        Condition_Interest c ->
+            Interest.renderCondition c
 
 
 conditionsValidationErrors : String -> Conditions -> List String

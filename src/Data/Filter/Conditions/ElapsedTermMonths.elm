@@ -4,10 +4,10 @@ module Data.Filter.Conditions.ElapsedTermMonths
         , ElapsedTermMonthsCondition(ElapsedTermMonthsCondition)
         , ElapsedTermMonthsMsg
         , conditionDecoder
-        , defaultElapsedTermMonthsCondition
-        , elapsedTermMonthsForm
+        , defaultCondition
         , encodeCondition
-        , renderElapsedTermMonthsCondition
+        , form
+        , renderCondition
         , update
         , validationErrors
         )
@@ -33,9 +33,9 @@ type ElapsedTermMonthsCondition
     = ElapsedTermMonthsCondition ElapsedTermMonths
 
 
-defaultElapsedTermMonthsCondition : ElapsedTermMonthsCondition
-defaultElapsedTermMonthsCondition =
-    ElapsedTermMonthsCondition (MoreThan 0)
+defaultCondition : ElapsedTermMonthsCondition
+defaultCondition =
+    ElapsedTermMonthsCondition (LessThan 0)
 
 
 elapsedTermMonthsToString : ElapsedTermMonths -> String
@@ -51,8 +51,8 @@ elapsedTermMonthsToString elapsedTermMonths =
             "více než " ++ toString minBound
 
 
-renderElapsedTermMonthsCondition : ElapsedTermMonthsCondition -> String
-renderElapsedTermMonthsCondition (ElapsedTermMonthsCondition term) =
+renderCondition : ElapsedTermMonthsCondition -> String
+renderCondition (ElapsedTermMonthsCondition term) =
     "uhrazeno " ++ elapsedTermMonthsToString term ++ " splátek"
 
 
@@ -119,8 +119,8 @@ update msg (ElapsedTermMonthsCondition term) =
             ElapsedTermMonthsCondition term
 
 
-elapsedTermMonthsForm : ElapsedTermMonthsCondition -> Html ElapsedTermMonthsMsg
-elapsedTermMonthsForm (ElapsedTermMonthsCondition elapsedTermMonths) =
+form : ElapsedTermMonthsCondition -> Html ElapsedTermMonthsMsg
+form (ElapsedTermMonthsCondition elapsedTermMonths) =
     let
         ( ltVal, btwMinVal, btwMaxVal, mtVal ) =
             case elapsedTermMonths of

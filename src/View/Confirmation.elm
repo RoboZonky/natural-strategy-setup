@@ -18,5 +18,5 @@ form settings tooltipStates =
                 [ text "Potvrzovat mobilem investice do úvěrů s ratingem"
                 , Tooltip.popoverTip Tooltip.confirmationTip tooltipStates
                 ]
-            , Html.map ConfirmationFormMsg <| Rating.ratingForm settings
+            , Html.map ConfirmationFormMsg <| Rating.form settings
             ]

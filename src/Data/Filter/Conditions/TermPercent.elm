@@ -4,10 +4,10 @@ module Data.Filter.Conditions.TermPercent
         , TermPercentCondition(..)
         , TermPercentMsg
         , conditionDecoder
-        , defaultTermPercentCondition
+        , defaultCondition
         , encodeCondition
-        , renderTermPercentCondition
-        , termPercentForm
+        , form
+        , renderCondition
         , update
         , validationErrors
         )
@@ -33,9 +33,9 @@ type TermPercentCondition
     = TermPercentCondition TermPercent
 
 
-defaultTermPercentCondition : TermPercentCondition
-defaultTermPercentCondition =
-    TermPercentCondition (MoreThan 0)
+defaultCondition : TermPercentCondition
+defaultCondition =
+    TermPercentCondition (LessThan 0)
 
 
 termPercentToString : TermPercent -> String
@@ -51,8 +51,8 @@ termPercentToString termPercent =
             "přesahuje " ++ toString minBound
 
 
-renderTermPercentCondition : TermPercentCondition -> String
-renderTermPercentCondition (TermPercentCondition term) =
+renderCondition : TermPercentCondition -> String
+renderCondition (TermPercentCondition term) =
     "délka " ++ termPercentToString term ++ " % původní délky"
 
 
@@ -119,8 +119,8 @@ update msg (TermPercentCondition term) =
             TermPercentCondition term
 
 
-termPercentForm : TermPercentCondition -> Html TermPercentMsg
-termPercentForm (TermPercentCondition termPercent) =
+form : TermPercentCondition -> Html TermPercentMsg
+form (TermPercentCondition termPercent) =
     let
         ( ltVal, btwMinVal, btwMaxVal, mtVal ) =
             case termPercent of

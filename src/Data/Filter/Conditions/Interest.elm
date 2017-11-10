@@ -4,10 +4,10 @@ module Data.Filter.Conditions.Interest
         , InterestCondition(..)
         , InterestMsg
         , conditionDecoder
+        , defaultCondition
         , encodeCondition
-        , interestForm
-        , interestToString
-        , renderInterestCondition
+        , form
+        , renderCondition
         , update
         , validationErrors
         )
@@ -33,8 +33,13 @@ type InterestCondition
     = InterestCondition Interest
 
 
-interestToString : Interest -> String
-interestToString interest =
+defaultCondition : InterestCondition
+defaultCondition =
+    InterestCondition (LessThan 0)
+
+
+toString : Interest -> String
+toString interest =
     case interest of
         LessThan maxBound ->
             "nedosahuje " ++ floatToString maxBound
@@ -46,9 +51,9 @@ interestToString interest =
             "přesahuje " ++ floatToString minBound
 
 
-renderInterestCondition : InterestCondition -> String
-renderInterestCondition (InterestCondition interest) =
-    "úrok " ++ interestToString interest ++ " % p.a"
+renderCondition : InterestCondition -> String
+renderCondition (InterestCondition interest) =
+    "úrok " ++ toString interest ++ " % p.a"
 
 
 floatToString : Float -> String
@@ -61,7 +66,7 @@ floatToString =
             else
                 c
         )
-        << toString
+        << Basics.toString
 
 
 validationErrors : InterestCondition -> List String
@@ -128,8 +133,8 @@ update msg ic =
             ic
 
 
-interestForm : InterestCondition -> Html InterestMsg
-interestForm (InterestCondition interest) =
+form : InterestCondition -> Html InterestMsg
+form (InterestCondition interest) =
     let
         ( ltVal, btwMinVal, btwMaxVal, mtVal ) =
             case interest of
@@ -229,7 +234,7 @@ interestDecoder =
                             (Decode.field "val" Decode.float)
 
                     _ ->
-                        Decode.fail <| "Invalid interest type " ++ toString typ
+                        Decode.fail <| "Invalid interest type " ++ Basics.toString typ
             )
 
 

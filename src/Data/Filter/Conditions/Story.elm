@@ -4,10 +4,10 @@ module Data.Filter.Conditions.Story
         , StoryCondition(..)
         , StoryMsg
         , conditionDecoder
-        , defaultStoryCondition
+        , defaultCondition
         , encodeCondition
-        , renderStoryCondition
-        , storyForm
+        , form
+        , renderCondition
         , update
         )
 
@@ -34,8 +34,8 @@ type StoryCondition
     = StoryCondition Story
 
 
-defaultStoryCondition : StoryCondition
-defaultStoryCondition =
+defaultCondition : StoryCondition
+defaultCondition =
     StoryCondition SHORT
 
 
@@ -55,8 +55,8 @@ storyToString story =
             "delší než průměrný"
 
 
-renderStoryCondition : StoryCondition -> String
-renderStoryCondition (StoryCondition story) =
+renderCondition : StoryCondition -> String
+renderCondition (StoryCondition story) =
     "příběh je " ++ storyToString story
 
 
@@ -69,8 +69,8 @@ update (SetStory s) _ =
     StoryCondition s
 
 
-storyForm : StoryCondition -> Html StoryMsg
-storyForm (StoryCondition currentStory) =
+form : StoryCondition -> Html StoryMsg
+form (StoryCondition currentStory) =
     div [] <| List.map (storyRadio currentStory) allStories
 
 

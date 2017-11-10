@@ -4,10 +4,10 @@ module Data.Filter.Conditions.TermMonths
         , TermMonthsCondition(..)
         , TermMonthsMsg
         , conditionDecoder
-        , defaultTermMonthsCondition
+        , defaultCondition
         , encodeCondition
-        , renderTermMonthsCondition
-        , termMonthsForm
+        , form
+        , renderCondition
         , update
         , validationErrors
         )
@@ -33,9 +33,9 @@ type TermMonthsCondition
     = TermMonthsCondition TermMonths
 
 
-defaultTermMonthsCondition : TermMonthsCondition
-defaultTermMonthsCondition =
-    TermMonthsCondition (MoreThan 0)
+defaultCondition : TermMonthsCondition
+defaultCondition =
+    TermMonthsCondition (LessThan 0)
 
 
 termMonthsToString : TermMonths -> String
@@ -51,8 +51,8 @@ termMonthsToString termMonths =
             "přesahuje " ++ toString minBound
 
 
-renderTermMonthsCondition : TermMonthsCondition -> String
-renderTermMonthsCondition (TermMonthsCondition term) =
+renderCondition : TermMonthsCondition -> String
+renderCondition (TermMonthsCondition term) =
     "délka " ++ termMonthsToString term ++ " měsíců"
 
 
@@ -119,8 +119,8 @@ update msg (TermMonthsCondition term) =
             TermMonthsCondition term
 
 
-termMonthsForm : TermMonthsCondition -> Html TermMonthsMsg
-termMonthsForm (TermMonthsCondition termMonths) =
+form : TermMonthsCondition -> Html TermMonthsMsg
+form (TermMonthsCondition termMonths) =
     let
         ( ltVal, btwMinVal, btwMaxVal, mtVal ) =
             case termMonths of

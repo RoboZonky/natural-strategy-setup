@@ -5,13 +5,14 @@ module Data.Filter.Conditions.Rating
         , RatingMsg
         , allRatings
         , conditionDecoder
+        , defaultCondition
         , encodeCondition
+        , form
         , hash
-        , ratingForm
         , ratingFromString
         , ratingSatisfiesCondition
         , ratingToString
-        , renderRatingCondition
+        , renderCondition
         , update
         , validationErrors
         )
@@ -111,6 +112,11 @@ type RatingCondition
     = RatingList (List Rating)
 
 
+defaultCondition : RatingCondition
+defaultCondition =
+    RatingList []
+
+
 {-| For the purposes of conditionRendering we're simplifying list to "better than" or "worse than" if the values
 in the list form continuous range from beginning / from end of enumerated Rating values
 -}
@@ -125,8 +131,8 @@ validationErrors (RatingList rlist) =
     Util.validate (List.isEmpty rlist) "Rating: zvolte aspoň jeden"
 
 
-renderRatingCondition : RatingCondition -> String
-renderRatingCondition ratingCondition =
+renderCondition : RatingCondition -> String
+renderCondition ratingCondition =
     let
         subExpr =
             case simplify ratingCondition of
@@ -190,8 +196,8 @@ update msg (RatingList rlist) =
             RatingList <| List.filter (\rr -> rr /= r) rlist
 
 
-ratingForm : RatingCondition -> Html RatingMsg
-ratingForm condition =
+form : RatingCondition -> Html RatingMsg
+form condition =
     allRatings
         |> List.map (\r -> ratingCheckbox r (ratingSatisfiesCondition condition r))
         |> div []
