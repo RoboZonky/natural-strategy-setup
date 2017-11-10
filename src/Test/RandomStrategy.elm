@@ -75,7 +75,8 @@ investmentsPerRatingGen =
 
 investment0to5kRange : Generator Investment.Size
 investment0to5kRange =
-    Random.int 0 25 |> Random.andThen (\from -> Random.int from 25 |> Random.map (\to -> Investment.size (200 * from) (200 * to)))
+    randomRangeGen 0 25
+        |> Random.map (\( from, to ) -> Investment.size (200 * from) (200 * to))
 
 
 buyFiltersGen : Generator (List MarketplaceFilter)
@@ -181,7 +182,8 @@ termMonthsConditionGen =
     in
     Random.choices
         [ Random.map TermMonths.LessThan (Random.int (minTermMonths + 1 {- 0 is invalid, as parser subtract 1 -}) (maxTermMonths + 1))
-        , Random.int minTermMonths maxTermMonths |> Random.andThen (\mi -> Random.int mi maxTermMonths |> Random.map (\mx -> TermMonths.Between mi mx))
+        , randomRangeGen minTermMonths maxTermMonths
+            |> Random.map (\( mi, mx ) -> TermMonths.Between mi mx)
         , Random.map TermMonths.MoreThan (Random.int minTermMonths (maxTermMonths - 1 {- max is invalid, as parser adds 1 -}))
         ]
         |> Random.map (TermMonthsCondition >> Condition_Term_Months)
@@ -215,7 +217,8 @@ elapsedTermMonthsConditionGen =
     in
     Random.choices
         [ Random.map ElapsedTermMonths.LessThan (Random.int (minTermMonths + 1 {- 0 is invalid, as parser subtract 1 -}) (maxTermMonths + 1))
-        , Random.int minTermMonths maxTermMonths |> Random.andThen (\mi -> Random.int mi maxTermMonths |> Random.map (\mx -> ElapsedTermMonths.Between mi mx))
+        , randomRangeGen minTermMonths maxTermMonths
+            |> Random.map (\( mi, mx ) -> ElapsedTermMonths.Between mi mx)
         , Random.map ElapsedTermMonths.MoreThan (Random.int minTermMonths (maxTermMonths - 1 {- max is invalid, as parser adds 1 -}))
         ]
         |> Random.map (ElapsedTermMonthsCondition >> Condition_Elapsed_Term_Months)
@@ -246,7 +249,7 @@ amountConditionGen =
     in
     Random.choices
         [ Random.map Amount.LessThan (Random.int 0 maxAmount)
-        , Random.int 0 maxAmount |> Random.andThen (\mi -> Random.int mi maxAmount |> Random.map (\mx -> Amount.Between mi mx))
+        , randomRangeGen 0 maxAmount |> Random.map (\( mi, mx ) -> Amount.Between mi mx)
         , Random.map Amount.MoreThan (Random.int 0 maxAmount)
         ]
         |> Random.map (AmountCondition >> Condition_Amount)
@@ -336,22 +339,24 @@ subset minimumElements whatToSamleFrom =
             )
 
 
-percentageGen : Generator Int
-percentageGen =
-    Random.int 0 100
-
-
 {-| Generate random range (from, to) such that 0 <= from <= to <= 100
 -}
 percentRangeGen : Generator ( Int, Int )
 percentRangeGen =
-    percentageGen
-        |> Random.andThen (\from -> percentageFrom from)
+    randomRangeGen 0 100
 
 
 percentageFrom : Int -> Generator ( Int, Int )
 percentageFrom from =
     Random.int from 100 |> Random.map (\to -> ( from, to ))
+
+
+{-| Generate pair (x, y) such that mi <= x <= y <= ma
+-}
+randomRangeGen : Int -> Int -> Generator ( Int, Int )
+randomRangeGen mi ma =
+    Random.int mi ma
+        |> Random.andThen (\mi -> Random.int mi ma |> Random.map (\mx -> ( mi, mx )))
 
 
 {-| To generate valid portfolio structure we need 8 non-negative ints that add up to 100.
