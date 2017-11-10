@@ -8,7 +8,7 @@ import Data.Filter.Conditions.Interest as Interest exposing (InterestCondition(I
 import Data.Investment as Investment
 import Data.Portfolio as Portfolio
 import Dict exposing (Dict)
-import Expect exposing (Expectation)
+import Expect
 import Fuzz exposing (Fuzzer)
 import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as Encode exposing (Value)

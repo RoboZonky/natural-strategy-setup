@@ -196,7 +196,7 @@ termPercentConditionGen =
     in
     Random.choices
         [ Random.map TermPercent.LessThan (Random.int (minTermPercent + 1 {- 0 is invalid, as parser subtract 1 -}) (maxTermPercent + 1))
-        , Random.int minTermPercent maxTermPercent |> Random.andThen (\mi -> Random.int mi maxTermPercent |> Random.map (\mx -> TermPercent.Between mi mx))
+        , percentRangeGen |> Random.map (\( mi, mx ) -> TermPercent.Between mi mx)
         , Random.map TermPercent.MoreThan (Random.int minTermPercent (maxTermPercent - 1 {- max is invalid, as parser adds 1 -}))
         ]
         |> Random.map (TermPercentCondition >> Condition_Term_Percent)
