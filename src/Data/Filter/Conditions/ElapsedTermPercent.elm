@@ -71,7 +71,11 @@ validationErrors (ElapsedTermPercentCondition t) =
 
 validateInRange : Int -> Int -> Int -> List String
 validateInRange minValid maxValid x =
-    Util.validate (x < minValid || maxValid < x) <| "Počet uhrazených splátek v procentech musí být v rozmezí " ++ toString minValid ++ " až " ++ toString maxValid
+    Util.validate (x < minValid || maxValid < x) <|
+        "Počet uhrazených splátek v procentech musí být v rozmezí "
+            ++ toString minValid
+            ++ " až "
+            ++ toString maxValid
 
 
 validateMinNotGtMax : Int -> Int -> List String

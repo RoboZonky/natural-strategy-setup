@@ -44,7 +44,9 @@ form portfolio shares tooltipStates =
                 [ Card.custom <|
                     div []
                         [ defaultPortfolioForm portfolio
-                        , text <| contentDescription ++ " požadovaný procentuální podíl aktuální zůstatkové částky investovaný do půjček v daném ratingu"
+                        , text <|
+                            contentDescription
+                                ++ " požadovaný procentuální podíl aktuální zůstatkové částky investovaný do půjček v daném ratingu"
                         , Grid.row []
                             [ Grid.col [ Col.xs6 ]
                                 [ sharesTableOrSliders ]

@@ -71,7 +71,11 @@ validationErrors (TermPercentCondition t) =
 
 validateInRange : Int -> Int -> Int -> List String
 validateInRange minValid maxValid x =
-    Util.validate (x < minValid || maxValid < x) <| "Délka úvěru v procentech: musí být v rozmezí " ++ toString minValid ++ " až " ++ toString maxValid
+    Util.validate (x < minValid || maxValid < x) <|
+        "Délka úvěru v procentech: musí být v rozmezí "
+            ++ toString minValid
+            ++ " až "
+            ++ toString maxValid
 
 
 validateMinNotGtMax : Int -> Int -> List String

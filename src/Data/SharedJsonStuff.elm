@@ -29,6 +29,7 @@ ratingToSliderDictDecodr sliderStateDecoder =
                         Nothing ->
                             Nothing
                 )
-                -- TODO this might be dangerous, because some keys could be duplicated / missing. Figure out how to validate incoming JSON to prevent invalid IPRs
+                -- TODO this might be dangerous, because some keys could be duplicated / missing.
+                -- Figure out how to validate incoming JSON to prevent invalid IPRs
                 >> AllDict.fromList Rating.hash
             )
