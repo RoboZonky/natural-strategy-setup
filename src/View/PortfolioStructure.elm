@@ -16,7 +16,7 @@ import Html exposing (Html, div, text)
 import Html.Attributes exposing (class, selected, style, value)
 import Html.Events exposing (onSubmit)
 import RangeSlider
-import Types exposing (..)
+import Types exposing (Msg(ChangePortfolioSharePercentage, NoOp, PortfolioChanged))
 import Util
 import View.PortfolioStructure.PieChart exposing (viewChart)
 import View.Tooltip as Tooltip

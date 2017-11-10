@@ -4,11 +4,11 @@ import Bootstrap.Card as Card
 import Bootstrap.Form as Form
 import Bootstrap.Form.Input as Input
 import Bootstrap.Form.Radio as Radio
-import Data.InvestmentShare as InvestmentShare exposing (InvestmentShare(..))
+import Data.InvestmentShare as InvestmentShare exposing (InvestmentShare)
 import Html exposing (legend, text)
 import Html.Attributes as Attr exposing (class, disabled)
 import Html.Events exposing (onInput, onSubmit)
-import Types exposing (..)
+import Types exposing (Msg(NoOp, TargetPortfolioShareChanged))
 import Util
 
 
@@ -17,10 +17,10 @@ form investmentShare =
     let
         ( isUnrestricted, inputValue ) =
             case investmentShare of
-                NotSpecified ->
+                InvestmentShare.NotSpecified ->
                     ( True, Input.value defaultValue )
 
-                InvestmentSharePercent pct ->
+                InvestmentShare.Percent pct ->
                     ( False, Input.value <| Util.zeroToEmpty pct )
 
         validationErrors =

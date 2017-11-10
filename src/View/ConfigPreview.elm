@@ -9,10 +9,9 @@ import Data.Strategy as Strategy exposing (StrategyConfiguration)
 import Html exposing (text)
 import Html.Attributes exposing (downloadAs, href, readonly, style)
 import Time.DateTime exposing (DateTime)
-import Types exposing (..)
 
 
-view : DateTime -> StrategyConfiguration -> Grid.Column Msg
+view : DateTime -> StrategyConfiguration -> Grid.Column a
 view generatedOn strategyConfig =
     let
         strategyValidationErrors =

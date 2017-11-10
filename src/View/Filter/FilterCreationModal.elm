@@ -1,16 +1,16 @@
-module View.Filter.FilterCreationModal exposing (..)
+module View.Filter.FilterCreationModal exposing (Model, init, update, view)
 
 import Bootstrap.Button as Button
 import Bootstrap.Grid as Grid
 import Bootstrap.Grid.Col as Col
 import Bootstrap.Modal as Modal
-import Data.Filter as Filter exposing (FilteredItem(..), MarketplaceFilter, getFilteredItem, renderBuyFilter, renderSellFilter, setFilteredItem)
+import Data.Filter as Filter exposing (FilteredItem(Participation_To_Sell), MarketplaceFilter, getFilteredItem, renderBuyFilter, renderSellFilter, setFilteredItem)
 import Data.Tooltip as Tooltip
 import Html exposing (Html, div, hr, li, text, ul)
 import Html.Attributes exposing (style)
 import Html.Events exposing (onClick)
-import Types exposing (..)
-import View.Filter.Conditions as Conditions exposing (conditionsForm)
+import Types exposing (ModalMsg(..))
+import View.Filter.Conditions as Conditions
 import View.Tooltip as Tooltip
 
 
@@ -21,8 +21,8 @@ type alias Model =
     }
 
 
-initialState : Model
-initialState =
+init : Model
+init =
     { editedFilter = Filter.emptyFilter
     , editingPositiveSubform = True
     , openCloseState = Modal.hiddenState
@@ -143,9 +143,9 @@ modalBody mf editingPositiveSubform =
 
         conditionsSubform =
             if editingPositiveSubform then
-                Html.map PositiveConditionsChange <| conditionsForm mf.whatToFilter mf.ignoreWhen
+                Html.map PositiveConditionsChange <| Conditions.form mf.whatToFilter mf.ignoreWhen
             else
-                Html.map NegativeConditionsChange <| conditionsForm mf.whatToFilter mf.butNotWhen
+                Html.map NegativeConditionsChange <| Conditions.form mf.whatToFilter mf.butNotWhen
     in
     Grid.containerFluid []
         [ Grid.row []

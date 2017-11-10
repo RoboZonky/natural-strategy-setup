@@ -10,7 +10,7 @@ import Html exposing (Html, div, span, text)
 import Html.Attributes exposing (class, style)
 import Html.Events exposing (onSubmit)
 import RangeSlider
-import Types exposing (..)
+import Types exposing (Msg(ChangeDefaultInvestment, ChangeInvestment, NoOp))
 
 
 form : Investment.Size -> InvestmentsPerRating -> Accordion.Card Msg

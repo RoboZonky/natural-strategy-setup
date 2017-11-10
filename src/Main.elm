@@ -1,10 +1,10 @@
-module Main exposing (..)
+module Main exposing (main)
 
 import Bootstrap.Accordion as Accordion
 import Bootstrap.Grid as Grid
 import Data.Filter exposing (FilteredItem(Participation_To_Sell), getFilteredItem)
 import Data.Investment as Investment
-import Data.InvestmentShare as InvestmentShare exposing (InvestmentShare(..))
+import Data.InvestmentShare as InvestmentShare
 import Data.PortfolioStructure as PortfolioStructure
 import Data.Strategy as Strategy exposing (StrategyConfiguration)
 import Data.TargetBalance as TargetBalance exposing (TargetBalance(TargetBalance))
@@ -15,7 +15,7 @@ import Html.Attributes exposing (class, href, style)
 import Task
 import Time
 import Time.DateTime as DateTime exposing (DateTime)
-import Types exposing (..)
+import Types exposing (ModalMsg(ModalTooltipMsg), Msg(..))
 import Util
 import Version
 import View.ConfigPreview as ConfigPreview
@@ -36,7 +36,7 @@ initialModel : Model
 initialModel =
     { strategyConfig = Strategy.defaultStrategyConfiguration
     , accordionState = Accordion.initialState
-    , filterCreationState = FilterCreationModal.initialState
+    , filterCreationState = FilterCreationModal.init
     , tooltipStates = Tooltip.initialStates
     , generatedOn = DateTime.epoch
     }
@@ -87,7 +87,7 @@ updateHelper msg model =
         TargetPortfolioShareChanged shareStr ->
             let
                 share =
-                    wrapIntOrEmpty InvestmentSharePercent InvestmentShare.NotSpecified shareStr
+                    wrapIntOrEmpty InvestmentShare.Percent InvestmentShare.NotSpecified shareStr
             in
             updateStrategy (Strategy.setDefaultInvestmentShare share) model
 

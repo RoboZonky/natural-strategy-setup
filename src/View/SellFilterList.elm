@@ -6,7 +6,7 @@ import Bootstrap.Card as Card
 import Bootstrap.Grid as Grid
 import Bootstrap.Grid.Col as Col
 import Bootstrap.Modal as Modal
-import Data.Filter exposing (FilteredItem(..), MarketplaceFilter, renderSellFilter)
+import Data.Filter exposing (FilteredItem(Participation_To_Sell), MarketplaceFilter, renderSellFilter)
 import Data.Tooltip as Tooltip
 import Html exposing (Html, div, span, text)
 import Html.Attributes exposing (class)

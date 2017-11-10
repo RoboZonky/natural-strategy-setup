@@ -4,11 +4,11 @@ import Bootstrap.Card as Card
 import Bootstrap.Form as Form
 import Bootstrap.Form.Input as Input
 import Bootstrap.Form.Radio as Radio
-import Data.TargetPortfolioSize as TargetPortfolioSize exposing (TargetPortfolioSize(..))
+import Data.TargetPortfolioSize as TargetPortfolioSize exposing (TargetPortfolioSize(NotSpecified, TargetPortfolioSize))
 import Html exposing (legend, text)
 import Html.Attributes as Attr exposing (class)
 import Html.Events exposing (onSubmit)
-import Types exposing (..)
+import Types exposing (Msg(NoOp, TargetPortfolioSizeChanged))
 import Util
 
 

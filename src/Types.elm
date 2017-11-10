@@ -1,4 +1,4 @@
-module Types exposing (..)
+module Types exposing (ModalMsg(..), Msg(..))
 
 import Bootstrap.Accordion as Accordion
 import Bootstrap.Modal as Modal

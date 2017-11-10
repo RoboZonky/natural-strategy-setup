@@ -1,7 +1,7 @@
 module Data.Filter.Conditions.Amount
     exposing
-        ( Amount(..)
-        , AmountCondition(..)
+        ( Amount(Between, LessThan, MoreThan)
+        , AmountCondition(AmountCondition)
         , AmountMsg
         , amountForm
         , conditionDecoder

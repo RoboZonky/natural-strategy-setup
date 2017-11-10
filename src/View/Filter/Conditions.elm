@@ -1,4 +1,4 @@
-module View.Filter.Conditions exposing (..)
+module View.Filter.Conditions exposing (Model, Msg, form, update)
 
 import Bootstrap.Form.Checkbox as Checkbox
 import Bootstrap.Grid as Grid
@@ -28,8 +28,8 @@ type alias Model =
 -- VIEW
 
 
-conditionsForm : FilteredItem -> Conditions -> Html Msg
-conditionsForm filteredItem conditions =
+form : FilteredItem -> Conditions -> Html Msg
+form filteredItem conditions =
     let
         extraRows =
             case filteredItem of

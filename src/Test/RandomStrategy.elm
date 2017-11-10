@@ -1,4 +1,4 @@
-module Test.RandomStrategy exposing (..)
+module Test.RandomStrategy exposing (conditionsGen, strategyConfigurationGen)
 
 import AllDict
 import Data.Confirmation exposing (ConfirmationSettings)
@@ -14,7 +14,7 @@ import Data.Filter.Conditions.Story exposing (Story(..), StoryCondition(StoryCon
 import Data.Filter.Conditions.TermMonths as TermMonths exposing (TermMonthsCondition(..))
 import Data.Filter.Conditions.TermPercent as TermPercent exposing (TermPercentCondition(..))
 import Data.Investment as Investment exposing (InvestmentsPerRating)
-import Data.InvestmentShare as InvestmentShare exposing (InvestmentShare(..))
+import Data.InvestmentShare as InvestmentShare exposing (InvestmentShare)
 import Data.Portfolio exposing (Portfolio(..))
 import Data.PortfolioStructure as PortfolioStructure exposing (PortfolioShares)
 import Data.Strategy exposing (GeneralSettings, StrategyConfiguration)
@@ -256,7 +256,7 @@ investmentShareGen : Generator InvestmentShare
 investmentShareGen =
     Random.frequency
         [ ( 1, Random.constant InvestmentShare.NotSpecified )
-        , ( 2, Random.map InvestmentSharePercent <| Random.int 1 100 )
+        , ( 2, Random.map InvestmentShare.Percent <| Random.int 1 100 )
         ]
 
 

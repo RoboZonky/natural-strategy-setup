@@ -1,12 +1,12 @@
-module View.Strategy exposing (..)
+module View.Strategy exposing (form)
 
 import Bootstrap.Accordion as Accordion
 import Bootstrap.Grid as Grid
 import Bootstrap.Grid.Col as Col
-import Data.Strategy exposing (..)
+import Data.Strategy exposing (GeneralSettings, StrategyConfiguration)
 import Data.Tooltip as Tooltip
 import Html exposing (Html, text)
-import Types exposing (..)
+import Types exposing (Msg(AccordionMsg, ModalMsg))
 import View.BuyFilterList as BuyFilterList
 import View.Confirmation as Confirmation
 import View.Filter.FilterCreationModal as FilterCreationModal

@@ -7,7 +7,7 @@ module Data.Confirmation
         , renderConfirmation
         )
 
-import Data.Filter.Conditions.Rating as Rating exposing (RatingCondition(..))
+import Data.Filter.Conditions.Rating as Rating exposing (RatingCondition(RatingList))
 import Json.Decode exposing (Decoder)
 import Json.Encode exposing (Value)
 

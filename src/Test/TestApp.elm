@@ -1,4 +1,4 @@
-module Test.TestApp exposing (..)
+module Test.TestApp exposing (main)
 
 import Data.Strategy as Strategy
 import Html exposing (Html, button, div, input, span, text, textarea)
