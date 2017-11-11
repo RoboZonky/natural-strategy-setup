@@ -18,7 +18,7 @@ import Data.Filter.Conditions.Story as Story exposing (Story(..), StoryCondition
 import Data.Filter.Conditions.TermMonths as TermMonths exposing (TermMonths(..), TermMonthsCondition(..), TermMonthsMsg)
 import Data.Filter.Conditions.TermPercent as TermPercent exposing (TermPercent(..), TermPercentCondition(..), TermPercentMsg)
 import Html exposing (Html, div, text)
-import Html.Attributes exposing (classList)
+import Html.Attributes exposing (classList, style)
 
 
 -- MODEL
@@ -61,7 +61,14 @@ form filteredItem conditions =
         elapsedTermPercentRow =
             conditionRow conditions "Uhrazeno splátek (v %)" (Condition_Elapsed_Term_Percent ElapsedTermPercent.defaultCondition) RemoveElapsedTermPercentCondition
     in
-    div [] <|
+    div
+        [ style
+            [ ( "overflow-x", "hidden" )
+            , ( "overflow-y", "auto" {- scrollbar so that modal footer doesn't disappear below the bottom of viewport, when too many conditions enabled -} )
+            , ( "max-height", "60vh" {- 60% viewport height -} )
+            ]
+        ]
+    <|
         [ conditionRow conditions "Rating" (Condition_Rating Rating.defaultCondition) RemoveRatingCondition
         , conditionRow conditions "Úrok" (Condition_Interest Interest.defaultCondition) RemoveInterestCondition
         , conditionRow conditions "Účel úvěru" (Condition_Purpose Purpose.defaultCondition) RemovePurposeCondition
