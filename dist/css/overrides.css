@@ -29,4 +29,5 @@
 .condition-row.active {
   border: solid 1px lightgrey !important;
   padding: 5px;
+  margin-bottom: 8px;
 }
