@@ -192,6 +192,7 @@ renderStrategyConfiguration generatedOn strategy =
         { generalSettings, portfolioShares, investmentSizeOverrides, buyFilters, sellFilters } ->
             Util.joinNonemptyLines
                 [ Version.strategyComment generatedOn
+                , Version.robozonkyVersionStatement
                 , renderGeneralSettings generalSettings
                 , PortfolioStructure.renderPortfolioShares generalSettings.portfolio portfolioShares
                 , Investment.renderInvestments generalSettings.defaultInvestmentSize investmentSizeOverrides

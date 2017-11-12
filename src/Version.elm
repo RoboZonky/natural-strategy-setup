@@ -2,6 +2,7 @@ module Version
     exposing
         ( commitHash
         , githubCommitLink
+        , robozonkyVersionStatement
         , strategyComment
         )
 
@@ -15,7 +16,12 @@ githubCommitLink =
 
 strategyComment : DateTime -> String
 strategyComment dateTime =
-    "# Konfigurace strategie vytvořená " ++ formatDate dateTime ++ " nástrojem natural-strategy-setup verze " ++ commitHash ++ ""
+    "# Konfigurace strategie vytvořená " ++ formatDate dateTime ++ " nástrojem natural-strategy-setup verze " ++ commitHash
+
+
+robozonkyVersionStatement : String
+robozonkyVersionStatement =
+    "Tato strategie vyžaduje RoboZonky ve verzi 4.1.0 nebo pozdější."
 
 
 formatDate : DateTime -> String
