@@ -47,7 +47,7 @@ view generatedOn strategyConfig =
                     , Button.disabled <| not isValidStrategy
                     , Button.attrs
                         [ href <| "data:text/plain;charset=utf-8;base64," ++ Base64.encode previewText
-                        , downloadAs <| "strategy.txt"
+                        , downloadAs "robozonky-strategy.cfg"
                         ]
                     ]
                     [ text "Stáhni konfigurační soubor" ]
