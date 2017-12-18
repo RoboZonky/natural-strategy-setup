@@ -2,6 +2,7 @@ module Data.Investment
     exposing
         ( InvestmentsPerRating
         , Size
+        , anyInvestmentExceeds5k
         , decoder
         , defaultInvestmentSliderSubscription
         , defaultInvestmentsPerRating
@@ -80,7 +81,7 @@ size from to =
         |> setStepSize (Just 200)
         |> setFormatter (\value -> toString value ++ "Kč")
         |> setDimensions 300 57
-        |> setExtents 0 5000
+        |> setExtents 0 20000
         |> setValues (toFloat from) (toFloat to)
 
 
@@ -104,6 +105,15 @@ defaultInvestmentSliderSubscription =
 toIntRange : Size -> ( Int, Int )
 toIntRange =
     RangeSlider.getValues >> (\( a, b ) -> ( round a, round b ))
+
+
+anyInvestmentExceeds5k : Size -> InvestmentsPerRating -> Bool
+anyInvestmentExceeds5k default overrides =
+    AllDict.toList overrides
+        |> List.map (\( _, size ) -> toIntRange size |> Tuple.second)
+        |> List.append [ toIntRange default |> Tuple.second ]
+        |> List.filter (\x -> x > 5000)
+        |> (not << List.isEmpty)
 
 
 
