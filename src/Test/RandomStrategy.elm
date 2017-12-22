@@ -356,7 +356,11 @@ percentageFrom from =
 randomRangeGen : Int -> Int -> Generator ( Int, Int )
 randomRangeGen mi ma =
     Random.int mi ma
-        |> Random.andThen (\mi -> Random.int mi ma |> Random.map (\mx -> ( mi, mx )))
+        |> Random.andThen
+            (\generatedMin ->
+                Random.int generatedMin ma
+                    |> Random.map (\generatedMax -> ( generatedMin, generatedMax ))
+            )
 
 
 {-| To generate valid portfolio structure we need 8 non-negative ints that add up to 100.

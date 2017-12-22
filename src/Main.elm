@@ -98,8 +98,8 @@ updateHelper msg model =
             in
             updateStrategy (Strategy.setTargetBalance newBalance) model
 
-        ConfirmationFormMsg msg ->
-            updateStrategy (Strategy.updateNotificationSettings msg) model
+        ConfirmationFormMsg confMsg ->
+            updateStrategy (Strategy.updateNotificationSettings confMsg) model
 
         ChangePortfolioSharePercentage rating sliderMsg ->
             updateStrategy (Strategy.setPortfolioShareRange rating sliderMsg) model
@@ -125,10 +125,10 @@ updateHelper msg model =
         ModalMsg (ModalTooltipMsg tipId tooltipState) ->
             { model | tooltipStates = Tooltip.update tipId tooltipState model.tooltipStates }
 
-        ModalMsg msg ->
+        ModalMsg modalMsg ->
             let
                 ( filterCreationState, maybeNewFilter ) =
-                    FilterCreationModal.update msg model.filterCreationState
+                    FilterCreationModal.update modalMsg model.filterCreationState
 
                 strategyUpdater =
                     case maybeNewFilter of

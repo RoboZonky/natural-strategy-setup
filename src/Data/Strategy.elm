@@ -141,12 +141,12 @@ setInvestment rtg msg config =
 setDefaultInvestment : RangeSlider.Msg -> StrategyConfiguration -> StrategyConfiguration
 setDefaultInvestment msg config =
     let
-        setDefaultInvestment : RangeSlider.Msg -> GeneralSettings -> GeneralSettings
-        setDefaultInvestment msg generalSettings =
+        setDefaultInvestmentHelper : GeneralSettings -> GeneralSettings
+        setDefaultInvestmentHelper generalSettings =
             { generalSettings | defaultInvestmentSize = RangeSlider.update msg generalSettings.defaultInvestmentSize }
 
         newGeneralSettings =
-            setDefaultInvestment msg config.generalSettings
+            setDefaultInvestmentHelper config.generalSettings
     in
     { config
         | generalSettings = newGeneralSettings

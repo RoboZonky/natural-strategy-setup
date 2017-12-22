@@ -194,38 +194,38 @@ type Msg
 update : Msg -> Model -> Model
 update msg model =
     case msg of
-        RatingMsg msg ->
-            updateRating msg model
+        RatingMsg rmsg ->
+            updateRating rmsg model
 
-        InterestMsg msg ->
-            updateInterest msg model
+        InterestMsg imsg ->
+            updateInterest imsg model
 
-        PurposeMsg msg ->
-            updatePurpose msg model
+        PurposeMsg pmsg ->
+            updatePurpose pmsg model
 
-        TermMonthsMsg msg ->
-            updateTermMonths msg model
+        TermMonthsMsg tmmsg ->
+            updateTermMonths tmmsg model
 
-        TermPercentMsg msg ->
-            updateTermPercent msg model
+        TermPercentMsg tpmsg ->
+            updateTermPercent tpmsg model
 
-        ElapsedTermMonthsMsg msg ->
-            updateElapsedTermMonths msg model
+        ElapsedTermMonthsMsg emsg ->
+            updateElapsedTermMonths emsg model
 
-        ElapsedTermPercentMsg msg ->
-            updateElapsedTermPercent msg model
+        ElapsedTermPercentMsg emsg ->
+            updateElapsedTermPercent emsg model
 
-        MainIncomeMsg msg ->
-            updateMainIncome msg model
+        MainIncomeMsg mimsg ->
+            updateMainIncome mimsg model
 
-        StoryMsg msg ->
-            updateStory msg model
+        StoryMsg smsg ->
+            updateStory smsg model
 
-        AmountMsg msg ->
-            updateAmount msg model
+        AmountMsg amsg ->
+            updateAmount amsg model
 
-        RegionMsg msg ->
-            updateRegion msg model
+        RegionMsg rmsg ->
+            updateRegion rmsg model
 
         AddCondition c ->
             addCondition c model
