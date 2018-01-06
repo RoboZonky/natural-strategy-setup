@@ -9,6 +9,7 @@ module Data.Strategy
         , removeBuyFilter
         , removeSellFilter
         , renderStrategyConfiguration
+        , setBuyingConfiguration
         , setDefaultInvestment
         , setDefaultInvestmentShare
         , setInvestment
@@ -23,7 +24,7 @@ module Data.Strategy
 
 import AllDict
 import Data.Confirmation as Confirmation exposing (ConfirmationSettings)
-import Data.Filter as Filters exposing (MarketplaceFilter)
+import Data.Filter as Filters exposing (BuyingConfiguration, MarketplaceFilter)
 import Data.Filter.Conditions.Rating as Rating exposing (Rating(..), RatingMsg)
 import Data.Investment as Investment exposing (InvestmentsPerRating)
 import Data.InvestmentShare as InvestmentShare exposing (InvestmentShare)
@@ -34,6 +35,7 @@ import Data.TargetBalance as TargetBalance exposing (TargetBalance)
 import Data.TargetPortfolioSize as TargetPortfolioSize exposing (TargetPortfolioSize)
 import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as Encode exposing (Value)
+import List.Extra
 import RangeSlider
 import Time.DateTime exposing (DateTime)
 import Util
@@ -44,7 +46,7 @@ type alias StrategyConfiguration =
     { generalSettings : GeneralSettings
     , portfolioShares : PortfolioShares
     , investmentSizeOverrides : InvestmentsPerRating
-    , buyFilters : List MarketplaceFilter
+    , buyingConfig : BuyingConfiguration
     , sellFilters : List MarketplaceFilter
     }
 
@@ -71,7 +73,7 @@ defaultStrategyConfiguration =
         }
     , portfolioShares = PredefinedShares.conservative
     , investmentSizeOverrides = Investment.defaultInvestmentsPerRating Investment.defaultSize
-    , buyFilters = []
+    , buyingConfig = Filters.InvestEverything
     , sellFilters = []
     }
 
@@ -163,22 +165,22 @@ setTargetBalance newBalance ({ generalSettings } as config) =
 
 removeBuyFilter : Int -> StrategyConfiguration -> StrategyConfiguration
 removeBuyFilter index config =
-    { config | buyFilters = removeItemWithIndex index config.buyFilters }
+    { config | buyingConfig = Filters.updateFilters (List.Extra.removeAt index) config.buyingConfig }
 
 
 removeSellFilter : Int -> StrategyConfiguration -> StrategyConfiguration
 removeSellFilter index config =
-    { config | sellFilters = removeItemWithIndex index config.sellFilters }
+    { config | sellFilters = List.Extra.removeAt index config.sellFilters }
 
 
-removeItemWithIndex : Int -> List a -> List a
-removeItemWithIndex i xs =
-    List.take i xs ++ List.drop (i + 1) xs
+setBuyingConfiguration : Filters.BuyConf -> StrategyConfiguration -> StrategyConfiguration
+setBuyingConfiguration buyConf strategy =
+    { strategy | buyingConfig = Filters.fromBuyConfEnum buyConf }
 
 
 addBuyFilter : MarketplaceFilter -> StrategyConfiguration -> StrategyConfiguration
 addBuyFilter newFilter config =
-    { config | buyFilters = config.buyFilters ++ [ newFilter ] }
+    { config | buyingConfig = Filters.updateFilters (\fs -> fs ++ [ newFilter ]) config.buyingConfig }
 
 
 addSellFilter : MarketplaceFilter -> StrategyConfiguration -> StrategyConfiguration
@@ -189,14 +191,14 @@ addSellFilter newFilter config =
 renderStrategyConfiguration : DateTime -> StrategyConfiguration -> String
 renderStrategyConfiguration generatedOn strategy =
     case strategy of
-        { generalSettings, portfolioShares, investmentSizeOverrides, buyFilters, sellFilters } ->
+        { generalSettings, portfolioShares, investmentSizeOverrides, buyingConfig, sellFilters } ->
             Util.joinNonemptyLines
                 [ Version.strategyComment generatedOn
                 , Version.robozonkyVersionStatement
                 , renderGeneralSettings generalSettings
                 , PortfolioStructure.renderPortfolioShares generalSettings.portfolio portfolioShares
                 , Investment.renderInvestments generalSettings.defaultInvestmentSize investmentSizeOverrides
-                , Filters.renderBuyFilters buyFilters
+                , Filters.renderBuyingConfiguration buyingConfig
                 , Filters.renderSellFilters sellFilters
                 ]
 
@@ -259,12 +261,12 @@ generalSettingsDecoder =
 
 
 encodeStrategy : StrategyConfiguration -> Value
-encodeStrategy { generalSettings, portfolioShares, investmentSizeOverrides, buyFilters, sellFilters } =
+encodeStrategy { generalSettings, portfolioShares, investmentSizeOverrides, buyingConfig, sellFilters } =
     Encode.object
         [ ( "generalSettings", encodeGeneralSettings generalSettings )
         , ( "portfolioShares", PortfolioStructure.encode portfolioShares )
         , ( "investmentSizeOverrides", Investment.encode investmentSizeOverrides )
-        , ( "buyFilters", Encode.list <| List.map Filters.encodeMarketplaceFilter buyFilters )
+        , ( "buyingConfig", Filters.encodeBuyingConfiguration buyingConfig )
         , ( "sellFilters", Encode.list <| List.map Filters.encodeMarketplaceFilter sellFilters )
         ]
 
@@ -275,5 +277,5 @@ strategyDecoder =
         (Decode.field "generalSettings" generalSettingsDecoder)
         (Decode.field "portfolioShares" PortfolioStructure.decoder)
         (Decode.field "investmentSizeOverrides" Investment.decoder)
-        (Decode.field "buyFilters" (Decode.list Filters.marketplaceFilterDecoder))
+        (Decode.field "buyingConfig" Filters.decodeBuyingConfiguration)
         (Decode.field "sellFilters" (Decode.list Filters.marketplaceFilterDecoder))

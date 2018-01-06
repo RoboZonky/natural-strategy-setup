@@ -7,7 +7,7 @@ import Data.Strategy exposing (GeneralSettings, StrategyConfiguration)
 import Data.Tooltip as Tooltip
 import Html exposing (Html, text)
 import Types exposing (Msg(AccordionMsg, ModalMsg))
-import View.BuyFilterList as BuyFilterList
+import View.BuyingConfig as BuyingConfig
 import View.Confirmation as Confirmation
 import View.Filter.FilterCreationModal as FilterCreationModal
 import View.Investment as Investment
@@ -28,13 +28,13 @@ form config accordionState filterCreationState tooltipStates =
 
 
 strategyForm : StrategyConfiguration -> Accordion.State -> Tooltip.States -> Html Msg
-strategyForm { generalSettings, portfolioShares, investmentSizeOverrides, buyFilters, sellFilters } accordionState tooltipStates =
+strategyForm { generalSettings, portfolioShares, investmentSizeOverrides, buyingConfig, sellFilters } accordionState tooltipStates =
     Accordion.config AccordionMsg
         |> Accordion.cards
             [ generalSettingsCard generalSettings
             , PortfolioStructure.form generalSettings.portfolio portfolioShares tooltipStates
             , Investment.form generalSettings.defaultInvestmentSize investmentSizeOverrides
-            , BuyFilterList.form buyFilters tooltipStates
+            , BuyingConfig.form buyingConfig tooltipStates
             , SellFilterList.form sellFilters tooltipStates
             ]
         |> Accordion.view accordionState

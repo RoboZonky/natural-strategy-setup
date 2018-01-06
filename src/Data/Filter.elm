@@ -1,22 +1,30 @@
 module Data.Filter
     exposing
-        ( FilteredItem(..)
+        ( BuyConf(..)
+        , BuyingConfiguration(..)
+        , FilteredItem(..)
         , MarketplaceFilter
         , addNegativeCondition
         , addPositiveCondition
+        , buyConfRadioLabel
+        , decodeBuyingConfiguration
         , emptyFilter
+        , encodeBuyingConfiguration
         , encodeMarketplaceFilter
+        , fromBuyConfEnum
         , getFilteredItem
         , isValid
         , itemToPluralString
         , marketplaceFilterDecoder
         , marketplaceFilterValidationErrors
         , renderBuyFilter
-        , renderBuyFilters
+        , renderBuyingConfiguration
         , renderFilteredItem
         , renderSellFilter
         , renderSellFilters
         , setFilteredItem
+        , toBuyConfEnum
+        , updateFilters
         , updateNegativeConditions
         , updatePositiveConditions
         )
@@ -25,6 +33,73 @@ import Data.Filter.Conditions exposing (..)
 import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as Encode exposing (Value)
 import Util
+
+
+type BuyingConfiguration
+    = InvestEverything
+    | InvestSomething (List MarketplaceFilter)
+    | InvestNothing
+
+
+
+-- TODO This is enum for comparison in radios - any idea how to make it without it?
+-- I've got BuyingConfiguration and a radio button representing InvestSomething and I'd like to determine
+-- if that radio should be enabled / disabled, but I can't compare wihout pattern matching on constructor..
+
+
+type BuyConf
+    = InvEverything
+    | InvSomething
+    | InvNothing
+
+
+toBuyConfEnum : BuyingConfiguration -> BuyConf
+toBuyConfEnum buyingConfiguration =
+    case buyingConfiguration of
+        InvestEverything ->
+            InvEverything
+
+        InvestSomething _ ->
+            InvSomething
+
+        InvestNothing ->
+            InvNothing
+
+
+fromBuyConfEnum : BuyConf -> BuyingConfiguration
+fromBuyConfEnum buyConf =
+    case buyConf of
+        InvEverything ->
+            InvestEverything
+
+        InvSomething ->
+            InvestSomething []
+
+        InvNothing ->
+            InvestNothing
+
+
+buyConfRadioLabel : BuyConf -> String
+buyConfRadioLabel bs =
+    case bs of
+        InvEverything ->
+            "Investovat do všech půjček a participací."
+
+        InvSomething ->
+            "Investovat do vybraných"
+
+        InvNothing ->
+            "Ignorovat primární i sekundární tržiště."
+
+
+updateFilters : (List MarketplaceFilter -> List MarketplaceFilter) -> BuyingConfiguration -> BuyingConfiguration
+updateFilters updater buyingConfiguration =
+    case buyingConfiguration of
+        InvestSomething filters ->
+            InvestSomething <| updater filters
+
+        other ->
+            other
 
 
 type alias MarketplaceFilter =
@@ -42,9 +117,17 @@ emptyFilter =
     }
 
 
-renderBuyFilters : List MarketplaceFilter -> String
-renderBuyFilters =
-    renderFilters "\n- Filtrování tržiště" renderBuyFilter
+renderBuyingConfiguration : BuyingConfiguration -> String
+renderBuyingConfiguration buyingConfiguration =
+    case buyingConfiguration of
+        InvestEverything ->
+            "Investovat do všech půjček a participací."
+
+        InvestSomething filters ->
+            renderFilters "\n- Filtrování tržiště" renderBuyFilter filters
+
+        InvestNothing ->
+            "Ignorovat primární i sekundární tržiště."
 
 
 renderSellFilters : List MarketplaceFilter -> String
@@ -179,9 +262,55 @@ itemToPluralString item =
 -- JSON
 
 
+encodeBuyingConfiguration : BuyingConfiguration -> Value
+encodeBuyingConfiguration buyingConfiguration =
+    case buyingConfiguration of
+        InvestEverything ->
+            Encode.object
+                [ ( "strat", Encode.int 1 )
+                , ( "filters", Encode.null )
+                ]
+
+        InvestSomething filters ->
+            Encode.object
+                [ ( "strat", Encode.int 2 )
+                , ( "filters", Encode.list <| List.map encodeMarketplaceFilter filters )
+                ]
+
+        InvestNothing ->
+            Encode.object
+                [ ( "strat", Encode.int 3 )
+                , ( "filters", Encode.null )
+                ]
+
+
+decodeBuyingConfiguration : Decoder BuyingConfiguration
+decodeBuyingConfiguration =
+    Decode.field "strat" Decode.int
+        |> Decode.andThen
+            (\x ->
+                case x of
+                    1 ->
+                        Decode.succeed InvestEverything
+
+                    2 ->
+                        Decode.map InvestSomething <| Decode.field "filters" (Decode.list marketplaceFilterDecoder)
+
+                    3 ->
+                        Decode.succeed InvestNothing
+
+                    _ ->
+                        Decode.fail <| "Unable to decode buying strategy from " ++ toString x
+            )
+
+
 encodeFilteredItem : FilteredItem -> Value
 encodeFilteredItem =
     Encode.string << toString
+
+
+
+-- TODO remove from export list after Buing / selling strategy implemented
 
 
 encodeMarketplaceFilter : MarketplaceFilter -> Value

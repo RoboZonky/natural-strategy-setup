@@ -151,6 +151,9 @@ updateHelper msg model =
         SetDateTime timestamp ->
             { model | generatedOn = DateTime.fromTimestamp timestamp }
 
+        SetBuyingConfiguration buyingConfiguration ->
+            updateStrategy (Strategy.setBuyingConfiguration buyingConfiguration) model
+
         ShareStrategy ->
             -- TODO generate encoded-obfuscated strategy containing URL and show it in UI
             -- let  _ = Debug.log "Strategy JSON: " <| Json.Encode.encode 0 <| Strategy.encodeStrategy model.strategyConfig
