@@ -24,6 +24,8 @@ type Msg
     | RemoveBuyFilter Int
     | RemoveSellFilter Int
     | SetBuyingConfiguration Filter.BuyConf
+    | TogglePrimaryMarket Bool
+    | ToggleSecondaryMarket Bool
     | AccordionMsg Accordion.State
     | ModalMsg ModalMsg
     | TooltipMsg TipId Popover.State

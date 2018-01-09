@@ -61,6 +61,7 @@ filterCreationControls =
                 [ Button.primary
                 , Button.onClick <| ModalMsg <| ModalStateMsg Participation_To_Sell Modal.visibleState
                 , Button.attrs [ class "mx-1" ]
+                , Button.small
                 ]
                 [ text "Přidat pravidlo" ]
             ]

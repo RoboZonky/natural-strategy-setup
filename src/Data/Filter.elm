@@ -3,6 +3,7 @@ module Data.Filter
         ( BuyConf(..)
         , BuyingConfiguration(..)
         , FilteredItem(..)
+        , MarketplaceEnablement
         , MarketplaceFilter
         , addNegativeCondition
         , addPositiveCondition
@@ -24,6 +25,8 @@ module Data.Filter
         , renderSellFilters
         , setFilteredItem
         , toBuyConfEnum
+        , togglePrimaryEnablement
+        , toggleSecondaryEnablement
         , updateFilters
         , updateNegativeConditions
         , updatePositiveConditions
@@ -37,7 +40,7 @@ import Util
 
 type BuyingConfiguration
     = InvestEverything
-    | InvestSomething (List MarketplaceFilter)
+    | InvestSomething MarketplaceEnablement (List MarketplaceFilter)
     | InvestNothing
 
 
@@ -59,7 +62,7 @@ toBuyConfEnum buyingConfiguration =
         InvestEverything ->
             InvEverything
 
-        InvestSomething _ ->
+        InvestSomething _ _ ->
             InvSomething
 
         InvestNothing ->
@@ -73,7 +76,7 @@ fromBuyConfEnum buyConf =
             InvestEverything
 
         InvSomething ->
-            InvestSomething []
+            InvestSomething (MarketplaceEnablement True True) []
 
         InvNothing ->
             InvestNothing
@@ -95,11 +98,72 @@ buyConfRadioLabel bs =
 updateFilters : (List MarketplaceFilter -> List MarketplaceFilter) -> BuyingConfiguration -> BuyingConfiguration
 updateFilters updater buyingConfiguration =
     case buyingConfiguration of
-        InvestSomething filters ->
-            InvestSomething <| updater filters
+        InvestSomething enablement filters ->
+            InvestSomething enablement <| updater filters
 
         other ->
             other
+
+
+togglePrimaryEnablement : Bool -> BuyingConfiguration -> BuyingConfiguration
+togglePrimaryEnablement enable buyingConfiguration =
+    case buyingConfiguration of
+        InvestSomething enablement filters ->
+            let
+                newEnablement =
+                    { enablement | primaryEnabled = enable }
+
+                newFilters =
+                    removeDisabledFilters newEnablement filters
+            in
+            InvestSomething newEnablement newFilters
+
+        other ->
+            other
+
+
+toggleSecondaryEnablement : Bool -> BuyingConfiguration -> BuyingConfiguration
+toggleSecondaryEnablement enable buyingConfiguration =
+    case buyingConfiguration of
+        InvestSomething enablement filters ->
+            let
+                newEnablement =
+                    { enablement | secondaryEnabled = enable }
+
+                newFilters =
+                    removeDisabledFilters newEnablement filters
+            in
+            InvestSomething newEnablement newFilters
+
+        other ->
+            other
+
+
+removeDisabledFilters : MarketplaceEnablement -> List MarketplaceFilter -> List MarketplaceFilter
+removeDisabledFilters enablement =
+    List.filter (enablementAllowsFilter enablement)
+
+
+enablementAllowsFilter : MarketplaceEnablement -> MarketplaceFilter -> Bool
+enablementAllowsFilter { primaryEnabled, secondaryEnabled } f =
+    case ( primaryEnabled, secondaryEnabled ) of
+        ( True, True ) ->
+            True
+
+        ( True, False ) ->
+            f.whatToFilter == Loan
+
+        ( False, True ) ->
+            f.whatToFilter == Participation
+
+        ( False, False ) ->
+            False
+
+
+type alias MarketplaceEnablement =
+    { primaryEnabled : Bool
+    , secondaryEnabled : Bool
+    }
 
 
 type alias MarketplaceFilter =
@@ -123,8 +187,8 @@ renderBuyingConfiguration buyingConfiguration =
         InvestEverything ->
             "Investovat do všech půjček a participací."
 
-        InvestSomething filters ->
-            renderFilters "\n- Filtrování tržiště" renderBuyFilter filters
+        InvestSomething enablement filters ->
+            renderFilters "\n- Filtrování tržiště" enablement renderBuyFilter filters
 
         InvestNothing ->
             "Ignorovat primární i sekundární tržiště."
@@ -132,15 +196,72 @@ renderBuyingConfiguration buyingConfiguration =
 
 renderSellFilters : List MarketplaceFilter -> String
 renderSellFilters =
-    renderFilters "\n- Prodej participací" renderSellFilter
+    renderFiltersLegacy "\n- Prodej participací" renderSellFilter
 
 
-renderFilters : String -> (MarketplaceFilter -> String) -> List MarketplaceFilter -> String
-renderFilters heading filterRenderer filters =
+
+-- TODO unify with renderFilters when updating Prodej participaci
+
+
+renderFiltersLegacy : String -> (MarketplaceFilter -> String) -> List MarketplaceFilter -> String
+renderFiltersLegacy heading filterRenderer filters =
     if List.isEmpty filters then
         ""
     else
         Util.joinNonemptyLines <| heading :: List.map filterRenderer filters
+
+
+renderFilters : String -> MarketplaceEnablement -> (MarketplaceFilter -> String) -> List MarketplaceFilter -> String
+renderFilters heading { primaryEnabled, secondaryEnabled } filterRenderer filters =
+    let
+        primaryFilters =
+            List.filter (\f -> .whatToFilter f == Loan) filters
+
+        secondaryFilters =
+            List.filter (\f -> .whatToFilter f == Participation) filters
+
+        bothFilters =
+            List.filter (\f -> .whatToFilter f == Loan_And_Participation) filters
+
+        primaryEmpty =
+            List.isEmpty <| primaryFilters ++ bothFilters
+
+        secondaryEmpty =
+            List.isEmpty <| secondaryFilters ++ bothFilters
+
+        primaryEnablement =
+            if primaryEmpty then
+                renderPrimaryEnablement primaryEnabled
+            else
+                ""
+
+        secondaryEnablement =
+            if secondaryEmpty then
+                renderSecondaryEnablement secondaryEnabled
+            else
+                ""
+    in
+    Util.joinNonemptyLines <| heading :: primaryEnablement :: List.map filterRenderer filters ++ [ secondaryEnablement ]
+
+
+renderPrimaryEnablement : Bool -> String
+renderPrimaryEnablement isEnabled =
+    case isEnabled of
+        True ->
+            "Investovat do všech půjček."
+
+        False ->
+            "Ignorovat všechny půjčky."
+
+
+renderSecondaryEnablement : Bool -> String
+renderSecondaryEnablement isEnabled =
+    case isEnabled of
+        True ->
+            "Investovat do všech participací."
+
+        False ->
+            "Ignorovat všechny participace."
 
 
 isValid : MarketplaceFilter -> Bool
@@ -271,9 +392,11 @@ encodeBuyingConfiguration buyingConfiguration =
                 , ( "filters", Encode.null )
                 ]
 
-        InvestSomething filters ->
+        InvestSomething enablement filters ->
             Encode.object
                 [ ( "strat", Encode.int 2 )
+                , ( "primEnabled", Encode.bool enablement.primaryEnabled )
+                , ( "secEnabled", Encode.bool enablement.secondaryEnabled )
                 , ( "filters", Encode.list <| List.map encodeMarketplaceFilter filters )
                 ]
 
@@ -294,7 +417,12 @@ decodeBuyingConfiguration =
                         Decode.succeed InvestEverything
 
                     2 ->
-                        Decode.map InvestSomething <| Decode.field "filters" (Decode.list marketplaceFilterDecoder)
+                        Decode.map2 InvestSomething
+                            (Decode.map2 MarketplaceEnablement
+                                (Decode.field "primEnabled" Decode.bool)
+                                (Decode.field "secEnabled" Decode.bool)
+                            )
+                            (Decode.field "filters" (Decode.list marketplaceFilterDecoder))
 
                     3 ->
                         Decode.succeed InvestNothing

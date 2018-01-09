@@ -3,16 +3,17 @@ module View.BuyingConfig exposing (form)
 import Bootstrap.Accordion as Accordion
 import Bootstrap.Button as Button
 import Bootstrap.Card as Card
+import Bootstrap.Form.Checkbox as Checkbox
 import Bootstrap.Form.Radio as Radio
 import Bootstrap.Grid as Grid
 import Bootstrap.Grid.Col as Col
 import Bootstrap.Modal as Modal
-import Data.Filter as Filter exposing (BuyConf, BuyingConfiguration, FilteredItem(..), MarketplaceFilter, renderBuyFilter)
+import Data.Filter as Filter exposing (BuyConf, BuyingConfiguration, FilteredItem(..), MarketplaceEnablement, MarketplaceFilter, renderBuyFilter)
 import Data.Tooltip as Tooltip
 import Html exposing (Html, div, span, text)
 import Html.Attributes exposing (class)
 import Html.Events exposing (onClick)
-import Types exposing (ModalMsg(ModalStateMsg), Msg(ModalMsg, RemoveBuyFilter, SetBuyingConfiguration))
+import Types exposing (ModalMsg(ModalStateMsg), Msg(ModalMsg, RemoveBuyFilter, SetBuyingConfiguration, TogglePrimaryMarket, ToggleSecondaryMarket))
 import View.Tooltip as Tooltip
 
 
@@ -34,8 +35,12 @@ buyingConfigurationRadios buyingConfiguration =
     let
         filterListOrNothing =
             case buyingConfiguration of
-                Filter.InvestSomething filters ->
-                    div [] [ filtersView filters, filterCreationButtons ]
+                Filter.InvestSomething enablement filters ->
+                    div [ class "px-4" ]
+                        [ primarySecondaryEnablementCheckboxes enablement
+                        , filterCreationButtons enablement
+                        , filtersView filters
+                        ]
 
                 _ ->
                     text ""
@@ -47,6 +52,21 @@ buyingConfigurationRadios buyingConfiguration =
             , filterListOrNothing
             , buyingConfigurationRadio buyingConfiguration Filter.InvNothing
             ]
+
+
+primarySecondaryEnablementCheckboxes : MarketplaceEnablement -> Html Msg
+primarySecondaryEnablementCheckboxes enablement =
+    let
+        checkbox tag isChecked =
+            Checkbox.checkbox
+                [ Checkbox.onCheck (tag << not)
+                , Checkbox.checked isChecked
+                ]
+    in
+    div []
+        [ checkbox TogglePrimaryMarket (not enablement.primaryEnabled) "Ignorovat všechny půjčky."
+        , checkbox ToggleSecondaryMarket (not enablement.secondaryEnabled) "Ignorovat všechny participace."
+        ]
 
 
 buyingConfigurationRadio : BuyingConfiguration -> BuyConf -> Html Msg
@@ -61,7 +81,7 @@ buyingConfigurationRadio currentConfiguration thisRadiosConf =
 
 filtersView : List MarketplaceFilter -> Html Msg
 filtersView filters =
-    div [] <| List.indexedMap viewFilter filters
+    div [ class "p-2" ] <| List.indexedMap viewFilter filters
 
 
 viewFilter : Int -> MarketplaceFilter -> Html Msg
@@ -84,14 +104,30 @@ viewFilter index mf =
         |> Card.view
 
 
-filterCreationButtons : Html Msg
-filterCreationButtons =
-    div []
-        [ text "Přidat pravidlo pro "
-        , filterCreationButton Loan "Primární trh"
-        , filterCreationButton Participation "Sekundární trh"
-        , filterCreationButton Loan_And_Participation "Oba trhy"
-        ]
+filterCreationButtons : MarketplaceEnablement -> Html Msg
+filterCreationButtons { primaryEnabled, secondaryEnabled } =
+    let
+        lbl =
+            text "Přidat pravidlo pro "
+
+        primButton =
+            filterCreationButton Loan "Primární trh"
+
+        secButton =
+            filterCreationButton Participation "Sekundární trh"
+    in
+    case ( primaryEnabled, secondaryEnabled ) of
+        ( True, True ) ->
+            div [] [ lbl, primButton, secButton, filterCreationButton Loan_And_Participation "Oba trhy" ]
+
+        ( True, False ) ->
+            div [] [ lbl, primButton ]
+
+        ( False, True ) ->
+            div [] [ lbl, secButton ]
+
+        ( False, False ) ->
+            text ""
 
 
 filterCreationButton : FilteredItem -> String -> Html Msg

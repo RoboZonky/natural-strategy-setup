@@ -18,6 +18,8 @@ module Data.Strategy
         , setTargetBalance
         , setTargetPortfolioSize
         , strategyDecoder
+        , togglePrimaryMarket
+        , toggleSecondaryMarket
         , updateNotificationSettings
         , validateStrategyConfiguration
         )
@@ -176,6 +178,16 @@ removeSellFilter index config =
 setBuyingConfiguration : Filters.BuyConf -> StrategyConfiguration -> StrategyConfiguration
 setBuyingConfiguration buyConf strategy =
     { strategy | buyingConfig = Filters.fromBuyConfEnum buyConf }
+
+
+togglePrimaryMarket : Bool -> StrategyConfiguration -> StrategyConfiguration
+togglePrimaryMarket enable strategy =
+    { strategy | buyingConfig = Filters.togglePrimaryEnablement enable strategy.buyingConfig }
+
+
+toggleSecondaryMarket : Bool -> StrategyConfiguration -> StrategyConfiguration
+toggleSecondaryMarket enable strategy =
+    { strategy | buyingConfig = Filters.toggleSecondaryEnablement enable strategy.buyingConfig }
 
 
 addBuyFilter : MarketplaceFilter -> StrategyConfiguration -> StrategyConfiguration
