@@ -5,13 +5,16 @@ module Data.Filter
         , FilteredItem(..)
         , MarketplaceEnablement
         , MarketplaceFilter
+        , SellingConfiguration(..)
         , addNegativeCondition
         , addPositiveCondition
         , buyConfRadioLabel
         , decodeBuyingConfiguration
+        , decodeSellingConfiguration
         , emptyFilter
         , encodeBuyingConfiguration
         , encodeMarketplaceFilter
+        , encodeSellingConfiguration
         , fromBuyConfEnum
         , getFilteredItem
         , isValid
@@ -23,13 +26,15 @@ module Data.Filter
         , renderFilteredItem
         , renderSellFilter
         , renderSellFilters
+        , renderSellingConfiguration
         , setFilteredItem
         , toBuyConfEnum
         , togglePrimaryEnablement
         , toggleSecondaryEnablement
-        , updateFilters
+        , updateBuyFilters
         , updateNegativeConditions
         , updatePositiveConditions
+        , updateSellFilters
         )
 
 import Data.Filter.Conditions exposing (..)
@@ -95,14 +100,24 @@ buyConfRadioLabel bs =
             "Ignorovat primární i sekundární tržiště."
 
 
-updateFilters : (List MarketplaceFilter -> List MarketplaceFilter) -> BuyingConfiguration -> BuyingConfiguration
-updateFilters updater buyingConfiguration =
+updateBuyFilters : (List MarketplaceFilter -> List MarketplaceFilter) -> BuyingConfiguration -> BuyingConfiguration
+updateBuyFilters updater buyingConfiguration =
     case buyingConfiguration of
         InvestSomething enablement filters ->
             InvestSomething enablement <| updater filters
 
         other ->
             other
+
+
+updateSellFilters : (List MarketplaceFilter -> List MarketplaceFilter) -> SellingConfiguration -> SellingConfiguration
+updateSellFilters updater sellingConfiguration =
+    case sellingConfiguration of
+        SellNothing ->
+            SellNothing
+
+        SellSomething filters ->
+            SellSomething <| updater filters
 
 
 togglePrimaryEnablement : Bool -> BuyingConfiguration -> BuyingConfiguration
@@ -164,6 +179,21 @@ type alias MarketplaceEnablement =
     { primaryEnabled : Bool
     , secondaryEnabled : Bool
     }
+
+
+type SellingConfiguration
+    = SellNothing
+    | SellSomething (List MarketplaceFilter)
+
+
+renderSellingConfiguration : SellingConfiguration -> String
+renderSellingConfiguration sellingConfiguration =
+    case sellingConfiguration of
+        SellNothing ->
+            "Prodej participací zakázán."
+
+        SellSomething filters ->
+            renderSellFilters filters
 
 
 type alias MarketplaceFilter =
@@ -383,18 +413,52 @@ itemToPluralString item =
 -- JSON
 
 
+encodeSellingConfiguration : SellingConfiguration -> Value
+encodeSellingConfiguration sellingConfiguratin =
+    case sellingConfiguratin of
+        SellNothing ->
+            Encode.object
+                [ ( "strat", Encode.int 0 )
+                , ( "filters", Encode.null )
+                ]
+
+        SellSomething filters ->
+            Encode.object
+                [ ( "strat", Encode.int 1 )
+                , ( "filters", Encode.list <| List.map encodeMarketplaceFilter filters )
+                ]
+
+
+decodeSellingConfiguration : Decoder SellingConfiguration
+decodeSellingConfiguration =
+    Decode.field "strat" Decode.int
+        |> Decode.andThen
+            (\x ->
+                case x of
+                    0 ->
+                        Decode.succeed SellNothing
+
+                    1 ->
+                        Decode.map SellSomething
+                            (Decode.field "filters" (Decode.list marketplaceFilterDecoder))
+
+                    _ ->
+                        Decode.fail <| "Unable to SellingConfiguration from " ++ toString x
+            )
+
+
 encodeBuyingConfiguration : BuyingConfiguration -> Value
 encodeBuyingConfiguration buyingConfiguration =
     case buyingConfiguration of
         InvestEverything ->
             Encode.object
-                [ ( "strat", Encode.int 1 )
+                [ ( "strat", Encode.int 0 )
                 , ( "filters", Encode.null )
                 ]
 
         InvestSomething enablement filters ->
             Encode.object
-                [ ( "strat", Encode.int 2 )
+                [ ( "strat", Encode.int 1 )
                 , ( "primEnabled", Encode.bool enablement.primaryEnabled )
                 , ( "secEnabled", Encode.bool enablement.secondaryEnabled )
                 , ( "filters", Encode.list <| List.map encodeMarketplaceFilter filters )
@@ -402,7 +466,7 @@ encodeBuyingConfiguration buyingConfiguration =
 
         InvestNothing ->
             Encode.object
-                [ ( "strat", Encode.int 3 )
+                [ ( "strat", Encode.int 2 )
                 , ( "filters", Encode.null )
                 ]
 
@@ -413,10 +477,10 @@ decodeBuyingConfiguration =
         |> Decode.andThen
             (\x ->
                 case x of
-                    1 ->
+                    0 ->
                         Decode.succeed InvestEverything
 
-                    2 ->
+                    1 ->
                         Decode.map2 InvestSomething
                             (Decode.map2 MarketplaceEnablement
                                 (Decode.field "primEnabled" Decode.bool)
@@ -424,11 +488,11 @@ decodeBuyingConfiguration =
                             )
                             (Decode.field "filters" (Decode.list marketplaceFilterDecoder))
 
-                    3 ->
+                    2 ->
                         Decode.succeed InvestNothing
 
                     _ ->
-                        Decode.fail <| "Unable to decode buying strategy from " ++ toString x
+                        Decode.fail <| "Unable to decode BuyingConfiguration from " ++ toString x
             )
 
 

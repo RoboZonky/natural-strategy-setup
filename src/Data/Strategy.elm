@@ -26,7 +26,7 @@ module Data.Strategy
 
 import AllDict
 import Data.Confirmation as Confirmation exposing (ConfirmationSettings)
-import Data.Filter as Filters exposing (BuyingConfiguration, MarketplaceFilter)
+import Data.Filter as Filters exposing (BuyingConfiguration, MarketplaceFilter, SellingConfiguration)
 import Data.Filter.Conditions.Rating as Rating exposing (Rating(..), RatingMsg)
 import Data.Investment as Investment exposing (InvestmentsPerRating)
 import Data.InvestmentShare as InvestmentShare exposing (InvestmentShare)
@@ -49,7 +49,7 @@ type alias StrategyConfiguration =
     , portfolioShares : PortfolioShares
     , investmentSizeOverrides : InvestmentsPerRating
     , buyingConfig : BuyingConfiguration
-    , sellFilters : List MarketplaceFilter
+    , sellFilters : SellingConfiguration
     }
 
 
@@ -76,7 +76,7 @@ defaultStrategyConfiguration =
     , portfolioShares = PredefinedShares.conservative
     , investmentSizeOverrides = Investment.defaultInvestmentsPerRating Investment.defaultSize
     , buyingConfig = Filters.InvestEverything
-    , sellFilters = []
+    , sellFilters = Filters.SellNothing
     }
 
 
@@ -167,12 +167,12 @@ setTargetBalance newBalance ({ generalSettings } as config) =
 
 removeBuyFilter : Int -> StrategyConfiguration -> StrategyConfiguration
 removeBuyFilter index config =
-    { config | buyingConfig = Filters.updateFilters (List.Extra.removeAt index) config.buyingConfig }
+    { config | buyingConfig = Filters.updateBuyFilters (List.Extra.removeAt index) config.buyingConfig }
 
 
 removeSellFilter : Int -> StrategyConfiguration -> StrategyConfiguration
 removeSellFilter index config =
-    { config | sellFilters = List.Extra.removeAt index config.sellFilters }
+    { config | sellFilters = Filters.updateSellFilters (List.Extra.removeAt index) config.sellFilters }
 
 
 setBuyingConfiguration : Filters.BuyConf -> StrategyConfiguration -> StrategyConfiguration
@@ -192,12 +192,12 @@ toggleSecondaryMarket enable strategy =
 
 addBuyFilter : MarketplaceFilter -> StrategyConfiguration -> StrategyConfiguration
 addBuyFilter newFilter config =
-    { config | buyingConfig = Filters.updateFilters (\fs -> fs ++ [ newFilter ]) config.buyingConfig }
+    { config | buyingConfig = Filters.updateBuyFilters (\fs -> fs ++ [ newFilter ]) config.buyingConfig }
 
 
 addSellFilter : MarketplaceFilter -> StrategyConfiguration -> StrategyConfiguration
 addSellFilter newFilter config =
-    { config | sellFilters = config.sellFilters ++ [ newFilter ] }
+    { config | sellFilters = Filters.updateSellFilters (\fs -> fs ++ [ newFilter ]) config.sellFilters }
 
 
 renderStrategyConfiguration : DateTime -> StrategyConfiguration -> String
@@ -211,7 +211,7 @@ renderStrategyConfiguration generatedOn strategy =
                 , PortfolioStructure.renderPortfolioShares generalSettings.portfolio portfolioShares
                 , Investment.renderInvestments generalSettings.defaultInvestmentSize investmentSizeOverrides
                 , Filters.renderBuyingConfiguration buyingConfig
-                , Filters.renderSellFilters sellFilters
+                , Filters.renderSellingConfiguration sellFilters
                 ]
 
 
@@ -279,7 +279,7 @@ encodeStrategy { generalSettings, portfolioShares, investmentSizeOverrides, buyi
         , ( "portfolioShares", PortfolioStructure.encode portfolioShares )
         , ( "investmentSizeOverrides", Investment.encode investmentSizeOverrides )
         , ( "buyingConfig", Filters.encodeBuyingConfiguration buyingConfig )
-        , ( "sellFilters", Encode.list <| List.map Filters.encodeMarketplaceFilter sellFilters )
+        , ( "sellFilters", Filters.encodeSellingConfiguration sellFilters )
         ]
 
 
@@ -290,4 +290,4 @@ strategyDecoder =
         (Decode.field "portfolioShares" PortfolioStructure.decoder)
         (Decode.field "investmentSizeOverrides" Investment.decoder)
         (Decode.field "buyingConfig" Filters.decodeBuyingConfiguration)
-        (Decode.field "sellFilters" (Decode.list Filters.marketplaceFilterDecoder))
+        (Decode.field "sellFilters" Filters.decodeSellingConfiguration)

@@ -13,7 +13,7 @@ import View.Filter.FilterCreationModal as FilterCreationModal
 import View.Investment as Investment
 import View.InvestmentShare as InvestmentShare
 import View.PortfolioStructure as PortfolioStructure
-import View.SellFilterList as SellFilterList
+import View.SellConfig as SellConfig
 import View.TargetBalance as TargetBalance
 import View.TargetPortfolioSize as TargetPortfolioSize
 
@@ -35,7 +35,7 @@ strategyForm { generalSettings, portfolioShares, investmentSizeOverrides, buying
             , PortfolioStructure.form generalSettings.portfolio portfolioShares tooltipStates
             , Investment.form generalSettings.defaultInvestmentSize investmentSizeOverrides
             , BuyingConfig.form buyingConfig tooltipStates
-            , SellFilterList.form sellFilters tooltipStates
+            , SellConfig.form sellFilters tooltipStates
             ]
         |> Accordion.view accordionState
 
