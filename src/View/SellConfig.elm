@@ -19,7 +19,7 @@ import View.Tooltip as Tooltip
 form : SellingConfiguration -> Tooltip.States -> Accordion.Card Msg
 form sellingConfiguration tooltipStates =
     Accordion.card
-        { id = "sellFiltersCard"
+        { id = "sellingConfigCard"
         , options = []
         , header =
             Accordion.headerH4 [] (Accordion.toggle [] [ text "Pravidla pro prodej" ])

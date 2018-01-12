@@ -28,14 +28,14 @@ form config accordionState filterCreationState tooltipStates =
 
 
 strategyForm : StrategyConfiguration -> Accordion.State -> Tooltip.States -> Html Msg
-strategyForm { generalSettings, portfolioShares, investmentSizeOverrides, buyingConfig, sellFilters } accordionState tooltipStates =
+strategyForm { generalSettings, portfolioShares, investmentSizeOverrides, buyingConfig, sellingConfig } accordionState tooltipStates =
     Accordion.config AccordionMsg
         |> Accordion.cards
             [ generalSettingsCard generalSettings
             , PortfolioStructure.form generalSettings.portfolio portfolioShares tooltipStates
             , Investment.form generalSettings.defaultInvestmentSize investmentSizeOverrides
             , BuyingConfig.form buyingConfig tooltipStates
-            , SellConfig.form sellFilters tooltipStates
+            , SellConfig.form sellingConfig tooltipStates
             ]
         |> Accordion.view accordionState
 

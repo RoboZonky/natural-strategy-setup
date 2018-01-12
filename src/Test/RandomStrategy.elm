@@ -2,7 +2,7 @@ module Test.RandomStrategy exposing (conditionsGen, strategyConfigurationGen)
 
 import AllDict
 import Data.Confirmation exposing (ConfirmationSettings)
-import Data.Filter as Filter exposing (BuyingConfiguration, FilteredItem(..), MarketplaceEnablement, MarketplaceFilter)
+import Data.Filter as Filter exposing (BuyingConfiguration, FilteredItem(..), MarketplaceEnablement, MarketplaceFilter, SellingConfiguration)
 import Data.Filter.Conditions exposing (Condition(..), Conditions, addCondition, emptyConditions)
 import Data.Filter.Conditions.Amount as Amount exposing (AmountCondition(AmountCondition))
 import Data.Filter.Conditions.ElapsedTermMonths as ElapsedTermMonths exposing (ElapsedTermMonthsCondition(..))
@@ -34,7 +34,7 @@ strategyConfigurationGen =
         portfolioSharesGen
         investmentsPerRatingGen
         buyingConfigGen
-        sellFiltersGen
+        sellingConfigGen
 
 
 generalSettingsGen : Generator GeneralSettings
@@ -93,9 +93,12 @@ marketplaceEnablementGen =
     Random.map2 MarketplaceEnablement Random.bool Random.bool
 
 
-sellFiltersGen : Generator (List MarketplaceFilter)
-sellFiltersGen =
-    Random.rangeLengthList 0 10 sellFilterGen
+sellingConfigGen : Generator SellingConfiguration
+sellingConfigGen =
+    Random.frequency
+        [ ( 1, Random.constant Filter.SellNothing )
+        , ( 3, Random.map Filter.SellSomething (Random.rangeLengthList 0 10 sellFilterGen) )
+        ]
 
 
 buyFilterGen : Generator MarketplaceFilter
