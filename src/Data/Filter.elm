@@ -14,14 +14,12 @@ module Data.Filter
         , decodeSellingConfiguration
         , emptyFilter
         , encodeBuyingConfiguration
-        , encodeMarketplaceFilter
         , encodeSellingConfiguration
         , fromBuyConfEnum
         , fromSellConfEnum
         , getFilteredItem
         , isValid
         , itemToPluralString
-        , marketplaceFilterDecoder
         , marketplaceFilterValidationErrors
         , renderBuyFilter
         , renderBuyingConfiguration
@@ -542,10 +540,6 @@ decodeBuyingConfiguration =
 encodeFilteredItem : FilteredItem -> Value
 encodeFilteredItem =
     Encode.string << toString
-
-
-
--- TODO remove from export list after Buing / selling strategy implemented
 
 
 encodeMarketplaceFilter : MarketplaceFilter -> Value
