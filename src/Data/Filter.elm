@@ -5,6 +5,7 @@ module Data.Filter
         , FilteredItem(..)
         , MarketplaceEnablement
         , MarketplaceFilter
+        , SellConf(..)
         , SellingConfiguration(..)
         , addNegativeCondition
         , addPositiveCondition
@@ -16,6 +17,7 @@ module Data.Filter
         , encodeMarketplaceFilter
         , encodeSellingConfiguration
         , fromBuyConfEnum
+        , fromSellConfEnum
         , getFilteredItem
         , isValid
         , itemToPluralString
@@ -27,8 +29,10 @@ module Data.Filter
         , renderSellFilter
         , renderSellFilters
         , renderSellingConfiguration
+        , sellConfRadioLabel
         , setFilteredItem
         , toBuyConfEnum
+        , toSellConfEnum
         , togglePrimaryEnablement
         , toggleSecondaryEnablement
         , updateBuyFilters
@@ -97,7 +101,7 @@ buyConfRadioLabel bs =
             "Investovat do vybraných"
 
         InvNothing ->
-            "Ignorovat primární i sekundární tržiště."
+            "Ignorovat všechny půjčky i participace."
 
 
 updateBuyFilters : (List MarketplaceFilter -> List MarketplaceFilter) -> BuyingConfiguration -> BuyingConfiguration
@@ -186,6 +190,45 @@ type SellingConfiguration
     | SellSomething (List MarketplaceFilter)
 
 
+
+-- TODO This is enum for comparison in radios - any idea how to make it without it?
+
+
+type SellConf
+    = SNothing
+    | SSomething
+
+
+toSellConfEnum : SellingConfiguration -> SellConf
+toSellConfEnum sellingConfiguration =
+    case sellingConfiguration of
+        SellNothing ->
+            SNothing
+
+        SellSomething _ ->
+            SSomething
+
+
+fromSellConfEnum : SellConf -> SellingConfiguration
+fromSellConfEnum sellConf =
+    case sellConf of
+        SNothing ->
+            SellNothing
+
+        SSomething ->
+            SellSomething []
+
+
+sellConfRadioLabel : SellConf -> String
+sellConfRadioLabel sellConf =
+    case sellConf of
+        SSomething ->
+            "Prodávat vybrané."
+
+        SNothing ->
+            "Neprodávat žádné participace."
+
+
 renderSellingConfiguration : SellingConfiguration -> String
 renderSellingConfiguration sellingConfiguration =
     case sellingConfiguration of
@@ -221,7 +264,7 @@ renderBuyingConfiguration buyingConfiguration =
             renderFilters "\n- Filtrování tržiště" enablement renderBuyFilter filters
 
         InvestNothing ->
-            "Ignorovat primární i sekundární tržiště."
+            "Ignorovat všechny půjčky i participace."
 
 
 renderSellFilters : List MarketplaceFilter -> String

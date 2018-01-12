@@ -160,6 +160,9 @@ updateHelper msg model =
         ToggleSecondaryMarket enable ->
             updateStrategy (Strategy.toggleSecondaryMarket enable) model
 
+        SetSellingConfiguration sellingConfiguration ->
+            updateStrategy (Strategy.setSellingConfiguration sellingConfiguration) model
+
         ShareStrategy ->
             -- TODO generate encoded-obfuscated strategy containing URL and show it in UI
             -- let  _ = Debug.log "Strategy JSON: " <| Json.Encode.encode 0 <| Strategy.encodeStrategy model.strategyConfig

@@ -15,6 +15,7 @@ module Data.Strategy
         , setInvestment
         , setPortfolio
         , setPortfolioShareRange
+        , setSellingConfiguration
         , setTargetBalance
         , setTargetPortfolioSize
         , strategyDecoder
@@ -178,6 +179,11 @@ removeSellFilter index config =
 setBuyingConfiguration : Filters.BuyConf -> StrategyConfiguration -> StrategyConfiguration
 setBuyingConfiguration buyConf strategy =
     { strategy | buyingConfig = Filters.fromBuyConfEnum buyConf }
+
+
+setSellingConfiguration : Filters.SellConf -> StrategyConfiguration -> StrategyConfiguration
+setSellingConfiguration sellConf strategy =
+    { strategy | sellFilters = Filters.fromSellConfEnum sellConf }
 
 
 togglePrimaryMarket : Bool -> StrategyConfiguration -> StrategyConfiguration

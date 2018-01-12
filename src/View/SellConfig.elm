@@ -3,15 +3,16 @@ module View.SellConfig exposing (form)
 import Bootstrap.Accordion as Accordion
 import Bootstrap.Button as Button
 import Bootstrap.Card as Card
+import Bootstrap.Form.Radio as Radio
 import Bootstrap.Grid as Grid
 import Bootstrap.Grid.Col as Col
 import Bootstrap.Modal as Modal
-import Data.Filter exposing (FilteredItem(Participation_To_Sell), MarketplaceFilter, SellingConfiguration(..), renderSellFilter)
+import Data.Filter as Filter exposing (FilteredItem(Participation_To_Sell), MarketplaceFilter, SellConf(..), SellingConfiguration(..), renderSellFilter)
 import Data.Tooltip as Tooltip
 import Html exposing (Html, div, span, text)
 import Html.Attributes exposing (class)
 import Html.Events exposing (onClick)
-import Types exposing (ModalMsg(ModalStateMsg), Msg(ModalMsg, RemoveSellFilter))
+import Types exposing (ModalMsg(ModalStateMsg), Msg(ModalMsg, RemoveSellFilter, SetSellingConfiguration))
 import View.Tooltip as Tooltip
 
 
@@ -24,18 +25,38 @@ form sellingConfiguration tooltipStates =
             Accordion.headerH4 [] (Accordion.toggle [] [ text "Pravidla pro prodej" ])
                 |> Accordion.appendHeader [ Tooltip.popoverTip Tooltip.sellFilterListTip tooltipStates ]
         , blocks =
-            [ Accordion.block [] [ viewSellingConfiguration sellingConfiguration ] ]
+            [ Accordion.block [] [ sellingConfigurationRadios sellingConfiguration ] ]
         }
 
 
-viewSellingConfiguration : SellingConfiguration -> Card.BlockItem Msg
+sellingConfigurationRadios : SellingConfiguration -> Card.BlockItem Msg
+sellingConfigurationRadios sellingConfiguration =
+    Card.custom <|
+        div []
+            [ sellingConfigurationRadio sellingConfiguration Filter.SNothing
+            , sellingConfigurationRadio sellingConfiguration Filter.SSomething
+            , viewSellingConfiguration sellingConfiguration
+            ]
+
+
+sellingConfigurationRadio : SellingConfiguration -> SellConf -> Html Msg
+sellingConfigurationRadio currentConfiguration thisRadiosConf =
+    Radio.radio
+        [ Radio.name "sellingConfiguration"
+        , Radio.checked <| Filter.toSellConfEnum currentConfiguration == thisRadiosConf
+        , Radio.onClick (SetSellingConfiguration thisRadiosConf)
+        ]
+        (Filter.sellConfRadioLabel thisRadiosConf)
+
+
+viewSellingConfiguration : SellingConfiguration -> Html Msg
 viewSellingConfiguration sellingConfiguration =
     case sellingConfiguration of
-        SellNothing ->
-            Card.custom <| text ""
-
         SellSomething filters ->
-            Card.custom <| div [] [ filtersView filters, filterCreationControls ]
+            div [] [ filtersView filters, filterCreationControls ]
+
+        SellNothing ->
+            text ""
 
 
 filtersView : List MarketplaceFilter -> Html Msg

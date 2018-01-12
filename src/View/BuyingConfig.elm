@@ -32,26 +32,27 @@ form buyingConfiguration tooltipStates =
 
 buyingConfigurationRadios : BuyingConfiguration -> Card.BlockItem Msg
 buyingConfigurationRadios buyingConfiguration =
-    let
-        filterListOrNothing =
-            case buyingConfiguration of
-                Filter.InvestSomething enablement filters ->
-                    div [ class "px-4" ]
-                        [ primarySecondaryEnablementCheckboxes enablement
-                        , filterCreationButtons enablement
-                        , filtersView filters
-                        ]
-
-                _ ->
-                    text ""
-    in
     Card.custom <|
         div []
             [ buyingConfigurationRadio buyingConfiguration Filter.InvEverything
             , buyingConfigurationRadio buyingConfiguration Filter.InvSomething
-            , filterListOrNothing
+            , viewBuyingConfiguration buyingConfiguration
             , buyingConfigurationRadio buyingConfiguration Filter.InvNothing
             ]
+
+
+viewBuyingConfiguration : BuyingConfiguration -> Html Msg
+viewBuyingConfiguration buyingConfiguration =
+    case buyingConfiguration of
+        Filter.InvestSomething enablement filters ->
+            div [ class "px-4" ]
+                [ primarySecondaryEnablementCheckboxes enablement
+                , filterCreationButtons enablement
+                , filtersView filters
+                ]
+
+        _ ->
+            text ""
 
 
 primarySecondaryEnablementCheckboxes : MarketplaceEnablement -> Html Msg
