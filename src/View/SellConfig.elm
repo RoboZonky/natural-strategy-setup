@@ -13,6 +13,7 @@ import Html exposing (Html, div, span, text)
 import Html.Attributes exposing (class)
 import Html.Events exposing (onClick)
 import Types exposing (ModalMsg(ModalStateMsg), Msg(ModalMsg, RemoveSellFilter, SetSellingConfiguration))
+import Util
 import View.Tooltip as Tooltip
 
 
@@ -53,7 +54,11 @@ viewSellingConfiguration : SellingConfiguration -> Html Msg
 viewSellingConfiguration sellingConfiguration =
     case sellingConfiguration of
         SellSomething filters ->
-            div [] [ filtersView filters, filterCreationControls ]
+            div []
+                [ filterCreationControls
+                , filtersView filters
+                , Util.viewErrors <| Filter.validateSellingConfiguration sellingConfiguration
+                ]
 
         SellNothing ->
             text ""
@@ -61,7 +66,7 @@ viewSellingConfiguration sellingConfiguration =
 
 filtersView : List MarketplaceFilter -> Html Msg
 filtersView filters =
-    div [] <| List.indexedMap viewFilter filters
+    div [ class "p-2" ] <| List.indexedMap viewFilter filters
 
 
 viewFilter : Int -> MarketplaceFilter -> Html Msg

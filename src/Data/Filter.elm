@@ -37,6 +37,7 @@ module Data.Filter
         , updateNegativeConditions
         , updatePositiveConditions
         , updateSellFilters
+        , validateSellingConfiguration
         )
 
 import Data.Filter.Conditions exposing (..)
@@ -188,6 +189,16 @@ type SellingConfiguration
     | SellSomething (List MarketplaceFilter)
 
 
+validateSellingConfiguration : SellingConfiguration -> List String
+validateSellingConfiguration sellingConfiguration =
+    case sellingConfiguration of
+        SellSomething filterList ->
+            Util.validate (List.isEmpty filterList) "Musíte přidat alespoň jedno pravidlo pro prodej, nebo zakázat prodej participací"
+
+        SellNothing ->
+            []
+
+
 
 -- TODO This is enum for comparison in radios - any idea how to make it without it?
 
@@ -266,20 +277,11 @@ renderBuyingConfiguration buyingConfiguration =
 
 
 renderSellFilters : List MarketplaceFilter -> String
-renderSellFilters =
-    renderFiltersLegacy "\n- Prodej participací" renderSellFilter
-
-
-
--- TODO unify with renderFilters when updating Prodej participaci
-
-
-renderFiltersLegacy : String -> (MarketplaceFilter -> String) -> List MarketplaceFilter -> String
-renderFiltersLegacy heading filterRenderer filters =
+renderSellFilters filters =
     if List.isEmpty filters then
         ""
     else
-        Util.joinNonemptyLines <| heading :: List.map filterRenderer filters
+        Util.joinNonemptyLines <| "\n- Prodej participací" :: List.map renderSellFilter filters
 
 
 renderFilters : String -> MarketplaceEnablement -> (MarketplaceFilter -> String) -> List MarketplaceFilter -> String

@@ -239,6 +239,7 @@ validateStrategyConfiguration strategyConfig =
     List.concat
         [ validateGeneralSettings strategyConfig.generalSettings
         , PortfolioStructure.validate strategyConfig.portfolioShares
+        , Filters.validateSellingConfiguration strategyConfig.sellingConfig
         ]
 
 
