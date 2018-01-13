@@ -36,7 +36,7 @@ module Data.Filter
         , validateSellingConfiguration
         )
 
-import Data.Filter.Conditions exposing (..)
+import Data.Filter.Conditions as Conditions exposing (Condition, Conditions)
 import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as Encode exposing (Value)
 import Util
@@ -271,8 +271,8 @@ type alias MarketplaceFilter =
 emptyFilter : MarketplaceFilter
 emptyFilter =
     { whatToFilter = Loan
-    , ignoreWhen = emptyConditions
-    , butNotWhen = emptyConditions
+    , ignoreWhen = Conditions.emptyConditions
+    , butNotWhen = Conditions.emptyConditions
     }
 
 
@@ -359,11 +359,11 @@ marketplaceFilterValidationErrors : MarketplaceFilter -> List String
 marketplaceFilterValidationErrors mf =
     let
         atLeastOnePositiveCondition =
-            Util.validate (List.isEmpty <| conditionsToList mf.ignoreWhen) "Pravidlo musí obsahovat aspoň jednu podmínku"
+            Util.validate (List.isEmpty <| Conditions.conditionsToList mf.ignoreWhen) "Pravidlo musí obsahovat aspoň jednu podmínku"
     in
     atLeastOnePositiveCondition
-        ++ conditionsValidationErrors "" mf.ignoreWhen
-        ++ conditionsValidationErrors "Výjimka - " mf.butNotWhen
+        ++ Conditions.conditionsValidationErrors "" mf.ignoreWhen
+        ++ Conditions.conditionsValidationErrors "Výjimka - " mf.butNotWhen
 
 
 setFilteredItem : FilteredItem -> MarketplaceFilter -> MarketplaceFilter
@@ -400,20 +400,20 @@ renderCommonPartOfBuyAndSellFilters : MarketplaceFilter -> String
 renderCommonPartOfBuyAndSellFilters { ignoreWhen, butNotWhen } =
     let
         negativePart =
-            if List.isEmpty (conditionsToList butNotWhen) then
+            if List.isEmpty (Conditions.conditionsToList butNotWhen) then
                 ""
             else
-                "\n(Ale ne když: " ++ renderConditionList (conditionsToList butNotWhen) ++ ")"
+                "\n(Ale ne když: " ++ renderConditionList (Conditions.conditionsToList butNotWhen) ++ ")"
 
         positivePart =
-            renderConditionList <| conditionsToList ignoreWhen
+            renderConditionList <| Conditions.conditionsToList ignoreWhen
     in
     ", kde: " ++ positivePart ++ negativePart
 
 
 renderConditionList : List Condition -> String
 renderConditionList =
-    List.map renderCondition >> String.join "; " >> addDotIfNotEmpty
+    List.map Conditions.renderCondition >> String.join "; " >> addDotIfNotEmpty
 
 
 addDotIfNotEmpty : String -> String
@@ -566,8 +566,8 @@ encodeMarketplaceFilter : MarketplaceFilter -> Value
 encodeMarketplaceFilter { whatToFilter, ignoreWhen, butNotWhen } =
     Encode.object
         [ ( "whatToFilter", encodeFilteredItem whatToFilter )
-        , ( "ignoreWhen", encodeConditions ignoreWhen )
-        , ( "butNotWhen", encodeConditions butNotWhen )
+        , ( "ignoreWhen", Conditions.encodeConditions ignoreWhen )
+        , ( "butNotWhen", Conditions.encodeConditions butNotWhen )
         ]
 
 
@@ -580,5 +580,5 @@ marketplaceFilterDecoder : Decoder MarketplaceFilter
 marketplaceFilterDecoder =
     Decode.map3 MarketplaceFilter
         (Decode.field "whatToFilter" filteredItemDecoder)
-        (Decode.field "ignoreWhen" conditionsDecoder)
-        (Decode.field "butNotWhen" conditionsDecoder)
+        (Decode.field "ignoreWhen" Conditions.conditionsDecoder)
+        (Decode.field "butNotWhen" Conditions.conditionsDecoder)

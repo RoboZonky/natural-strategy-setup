@@ -8,7 +8,7 @@ import Data.InvestmentShare as InvestmentShare
 import Data.PortfolioStructure as PortfolioStructure
 import Data.Strategy as Strategy exposing (StrategyConfiguration)
 import Data.TargetBalance as TargetBalance exposing (TargetBalance(TargetBalance))
-import Data.TargetPortfolioSize as TargetPortfolioSize exposing (..)
+import Data.TargetPortfolioSize as TargetPortfolioSize exposing (TargetPortfolioSize(TargetPortfolioSize))
 import Data.Tooltip as Tooltip
 import Html exposing (Html, a, footer, h1, text)
 import Html.Attributes exposing (class, href, style)
