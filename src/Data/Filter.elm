@@ -206,7 +206,8 @@ validateSellingConfiguration : SellingConfiguration -> List String
 validateSellingConfiguration sellingConfiguration =
     case sellingConfiguration of
         SellSomething filterList ->
-            Util.validate (List.isEmpty filterList) "Musíte přidat alespoň jedno pravidlo pro prodej, nebo zakázat prodej participací"
+            Util.validate (List.isEmpty filterList)
+                "Seznam pravidel nesmí být prázdný. Přidejte alespoň jedno pravidlo nebo zakažte prodej participací"
 
         SellNothing ->
             []
