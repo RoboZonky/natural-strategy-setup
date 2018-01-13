@@ -19,7 +19,7 @@ module Data.Filter.Conditions
         , removeStoryCondition
         , removeTermMonthsCondition
         , removeTermPercentCondition
-        , renderConditionList
+        , renderCondition
         , updateAmount
         , updateElapsedTermMonths
         , updateElapsedTermPercent
@@ -92,21 +92,6 @@ emptyConditions =
     , amount = Nothing
     , interest = Nothing
     }
-
-
-renderConditionList : List Condition -> String
-renderConditionList =
-    List.map renderCondition >> String.join "; " >> addDotIfNotEmpty
-
-
-addDotIfNotEmpty : String -> String
-addDotIfNotEmpty s =
-    s
-        ++ (if String.isEmpty s then
-                ""
-            else
-                "."
-           )
 
 
 renderCondition : Condition -> String

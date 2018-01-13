@@ -10,7 +10,6 @@ module Data.Filter.Conditions.Rating
         , form
         , hash
         , ratingFromString
-        , ratingSatisfiesCondition
         , ratingToString
         , renderCondition
         , update

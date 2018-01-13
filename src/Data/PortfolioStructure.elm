@@ -2,7 +2,6 @@ module Data.PortfolioStructure
     exposing
         ( PortfolioShare
         , PortfolioShares
-        , Share
         , decoder
         , encode
         , percentageShare

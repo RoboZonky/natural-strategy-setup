@@ -1,4 +1,4 @@
-module View.Filter.Conditions exposing (Model, Msg, form, update)
+module View.Filter.Conditions exposing (Msg, form, update)
 
 import Bootstrap.Form.Checkbox as Checkbox
 import Bootstrap.Form.Fieldset as Fieldset
@@ -32,7 +32,7 @@ type alias Model =
 -- VIEW
 
 
-form : FilteredItem -> Conditions -> Html Msg
+form : FilteredItem -> Model -> Html Msg
 form filteredItem conditions =
     let
         extraRows =

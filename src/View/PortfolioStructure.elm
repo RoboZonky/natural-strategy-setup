@@ -1,4 +1,4 @@
-module View.PortfolioStructure exposing (defaultPortfolioForm, form)
+module View.PortfolioStructure exposing (form)
 
 import AllDict as Dict
 import Bootstrap.Accordion as Accordion

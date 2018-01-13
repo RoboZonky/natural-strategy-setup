@@ -2,7 +2,6 @@ module Data.TargetBalance
     exposing
         ( TargetBalance(..)
         , decoder
-        , defaultTargetBalance
         , encode
         , render
         , validate
@@ -16,11 +15,6 @@ import Util
 type TargetBalance
     = NotSpecified
     | TargetBalance Int
-
-
-defaultTargetBalance : TargetBalance
-defaultTargetBalance =
-    TargetBalance 200
 
 
 render : TargetBalance -> String

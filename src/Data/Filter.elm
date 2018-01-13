@@ -7,8 +7,6 @@ module Data.Filter
         , MarketplaceFilter
         , SellConf(..)
         , SellingConfiguration(..)
-        , addNegativeCondition
-        , addPositiveCondition
         , buyConfRadioLabel
         , decodeBuyingConfiguration
         , decodeSellingConfiguration
@@ -23,9 +21,7 @@ module Data.Filter
         , marketplaceFilterValidationErrors
         , renderBuyFilter
         , renderBuyingConfiguration
-        , renderFilteredItem
         , renderSellFilter
-        , renderSellFilters
         , renderSellingConfiguration
         , sellConfRadioLabel
         , setFilteredItem
@@ -380,16 +376,6 @@ getFilteredItem { whatToFilter } =
     whatToFilter
 
 
-addPositiveCondition : Condition -> MarketplaceFilter -> MarketplaceFilter
-addPositiveCondition c =
-    updatePositiveConditions (addCondition c)
-
-
-addNegativeCondition : Condition -> MarketplaceFilter -> MarketplaceFilter
-addNegativeCondition c =
-    updateNegativeConditions (addCondition c)
-
-
 updatePositiveConditions : (Conditions -> Conditions) -> MarketplaceFilter -> MarketplaceFilter
 updatePositiveConditions conditionsUpdater mf =
     { mf | ignoreWhen = conditionsUpdater mf.ignoreWhen }
@@ -423,6 +409,21 @@ renderCommonPartOfBuyAndSellFilters { ignoreWhen, butNotWhen } =
             renderConditionList <| conditionsToList ignoreWhen
     in
     ", kde: " ++ positivePart ++ negativePart
+
+
+renderConditionList : List Condition -> String
+renderConditionList =
+    List.map renderCondition >> String.join "; " >> addDotIfNotEmpty
+
+
+addDotIfNotEmpty : String -> String
+addDotIfNotEmpty s =
+    s
+        ++ (if String.isEmpty s then
+                ""
+            else
+                "."
+           )
 
 
 type FilteredItem
