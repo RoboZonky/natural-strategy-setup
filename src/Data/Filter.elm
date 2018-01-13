@@ -124,12 +124,21 @@ updateSellFilters updater sellingConfiguration =
 
 
 togglePrimaryEnablement : Bool -> BuyingConfiguration -> BuyingConfiguration
-togglePrimaryEnablement enable buyingConfiguration =
+togglePrimaryEnablement enablePrimary buyingConfiguration =
     case buyingConfiguration of
         InvestSomething enablement filters ->
             let
                 newEnablement =
-                    { enablement | primaryEnabled = enable }
+                    { enablement
+                        | primaryEnabled = enablePrimary
+
+                        -- Ensure at most 1 of the 2 checkboxes is enabled at any given time
+                        , secondaryEnabled =
+                            if enablePrimary then
+                                enablement.secondaryEnabled
+                            else
+                                True
+                    }
 
                 newFilters =
                     removeDisabledFilters newEnablement filters
@@ -141,12 +150,20 @@ togglePrimaryEnablement enable buyingConfiguration =
 
 
 toggleSecondaryEnablement : Bool -> BuyingConfiguration -> BuyingConfiguration
-toggleSecondaryEnablement enable buyingConfiguration =
+toggleSecondaryEnablement enableSecondary buyingConfiguration =
     case buyingConfiguration of
         InvestSomething enablement filters ->
             let
                 newEnablement =
-                    { enablement | secondaryEnabled = enable }
+                    { enablement
+                        | -- Ensure at most 1 of the 2 checkboxes is enabled at any given time
+                          primaryEnabled =
+                            if enableSecondary then
+                                enablement.primaryEnabled
+                            else
+                                True
+                        , secondaryEnabled = enableSecondary
+                    }
 
                 newFilters =
                     removeDisabledFilters newEnablement filters
