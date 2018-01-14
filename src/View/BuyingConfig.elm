@@ -23,7 +23,7 @@ form buyingConfiguration tooltipStates =
         { id = "buyingConfigCard"
         , options = []
         , header =
-            Accordion.headerH4 [] (Accordion.toggle [] [ text "Pravidla pro nákup" ])
+            Accordion.headerH4 [] (Accordion.toggle [] [ text "Pravidla nákupu" ])
                 |> Accordion.appendHeader [ Tooltip.popoverTip Tooltip.buyFilterListTip tooltipStates ]
         , blocks =
             [ Accordion.block [] [ buyingConfigurationRadios buyingConfiguration ] ]

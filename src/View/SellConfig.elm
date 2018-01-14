@@ -23,7 +23,7 @@ form sellingConfiguration tooltipStates =
         { id = "sellingConfigCard"
         , options = []
         , header =
-            Accordion.headerH4 [] (Accordion.toggle [] [ text "Pravidla pro prodej" ])
+            Accordion.headerH4 [] (Accordion.toggle [] [ text "Pravidla prodeje" ])
                 |> Accordion.appendHeader [ Tooltip.popoverTip Tooltip.sellFilterListTip tooltipStates ]
         , blocks =
             [ Accordion.block [] [ sellingConfigurationRadios sellingConfiguration ] ]
