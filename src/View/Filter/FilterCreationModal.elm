@@ -49,7 +49,18 @@ updateHelp : CreationModalMsg -> Model -> Model
 updateHelp msg model =
     case msg of
         ModalStateMsg filteredItem st ->
-            { model | editedFilter = setFilteredItem filteredItem Filter.emptyFilter, openCloseState = st }
+            { model
+                | editedFilter = setFilteredItem filteredItem Filter.emptyFilter
+                , editingPositiveSubform = True
+                , openCloseState = st
+            }
+
+        SaveFilter ->
+            { model
+                | editedFilter = Filter.emptyFilter
+                , editingPositiveSubform = True
+                , openCloseState = Modal.hiddenState
+            }
 
         TogglePositiveNegativeSubform ->
             { model | editingPositiveSubform = not model.editingPositiveSubform }
@@ -63,9 +74,6 @@ updateHelp msg model =
         ModalTooltipMsg _ _ ->
             {- This case is handled at the level of Main's update -}
             model
-
-        SaveFilter ->
-            { model | editedFilter = Filter.emptyFilter, openCloseState = Modal.hiddenState }
 
         ModalNoOp ->
             model
