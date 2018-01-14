@@ -15,7 +15,8 @@ module Data.Filter
         , encodeSellingConfiguration
         , fromBuyConfEnum
         , fromSellConfEnum
-        , getFilteredItem
+        , getFiltersRemovedByBuyingConfigurationChange
+        , getFiltersRemovedBySellingConfigurationChange
         , isValid
         , itemToPluralString
         , marketplaceFilterValidationErrors
@@ -168,6 +169,35 @@ toggleSecondaryEnablement enableSecondary buyingConfiguration =
 
         other ->
             other
+
+
+{-| Calculate which filters would be removed during BuyingConfiguration change to decide if FilterDeletionModal should be displayed
+-}
+getFiltersRemovedByBuyingConfigurationChange : BuyingConfiguration -> BuyingConfiguration -> List MarketplaceFilter
+getFiltersRemovedByBuyingConfigurationChange old new =
+    case old of
+        InvestSomething _ oldFilters ->
+            case new of
+                InvestSomething _ newFilters ->
+                    List.filter
+                        (\oldFilter -> not <| List.member oldFilter newFilters)
+                        oldFilters
+
+                _ ->
+                    oldFilters
+
+        _ ->
+            []
+
+
+getFiltersRemovedBySellingConfigurationChange : SellingConfiguration -> SellingConfiguration -> List MarketplaceFilter
+getFiltersRemovedBySellingConfigurationChange old new =
+    case ( old, new ) of
+        ( SellSomething oldFilters, SellNothing ) ->
+            oldFilters
+
+        _ ->
+            []
 
 
 removeDisabledFilters : MarketplaceEnablement -> List MarketplaceFilter -> List MarketplaceFilter
@@ -372,11 +402,6 @@ setFilteredItem newItem mf =
     { mf | whatToFilter = newItem }
 
 
-getFilteredItem : MarketplaceFilter -> FilteredItem
-getFilteredItem { whatToFilter } =
-    whatToFilter
-
-
 updatePositiveConditions : (Conditions -> Conditions) -> MarketplaceFilter -> MarketplaceFilter
 updatePositiveConditions conditionsUpdater mf =
     { mf | ignoreWhen = conditionsUpdater mf.ignoreWhen }
@@ -389,7 +414,7 @@ updateNegativeConditions conditionsUpdater mf =
 
 renderBuyFilter : MarketplaceFilter -> String
 renderBuyFilter mf =
-    "Ignorovat " ++ renderFilteredItem (getFilteredItem mf) ++ renderCommonPartOfBuyAndSellFilters mf
+    "Ignorovat " ++ renderFilteredItem mf.whatToFilter ++ renderCommonPartOfBuyAndSellFilters mf
 
 
 renderSellFilter : MarketplaceFilter -> String

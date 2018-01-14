@@ -6,10 +6,11 @@ import Bootstrap.Grid.Col as Col
 import Data.Strategy exposing (GeneralSettings, StrategyConfiguration)
 import Data.Tooltip as Tooltip
 import Html exposing (Html, text)
-import Types exposing (Msg(AccordionMsg, ModalMsg))
+import Types exposing (Msg(AccordionMsg, CreationModalMsg, DeletionModalMsg))
 import View.BuyingConfig as BuyingConfig
 import View.Confirmation as Confirmation
 import View.Filter.FilterCreationModal as FilterCreationModal
+import View.Filter.FilterDeletionModal as FilterDeletionModal
 import View.Investment as Investment
 import View.InvestmentShare as InvestmentShare
 import View.PortfolioStructure as PortfolioStructure
@@ -18,12 +19,13 @@ import View.TargetBalance as TargetBalance
 import View.TargetPortfolioSize as TargetPortfolioSize
 
 
-form : StrategyConfiguration -> Accordion.State -> FilterCreationModal.Model -> Tooltip.States -> Grid.Column Msg
-form config accordionState filterCreationState tooltipStates =
+form : StrategyConfiguration -> Accordion.State -> FilterCreationModal.Model -> FilterDeletionModal.Model -> Tooltip.States -> Grid.Column Msg
+form config accordionState filterCreationState filterDeletionState tooltipStates =
     Grid.col
         [ Col.xs6 ]
         [ strategyForm config accordionState tooltipStates
-        , Html.map ModalMsg <| FilterCreationModal.view filterCreationState tooltipStates
+        , Html.map CreationModalMsg <| FilterCreationModal.view filterCreationState tooltipStates
+        , Html.map DeletionModalMsg <| FilterDeletionModal.view filterDeletionState
         ]
 
 

@@ -6,7 +6,7 @@ import Html exposing (Html, div, i, text)
 import Html.Attributes exposing (class, style)
 import Html.Events exposing (defaultOptions, onWithOptions)
 import Json.Decode
-import Types exposing (ModalMsg(ModalNoOp, ModalTooltipMsg), Msg(NoOp, TooltipMsg))
+import Types exposing (CreationModalMsg(ModalNoOp, ModalTooltipMsg), Msg(NoOp, TooltipMsg))
 
 
 icon : Html a
@@ -23,7 +23,7 @@ popoverTip =
     popover TooltipMsg NoOp icon
 
 
-popoverTipForModal : TipId -> Tooltip.States -> Html ModalMsg
+popoverTipForModal : TipId -> Tooltip.States -> Html CreationModalMsg
 popoverTipForModal =
     popover ModalTooltipMsg ModalNoOp icon
 

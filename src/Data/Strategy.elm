@@ -9,12 +9,14 @@ module Data.Strategy
         , removeBuyFilter
         , removeSellFilter
         , renderStrategyConfiguration
+        , setBuyConf
         , setBuyingConfiguration
         , setDefaultInvestment
         , setDefaultInvestmentShare
         , setInvestment
         , setPortfolio
         , setPortfolioShareRange
+        , setSellConf
         , setSellingConfiguration
         , setTargetBalance
         , setTargetPortfolioSize
@@ -176,14 +178,24 @@ removeSellFilter index config =
     { config | sellingConfig = Filters.updateSellFilters (List.Extra.removeAt index) config.sellingConfig }
 
 
-setBuyingConfiguration : Filters.BuyConf -> StrategyConfiguration -> StrategyConfiguration
-setBuyingConfiguration buyConf strategy =
-    { strategy | buyingConfig = Filters.fromBuyConfEnum buyConf }
+setBuyingConfiguration : Filters.BuyingConfiguration -> StrategyConfiguration -> StrategyConfiguration
+setBuyingConfiguration buyingConfiguration strategy =
+    { strategy | buyingConfig = buyingConfiguration }
 
 
-setSellingConfiguration : Filters.SellConf -> StrategyConfiguration -> StrategyConfiguration
-setSellingConfiguration sellConf strategy =
-    { strategy | sellingConfig = Filters.fromSellConfEnum sellConf }
+setSellingConfiguration : Filters.SellingConfiguration -> StrategyConfiguration -> StrategyConfiguration
+setSellingConfiguration sellingConfiguration strategy =
+    { strategy | sellingConfig = sellingConfiguration }
+
+
+setBuyConf : Filters.BuyConf -> StrategyConfiguration -> StrategyConfiguration
+setBuyConf buyConf =
+    setBuyingConfiguration (Filters.fromBuyConfEnum buyConf)
+
+
+setSellConf : Filters.SellConf -> StrategyConfiguration -> StrategyConfiguration
+setSellConf sellConf =
+    setSellingConfiguration (Filters.fromSellConfEnum sellConf)
 
 
 togglePrimaryMarket : Bool -> StrategyConfiguration -> StrategyConfiguration

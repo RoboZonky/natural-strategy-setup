@@ -2,7 +2,7 @@ module Main exposing (main)
 
 import Bootstrap.Accordion as Accordion
 import Bootstrap.Grid as Grid
-import Data.Filter exposing (FilteredItem(Participation_To_Sell), getFilteredItem)
+import Data.Filter as Filters exposing (FilteredItem(Participation_To_Sell))
 import Data.Investment as Investment
 import Data.InvestmentShare as InvestmentShare
 import Data.PortfolioStructure as PortfolioStructure
@@ -15,11 +15,12 @@ import Html.Attributes exposing (class, href, style)
 import Task
 import Time
 import Time.DateTime as DateTime exposing (DateTime)
-import Types exposing (ModalMsg(ModalTooltipMsg), Msg(..))
+import Types exposing (CreationModalMsg(ModalTooltipMsg), Msg(..))
 import Util
 import Version
 import View.ConfigPreview as ConfigPreview
 import View.Filter.FilterCreationModal as FilterCreationModal
+import View.Filter.FilterDeletionModal as FilterDeletionModal
 import View.Strategy as Strategy
 
 
@@ -27,6 +28,7 @@ type alias Model =
     { strategyConfig : StrategyConfiguration
     , accordionState : Accordion.State
     , filterCreationState : FilterCreationModal.Model
+    , filterDeletionState : FilterDeletionModal.Model
     , tooltipStates : Tooltip.States
     , generatedOn : DateTime
     }
@@ -37,6 +39,7 @@ initialModel =
     { strategyConfig = Strategy.defaultStrategyConfiguration
     , accordionState = Accordion.initialState
     , filterCreationState = FilterCreationModal.init
+    , filterDeletionState = FilterDeletionModal.initClosed
     , tooltipStates = Tooltip.initialStates
     , generatedOn = DateTime.epoch
     }
@@ -122,46 +125,63 @@ updateHelper msg model =
         TooltipMsg tipId tooltipState ->
             { model | tooltipStates = Tooltip.update tipId tooltipState model.tooltipStates }
 
-        ModalMsg (ModalTooltipMsg tipId tooltipState) ->
+        CreationModalMsg (ModalTooltipMsg tipId tooltipState) ->
             { model | tooltipStates = Tooltip.update tipId tooltipState model.tooltipStates }
 
-        ModalMsg modalMsg ->
+        CreationModalMsg modalMsg ->
             let
-                ( filterCreationState, maybeNewFilter ) =
+                ( newFilterCreationState, maybeNewFilter ) =
                     FilterCreationModal.update modalMsg model.filterCreationState
 
-                strategyUpdater =
-                    case maybeNewFilter of
-                        Nothing ->
-                            identity
-
-                        Just newFilter ->
-                            case getFilteredItem newFilter of
-                                Participation_To_Sell ->
-                                    Strategy.addSellFilter newFilter
-
-                                _ ->
-                                    Strategy.addBuyFilter newFilter
+                maybeInsertFilter =
+                    maybeNewFilter
+                        |> Maybe.map marketplaceFilterToFilterUpdater
+                        |> Maybe.withDefault identity
             in
-            { model
-                | filterCreationState = filterCreationState
-                , strategyConfig = strategyUpdater model.strategyConfig
-            }
+            updateStrategy maybeInsertFilter { model | filterCreationState = newFilterCreationState }
+
+        DeletionModalMsg modalMsg ->
+            let
+                ( newFilterDeletionState, maybeUserDecision ) =
+                    FilterDeletionModal.update modalMsg model.filterDeletionState
+
+                maybeRestoreFilters =
+                    maybeUserDecision
+                        |> Maybe.map userDecisionToFilterUpdater
+                        |> Maybe.withDefault identity
+            in
+            updateStrategy maybeRestoreFilters { model | filterDeletionState = newFilterDeletionState }
 
         SetDateTime timestamp ->
             { model | generatedOn = DateTime.fromTimestamp timestamp }
 
-        SetBuyingConfiguration buyingConfiguration ->
-            updateStrategy (Strategy.setBuyingConfiguration buyingConfiguration) model
+        SetBuyingConfiguration buyConf ->
+            let
+                newModel =
+                    updateStrategy (Strategy.setBuyConf buyConf) model
+            in
+            askForBuyFilterDeletionConfirmation model newModel
 
         TogglePrimaryMarket enable ->
-            updateStrategy (Strategy.togglePrimaryMarket enable) model
+            let
+                newModel =
+                    updateStrategy (Strategy.togglePrimaryMarket enable) model
+            in
+            askForBuyFilterDeletionConfirmation model newModel
 
         ToggleSecondaryMarket enable ->
-            updateStrategy (Strategy.toggleSecondaryMarket enable) model
+            let
+                newModel =
+                    updateStrategy (Strategy.toggleSecondaryMarket enable) model
+            in
+            askForBuyFilterDeletionConfirmation model newModel
 
         SetSellingConfiguration sellingConfiguration ->
-            updateStrategy (Strategy.setSellingConfiguration sellingConfiguration) model
+            let
+                newModel =
+                    updateStrategy (Strategy.setSellConf sellingConfiguration) model
+            in
+            askForSellFilterDeletionConfirmation model newModel
 
         ShareStrategy ->
             -- TODO generate encoded-obfuscated strategy containing URL and show it in UI
@@ -173,17 +193,86 @@ updateHelper msg model =
             model
 
 
+{-| Return a function which will either leave filters in the strategy as they are, or rever them to what they were before
+-}
+userDecisionToFilterUpdater : FilterDeletionModal.UserDecision -> StrategyConfiguration -> StrategyConfiguration
+userDecisionToFilterUpdater userDecision =
+    case userDecision of
+        FilterDeletionModal.RestorePreviousBuying previousBuyingConfig ->
+            Strategy.setBuyingConfiguration previousBuyingConfig
+
+        FilterDeletionModal.RestorePreviousSelling previousSellingConfig ->
+            Strategy.setSellingConfiguration previousSellingConfig
+
+        FilterDeletionModal.OkToDelete ->
+            identity
+
+
+{-| Return a function that will insert given filter into the right place of StrategyConfiguration
+-}
+marketplaceFilterToFilterUpdater : Filters.MarketplaceFilter -> StrategyConfiguration -> StrategyConfiguration
+marketplaceFilterToFilterUpdater newFilter =
+    case newFilter.whatToFilter of
+        Participation_To_Sell ->
+            Strategy.addSellFilter newFilter
+
+        _ ->
+            Strategy.addBuyFilter newFilter
+
+
+askForBuyFilterDeletionConfirmation : Model -> Model -> Model
+askForBuyFilterDeletionConfirmation oldModel newModel =
+    let
+        removedFilters =
+            Filters.getFiltersRemovedByBuyingConfigurationChange
+                oldModel.strategyConfig.buyingConfig
+                newModel.strategyConfig.buyingConfig
+
+        newFilterDeletionState =
+            if List.isEmpty removedFilters then
+                FilterDeletionModal.initClosed
+            else
+                FilterDeletionModal.askForConfirmation
+                    (FilterDeletionModal.BuyingConfigChange
+                        oldModel.strategyConfig.buyingConfig
+                        newModel.strategyConfig.buyingConfig
+                    )
+    in
+    { newModel | filterDeletionState = newFilterDeletionState }
+
+
+askForSellFilterDeletionConfirmation : Model -> Model -> Model
+askForSellFilterDeletionConfirmation oldModel newModel =
+    let
+        removedFilters =
+            Filters.getFiltersRemovedBySellingConfigurationChange
+                oldModel.strategyConfig.sellingConfig
+                newModel.strategyConfig.sellingConfig
+
+        newFilterDeletionState =
+            if List.isEmpty removedFilters then
+                FilterDeletionModal.initClosed
+            else
+                FilterDeletionModal.askForConfirmation
+                    (FilterDeletionModal.SellingConfigChange
+                        oldModel.strategyConfig.sellingConfig
+                        newModel.strategyConfig.sellingConfig
+                    )
+    in
+    { newModel | filterDeletionState = newFilterDeletionState }
+
+
 wrapIntOrEmpty : (Int -> a) -> a -> String -> a
 wrapIntOrEmpty intWrapper emptyVal str =
     Util.emptyToZero str |> String.toInt |> Result.map intWrapper |> Result.withDefault emptyVal
 
 
 view : Model -> Html Msg
-view { strategyConfig, accordionState, filterCreationState, tooltipStates, generatedOn } =
+view { strategyConfig, accordionState, filterCreationState, filterDeletionState, tooltipStates, generatedOn } =
     Grid.containerFluid []
         [ h1 [] [ text "Konfigurace strategie" ]
         , Grid.row []
-            [ Strategy.form strategyConfig accordionState filterCreationState tooltipStates
+            [ Strategy.form strategyConfig accordionState filterCreationState filterDeletionState tooltipStates
             , ConfigPreview.view generatedOn strategyConfig
             ]
         , infoFooter

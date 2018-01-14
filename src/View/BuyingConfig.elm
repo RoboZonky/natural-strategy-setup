@@ -13,7 +13,7 @@ import Data.Tooltip as Tooltip
 import Html exposing (Html, div, span, text)
 import Html.Attributes exposing (class)
 import Html.Events exposing (onClick)
-import Types exposing (ModalMsg(ModalStateMsg), Msg(ModalMsg, RemoveBuyFilter, SetBuyingConfiguration, TogglePrimaryMarket, ToggleSecondaryMarket))
+import Types exposing (CreationModalMsg(ModalStateMsg), Msg(CreationModalMsg, RemoveBuyFilter, SetBuyingConfiguration, TogglePrimaryMarket, ToggleSecondaryMarket))
 import View.Tooltip as Tooltip
 
 
@@ -136,7 +136,7 @@ filterCreationButton filteredItem buttonText =
     Button.button
         [ Button.primary
         , Button.small
-        , Button.onClick <| ModalMsg <| ModalStateMsg filteredItem Modal.visibleState
+        , Button.onClick <| CreationModalMsg <| ModalStateMsg filteredItem Modal.visibleState
         , Button.attrs [ class "mx-1" ]
         ]
         [ text buttonText ]

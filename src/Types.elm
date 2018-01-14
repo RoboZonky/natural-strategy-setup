@@ -1,4 +1,4 @@
-module Types exposing (ModalMsg(..), Msg(..))
+module Types exposing (CreationModalMsg(..), DeletionModalMsg(..), Msg(..))
 
 import Bootstrap.Accordion as Accordion
 import Bootstrap.Modal as Modal
@@ -28,14 +28,15 @@ type Msg
     | ToggleSecondaryMarket Bool
     | SetSellingConfiguration Filter.SellConf
     | AccordionMsg Accordion.State
-    | ModalMsg ModalMsg
+    | CreationModalMsg CreationModalMsg
+    | DeletionModalMsg DeletionModalMsg
     | TooltipMsg TipId Popover.State
     | SetDateTime Time
     | ShareStrategy
     | NoOp
 
 
-type ModalMsg
+type CreationModalMsg
     = TogglePositiveNegativeSubform
     | ModalStateMsg FilteredItem Modal.State
     | PositiveConditionsChange Conditions.Msg
@@ -43,3 +44,8 @@ type ModalMsg
     | ModalTooltipMsg TipId Popover.State
     | SaveFilter
     | ModalNoOp
+
+
+type DeletionModalMsg
+    = ConfirmDeletion
+    | DeletionModalStateMsg Modal.State

@@ -4,12 +4,12 @@ import Bootstrap.Button as Button
 import Bootstrap.Grid as Grid
 import Bootstrap.Grid.Col as Col
 import Bootstrap.Modal as Modal
-import Data.Filter as Filter exposing (FilteredItem(Participation_To_Sell), MarketplaceFilter, getFilteredItem, renderBuyFilter, renderSellFilter, setFilteredItem)
+import Data.Filter as Filter exposing (FilteredItem(Participation_To_Sell), MarketplaceFilter, renderBuyFilter, renderSellFilter, setFilteredItem)
 import Data.Tooltip as Tooltip
 import Html exposing (Html, div, hr, li, text, ul)
 import Html.Attributes exposing (style)
 import Html.Events exposing (onClick)
-import Types exposing (ModalMsg(..))
+import Types exposing (CreationModalMsg(..))
 import View.Filter.Conditions as Conditions
 import View.Tooltip as Tooltip
 
@@ -29,7 +29,7 @@ init =
     }
 
 
-update : ModalMsg -> Model -> ( Model, Maybe MarketplaceFilter )
+update : CreationModalMsg -> Model -> ( Model, Maybe MarketplaceFilter )
 update msg model =
     let
         newModel =
@@ -45,7 +45,7 @@ update msg model =
 
 {-| Inner modal messages that don't produce Filter to be added to the main app's model
 -}
-updateHelp : ModalMsg -> Model -> Model
+updateHelp : CreationModalMsg -> Model -> Model
 updateHelp msg model =
     case msg of
         ModalStateMsg filteredItem st ->
@@ -71,7 +71,7 @@ updateHelp msg model =
             model
 
 
-view : Model -> Tooltip.States -> Html ModalMsg
+view : Model -> Tooltip.States -> Html CreationModalMsg
 view { editedFilter, openCloseState, editingPositiveSubform } tooltipStates =
     let
         exceptionButtonText =
@@ -81,7 +81,7 @@ view { editedFilter, openCloseState, editingPositiveSubform } tooltipStates =
                 "<< Zpět"
 
         ( modalTitle, tooltipKey ) =
-            case getFilteredItem editedFilter of
+            case editedFilter.whatToFilter of
                 Participation_To_Sell ->
                     ( "Vytvořit pravidlo pro prodej", Tooltip.sellFilterCreationTip )
 
@@ -89,7 +89,7 @@ view { editedFilter, openCloseState, editingPositiveSubform } tooltipStates =
                     ( "Vytvořit pravidlo pro nákup", Tooltip.buyFilterCreationTip )
 
         stateChangeMsg =
-            ModalStateMsg <| getFilteredItem editedFilter
+            ModalStateMsg editedFilter.whatToFilter
     in
     Modal.config stateChangeMsg
         |> Modal.large
@@ -120,14 +120,14 @@ view { editedFilter, openCloseState, editingPositiveSubform } tooltipStates =
         |> Modal.view openCloseState
 
 
-modalBody : MarketplaceFilter -> Bool -> Html ModalMsg
+modalBody : MarketplaceFilter -> Bool -> Html CreationModalMsg
 modalBody mf editingPositiveSubform =
     let
         validationErrors =
             Filter.marketplaceFilterValidationErrors mf
 
         filterRenderer =
-            case getFilteredItem mf of
+            case mf.whatToFilter of
                 Participation_To_Sell ->
                     renderSellFilter
 

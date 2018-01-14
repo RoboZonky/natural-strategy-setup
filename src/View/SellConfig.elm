@@ -12,7 +12,7 @@ import Data.Tooltip as Tooltip
 import Html exposing (Html, div, span, text)
 import Html.Attributes exposing (class)
 import Html.Events exposing (onClick)
-import Types exposing (ModalMsg(ModalStateMsg), Msg(ModalMsg, RemoveSellFilter, SetSellingConfiguration))
+import Types exposing (CreationModalMsg(ModalStateMsg), Msg(CreationModalMsg, RemoveSellFilter, SetSellingConfiguration))
 import Util
 import View.Tooltip as Tooltip
 
@@ -94,7 +94,7 @@ filterCreationControls =
     div []
         [ Button.button
             [ Button.primary
-            , Button.onClick <| ModalMsg <| ModalStateMsg Participation_To_Sell Modal.visibleState
+            , Button.onClick <| CreationModalMsg <| ModalStateMsg Participation_To_Sell Modal.visibleState
             , Button.attrs [ class "mx-1" ]
             , Button.small
             ]
