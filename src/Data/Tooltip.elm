@@ -11,6 +11,7 @@ module Data.Tooltip
         , sellFilterCreationTip
         , sellFilterListTip
         , update
+        , zonkoidTip
         )
 
 import Bootstrap.Popover as Popover
@@ -28,6 +29,7 @@ knownTooltips =
     , ( sellFilterListTip, "Pravidla prodeje určují které Vámi vlastněné participace má robot prodávat. Daná participace bude prodána pokud splní podmínky alespoň jednoho z Vámi definovaných pravidel." )
     , ( buyFilterCreationTip, "Pravidla nákupu určují které položky na tržišti (úvěry či participace) mají být ignorovány. Daná položka bude ignorována pokud splní všechny podmínky pravidla. Pokud však zároveň splní všechny podmínky výjimky, ignorována nebude." )
     , ( sellFilterCreationTip, "Pravidla prodeje určují které participace má robot prodávat. Daná participace bude prodána pokud splní všechny podmínky pravidla. Pokud však zároveň splní všechny podmínky výjimky, prodána nebude." )
+    , ( zonkoidTip, "Tato funkce vyžaduje instalaci mobilní aplikace Zonkoid, kterou si můžete stáhnout na zonkoid.cz" )
     ]
 
 
@@ -87,3 +89,8 @@ buyFilterCreationTip =
 sellFilterCreationTip : TipId
 sellFilterCreationTip =
     TipId 5
+
+
+zonkoidTip : TipId
+zonkoidTip =
+    TipId 6
