@@ -9,7 +9,7 @@ TESTS_DIR=integration-tests
 # Download chromedriver binary if it doesn't exist
 if [ ! -f "${TESTS_DIR}/chromedriver" ]; then
   echo "chromedriver binary required by tests doesn't exist. Attempting download.."
-  wget --quiet --directory-prefix ${TESTS_DIR} https://chromedriver.storage.googleapis.com/2.33/chromedriver_linux64.zip
+  wget --quiet --directory-prefix ${TESTS_DIR} https://chromedriver.storage.googleapis.com/2.35/chromedriver_linux64.zip
   unzip ${TESTS_DIR}/chromedriver_linux64.zip -d ${TESTS_DIR}
 fi
 
