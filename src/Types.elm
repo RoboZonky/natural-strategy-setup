@@ -3,6 +3,7 @@ module Types exposing (CreationModalMsg(..), DeletionModalMsg(..), Msg(..))
 import Bootstrap.Accordion as Accordion
 import Bootstrap.Modal as Modal
 import Bootstrap.Popover as Popover
+import Data.ExitConfig as ExitConfig
 import Data.Filter as Filter exposing (FilteredItem)
 import Data.Filter.Conditions.Rating as Rating exposing (Rating)
 import Data.Portfolio exposing (Portfolio)
@@ -14,6 +15,7 @@ import View.Filter.Conditions as Conditions
 
 type Msg
     = PortfolioChanged Portfolio
+    | ExitConfigChanged ExitConfig.ExitConfig
     | TargetPortfolioSizeChanged String
     | TargetPortfolioShareChanged String
     | ChangePortfolioSharePercentage Rating RangeSlider.Msg

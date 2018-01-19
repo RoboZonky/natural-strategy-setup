@@ -6,7 +6,7 @@ module Version
         , strategyComment
         )
 
-import Time.DateTime as DateTime exposing (DateTime)
+import Time.Date as Date exposing (Date)
 
 
 githubCommitLink : String
@@ -14,9 +14,9 @@ githubCommitLink =
     "https://github.com/RoboZonky/natural-strategy-setup/commit/" ++ commitHash
 
 
-strategyComment : DateTime -> String
-strategyComment dateTime =
-    "# Konfigurace strategie vytvořená " ++ formatDate dateTime ++ " nástrojem natural-strategy-setup verze " ++ commitHash
+strategyComment : Date -> String
+strategyComment today =
+    "# Konfigurace strategie vytvořená " ++ formatDate today ++ " nástrojem natural-strategy-setup verze " ++ commitHash
 
 
 robozonkyVersionStatement : String
@@ -24,11 +24,11 @@ robozonkyVersionStatement =
     "Tato strategie vyžaduje RoboZonky ve verzi 4.3.0 nebo pozdější."
 
 
-formatDate : DateTime -> String
-formatDate dateTime =
+formatDate : Date -> String
+formatDate date =
     let
-        ( year, month, day, _, _, _, _ ) =
-            DateTime.toTuple dateTime
+        ( year, month, day ) =
+            Date.toTuple date
     in
     toString day ++ "." ++ toString month ++ "." ++ toString year
 

@@ -14,7 +14,8 @@ import Html exposing (Html, a, footer, h1, text)
 import Html.Attributes exposing (class, href, style)
 import Task
 import Time
-import Time.DateTime as DateTime exposing (DateTime)
+import Time.Date exposing (Date)
+import Time.DateTime as DateTime
 import Types exposing (CreationModalMsg(ModalTooltipMsg), Msg(..))
 import Util
 import Version
@@ -30,7 +31,7 @@ type alias Model =
     , filterCreationState : FilterCreationModal.Model
     , filterDeletionState : FilterDeletionModal.Model
     , tooltipStates : Tooltip.States
-    , generatedOn : DateTime
+    , generatedOn : Date
     }
 
 
@@ -41,7 +42,7 @@ initialModel =
     , filterCreationState = FilterCreationModal.init
     , filterDeletionState = FilterDeletionModal.initClosed
     , tooltipStates = Tooltip.initialStates
-    , generatedOn = DateTime.epoch
+    , generatedOn = DateTime.date DateTime.epoch
     }
 
 
@@ -79,6 +80,9 @@ updateHelper msg model =
     case msg of
         PortfolioChanged portfolio ->
             updateStrategy (Strategy.setPortfolio portfolio) model
+
+        ExitConfigChanged exitConfig ->
+            updateStrategy (Strategy.setExitConfig exitConfig) model
 
         TargetPortfolioSizeChanged targetSizeStr ->
             let
@@ -153,7 +157,7 @@ updateHelper msg model =
             updateStrategy maybeRestoreFilters { model | filterDeletionState = newFilterDeletionState }
 
         SetDateTime timestamp ->
-            { model | generatedOn = DateTime.fromTimestamp timestamp }
+            { model | generatedOn = DateTime.date <| DateTime.fromTimestamp timestamp }
 
         SetBuyingConfiguration buyConf ->
             let
@@ -272,7 +276,7 @@ view { strategyConfig, accordionState, filterCreationState, filterDeletionState,
     Grid.containerFluid []
         [ h1 [] [ text "Konfigurace strategie" ]
         , Grid.row []
-            [ Strategy.form strategyConfig accordionState filterCreationState filterDeletionState tooltipStates
+            [ Strategy.form strategyConfig accordionState filterCreationState filterDeletionState tooltipStates generatedOn
             , ConfigPreview.view generatedOn strategyConfig
             ]
         , infoFooter

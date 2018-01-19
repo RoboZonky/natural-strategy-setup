@@ -6,7 +6,7 @@ import Html.Attributes exposing (cols, id, readonly, rows, type_, value)
 import Html.Events exposing (onClick, onInput)
 import Random
 import Test.RandomStrategy as RandomStrategy
-import Time.DateTime
+import Time.DateTime as DateTime
 
 
 type Msg
@@ -40,11 +40,14 @@ update msg curSeed =
 view : Model -> Html Msg
 view seed =
     let
+        dummyGeneratedOn =
+            DateTime.date DateTime.epoch
+
         ( randomStrategyConfig, _ ) =
             Random.step RandomStrategy.strategyConfigurationGen (Random.initialSeed seed)
 
         strategyString =
-            Strategy.renderStrategyConfiguration Time.DateTime.epoch randomStrategyConfig
+            Strategy.renderStrategyConfiguration dummyGeneratedOn randomStrategyConfig
     in
     div []
         [ textarea
@@ -62,6 +65,6 @@ view seed =
             ]
         , div []
             [ text <| "Strategy validation errors: "
-            , span [ id "validationErrors" ] [ text <| toString <| Strategy.validateStrategyConfiguration randomStrategyConfig ]
+            , span [ id "validationErrors" ] [ text <| toString <| Strategy.validateStrategyConfiguration randomStrategyConfig dummyGeneratedOn ]
             ]
         ]

@@ -13,6 +13,7 @@ module Data.Strategy
         , setBuyingConfiguration
         , setDefaultInvestment
         , setDefaultInvestmentShare
+        , setExitConfig
         , setInvestment
         , setPortfolio
         , setPortfolioShareRange
@@ -29,6 +30,7 @@ module Data.Strategy
 
 import AllDict
 import Data.Confirmation as Confirmation exposing (ConfirmationSettings)
+import Data.ExitConfig as ExitConfig exposing (ExitConfig)
 import Data.Filter as Filters exposing (BuyingConfiguration, MarketplaceFilter, SellingConfiguration)
 import Data.Filter.Conditions.Rating as Rating exposing (Rating(..), RatingMsg)
 import Data.Investment as Investment exposing (InvestmentsPerRating)
@@ -42,7 +44,7 @@ import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as Encode exposing (Value)
 import List.Extra
 import RangeSlider
-import Time.DateTime exposing (DateTime)
+import Time.Date exposing (Date)
 import Util
 import Version
 
@@ -58,6 +60,7 @@ type alias StrategyConfiguration =
 
 type alias GeneralSettings =
     { portfolio : Portfolio
+    , exitConfig : ExitConfig
     , targetPortfolioSize : TargetPortfolioSize
     , defaultInvestmentSize : Investment.Size
     , defaultInvestmentShare : InvestmentShare
@@ -70,6 +73,7 @@ defaultStrategyConfiguration : StrategyConfiguration
 defaultStrategyConfiguration =
     { generalSettings =
         { portfolio = Portfolio.Conservative
+        , exitConfig = ExitConfig.DontExit
         , targetPortfolioSize = TargetPortfolioSize.NotSpecified
         , defaultInvestmentSize = Investment.defaultSize
         , defaultInvestmentShare = InvestmentShare.NotSpecified
@@ -106,6 +110,11 @@ setPortfolio portfolio strategy =
                 | generalSettings = { generalSettings | portfolio = portfolio }
                 , portfolioShares = portfolioShares
             }
+
+
+setExitConfig : ExitConfig -> StrategyConfiguration -> StrategyConfiguration
+setExitConfig exitConfig ({ generalSettings } as config) =
+    { config | generalSettings = { generalSettings | exitConfig = exitConfig } }
 
 
 setTargetPortfolioSize : TargetPortfolioSize -> StrategyConfiguration -> StrategyConfiguration
@@ -218,19 +227,17 @@ addSellFilter newFilter config =
     { config | sellingConfig = Filters.updateSellFilters (\fs -> fs ++ [ newFilter ]) config.sellingConfig }
 
 
-renderStrategyConfiguration : DateTime -> StrategyConfiguration -> String
-renderStrategyConfiguration generatedOn strategy =
-    case strategy of
-        { generalSettings, portfolioShares, investmentSizeOverrides, buyingConfig, sellingConfig } ->
-            Util.joinNonemptyLines
-                [ Version.strategyComment generatedOn
-                , Version.robozonkyVersionStatement
-                , renderGeneralSettings generalSettings
-                , PortfolioStructure.renderPortfolioShares generalSettings.portfolio portfolioShares
-                , Investment.renderInvestments generalSettings.defaultInvestmentSize investmentSizeOverrides
-                , Filters.renderBuyingConfiguration buyingConfig
-                , Filters.renderSellingConfiguration sellingConfig
-                ]
+renderStrategyConfiguration : Date -> StrategyConfiguration -> String
+renderStrategyConfiguration generatedOn { generalSettings, portfolioShares, investmentSizeOverrides, buyingConfig, sellingConfig } =
+    Util.joinNonemptyLines
+        [ Version.strategyComment generatedOn
+        , Version.robozonkyVersionStatement
+        , renderGeneralSettings generalSettings
+        , PortfolioStructure.renderPortfolioShares generalSettings.portfolio portfolioShares
+        , Investment.renderInvestments generalSettings.defaultInvestmentSize investmentSizeOverrides
+        , Filters.renderBuyingConfiguration buyingConfig
+        , Filters.renderSellingConfiguration sellingConfig
+        ]
 
 
 renderGeneralSettings : GeneralSettings -> String
@@ -238,6 +245,7 @@ renderGeneralSettings generalSettings =
     Util.joinNonemptyLines
         [ "- Obecná nastavení"
         , Portfolio.render generalSettings.portfolio
+        , ExitConfig.render generalSettings.exitConfig
         , TargetPortfolioSize.render generalSettings.targetPortfolioSize
         , Investment.renderSize generalSettings.defaultInvestmentSize
         , InvestmentShare.render generalSettings.defaultInvestmentShare
@@ -246,19 +254,20 @@ renderGeneralSettings generalSettings =
         ]
 
 
-validateStrategyConfiguration : StrategyConfiguration -> List String
-validateStrategyConfiguration strategyConfig =
+validateStrategyConfiguration : StrategyConfiguration -> Date -> List String
+validateStrategyConfiguration strategyConfig today =
     List.concat
-        [ validateGeneralSettings strategyConfig.generalSettings
+        [ validateGeneralSettings strategyConfig.generalSettings today
         , PortfolioStructure.validate strategyConfig.portfolioShares
         , Filters.validateSellingConfiguration strategyConfig.sellingConfig
         ]
 
 
-validateGeneralSettings : GeneralSettings -> List String
-validateGeneralSettings generalSettings =
+validateGeneralSettings : GeneralSettings -> Date -> List String
+validateGeneralSettings generalSettings today =
     List.concat
-        [ TargetPortfolioSize.validate generalSettings.targetPortfolioSize
+        [ ExitConfig.validate today generalSettings.exitConfig
+        , TargetPortfolioSize.validate generalSettings.targetPortfolioSize
         , InvestmentShare.validate generalSettings.defaultInvestmentShare
         , TargetBalance.validate generalSettings.defaultTargetBalance
         ]
@@ -269,9 +278,10 @@ validateGeneralSettings generalSettings =
 
 
 encodeGeneralSettings : GeneralSettings -> Value
-encodeGeneralSettings { portfolio, targetPortfolioSize, defaultInvestmentSize, defaultInvestmentShare, defaultTargetBalance, confirmationSettings } =
+encodeGeneralSettings { portfolio, exitConfig, targetPortfolioSize, defaultInvestmentSize, defaultInvestmentShare, defaultTargetBalance, confirmationSettings } =
     Encode.object
         [ ( "portfolio", Portfolio.encode portfolio )
+        , ( "exitConfig", ExitConfig.encode exitConfig )
         , ( "targetPortfolioSize", TargetPortfolioSize.encode targetPortfolioSize )
         , ( "defaultInvestmentSize", Investment.encodeSize defaultInvestmentSize )
         , ( "defaultInvestmentShare", InvestmentShare.encode defaultInvestmentShare )
@@ -282,8 +292,9 @@ encodeGeneralSettings { portfolio, targetPortfolioSize, defaultInvestmentSize, d
 
 generalSettingsDecoder : Decoder GeneralSettings
 generalSettingsDecoder =
-    Decode.map6 GeneralSettings
+    Decode.map7 GeneralSettings
         (Decode.field "portfolio" Portfolio.decoder)
+        (Decode.field "exitConfig" ExitConfig.decoder)
         (Decode.field "targetPortfolioSize" TargetPortfolioSize.decoder)
         (Decode.field "defaultInvestmentSize" Investment.sizeDecoder)
         (Decode.field "defaultInvestmentShare" InvestmentShare.decoder)

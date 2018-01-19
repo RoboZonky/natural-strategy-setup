@@ -64,5 +64,5 @@ decoder =
                         Decode.succeed NotSpecified
 
                     _ ->
-                        Decode.fail <| "Unable to decoder TargetPortfolioSize from " ++ toString ints
+                        Decode.fail <| "Unable to decode TargetPortfolioSize from " ++ toString ints
             )

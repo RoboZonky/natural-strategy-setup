@@ -2,6 +2,7 @@ module Test.RandomStrategy exposing (conditionsGen, strategyConfigurationGen)
 
 import AllDict
 import Data.Confirmation exposing (ConfirmationSettings)
+import Data.ExitConfig as ExitConfig
 import Data.Filter as Filter exposing (BuyingConfiguration, FilteredItem(..), MarketplaceEnablement, MarketplaceFilter, SellingConfiguration)
 import Data.Filter.Conditions exposing (Condition(..), Conditions, addCondition, emptyConditions)
 import Data.Filter.Conditions.Amount as Amount exposing (AmountCondition(AmountCondition))
@@ -39,13 +40,13 @@ strategyConfigurationGen =
 
 generalSettingsGen : Generator GeneralSettings
 generalSettingsGen =
-    Random.map6 GeneralSettings
-        portfolioGen
-        targetPortfolioSizeGen
-        investmentSizeGen
-        investmentShareGen
-        targetBalanceGen
-        confirmationSettingsGen
+    Random.map GeneralSettings portfolioGen
+        |> Random.andMap exitConfigGen
+        |> Random.andMap targetPortfolioSizeGen
+        |> Random.andMap investmentSizeGen
+        |> Random.andMap investmentShareGen
+        |> Random.andMap targetBalanceGen
+        |> Random.andMap confirmationSettingsGen
 
 
 portfolioSharesGen : Generator PortfolioShares
@@ -324,6 +325,33 @@ targetBalanceGen =
 confirmationSettingsGen : Generator ConfirmationSettings
 confirmationSettingsGen =
     nonemptySubset Rating.allRatings |> Random.map RatingList
+
+
+exitConfigGen : Generator ExitConfig.ExitConfig
+exitConfigGen =
+    let
+        exitByWithSelloffGen =
+            {- Not really random, just bumping day by 1 to make sellof date 1 day earlier -}
+            Random.map (\( d, m, y ) -> ExitConfig.ExitByWithSelloff (dateToString ( d + 1, m, y )) (dateToString ( d, m, y ))) dateGen
+    in
+    Random.frequency
+        [ ( 1, Random.constant ExitConfig.DontExit )
+        , ( 2, Random.map (ExitConfig.ExitBy << dateToString) dateGen )
+        , ( 3, exitByWithSelloffGen )
+        ]
+
+
+dateToString : ( Int, Int, Int ) -> String
+dateToString ( day, month, year ) =
+    String.join "." <| List.map toString [ day, month, year ]
+
+
+dateGen : Generator ( Int, Int, Int )
+dateGen =
+    Random.map3 (,,)
+        (Random.int 1 27)
+        (Random.int 1 12)
+        (Random.int 1970 2100)
 
 
 nonemptySubset : List a -> Generator (List a)

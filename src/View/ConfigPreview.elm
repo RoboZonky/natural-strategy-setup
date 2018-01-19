@@ -8,14 +8,14 @@ import Bootstrap.Grid.Col as Col
 import Data.Strategy as Strategy exposing (StrategyConfiguration)
 import Html exposing (text)
 import Html.Attributes exposing (downloadAs, href, readonly, style)
-import Time.DateTime exposing (DateTime)
+import Time.Date exposing (Date)
 
 
-view : DateTime -> StrategyConfiguration -> Grid.Column a
+view : Date -> StrategyConfiguration -> Grid.Column a
 view generatedOn strategyConfig =
     let
         strategyValidationErrors =
-            Strategy.validateStrategyConfiguration strategyConfig
+            Strategy.validateStrategyConfiguration strategyConfig generatedOn
 
         isValidStrategy =
             List.isEmpty strategyValidationErrors
