@@ -65,6 +65,6 @@ view seed =
             ]
         , div []
             [ text <| "Strategy validation errors: "
-            , span [ id "validationErrors" ] [ text <| toString <| Strategy.validateStrategyConfiguration randomStrategyConfig dummyGeneratedOn ]
+            , span [ id "validationErrors" ] [ text <| toString <| Strategy.validateStrategyConfiguration randomStrategyConfig ]
             ]
         ]

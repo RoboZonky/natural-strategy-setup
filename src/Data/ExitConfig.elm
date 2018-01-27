@@ -3,6 +3,7 @@ module Data.ExitConfig
         ( ExitConfig(..)
         , decoder
         , encode
+        , parseDateString
         , render
         , validate
         )
@@ -52,29 +53,19 @@ render exitConfig =
             "Opustit Zonky k " ++ exitDateStr ++ ", výprodej zahájit " ++ selloffDateStr ++ "."
 
 
-validate : Date -> ExitConfig -> List String
-validate today exitConfig =
+validate : ExitConfig -> List String
+validate exitConfig =
     case exitConfig of
         DontExit ->
             []
 
         ExitBy exitDateStr ->
-            case parseDateString exitDateStr of
-                Ok exitDate ->
-                    if isFirstBeforeSecond exitDate today then
-                        [ "Datum opuštění musí být v budoucnosti" ]
-                    else
-                        []
-
-                Err _ ->
-                    validateDateString "Datum opuštění " exitDateStr
+            validateDateString "Datum opuštění " exitDateStr
 
         ExitByWithSelloff exitDateStr selloffDateStr ->
             case Result.map2 (,) (parseDateString exitDateStr) (parseDateString selloffDateStr) of
                 Ok ( exitDate, selloffDate ) ->
-                    if isFirstBeforeSecond selloffDate today then
-                        [ "Datum zahájení výprodeje musí být v budoucnosti" ]
-                    else if isFirstBeforeSecond exitDate selloffDate then
+                    if isFirstBeforeSecond exitDate selloffDate then
                         [ "Datum zahájení výprodeje musí být před datem opuštění" ]
                     else
                         []

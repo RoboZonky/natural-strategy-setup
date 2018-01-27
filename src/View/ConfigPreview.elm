@@ -15,7 +15,7 @@ view : Date -> StrategyConfiguration -> Grid.Column a
 view generatedOn strategyConfig =
     let
         strategyValidationErrors =
-            Strategy.validateStrategyConfiguration strategyConfig generatedOn
+            Strategy.validateStrategyConfiguration strategyConfig
 
         isValidStrategy =
             List.isEmpty strategyValidationErrors

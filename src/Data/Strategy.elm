@@ -254,19 +254,19 @@ renderGeneralSettings generalSettings =
         ]
 
 
-validateStrategyConfiguration : StrategyConfiguration -> Date -> List String
-validateStrategyConfiguration strategyConfig today =
+validateStrategyConfiguration : StrategyConfiguration -> List String
+validateStrategyConfiguration strategyConfig =
     List.concat
-        [ validateGeneralSettings strategyConfig.generalSettings today
+        [ validateGeneralSettings strategyConfig.generalSettings
         , PortfolioStructure.validate strategyConfig.portfolioShares
         , Filters.validateSellingConfiguration strategyConfig.sellingConfig
         ]
 
 
-validateGeneralSettings : GeneralSettings -> Date -> List String
-validateGeneralSettings generalSettings today =
+validateGeneralSettings : GeneralSettings -> List String
+validateGeneralSettings generalSettings =
     List.concat
-        [ ExitConfig.validate today generalSettings.exitConfig
+        [ ExitConfig.validate generalSettings.exitConfig
         , TargetPortfolioSize.validate generalSettings.targetPortfolioSize
         , InvestmentShare.validate generalSettings.defaultInvestmentShare
         , TargetBalance.validate generalSettings.defaultTargetBalance

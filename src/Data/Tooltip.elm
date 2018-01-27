@@ -4,12 +4,14 @@ module Data.Tooltip
         , TipId
         , buyFilterCreationTip
         , buyFilterListTip
+        , exitDateTip
         , getState
         , getTooltipText
         , initialStates
         , portfolioStructureTip
         , sellFilterCreationTip
         , sellFilterListTip
+        , sellofDateTip
         , update
         , zonkoidTip
         )
@@ -30,6 +32,8 @@ knownTooltips =
     , ( buyFilterCreationTip, "Pravidla nákupu určují které položky na tržišti (úvěry či participace) mají být ignorovány. Daná položka bude ignorována pokud splní všechny podmínky pravidla. Pokud však zároveň splní všechny podmínky výjimky, ignorována nebude." )
     , ( sellFilterCreationTip, "Pravidla prodeje určují které participace má robot prodávat. Daná participace bude prodána pokud splní všechny podmínky pravidla. Pokud však zároveň splní všechny podmínky výjimky, prodána nebude." )
     , ( zonkoidTip, "Tato funkce vyžaduje instalaci mobilní aplikace Zonkoid, kterou si můžete stáhnout na zonkoid.cz" )
+    , ( exitDateTip, "Nastavením tohoto data robot s okamžitou platností přestane investovat do půjček, jejichž datum splatnosti přesahuje toto datum" )
+    , ( sellofDateTip, "Robot k tomuto datu ukončí veškeré investování a přesune všechny participace na sekundární tržiště" )
     ]
 
 
@@ -94,3 +98,13 @@ sellFilterCreationTip =
 zonkoidTip : TipId
 zonkoidTip =
     TipId 6
+
+
+exitDateTip : TipId
+exitDateTip =
+    TipId 7
+
+
+sellofDateTip : TipId
+sellofDateTip =
+    TipId 8

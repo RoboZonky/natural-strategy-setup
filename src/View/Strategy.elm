@@ -53,10 +53,10 @@ generalSettingsCard { targetPortfolioSize, exitConfig, defaultInvestmentShare, d
         , blocks =
             [ Accordion.block []
                 [ TargetPortfolioSize.form targetPortfolioSize
-                , ExitConfig.form exitConfig generatedOn
                 , InvestmentShare.form defaultInvestmentShare
                 , TargetBalance.form defaultTargetBalance
                 , Confirmation.form confirmationSettings tooltipStates
+                , ExitConfig.form exitConfig generatedOn tooltipStates
                 ]
             ]
         }
