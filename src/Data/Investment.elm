@@ -9,7 +9,9 @@ module Data.Investment
         , defaultSize
         , encode
         , encodeSize
+        , investmentSizeEqual
         , investmentSlidersSubscriptions
+        , investmentsPerRatingEqual
         , renderInvestments
         , renderSize
         , size
@@ -116,6 +118,20 @@ anyInvestmentExceeds5k default overrides =
         |> (not << List.isEmpty)
 
 
+investmentSizeEqual : Size -> Size -> Bool
+investmentSizeEqual s1 s2 =
+    RangeSlider.getValues s1 == RangeSlider.getValues s2
+
+
+investmentsPerRatingEqual : InvestmentsPerRating -> InvestmentsPerRating -> Bool
+investmentsPerRatingEqual ipr1 ipr2 =
+    let
+        toVal =
+            AllDict.map (\_ slider -> RangeSlider.getValues slider)
+    in
+    AllDict.eq (toVal ipr1) (toVal ipr2)
+
+
 
 -- JSON
 
@@ -145,5 +161,5 @@ sizeDecoder =
                         size from to
 
                     _ ->
-                        size 200 200
+                        defaultSize
             )

@@ -5,6 +5,7 @@ module Data.PortfolioStructure
         , decoder
         , encode
         , percentageShare
+        , portfolioSharesEqual
         , portfolioSlidersSubscription
         , renderPortfolioShares
         , toIntRange
@@ -95,6 +96,15 @@ validate portfolioShares =
             AllDict.foldr (\_ sliderState sumAcc -> sumAcc + round (Tuple.first <| RangeSlider.getValues sliderState)) 0 portfolioShares
     in
     Util.validate (sumOfShareMinimums /= 100) <| "Součet minim musí být přesně 100% (teď je " ++ toString sumOfShareMinimums ++ "%)"
+
+
+portfolioSharesEqual : PortfolioShares -> PortfolioShares -> Bool
+portfolioSharesEqual ps1 ps2 =
+    let
+        toVal =
+            AllDict.map (\_ slider -> RangeSlider.getValues slider)
+    in
+    AllDict.eq (toVal ps1) (toVal ps2)
 
 
 

@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.logging.Level;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 public class RandomStrategyRenderingTest {
@@ -24,19 +25,29 @@ public class RandomStrategyRenderingTest {
         for (int i = 0; i < 1000; i++) {
             String renderedStrategy = testApp.nextStrategy();
 
-            try {
-                GeneratedStrategyVerifier.parseWithAntlr(renderedStrategy);
-            } catch (Exception e) {
-                Assert.fail("----- Failed to parse strategy (seed = " + testApp.getStrategySeed() + ") -----\n"
-                        + renderedStrategy + "\nException was\n" + e.toString());
-            }
-            assertEquals("Strategy must not have validation errors\n" + renderedStrategy
-                    , "[]", testApp.getValidationErrors());
+            strategyIsParsableByRobozonky(renderedStrategy);
+
+            assertEquals("Strategy must not have validation errors",
+                         "[]", testApp.getValidationErrors()
+            );
+
+            assertEquals("After JSON Encode/Decode roundtrip the strategy must be the same",
+                         "Ok", testApp.getJsonEncodeDecodeResult()
+            );
         }
 
         List<LogEntry> errorsAndWarnings = testApp.getBrowserConsoleLogs().filter(Level.WARNING);
         errorsAndWarnings.forEach(System.out::println);
-        assertTrue("Browser console log shouldn't contain errors", errorsAndWarnings.isEmpty());
+        assertTrue("Browser console log must not contain errors", errorsAndWarnings.isEmpty());
+    }
+
+    private void strategyIsParsableByRobozonky(String strategy) {
+        try {
+            GeneratedStrategyVerifier.parseWithAntlr(strategy);
+        } catch (Exception e) {
+            Assert.fail("----- Failed to parse strategy (seed = " + testApp.getStrategySeed() + ") -----\n"
+                                + strategy + "\nException was\n" + e.toString());
+        }
     }
 
     @After

@@ -1,4 +1,4 @@
-module Util exposing (emptyToZero, enumDecoder, joinNonemptyLines, orList, renderNonemptySection, validate, viewErrors, zeroToEmpty)
+module Util exposing (and, emptyToZero, enumDecoder, joinNonemptyLines, orList, renderNonemptySection, validate, viewErrors, zeroToEmpty)
 
 import Html exposing (Html, div, text)
 import Html.Attributes exposing (style)
@@ -63,6 +63,11 @@ validate errorCondition error =
         [ error ]
     else
         []
+
+
+and : List Bool -> Bool
+and =
+    List.all Basics.identity
 
 
 viewErrors : List String -> Html a

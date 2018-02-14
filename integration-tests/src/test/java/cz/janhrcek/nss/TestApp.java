@@ -34,6 +34,10 @@ class TestApp {
         return validationErrors.getText();
     }
 
+    public String getJsonEncodeDecodeResult() {
+        return driver.findElement(By.id("encodingDecodingResult")).getText();
+    }
+
     /**
      * @return seed used to generate the strategy returned by previous call to {@link #nextStrategy()}
      */

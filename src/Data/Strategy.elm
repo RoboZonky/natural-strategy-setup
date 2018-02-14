@@ -22,6 +22,7 @@ module Data.Strategy
         , setTargetBalance
         , setTargetPortfolioSize
         , strategyDecoder
+        , strategyEqual
         , togglePrimaryMarket
         , toggleSecondaryMarket
         , updateNotificationSettings
@@ -270,6 +271,32 @@ validateGeneralSettings generalSettings =
         , TargetPortfolioSize.validate generalSettings.targetPortfolioSize
         , InvestmentShare.validate generalSettings.defaultInvestmentShare
         , TargetBalance.validate generalSettings.defaultTargetBalance
+        ]
+
+
+{-| Strategy equality
+-}
+strategyEqual : StrategyConfiguration -> StrategyConfiguration -> Bool
+strategyEqual s1 s2 =
+    Util.and
+        [ generalSettingsEqual s1.generalSettings s2.generalSettings
+        , PortfolioStructure.portfolioSharesEqual s1.portfolioShares s2.portfolioShares
+        , Investment.investmentsPerRatingEqual s1.investmentSizeOverrides s2.investmentSizeOverrides
+        , s1.buyingConfig == s2.buyingConfig
+        , s1.sellingConfig == s2.sellingConfig
+        ]
+
+
+generalSettingsEqual : GeneralSettings -> GeneralSettings -> Bool
+generalSettingsEqual gs1 gs2 =
+    Util.and
+        [ gs1.portfolio == gs2.portfolio
+        , gs1.exitConfig == gs2.exitConfig
+        , gs1.targetPortfolioSize == gs2.targetPortfolioSize
+        , Investment.investmentSizeEqual gs1.defaultInvestmentSize gs2.defaultInvestmentSize
+        , gs1.defaultInvestmentShare == gs2.defaultInvestmentShare
+        , gs1.defaultTargetBalance == gs2.defaultTargetBalance
+        , Confirmation.equal gs1.confirmationSettings gs2.confirmationSettings
         ]
 
 

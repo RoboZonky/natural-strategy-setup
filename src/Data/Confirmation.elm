@@ -4,6 +4,7 @@ module Data.Confirmation
         , confirmationsDisabled
         , decoder
         , encode
+        , equal
         , render
         )
 
@@ -27,6 +28,15 @@ render (RatingList enabledRatings) =
         ""
     else
         "Potvrzovat mobilem investice do úvěrů, kde " ++ Rating.renderCondition (RatingList enabledRatings) ++ "."
+
+
+equal : ConfirmationSettings -> ConfirmationSettings -> Bool
+equal (RatingList cs1) (RatingList cs2) =
+    let
+        makeComparable =
+            List.sort << List.map Rating.ratingToString
+    in
+    makeComparable cs1 == makeComparable cs2
 
 
 

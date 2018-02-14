@@ -1,9 +1,11 @@
 module Test.TestApp exposing (main)
 
-import Data.Strategy as Strategy
+import Data.Strategy as Strategy exposing (StrategyConfiguration)
 import Html exposing (Html, button, div, input, span, text, textarea)
 import Html.Attributes exposing (cols, id, readonly, rows, type_, value)
 import Html.Events exposing (onClick, onInput)
+import Json.Decode
+import Json.Encode
 import Random
 import Test.RandomStrategy as RandomStrategy
 import Time.DateTime as DateTime
@@ -67,4 +69,33 @@ view seed =
             [ text <| "Strategy validation errors: "
             , span [ id "validationErrors" ] [ text <| toString <| Strategy.validateStrategyConfiguration randomStrategyConfig ]
             ]
+        , div []
+            [ text "JSON encode / decode roundtrip: "
+            , span [ id "encodingDecodingResult" ] [ text <| testEncodeDecodeDoesntChangeStrategy randomStrategyConfig ]
+            ]
         ]
+
+
+testEncodeDecodeDoesntChangeStrategy : StrategyConfiguration -> String
+testEncodeDecodeDoesntChangeStrategy original =
+    case encodeDecodeStrategy original of
+        Ok decoded ->
+            if Strategy.strategyEqual original decoded then
+                "Ok"
+            else
+                String.join "\n"
+                    [ "Decoded strategy is different from original"
+                    , "---------- ORIGINAL ----------"
+                    , toString original
+                    , "---------- DECODED ----------"
+                    , toString decoded
+                    ]
+
+        Err e ->
+            "There was an error when decoding strategy : " ++ e
+
+
+encodeDecodeStrategy : StrategyConfiguration -> Result String StrategyConfiguration
+encodeDecodeStrategy originalStrategy =
+    Json.Encode.encode 0 (Strategy.encodeStrategy originalStrategy)
+        |> Json.Decode.decodeString Strategy.strategyDecoder
