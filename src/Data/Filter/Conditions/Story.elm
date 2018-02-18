@@ -14,7 +14,7 @@ module Data.Filter.Conditions.Story
 import Bootstrap.Form.Radio as Radio
 import Html exposing (Html, div)
 import Json.Decode as Decode exposing (Decoder)
-import Json.Encode as Encode exposing (Value)
+import Json.Encode exposing (Value)
 import Util
 
 
@@ -90,7 +90,7 @@ storyRadio currentStory thisRadiosStory =
 
 encodeStory : Story -> Value
 encodeStory =
-    Encode.string << toString
+    Util.enumEncoder allStories
 
 
 encodeCondition : StoryCondition -> Value
@@ -100,7 +100,7 @@ encodeCondition (StoryCondition s) =
 
 storyDecoder : Decoder Story
 storyDecoder =
-    Util.enumDecoder allStories
+    Util.enumDecoder "Story" allStories
 
 
 conditionDecoder : Decoder StoryCondition

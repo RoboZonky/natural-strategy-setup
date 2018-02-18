@@ -224,7 +224,7 @@ ratingCheckbox rating isEnabled =
 
 encodeRating : Rating -> Value
 encodeRating =
-    Encode.string << toString
+    Util.enumEncoder allRatings
 
 
 encodeCondition : RatingCondition -> Value
@@ -234,7 +234,7 @@ encodeCondition (RatingList rs) =
 
 ratingDecoder : Decoder Rating
 ratingDecoder =
-    Util.enumDecoder allRatings
+    Util.enumDecoder "Rating" allRatings
 
 
 conditionDecoder : Decoder RatingCondition

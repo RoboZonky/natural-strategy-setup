@@ -131,7 +131,7 @@ mainIncomeCheckbox income isEnabled =
 
 encodeMainIncome : MainIncome -> Value
 encodeMainIncome =
-    Encode.string << toString
+    Util.enumEncoder allIncomes
 
 
 encodeCondition : MainIncomeCondition -> Value
@@ -141,7 +141,7 @@ encodeCondition (MainIncomeList mis) =
 
 mainIncomeDecoder : Decoder MainIncome
 mainIncomeDecoder =
-    Util.enumDecoder allIncomes
+    Util.enumDecoder "MainIncome" allIncomes
 
 
 conditionDecoder : Decoder MainIncomeCondition

@@ -132,7 +132,7 @@ purposeCheckbox purpose isEnabled =
 
 encodePurpose : Purpose -> Value
 encodePurpose =
-    Encode.string << toString
+    Util.enumEncoder allPurposes
 
 
 encodeCondition : PurposeCondition -> Value
@@ -142,7 +142,7 @@ encodeCondition (PurposeList lps) =
 
 purposeDecoder : Decoder Purpose
 purposeDecoder =
-    Util.enumDecoder allPurposes
+    Util.enumDecoder "Purpose" allPurposes
 
 
 conditionDecoder : Decoder PurposeCondition

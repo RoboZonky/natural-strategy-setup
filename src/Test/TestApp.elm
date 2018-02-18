@@ -4,8 +4,6 @@ import Data.Strategy as Strategy exposing (StrategyConfiguration)
 import Html exposing (Html, button, div, input, span, text, textarea)
 import Html.Attributes exposing (cols, id, readonly, rows, type_, value)
 import Html.Events exposing (onClick, onInput)
-import Json.Decode
-import Json.Encode
 import Random
 import Test.RandomStrategy as RandomStrategy
 import Time.DateTime as DateTime
@@ -49,7 +47,7 @@ view seed =
             Random.step RandomStrategy.strategyConfigurationGen (Random.initialSeed seed)
 
         strategyString =
-            Strategy.renderStrategyConfiguration dummyGeneratedOn randomStrategyConfig
+            Strategy.renderStrategyConfiguration "dummy" dummyGeneratedOn randomStrategyConfig
     in
     div []
         [ textarea
@@ -96,6 +94,5 @@ testEncodeDecodeDoesntChangeStrategy original =
 
 
 encodeDecodeStrategy : StrategyConfiguration -> Result String StrategyConfiguration
-encodeDecodeStrategy originalStrategy =
-    Json.Encode.encode 0 (Strategy.encodeStrategy originalStrategy)
-        |> Json.Decode.decodeString Strategy.strategyDecoder
+encodeDecodeStrategy =
+    Strategy.strategyToUrlHash >> Strategy.strategyFromUrlHash

@@ -273,11 +273,20 @@ amountConditionGen =
 interestConditionGen : Generator Condition
 interestConditionGen =
     Random.choices
-        [ Random.map Interest.LessThan (Random.float 0 100)
-        , Random.float 0 100 |> Random.andThen (\mi -> Random.float mi 100 |> Random.map (\mx -> Interest.Between mi mx))
-        , Random.map Interest.MoreThan (Random.float 0 100)
+        [ Random.map Interest.LessThan (float2dpGen 0 100)
+        , float2dpGen 0 100 |> Random.andThen (\mi -> float2dpGen mi 100 |> Random.map (\mx -> Interest.Between mi mx))
+        , Random.map Interest.MoreThan (float2dpGen 0 100)
         ]
         |> Random.map (InterestCondition >> Condition_Interest)
+
+
+
+{- | random float rounded to 2 decimal places -}
+
+
+float2dpGen : Float -> Float -> Generator Float
+float2dpGen from to =
+    Random.map (\f -> toFloat (round (f * 100)) / 100) (Random.float from to)
 
 
 filteredItemGen : Generator FilteredItem

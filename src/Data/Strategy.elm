@@ -5,7 +5,6 @@ module Data.Strategy
         , addBuyFilter
         , addSellFilter
         , defaultStrategyConfiguration
-        , encodeStrategy
         , removeBuyFilter
         , removeSellFilter
         , renderStrategyConfiguration
@@ -21,8 +20,9 @@ module Data.Strategy
         , setSellingConfiguration
         , setTargetBalance
         , setTargetPortfolioSize
-        , strategyDecoder
         , strategyEqual
+        , strategyFromUrlHash
+        , strategyToUrlHash
         , togglePrimaryMarket
         , toggleSecondaryMarket
         , updateNotificationSettings
@@ -30,6 +30,7 @@ module Data.Strategy
         )
 
 import AllDict
+import Base64
 import Data.Confirmation as Confirmation exposing (ConfirmationSettings)
 import Data.ExitConfig as ExitConfig exposing (ExitConfig)
 import Data.Filter as Filters exposing (BuyingConfiguration, MarketplaceFilter, SellingConfiguration)
@@ -46,6 +47,7 @@ import Json.Encode as Encode exposing (Value)
 import List.Extra
 import RangeSlider
 import Time.Date exposing (Date)
+import Types exposing (BaseUrl)
 import Util
 import Version
 
@@ -228,10 +230,11 @@ addSellFilter newFilter config =
     { config | sellingConfig = Filters.updateSellFilters (\fs -> fs ++ [ newFilter ]) config.sellingConfig }
 
 
-renderStrategyConfiguration : Date -> StrategyConfiguration -> String
-renderStrategyConfiguration generatedOn { generalSettings, portfolioShares, investmentSizeOverrides, buyingConfig, sellingConfig } =
+renderStrategyConfiguration : BaseUrl -> Date -> StrategyConfiguration -> String
+renderStrategyConfiguration baseUrl generatedOn ({ generalSettings, portfolioShares, investmentSizeOverrides, buyingConfig, sellingConfig } as strategyConfig) =
     Util.joinNonemptyLines
         [ Version.strategyComment generatedOn
+        , shareableUrlComment baseUrl strategyConfig
         , Version.robozonkyVersionStatement
         , renderGeneralSettings generalSettings
         , PortfolioStructure.renderPortfolioShares generalSettings.portfolio portfolioShares
@@ -307,44 +310,75 @@ generalSettingsEqual gs1 gs2 =
 encodeGeneralSettings : GeneralSettings -> Value
 encodeGeneralSettings { portfolio, exitConfig, targetPortfolioSize, defaultInvestmentSize, defaultInvestmentShare, defaultTargetBalance, confirmationSettings } =
     Encode.object
-        [ ( "portfolio", Portfolio.encode portfolio )
-        , ( "exitConfig", ExitConfig.encode exitConfig )
-        , ( "targetPortfolioSize", TargetPortfolioSize.encode targetPortfolioSize )
-        , ( "defaultInvestmentSize", Investment.encodeSize defaultInvestmentSize )
-        , ( "defaultInvestmentShare", InvestmentShare.encode defaultInvestmentShare )
-        , ( "defaultTargetBalance", TargetBalance.encode defaultTargetBalance )
-        , ( "confirmationSettings", Confirmation.encode confirmationSettings )
+        [ ( "a", Portfolio.encode portfolio )
+        , ( "b", ExitConfig.encode exitConfig )
+        , ( "c", TargetPortfolioSize.encode targetPortfolioSize )
+        , ( "d", Investment.encodeSize defaultInvestmentSize )
+        , ( "e", InvestmentShare.encode defaultInvestmentShare )
+        , ( "f", TargetBalance.encode defaultTargetBalance )
+        , ( "g", Confirmation.encode confirmationSettings )
         ]
 
 
 generalSettingsDecoder : Decoder GeneralSettings
 generalSettingsDecoder =
     Decode.map7 GeneralSettings
-        (Decode.field "portfolio" Portfolio.decoder)
-        (Decode.field "exitConfig" ExitConfig.decoder)
-        (Decode.field "targetPortfolioSize" TargetPortfolioSize.decoder)
-        (Decode.field "defaultInvestmentSize" Investment.sizeDecoder)
-        (Decode.field "defaultInvestmentShare" InvestmentShare.decoder)
-        (Decode.field "defaultTargetBalance" TargetBalance.decoder)
-        (Decode.field "confirmationSettings" Confirmation.decoder)
+        (Decode.field "a" Portfolio.decoder)
+        (Decode.field "b" ExitConfig.decoder)
+        (Decode.field "c" TargetPortfolioSize.decoder)
+        (Decode.field "d" Investment.sizeDecoder)
+        (Decode.field "e" InvestmentShare.decoder)
+        (Decode.field "f" TargetBalance.decoder)
+        (Decode.field "g" Confirmation.decoder)
 
 
 encodeStrategy : StrategyConfiguration -> Value
 encodeStrategy { generalSettings, portfolioShares, investmentSizeOverrides, buyingConfig, sellingConfig } =
     Encode.object
-        [ ( "generalSettings", encodeGeneralSettings generalSettings )
-        , ( "portfolioShares", PortfolioStructure.encode portfolioShares )
-        , ( "investmentSizeOverrides", Investment.encode investmentSizeOverrides )
-        , ( "buyingConfig", Filters.encodeBuyingConfiguration buyingConfig )
-        , ( "sellingConfig", Filters.encodeSellingConfiguration sellingConfig )
+        [ ( "h", encodeGeneralSettings generalSettings )
+        , ( "i", PortfolioStructure.encode portfolioShares )
+        , ( "j", Investment.encode investmentSizeOverrides )
+        , ( "k", Filters.encodeBuyingConfiguration buyingConfig )
+        , ( "l", Filters.encodeSellingConfiguration sellingConfig )
         ]
 
 
 strategyDecoder : Decoder StrategyConfiguration
 strategyDecoder =
     Decode.map5 StrategyConfiguration
-        (Decode.field "generalSettings" generalSettingsDecoder)
-        (Decode.field "portfolioShares" PortfolioStructure.decoder)
-        (Decode.field "investmentSizeOverrides" Investment.decoder)
-        (Decode.field "buyingConfig" Filters.decodeBuyingConfiguration)
-        (Decode.field "sellingConfig" Filters.decodeSellingConfiguration)
+        (Decode.field "h" generalSettingsDecoder)
+        (Decode.field "i" PortfolioStructure.decoder)
+        (Decode.field "j" Investment.decoder)
+        (Decode.field "k" Filters.decodeBuyingConfiguration)
+        (Decode.field "l" Filters.decodeSellingConfiguration)
+
+
+type alias UrlHash =
+    String
+
+
+strategyToUrlHash : StrategyConfiguration -> UrlHash
+strategyToUrlHash strategyConfiguration =
+    encodeStrategy strategyConfiguration
+        |> Encode.encode 0
+        |> Base64.encode
+
+
+strategyFromUrlHash : UrlHash -> Result String StrategyConfiguration
+strategyFromUrlHash hash =
+    Base64.decode hash
+        |> Result.andThen (\strategyJson -> Decode.decodeString strategyDecoder strategyJson)
+
+
+shareableUrlComment : BaseUrl -> StrategyConfiguration -> String
+shareableUrlComment baseUrl strategyConfig =
+    let
+        urlHash =
+            strategyToUrlHash strategyConfig
+    in
+    String.join "\n"
+        [ "# ----------------------------------------------------------------------"
+        , "# Pro budoucí úpravy této strategie vložte následující URL do prohlížeče"
+        , "# " ++ baseUrl ++ "#" ++ urlHash
+        , "# ----------------------------------------------------------------------"
+        ]

@@ -12,11 +12,12 @@ import Data.TargetPortfolioSize as TargetPortfolioSize exposing (TargetPortfolio
 import Data.Tooltip as Tooltip
 import Html exposing (Html, a, footer, h1, text)
 import Html.Attributes exposing (class, href, style)
+import Navigation
 import Task
 import Time
 import Time.Date exposing (Date)
 import Time.DateTime as DateTime
-import Types exposing (CreationModalMsg(ModalTooltipMsg), Msg(..))
+import Types exposing (BaseUrl, CreationModalMsg(ModalTooltipMsg), Msg(..))
 import Util
 import Version
 import View.ConfigPreview as ConfigPreview
@@ -32,28 +33,52 @@ type alias Model =
     , filterDeletionState : FilterDeletionModal.Model
     , tooltipStates : Tooltip.States
     , generatedOn : Date
+    , baseUrl : BaseUrl
     }
 
 
-initialModel : Model
-initialModel =
-    { strategyConfig = Strategy.defaultStrategyConfiguration
+initialModel : BaseUrl -> StrategyConfiguration -> Model
+initialModel baseUrl strategyConfig =
+    { strategyConfig = strategyConfig
     , accordionState = Accordion.initialState
     , filterCreationState = FilterCreationModal.init
     , filterDeletionState = FilterDeletionModal.initClosed
     , tooltipStates = Tooltip.initialStates
     , generatedOn = DateTime.date DateTime.epoch
+    , baseUrl = baseUrl
     }
 
 
 main : Program Never Model Msg
 main =
-    Html.program
-        { init = ( initialModel, Task.perform SetDateTime Time.now )
+    Navigation.program (always NoOp)
+        { init = init
         , update = update
         , view = view
         , subscriptions = subscriptions
         }
+
+
+init : Navigation.Location -> ( Model, Cmd Msg )
+init location =
+    let
+        initialStrategy =
+            loadStrategyFromUrl location
+                |> Maybe.withDefault Strategy.defaultStrategyConfiguration
+
+        baseUrl =
+            String.split "#" location.href
+                |> List.head
+                |> Maybe.withDefault "Impossible, as the split will always have 1+ elements"
+    in
+    ( initialModel baseUrl initialStrategy
+    , Cmd.batch
+        [ Task.perform SetDateTime Time.now
+
+        {- clear the hash from URL -}
+        , Navigation.newUrl baseUrl
+        ]
+    )
 
 
 subscriptions : Model -> Sub Msg
@@ -187,12 +212,6 @@ updateHelper msg model =
             in
             askForSellFilterDeletionConfirmation model newModel
 
-        ShareStrategy ->
-            -- TODO generate encoded-obfuscated strategy containing URL and show it in UI
-            -- let  _ = Debug.log "Strategy JSON: " <| Json.Encode.encode 0 <| Strategy.encodeStrategy model.strategyConfig
-            -- in
-            model
-
         NoOp ->
             model
 
@@ -272,12 +291,12 @@ wrapIntOrEmpty intWrapper emptyVal str =
 
 
 view : Model -> Html Msg
-view { strategyConfig, accordionState, filterCreationState, filterDeletionState, tooltipStates, generatedOn } =
+view { strategyConfig, accordionState, filterCreationState, filterDeletionState, tooltipStates, generatedOn, baseUrl } =
     Grid.containerFluid []
         [ h1 [] [ text "Konfigurace strategie" ]
         , Grid.row []
             [ Strategy.form strategyConfig accordionState filterCreationState filterDeletionState tooltipStates generatedOn
-            , ConfigPreview.view generatedOn strategyConfig
+            , ConfigPreview.view baseUrl generatedOn strategyConfig
             ]
         , infoFooter
         ]
@@ -293,3 +312,18 @@ infoFooter =
         , text ". Nahlásit chybu na "
         , a [ href "https://github.com/RoboZonky/natural-strategy-setup/issues" ] [ text "stránce projektu" ]
         ]
+
+
+loadStrategyFromUrl : Navigation.Location -> Maybe StrategyConfiguration
+loadStrategyFromUrl location =
+    let
+        base64EncodedStrategyJson =
+            String.dropLeft 1 {- drop '#' -} location.hash
+    in
+    case Strategy.strategyFromUrlHash base64EncodedStrategyJson of
+        Ok strategy ->
+            Just strategy
+
+        Err err ->
+            Debug.log ("Failed to load strategy from URL " ++ location.href ++ " - The error was " ++ err)
+                Nothing

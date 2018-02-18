@@ -44,8 +44,8 @@ import Data.Filter.Conditions.Region as Region exposing (RegionCondition, Region
 import Data.Filter.Conditions.Story as Story exposing (StoryCondition, StoryMsg)
 import Data.Filter.Conditions.TermMonths as TermMonths exposing (TermMonthsCondition, TermMonthsMsg)
 import Data.Filter.Conditions.TermPercent as TermPercent exposing (TermPercentCondition, TermPercentMsg)
-import Json.Decode as Decode exposing (Decoder, field, nullable)
-import Json.Decode.Extra exposing ((|:))
+import Json.Decode as Decode exposing (Decoder)
+import Json.Decode.Extra exposing ((|:), optionalField)
 import Json.Encode as Encode exposing (Value)
 
 
@@ -74,8 +74,8 @@ type Condition
     | Condition_Term_Percent TermPercentCondition
     | Condition_Elapsed_Term_Months ElapsedTermMonthsCondition
     | Condition_Elapsed_Term_Percent ElapsedTermPercentCondition
-    | Condition_Amount AmountCondition
     | Condition_Interest InterestCondition
+    | Condition_Amount AmountCondition
 
 
 emptyConditions : Conditions
@@ -89,8 +89,8 @@ emptyConditions =
     , termPercent = Nothing
     , elapsedTermMonths = Nothing
     , elapsedTermPercent = Nothing
-    , amount = Nothing
     , interest = Nothing
+    , amount = Nothing
     }
 
 
@@ -124,11 +124,11 @@ renderCondition condition =
         Condition_Elapsed_Term_Percent c ->
             ElapsedTermPercent.renderCondition c
 
-        Condition_Amount c ->
-            Amount.renderCondition c
-
         Condition_Interest c ->
             Interest.renderCondition c
+
+        Condition_Amount c ->
+            Amount.renderCondition c
 
 
 conditionsValidationErrors : String -> Conditions -> List String
@@ -166,11 +166,11 @@ conditionValidationError c =
         Condition_Elapsed_Term_Percent elapsedTermPercentCond ->
             ElapsedTermPercent.validationErrors elapsedTermPercentCond
 
-        Condition_Amount amountCond ->
-            Amount.validationErrors amountCond
-
         Condition_Interest interestCond ->
             Interest.validationErrors interestCond
+
+        Condition_Amount amountCond ->
+            Amount.validationErrors amountCond
 
 
 conditionsToList : Conditions -> List Condition
@@ -207,13 +207,13 @@ conditionsToList { region, rating, income, purpose, story, termMonths, termPerce
         elTermP =
             fromMaybe Condition_Elapsed_Term_Percent elapsedTermPercent
 
-        amo =
-            fromMaybe Condition_Amount amount
-
         inte =
             fromMaybe Condition_Interest interest
+
+        amo =
+            fromMaybe Condition_Amount amount
     in
-    List.concat [ reg, rat, inc, pur, sto, terM, terP, elTermM, elTermP, amo, inte ]
+    List.concat [ reg, rat, inc, pur, sto, terM, terP, elTermM, elTermP, inte, amo ]
 
 
 addCondition : Condition -> Conditions -> Conditions
@@ -246,11 +246,11 @@ addCondition c cs =
         Condition_Elapsed_Term_Percent elapsedTermPercentCond ->
             setElapsedTermPercentCondition elapsedTermPercentCond cs
 
-        Condition_Amount amountCond ->
-            setAmountCondition amountCond cs
-
         Condition_Interest interestCond ->
             setInterestCondition interestCond cs
+
+        Condition_Amount amountCond ->
+            setAmountCondition amountCond cs
 
 
 setRegionCondition : RegionCondition -> Conditions -> Conditions
@@ -298,14 +298,14 @@ setElapsedTermPercentCondition c cs =
     { cs | elapsedTermPercent = Just c }
 
 
-setAmountCondition : AmountCondition -> Conditions -> Conditions
-setAmountCondition c cs =
-    { cs | amount = Just c }
-
-
 setInterestCondition : InterestCondition -> Conditions -> Conditions
 setInterestCondition c cs =
     { cs | interest = Just c }
+
+
+setAmountCondition : AmountCondition -> Conditions -> Conditions
+setAmountCondition c cs =
+    { cs | amount = Just c }
 
 
 updateInterest : InterestMsg -> Conditions -> Conditions
@@ -423,38 +423,60 @@ removeRegionCondition cs =
 
 
 encodeConditions : Conditions -> Value
-encodeConditions { region, rating, income, purpose, story, termMonths, termPercent, elapsedTermMonths, elapsedTermPercent, interest, amount } =
-    Encode.object
-        [ ( "region", encodeMaybe Region.encodeCondition region )
-        , ( "rating", encodeMaybe Rating.encodeCondition rating )
-        , ( "income", encodeMaybe MainIncome.encodeCondition income )
-        , ( "purpose", encodeMaybe Purpose.encodeCondition purpose )
-        , ( "story", encodeMaybe Story.encodeCondition story )
-        , ( "termMonths", encodeMaybe TermMonths.encodeCondition termMonths )
-        , ( "termPercent", encodeMaybe TermPercent.encodeCondition termPercent )
-        , ( "elapsedTermMonths", encodeMaybe ElapsedTermMonths.encodeCondition elapsedTermMonths )
-        , ( "elapsedTermPercent", encodeMaybe ElapsedTermPercent.encodeCondition elapsedTermPercent )
-        , ( "interest", encodeMaybe Interest.encodeCondition interest )
-        , ( "amount", encodeMaybe Amount.encodeCondition amount )
-        ]
+encodeConditions conditions =
+    conditionsToList conditions
+        |> List.map encodeCondition
+        |> Encode.object
 
 
-encodeMaybe : (a -> Value) -> Maybe a -> Value
-encodeMaybe enc =
-    Maybe.map enc >> Maybe.withDefault Encode.null
+encodeCondition : Condition -> ( String, Value )
+encodeCondition c =
+    case c of
+        Condition_Region regionCond ->
+            ( "A", Region.encodeCondition regionCond )
+
+        Condition_Rating ratingCond ->
+            ( "B", Rating.encodeCondition ratingCond )
+
+        Condition_Income incomeCond ->
+            ( "C", MainIncome.encodeCondition incomeCond )
+
+        Condition_Purpose purposeCond ->
+            ( "D", Purpose.encodeCondition purposeCond )
+
+        Condition_Story storyCond ->
+            ( "E", Story.encodeCondition storyCond )
+
+        Condition_Term_Months termMonthsCond ->
+            ( "F", TermMonths.encodeCondition termMonthsCond )
+
+        Condition_Term_Percent termPercentCond ->
+            ( "G", TermPercent.encodeCondition termPercentCond )
+
+        Condition_Elapsed_Term_Months elapsedTermMonthsCond ->
+            ( "H", ElapsedTermMonths.encodeCondition elapsedTermMonthsCond )
+
+        Condition_Elapsed_Term_Percent elapsedTermPercentCond ->
+            ( "I", ElapsedTermPercent.encodeCondition elapsedTermPercentCond )
+
+        Condition_Interest interestCond ->
+            ( "J", Interest.encodeCondition interestCond )
+
+        Condition_Amount amountCond ->
+            ( "K", Amount.encodeCondition amountCond )
 
 
 conditionsDecoder : Decoder Conditions
 conditionsDecoder =
     Decode.succeed Conditions
-        |: (field "region" <| nullable Region.conditionDecoder)
-        |: (field "rating" <| nullable Rating.conditionDecoder)
-        |: (field "income" <| nullable MainIncome.conditionDecoder)
-        |: (field "purpose" <| nullable Purpose.conditionDecoder)
-        |: (field "story" <| nullable Story.conditionDecoder)
-        |: (field "termMonths" <| nullable TermMonths.conditionDecoder)
-        |: (field "termPercent" <| nullable TermPercent.conditionDecoder)
-        |: (field "elapsedTermMonths" <| nullable ElapsedTermMonths.conditionDecoder)
-        |: (field "elapsedTermPercent" <| nullable ElapsedTermPercent.conditionDecoder)
-        |: (field "interest" <| nullable Interest.conditionDecoder)
-        |: (field "amount" <| nullable Amount.conditionDecoder)
+        |: optionalField "A" Region.conditionDecoder
+        |: optionalField "B" Rating.conditionDecoder
+        |: optionalField "C" MainIncome.conditionDecoder
+        |: optionalField "D" Purpose.conditionDecoder
+        |: optionalField "E" Story.conditionDecoder
+        |: optionalField "F" TermMonths.conditionDecoder
+        |: optionalField "G" TermPercent.conditionDecoder
+        |: optionalField "H" ElapsedTermMonths.conditionDecoder
+        |: optionalField "I" ElapsedTermPercent.conditionDecoder
+        |: optionalField "J" Interest.conditionDecoder
+        |: optionalField "K" Amount.conditionDecoder

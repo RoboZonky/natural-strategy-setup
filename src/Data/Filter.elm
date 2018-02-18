@@ -505,20 +505,19 @@ encodeSellingConfiguration sellingConfiguratin =
     case sellingConfiguratin of
         SellNothing ->
             Encode.object
-                [ ( "strat", Encode.int 0 )
-                , ( "filters", Encode.null )
+                [ ( "m", Encode.int 0 )
                 ]
 
         SellSomething filters ->
             Encode.object
-                [ ( "strat", Encode.int 1 )
-                , ( "filters", Encode.list <| List.map encodeMarketplaceFilter filters )
+                [ ( "m", Encode.int 1 )
+                , ( "n", Encode.list <| List.map encodeMarketplaceFilter filters )
                 ]
 
 
 decodeSellingConfiguration : Decoder SellingConfiguration
 decodeSellingConfiguration =
-    Decode.field "strat" Decode.int
+    Decode.field "m" Decode.int
         |> Decode.andThen
             (\x ->
                 case x of
@@ -527,10 +526,10 @@ decodeSellingConfiguration =
 
                     1 ->
                         Decode.map SellSomething
-                            (Decode.field "filters" (Decode.list marketplaceFilterDecoder))
+                            (Decode.field "n" (Decode.list marketplaceFilterDecoder))
 
                     _ ->
-                        Decode.fail <| "Unable to SellingConfiguration from " ++ toString x
+                        Decode.fail <| "Unable to decode SellingConfiguration from " ++ toString x
             )
 
 
@@ -539,28 +538,26 @@ encodeBuyingConfiguration buyingConfiguration =
     case buyingConfiguration of
         InvestEverything ->
             Encode.object
-                [ ( "strat", Encode.int 0 )
-                , ( "filters", Encode.null )
+                [ ( "o", Encode.int 0 )
                 ]
 
         InvestSomething enablement filters ->
             Encode.object
-                [ ( "strat", Encode.int 1 )
-                , ( "primEnabled", Encode.bool enablement.primaryEnabled )
-                , ( "secEnabled", Encode.bool enablement.secondaryEnabled )
-                , ( "filters", Encode.list <| List.map encodeMarketplaceFilter filters )
+                [ ( "o", Encode.int 1 )
+                , ( "p", Encode.bool enablement.primaryEnabled )
+                , ( "q", Encode.bool enablement.secondaryEnabled )
+                , ( "r", Encode.list <| List.map encodeMarketplaceFilter filters )
                 ]
 
         InvestNothing ->
             Encode.object
-                [ ( "strat", Encode.int 2 )
-                , ( "filters", Encode.null )
+                [ ( "o", Encode.int 2 )
                 ]
 
 
 decodeBuyingConfiguration : Decoder BuyingConfiguration
 decodeBuyingConfiguration =
-    Decode.field "strat" Decode.int
+    Decode.field "o" Decode.int
         |> Decode.andThen
             (\x ->
                 case x of
@@ -570,10 +567,10 @@ decodeBuyingConfiguration =
                     1 ->
                         Decode.map2 InvestSomething
                             (Decode.map2 MarketplaceEnablement
-                                (Decode.field "primEnabled" Decode.bool)
-                                (Decode.field "secEnabled" Decode.bool)
+                                (Decode.field "p" Decode.bool)
+                                (Decode.field "q" Decode.bool)
                             )
-                            (Decode.field "filters" (Decode.list marketplaceFilterDecoder))
+                            (Decode.field "r" (Decode.list marketplaceFilterDecoder))
 
                     2 ->
                         Decode.succeed InvestNothing
@@ -585,26 +582,26 @@ decodeBuyingConfiguration =
 
 encodeFilteredItem : FilteredItem -> Value
 encodeFilteredItem =
-    Encode.string << toString
+    Util.enumEncoder allFilteredItems
 
 
 encodeMarketplaceFilter : MarketplaceFilter -> Value
 encodeMarketplaceFilter { whatToFilter, ignoreWhen, butNotWhen } =
     Encode.object
-        [ ( "whatToFilter", encodeFilteredItem whatToFilter )
-        , ( "ignoreWhen", Conditions.encodeConditions ignoreWhen )
-        , ( "butNotWhen", Conditions.encodeConditions butNotWhen )
+        [ ( "s", encodeFilteredItem whatToFilter )
+        , ( "t", Conditions.encodeConditions ignoreWhen )
+        , ( "u", Conditions.encodeConditions butNotWhen )
         ]
 
 
 filteredItemDecoder : Decoder FilteredItem
 filteredItemDecoder =
-    Util.enumDecoder allFilteredItems
+    Util.enumDecoder "FilteredItem" allFilteredItems
 
 
 marketplaceFilterDecoder : Decoder MarketplaceFilter
 marketplaceFilterDecoder =
     Decode.map3 MarketplaceFilter
-        (Decode.field "whatToFilter" filteredItemDecoder)
-        (Decode.field "ignoreWhen" Conditions.conditionsDecoder)
-        (Decode.field "butNotWhen" Conditions.conditionsDecoder)
+        (Decode.field "s" filteredItemDecoder)
+        (Decode.field "t" Conditions.conditionsDecoder)
+        (Decode.field "u" Conditions.conditionsDecoder)

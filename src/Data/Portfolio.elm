@@ -9,7 +9,7 @@ module Data.Portfolio
         )
 
 import Json.Decode exposing (Decoder)
-import Json.Encode as Encode exposing (Value)
+import Json.Encode exposing (Value)
 import Util
 
 
@@ -18,6 +18,11 @@ type Portfolio
     | Balanced
     | Progressive
     | Empty
+
+
+allPortfolios : List Portfolio
+allPortfolios =
+    [ Conservative, Balanced, Progressive, Empty ]
 
 
 toString : Portfolio -> String
@@ -63,9 +68,9 @@ render portfolio =
 
 encode : Portfolio -> Value
 encode =
-    Encode.string << Basics.toString
+    Util.enumEncoder allPortfolios
 
 
 decoder : Decoder Portfolio
 decoder =
-    Util.enumDecoder [ Conservative, Balanced, Progressive, Empty ]
+    Util.enumDecoder "Portfolio" allPortfolios

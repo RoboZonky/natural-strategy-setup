@@ -170,7 +170,7 @@ regionCheckbox region isEnabled =
 
 encodeRegion : Region -> Value
 encodeRegion =
-    Encode.string << toString
+    Util.enumEncoder allRegions
 
 
 encodeCondition : RegionCondition -> Value
@@ -180,7 +180,7 @@ encodeCondition (RegionList rs) =
 
 regionDecoder : Decoder Region
 regionDecoder =
-    Util.enumDecoder allRegions
+    Util.enumDecoder "Region" allRegions
 
 
 conditionDecoder : Decoder RegionCondition

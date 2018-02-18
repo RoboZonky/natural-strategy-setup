@@ -12,24 +12,16 @@ import RangeSlider exposing (RangeSlider)
 encodeRatingToSliderDict : (RangeSlider -> Value) -> AllDict Rating RangeSlider Int -> Value
 encodeRatingToSliderDict sliderEncoder =
     AllDict.toList
-        >> List.map (\( rtg, slider ) -> ( toString rtg, sliderEncoder slider ))
-        >> Encode.object
+        >> List.map (\( _ {- assuming that rating is always sorted in order or Rating declaration, so just encoding slider states -}, slider ) -> sliderEncoder slider)
+        >> Encode.list
 
 
 ratingToSliderDictDecodr : Decoder RangeSlider -> Decoder (AllDict Rating RangeSlider Int)
 ratingToSliderDictDecodr sliderStateDecoder =
-    Decode.keyValuePairs sliderStateDecoder
+    Decode.list sliderStateDecoder
         |> Decode.map
-            (List.filterMap
-                (\( rtgStr, size ) ->
-                    case Rating.ratingFromString rtgStr of
-                        Just rtg ->
-                            Just ( rtg, size )
-
-                        Nothing ->
-                            Nothing
-                )
-                -- TODO this might be dangerous, because some keys could be duplicated / missing.
-                -- Figure out how to validate incoming JSON to prevent invalid IPRs
-                >> AllDict.fromList Rating.hash
+            (\sliderStates ->
+                {- Takind advantage that encoded slider states are ordered from A** down to D -}
+                List.map2 (,) Rating.allRatings sliderStates
+                    |> AllDict.fromList Rating.hash
             )

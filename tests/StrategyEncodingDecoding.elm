@@ -108,10 +108,10 @@ portfolio : Test
 portfolio =
     describe "Portfolio"
         [ test "Invalid should decode with error" <|
-            \() -> Decode.decodeString Portfolio.decoder "bla" |> Expect.err
+            \() -> Decode.decodeString Portfolio.decoder "4" |> Expect.err
         , test "Valid should decode successfully" <|
             \() ->
-                Decode.decodeString Portfolio.decoder "\"Conservative\"" |> Expect.equal (Ok Portfolio.Conservative)
+                Decode.decodeString Portfolio.decoder "0" |> Expect.equal (Ok Portfolio.Conservative)
         ]
 
 

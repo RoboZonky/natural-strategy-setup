@@ -56,17 +56,21 @@ renderCondition (InterestCondition interest) =
     "úrok " ++ toString interest ++ " % p.a"
 
 
+{-| RoboZonky requires the interest to ALWAYS contain decimal comma,
+so add it there in cases when the interest is "integral"
+-}
 floatToString : Float -> String
-floatToString =
-    -- toString for float has '.'. Replace it with ','
-    String.map
-        (\c ->
-            if c == '.' then
-                ','
-            else
-                c
-        )
-        << Basics.toString
+floatToString float =
+    let
+        strFloat =
+            Basics.toString float
+    in
+    case String.split "." strFloat of
+        [ beforeComma, afterComma ] ->
+            beforeComma ++ "," ++ afterComma
+
+        _ ->
+            strFloat ++ ",0"
 
 
 validationErrors : InterestCondition -> List String
@@ -200,13 +204,13 @@ encodeInterest : Interest -> Value
 encodeInterest i =
     case i of
         LessThan x ->
-            Encode.object [ ( "type", Encode.int 1 ), ( "val", Encode.float x ) ]
+            Encode.object [ ( "v", Encode.int 1 ), ( "w", Encode.float x ) ]
 
         Between x y ->
-            Encode.object [ ( "type", Encode.int 2 ), ( "from", Encode.float x ), ( "to", Encode.float y ) ]
+            Encode.object [ ( "v", Encode.int 2 ), ( "x", Encode.float x ), ( "y", Encode.float y ) ]
 
         MoreThan y ->
-            Encode.object [ ( "type", Encode.int 3 ), ( "val", Encode.float y ) ]
+            Encode.object [ ( "v", Encode.int 3 ), ( "w", Encode.float y ) ]
 
 
 encodeCondition : InterestCondition -> Value
@@ -216,22 +220,22 @@ encodeCondition (InterestCondition c) =
 
 interestDecoder : Decoder Interest
 interestDecoder =
-    Decode.field "type" Decode.int
+    Decode.field "v" Decode.int
         |> Decode.andThen
             (\typ ->
                 case typ of
                     1 ->
                         Decode.map LessThan
-                            (Decode.field "val" Decode.float)
+                            (Decode.field "w" Decode.float)
 
                     2 ->
                         Decode.map2 Between
-                            (Decode.field "from" Decode.float)
-                            (Decode.field "to" Decode.float)
+                            (Decode.field "x" Decode.float)
+                            (Decode.field "y" Decode.float)
 
                     3 ->
                         Decode.map MoreThan
-                            (Decode.field "val" Decode.float)
+                            (Decode.field "w" Decode.float)
 
                     _ ->
                         Decode.fail <| "Invalid interest type " ++ Basics.toString typ

@@ -9,10 +9,11 @@ import Data.Strategy as Strategy exposing (StrategyConfiguration)
 import Html exposing (text)
 import Html.Attributes exposing (downloadAs, href, readonly, style)
 import Time.Date exposing (Date)
+import Types exposing (BaseUrl)
 
 
-view : Date -> StrategyConfiguration -> Grid.Column a
-view generatedOn strategyConfig =
+view : BaseUrl -> Date -> StrategyConfiguration -> Grid.Column a
+view baseUrl generatedOn strategyConfig =
     let
         strategyValidationErrors =
             Strategy.validateStrategyConfiguration strategyConfig
@@ -22,9 +23,11 @@ view generatedOn strategyConfig =
 
         previewText =
             if isValidStrategy then
-                Strategy.renderStrategyConfiguration generatedOn strategyConfig
+                Strategy.renderStrategyConfiguration baseUrl generatedOn strategyConfig
             else
-                String.join "\n" <| "Konfigurace nemůže být zobrazena, protože formulář obsahuje chyby:" :: strategyValidationErrors
+                String.join "\n" <|
+                    "Konfigurace nemůže být zobrazena, protože formulář obsahuje chyby:"
+                        :: strategyValidationErrors
 
         previewTextRowCount =
             List.length <| String.lines previewText
@@ -34,7 +37,7 @@ view generatedOn strategyConfig =
         [ Grid.row []
             [ Grid.col []
                 [ Textarea.textarea
-                    [ Textarea.rows <| previewTextRowCount + 1
+                    [ Textarea.rows <| previewTextRowCount + extraRowsForStrategyUrl
                     , Textarea.value previewText
                     , Textarea.attrs [ readonly True, style [ ( "width", "100%" ) ] ]
                     ]
@@ -51,14 +54,19 @@ view generatedOn strategyConfig =
                         ]
                     ]
                     [ text "Stáhni konfigurační soubor" ]
-
-                -- TODO enable button for sharing strategy URL
-                -- , Button.button
-                --     [ Button.secondary
-                --     , Button.disabled <| not isValidStrategy
-                --     , Button.onClick ShareStrategy
-                --     ]
-                --     [ text "Sdílet Strategii" ]
                 ]
             ]
         ]
+
+
+{-| Heuristically determined number of rows to automatically expand text area
+by, to avoid unnecessary scrollbar. The previous heuristic (1 text area row per
+1line of strategy config) no longer works now that we have shareable URLs,
+because the URL consists of just one line but is nevertheless rendered over
+multiple lines. The extraRows value is based on rough estimate of average
+shareable url length (500 for moderately complex strategies) and normal screen
+size (about 1k px).
+-}
+extraRowsForStrategyUrl : Int
+extraRowsForStrategyUrl =
+    6

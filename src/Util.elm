@@ -1,8 +1,22 @@
-module Util exposing (and, emptyToZero, enumDecoder, joinNonemptyLines, orList, renderNonemptySection, validate, viewErrors, zeroToEmpty)
+module Util
+    exposing
+        ( and
+        , emptyToZero
+        , enumDecoder
+        , enumEncoder
+        , joinNonemptyLines
+        , orList
+        , renderNonemptySection
+        , validate
+        , viewErrors
+        , zeroToEmpty
+        )
 
 import Html exposing (Html, div, text)
 import Html.Attributes exposing (style)
 import Json.Decode as Decode exposing (Decoder)
+import Json.Encode as Encode exposing (Value)
+import List.Extra
 
 
 orList : (a -> String) -> List a -> String
@@ -82,19 +96,39 @@ viewErrors errors =
 -- JSON
 
 
-enumDecoder : List a -> Decoder a
-enumDecoder allValues =
-    Decode.string
-        |> Decode.andThen
-            (\str ->
-                List.filter (\val -> toString val == str) allValues
-                    |> List.head
-                    |> (\maybeVal ->
-                            case maybeVal of
-                                Nothing ->
-                                    Decode.fail <| "Unexpected input " ++ str ++ ", was expecting one of " ++ toString allValues
+enumEncoder : List a -> a -> Value
+enumEncoder allValues val =
+    List.Extra.elemIndex val allValues
+        |> (\maybeIndex ->
+                case maybeIndex of
+                    Just index ->
+                        Encode.int index
 
-                                Just val ->
-                                    Decode.succeed val
-                       )
-            )
+                    Nothing ->
+                        Debug.crash <|
+                            "Impossible happended - value "
+                                ++ toString val
+                                ++ " was not in the list of all values "
+                                ++ toString allValues
+           )
+
+
+enumDecoder : String -> List a -> Decoder a
+enumDecoder nameOfDecodedThing allValues =
+    Decode.andThen
+        (\index ->
+            List.Extra.getAt index allValues
+                |> (\maybeVal ->
+                        case maybeVal of
+                            Just val ->
+                                Decode.succeed val
+
+                            Nothing ->
+                                Decode.fail <|
+                                    "Invalid index "
+                                        ++ toString index
+                                        ++ " when trying to decode "
+                                        ++ nameOfDecodedThing
+                   )
+        )
+        Decode.int
