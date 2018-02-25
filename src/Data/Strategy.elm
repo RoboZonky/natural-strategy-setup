@@ -234,13 +234,13 @@ renderStrategyConfiguration : BaseUrl -> Date -> StrategyConfiguration -> String
 renderStrategyConfiguration baseUrl generatedOn ({ generalSettings, portfolioShares, investmentSizeOverrides, buyingConfig, sellingConfig } as strategyConfig) =
     Util.joinNonemptyLines
         [ Version.strategyComment generatedOn
-        , shareableUrlComment baseUrl strategyConfig
         , Version.robozonkyVersionStatement
         , renderGeneralSettings generalSettings
         , PortfolioStructure.renderPortfolioShares generalSettings.portfolio portfolioShares
         , Investment.renderInvestments generalSettings.defaultInvestmentSize investmentSizeOverrides
         , Filters.renderBuyingConfiguration buyingConfig
         , Filters.renderSellingConfiguration sellingConfig
+        , shareableUrlComment baseUrl strategyConfig
         ]
 
 
@@ -379,6 +379,7 @@ shareableUrlComment baseUrl strategyConfig =
     String.join "\n"
         [ "# ----------------------------------------------------------------------"
         , "# Pro budoucí úpravy této strategie vložte následující URL do prohlížeče"
-        , "# " ++ baseUrl ++ "#" ++ urlHash
-        , "# ----------------------------------------------------------------------"
+
+        {- This line has to end with a newline, so it's accepted by RoboZonky parser as a comment -}
+        , "# " ++ baseUrl ++ "#" ++ urlHash ++ "\n"
         ]
