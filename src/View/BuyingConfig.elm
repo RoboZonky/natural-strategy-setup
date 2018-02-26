@@ -3,13 +3,16 @@ module View.BuyingConfig exposing (form)
 import Bootstrap.Accordion as Accordion
 import Bootstrap.Button as Button
 import Bootstrap.Card as Card
+import Bootstrap.Card.Block as CardBlock
 import Bootstrap.Form.Checkbox as Checkbox
 import Bootstrap.Form.Radio as Radio
 import Bootstrap.Grid as Grid
 import Bootstrap.Grid.Col as Col
 import Bootstrap.Modal as Modal
+import Bootstrap.Utilities.Spacing as Spacing
 import Data.Filter as Filter exposing (BuyConf, BuyingConfiguration, FilteredItem(..), MarketplaceEnablement, MarketplaceFilter, renderBuyFilter)
 import Data.Tooltip as Tooltip
+import DomId exposing (DomId)
 import Html exposing (Html, div, span, text)
 import Html.Attributes exposing (class)
 import Html.Events exposing (onClick)
@@ -30,9 +33,9 @@ form buyingConfiguration tooltipStates =
         }
 
 
-buyingConfigurationRadios : BuyingConfiguration -> Card.BlockItem Msg
+buyingConfigurationRadios : BuyingConfiguration -> CardBlock.Item Msg
 buyingConfigurationRadios buyingConfiguration =
-    Card.custom <|
+    CardBlock.custom <|
         div []
             [ buyingConfigurationRadio buyingConfiguration Filter.InvEverything
             , buyingConfigurationRadio buyingConfiguration Filter.InvSomething
@@ -45,7 +48,7 @@ viewBuyingConfiguration : BuyingConfiguration -> Html Msg
 viewBuyingConfiguration buyingConfiguration =
     case buyingConfiguration of
         Filter.InvestSomething enablement filters ->
-            div [ class "px-4" ]
+            div [ Spacing.px4 ]
                 [ primarySecondaryEnablementCheckboxes enablement
                 , filterCreationButtons enablement
                 , filtersView filters
@@ -57,23 +60,27 @@ viewBuyingConfiguration buyingConfiguration =
 
 primarySecondaryEnablementCheckboxes : MarketplaceEnablement -> Html Msg
 primarySecondaryEnablementCheckboxes enablement =
-    let
-        checkbox tag isChecked =
-            Checkbox.checkbox
-                [ Checkbox.onCheck (tag << not)
-                , Checkbox.checked isChecked
-                ]
-    in
     div []
-        [ checkbox TogglePrimaryMarket (not enablement.primaryEnabled) "Ignorovat všechny půjčky."
-        , checkbox ToggleSecondaryMarket (not enablement.secondaryEnabled) "Ignorovat všechny participace."
+        [ marketplaceEnablementCheckbox TogglePrimaryMarket (not enablement.primaryEnabled) "me1" "Ignorovat všechny půjčky."
+        , marketplaceEnablementCheckbox ToggleSecondaryMarket (not enablement.secondaryEnabled) "me2" "Ignorovat všechny participace."
         ]
+
+
+marketplaceEnablementCheckbox : (Bool -> Msg) -> Bool -> DomId -> String -> Html Msg
+marketplaceEnablementCheckbox tag isChecked domId label =
+    Checkbox.checkbox
+        [ Checkbox.id domId
+        , Checkbox.onCheck (tag << not)
+        , Checkbox.checked isChecked
+        ]
+        label
 
 
 buyingConfigurationRadio : BuyingConfiguration -> BuyConf -> Html Msg
 buyingConfigurationRadio currentConfiguration thisRadiosConf =
     Radio.radio
-        [ Radio.name "buyingConfiguration"
+        [ Radio.id (toString thisRadiosConf)
+        , Radio.name "buyingConfiguration"
         , Radio.checked <| Filter.toBuyConfEnum currentConfiguration == thisRadiosConf
         , Radio.onClick (SetBuyingConfiguration thisRadiosConf)
         ]
@@ -82,7 +89,7 @@ buyingConfigurationRadio currentConfiguration thisRadiosConf =
 
 filtersView : List MarketplaceFilter -> Html Msg
 filtersView filters =
-    div [ class "p-2" ] <| List.indexedMap viewFilter filters
+    div [ Spacing.p2 ] <| List.indexedMap viewFilter filters
 
 
 viewFilter : Int -> MarketplaceFilter -> Html Msg
@@ -95,8 +102,8 @@ viewFilter index mf =
             span [] [ text <| renderBuyFilter mf ]
     in
     Card.config []
-        |> Card.block [ Card.blockAttrs [ class "smaller-pad" ] ]
-            [ Card.custom <|
+        |> Card.block [ CardBlock.attrs [ Spacing.p2 ] ]
+            [ CardBlock.custom <|
                 Grid.row []
                     [ Grid.col [ Col.xs11 ] [ filterText ]
                     , Grid.col [ Col.xs1 ] [ removeButton ]
@@ -136,7 +143,7 @@ filterCreationButton filteredItem buttonText =
     Button.button
         [ Button.primary
         , Button.small
-        , Button.onClick <| CreationModalMsg <| ModalStateMsg filteredItem Modal.visibleState
-        , Button.attrs [ class "mx-1" ]
+        , Button.onClick <| CreationModalMsg <| ModalStateMsg filteredItem Modal.shown
+        , Button.attrs [ Spacing.mx1 ]
         ]
         [ text buttonText ]

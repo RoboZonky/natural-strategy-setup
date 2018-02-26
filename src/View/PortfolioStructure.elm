@@ -2,18 +2,19 @@ module View.PortfolioStructure exposing (form)
 
 import AllDict as Dict
 import Bootstrap.Accordion as Accordion
-import Bootstrap.Card as Card
+import Bootstrap.Card.Block as CardBlock
 import Bootstrap.Form as Form
 import Bootstrap.Form.Select as Select
 import Bootstrap.Grid as Grid
 import Bootstrap.Grid.Col as Col
 import Bootstrap.Table as Table
+import Bootstrap.Utilities.Spacing as Spacing
 import Data.Filter.Conditions.Rating as Rating exposing (ratingToString)
 import Data.Portfolio as Portfolio exposing (Portfolio(..))
 import Data.PortfolioStructure as PortfolioStructure exposing (PortfolioShare, PortfolioShares)
 import Data.Tooltip as Tooltip
 import Html exposing (Html, div, text)
-import Html.Attributes exposing (class, selected, style, value)
+import Html.Attributes exposing (selected, style, value)
 import Html.Events exposing (onSubmit)
 import RangeSlider
 import Types exposing (Msg(ChangePortfolioSharePercentage, NoOp, PortfolioChanged))
@@ -41,7 +42,7 @@ form portfolio shares tooltipStates =
                 |> Accordion.appendHeader [ Tooltip.popoverTip Tooltip.portfolioStructureTip tooltipStates ]
         , blocks =
             [ Accordion.block []
-                [ Card.custom <|
+                [ CardBlock.custom <|
                     div []
                         [ defaultPortfolioForm portfolio
                         , text <|
@@ -80,7 +81,7 @@ defaultPortfolioSelect currentPortfolio =
     Select.select
         [ Select.small
         , Select.onChange (PortfolioChanged << Portfolio.fromString)
-        , Select.attrs [ class "mx-1" ]
+        , Select.attrs [ Spacing.mx1 ]
         ]
         optionList
 

@@ -117,7 +117,8 @@ form (PurposeList plist) =
 purposeCheckbox : Purpose -> Bool -> Html PurposeMsg
 purposeCheckbox purpose isEnabled =
     Checkbox.checkbox
-        [ Checkbox.onCheck
+        [ Checkbox.id ("purpose_" ++ toString purpose)
+        , Checkbox.onCheck
             (\checked ->
                 if checked then
                     AddPurpose purpose

@@ -15,8 +15,9 @@ module Data.Filter.Conditions.TermPercent
 import Bootstrap.Form as Form
 import Bootstrap.Form.Input as Input
 import Bootstrap.Form.Radio as Radio
+import Bootstrap.Utilities.Spacing as Spacing
 import Html exposing (Html, text)
-import Html.Attributes as Attr exposing (class)
+import Html.Attributes as Attr
 import Html.Events exposing (onSubmit)
 import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as Encode exposing (Value)
@@ -140,7 +141,7 @@ form (TermPercentCondition termPercent) =
         ( ltEnabled, btwEnabled, mtEnabled ) =
             whichEnabled termPercent
     in
-    Form.form [ onSubmit TermPercentNoOp ]
+    Html.div []
         [ Form.formInline [ onSubmit TermPercentNoOp ]
             [ termPercentRadio ltEnabled (SetLessThan "0") "nedosahuje"
             , numericInput SetLessThan ltEnabled ltVal
@@ -168,7 +169,7 @@ numericInput msg enabled value =
         , Input.onInput msg
         , Input.disabled <| not enabled
         , Input.value value
-        , Input.attrs [ Attr.min "0", Attr.max "100", class "mx-1" ]
+        , Input.attrs [ Attr.min "0", Attr.max "100", Spacing.mx1 ]
         ]
 
 

@@ -1,18 +1,20 @@
 module View.TargetBalance exposing (form)
 
-import Bootstrap.Card as Card
+import Bootstrap.Card.Block as CardBlock
 import Bootstrap.Form as Form
+import Bootstrap.Form.Fieldset as Fieldset
 import Bootstrap.Form.Input as Input
 import Bootstrap.Form.Radio as Radio
+import Bootstrap.Utilities.Spacing as Spacing
 import Data.TargetBalance as TargetBalance exposing (TargetBalance(NotSpecified, TargetBalance))
-import Html exposing (legend, text)
-import Html.Attributes as Attr exposing (class)
+import Html exposing (text)
+import Html.Attributes as Attr
 import Html.Events exposing (onSubmit)
 import Types exposing (Msg(NoOp, TargetBalanceChanged))
 import Util
 
 
-form : TargetBalance -> Card.BlockItem Msg
+form : TargetBalance -> CardBlock.Item Msg
 form targetBalance =
     let
         ( isUnspecified, valueAttribute ) =
@@ -26,18 +28,21 @@ form targetBalance =
         validationErrors =
             Util.viewErrors <| TargetBalance.validate targetBalance
     in
-    Card.custom <|
-        Form.group []
-            [ legend [] [ text "Disponibilní zůstatek" ]
-            , Radio.radio
-                [ Radio.checked isUnspecified
+    Fieldset.config
+        |> Fieldset.asGroup
+        |> Fieldset.legend [] [ text "Disponibilní zůstatek" ]
+        |> Fieldset.children
+            [ Radio.radio
+                [ Radio.id "tb1"
+                , Radio.checked isUnspecified
                 , Radio.name "balance"
                 , Radio.onClick (TargetBalanceChanged "undefined")
                 ]
                 "Investovat bez ohledu na disponibilní zůstatek "
             , Form.formInline [ onSubmit NoOp ]
                 [ Radio.radio
-                    [ Radio.checked (not isUnspecified)
+                    [ Radio.id "tb2"
+                    , Radio.checked (not isUnspecified)
                     , Radio.name "balance"
                     , Radio.onClick (TargetBalanceChanged defaultValue)
                     ]
@@ -47,12 +52,14 @@ form targetBalance =
                     , Input.onInput TargetBalanceChanged
                     , Input.disabled isUnspecified
                     , valueAttribute
-                    , Input.attrs [ Attr.min defaultValue, Attr.max "100000000", class "mx-1" ]
+                    , Input.attrs [ Attr.min defaultValue, Attr.max "100000000", Spacing.mx1 ]
                     ]
                 , text " Kč."
                 ]
             , validationErrors
             ]
+        |> Fieldset.view
+        |> CardBlock.custom
 
 
 defaultValue : String

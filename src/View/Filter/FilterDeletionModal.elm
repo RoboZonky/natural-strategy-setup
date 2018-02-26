@@ -20,20 +20,20 @@ import Types exposing (DeletionModalMsg(..))
 initClosed : Model
 initClosed =
     { changeToConfirm = NoChange
-    , openCloseState = Modal.hiddenState
+    , openCloseState = Modal.hidden
     }
 
 
 askForConfirmation : ChangeToConfirm -> Model
 askForConfirmation change =
     { changeToConfirm = change
-    , openCloseState = Modal.visibleState
+    , openCloseState = Modal.shown
     }
 
 
 type alias Model =
     { changeToConfirm : ChangeToConfirm
-    , openCloseState : Modal.State
+    , openCloseState : Modal.Visibility
     }
 
 
@@ -41,7 +41,7 @@ update : DeletionModalMsg -> Model -> ( Model, Maybe UserDecision )
 update msg model =
     case msg of
         ConfirmDeletion ->
-            ( { model | openCloseState = Modal.hiddenState }, Just OkToDelete )
+            ( { model | openCloseState = Modal.hidden }, Just OkToDelete )
 
         DeletionModalStateMsg state ->
             let
@@ -73,7 +73,7 @@ type UserDecision
 
 view : Model -> Html DeletionModalMsg
 view { changeToConfirm, openCloseState } =
-    Modal.config DeletionModalStateMsg
+    Modal.config (DeletionModalStateMsg Modal.hidden)
         |> Modal.large
         |> Modal.h5 [] [ text "Potvrďte odstranění filtrů" ]
         |> Modal.body [] [ modalBody changeToConfirm ]
@@ -85,7 +85,7 @@ view { changeToConfirm, openCloseState } =
                 [ text "Ano, odstranit" ]
             , Button.button
                 [ Button.success
-                , Button.attrs [ onClick (DeletionModalStateMsg Modal.hiddenState) ]
+                , Button.attrs [ onClick (DeletionModalStateMsg Modal.hidden) ]
                 ]
                 [ text "Zrušit změnu" ]
             ]

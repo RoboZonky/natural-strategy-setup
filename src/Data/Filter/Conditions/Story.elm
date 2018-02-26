@@ -77,8 +77,9 @@ form (StoryCondition currentStory) =
 storyRadio : Story -> Story -> Html StoryMsg
 storyRadio currentStory thisRadiosStory =
     Radio.radio
-        [ Radio.name "story"
-        , Radio.checked <| currentStory == thisRadiosStory
+        [ Radio.id (toString thisRadiosStory)
+        , Radio.name "story"
+        , Radio.checked (currentStory == thisRadiosStory)
         , Radio.onClick (SetStory thisRadiosStory)
         ]
         (storyToString thisRadiosStory)

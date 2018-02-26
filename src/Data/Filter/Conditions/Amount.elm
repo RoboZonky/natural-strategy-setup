@@ -15,8 +15,10 @@ module Data.Filter.Conditions.Amount
 import Bootstrap.Form as Form
 import Bootstrap.Form.Input as Input
 import Bootstrap.Form.Radio as Radio
+import Bootstrap.Utilities.Spacing as Spacing
+import DomId exposing (DomId)
 import Html exposing (Html, text)
-import Html.Attributes as Attr exposing (class)
+import Html.Attributes as Attr
 import Html.Events exposing (onSubmit)
 import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as Encode exposing (Value)
@@ -135,21 +137,21 @@ form (AmountCondition amt) =
         ( ltEnabled, btwEnabled, mtEnabled ) =
             whichEnabled amt
     in
-    Form.form [ onSubmit AmountNoOp ]
+    Html.div []
         [ Form.formInline [ onSubmit AmountNoOp ]
-            [ amountRadio ltEnabled (SetLessThan "0") "nedosahuje"
+            [ amountRadio ltEnabled (SetLessThan "0") "nedosahuje" "amount1"
             , numericInput SetLessThan ltEnabled ltVal
             , text "Kč"
             ]
         , Form.formInline [ onSubmit AmountNoOp ]
-            [ amountRadio btwEnabled (SetBetween "0" "0") "je"
+            [ amountRadio btwEnabled (SetBetween "0" "0") "je" "amount2"
             , numericInput (\x -> SetBetween x btwMaxVal) btwEnabled btwMinVal
             , text "až"
             , numericInput (\y -> SetBetween btwMinVal y) btwEnabled btwMaxVal
             , text "Kč"
             ]
         , Form.formInline [ onSubmit AmountNoOp ]
-            [ amountRadio mtEnabled (SetMoreThan "0") "přesahuje"
+            [ amountRadio mtEnabled (SetMoreThan "0") "přesahuje" "amount3"
             , numericInput SetMoreThan mtEnabled mtVal
             , text "Kč"
             ]
@@ -163,14 +165,15 @@ numericInput msg enabled value =
         , Input.onInput msg
         , Input.disabled <| not enabled
         , Input.value value
-        , Input.attrs [ Attr.min "0", Attr.max "10000000", class "mx-1" ]
+        , Input.attrs [ Attr.min "0", Attr.max "10000000", Spacing.mx1 ]
         ]
 
 
-amountRadio : Bool -> AmountMsg -> String -> Html AmountMsg
-amountRadio checked msg label =
+amountRadio : Bool -> AmountMsg -> String -> DomId -> Html AmountMsg
+amountRadio checked msg label domId =
     Radio.radio
-        [ Radio.name "amount"
+        [ Radio.id domId
+        , Radio.name "amount"
         , Radio.checked checked
         , Radio.onClick msg
         ]

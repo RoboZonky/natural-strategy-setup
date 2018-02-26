@@ -15,8 +15,10 @@ module Data.Filter.Conditions.TermMonths
 import Bootstrap.Form as Form
 import Bootstrap.Form.Input as Input
 import Bootstrap.Form.Radio as Radio
+import Bootstrap.Utilities.Spacing as Spacing
+import DomId exposing (DomId)
 import Html exposing (Html, text)
-import Html.Attributes as Attr exposing (class)
+import Html.Attributes as Attr
 import Html.Events exposing (onSubmit)
 import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as Encode exposing (Value)
@@ -136,21 +138,21 @@ form (TermMonthsCondition termMonths) =
         ( ltEnabled, btwEnabled, mtEnabled ) =
             whichEnabled termMonths
     in
-    Form.form [ onSubmit TermMonthsNoOp ]
+    Html.div []
         [ Form.formInline [ onSubmit TermMonthsNoOp ]
-            [ termMonthsRadio ltEnabled (SetLessThan "0") "nedosahuje"
+            [ termMonthsRadio ltEnabled (SetLessThan "0") "nedosahuje" "tm1"
             , numericInput SetLessThan ltEnabled ltVal
             , text "měsíců"
             ]
         , Form.formInline [ onSubmit TermMonthsNoOp ]
-            [ termMonthsRadio btwEnabled (SetBetween "0" "0") "je"
+            [ termMonthsRadio btwEnabled (SetBetween "0" "0") "je" "tm2"
             , numericInput (\x -> SetBetween x btwMaxVal) btwEnabled btwMinVal
             , text "až"
             , numericInput (\y -> SetBetween btwMinVal y) btwEnabled btwMaxVal
             , text "měsíců"
             ]
         , Form.formInline [ onSubmit TermMonthsNoOp ]
-            [ termMonthsRadio mtEnabled (SetMoreThan "0") "přesahuje"
+            [ termMonthsRadio mtEnabled (SetMoreThan "0") "přesahuje" "tm3"
             , numericInput SetMoreThan mtEnabled mtVal
             , text "měsíců"
             ]
@@ -164,14 +166,15 @@ numericInput msg enabled value =
         , Input.onInput msg
         , Input.disabled <| not enabled
         , Input.value value
-        , Input.attrs [ Attr.min "0", Attr.max "85", class "mx-1" ]
+        , Input.attrs [ Attr.min "0", Attr.max "85", Spacing.mx1 ]
         ]
 
 
-termMonthsRadio : Bool -> TermMonthsMsg -> String -> Html TermMonthsMsg
-termMonthsRadio checked msg label =
+termMonthsRadio : Bool -> TermMonthsMsg -> String -> DomId -> Html TermMonthsMsg
+termMonthsRadio checked msg label domId =
     Radio.radio
-        [ Radio.name "termMonths"
+        [ Radio.id domId
+        , Radio.name "termMonths"
         , Radio.checked checked
         , Radio.onClick msg
         ]

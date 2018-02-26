@@ -112,7 +112,8 @@ form (MainIncomeList plist) =
 mainIncomeCheckbox : MainIncome -> Bool -> Html MainIncomeMsg
 mainIncomeCheckbox income isEnabled =
     Checkbox.checkbox
-        [ Checkbox.onCheck
+        [ Checkbox.id ("income_" ++ toString income)
+        , Checkbox.onCheck
             (\checked ->
                 if checked then
                     AddMainIncome income

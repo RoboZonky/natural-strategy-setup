@@ -195,17 +195,23 @@ update msg (RatingList rlist) =
             RatingList <| List.filter (\rr -> rr /= r) rlist
 
 
-form : RatingCondition -> Html RatingMsg
-form condition =
+form : String -> RatingCondition -> Html RatingMsg
+form domIdPrefix
+    {- domIdPrefix to generate unique id for checkboxes in
+       1) confirmation settings 2) in rating conditions
+    -}
+    condition
+    =
     allRatings
-        |> List.map (\r -> ratingCheckbox r (ratingSatisfiesCondition condition r))
+        |> List.map (\r -> ratingCheckbox domIdPrefix r (ratingSatisfiesCondition condition r))
         |> div []
 
 
-ratingCheckbox : Rating -> Bool -> Html RatingMsg
-ratingCheckbox rating isEnabled =
+ratingCheckbox : String -> Rating -> Bool -> Html RatingMsg
+ratingCheckbox domIdPrefix rating isEnabled =
     Checkbox.checkbox
-        [ Checkbox.onCheck
+        [ Checkbox.id (domIdPrefix ++ toString rating)
+        , Checkbox.onCheck
             (\checked ->
                 if checked then
                     AddRating rating

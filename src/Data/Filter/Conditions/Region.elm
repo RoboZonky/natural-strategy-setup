@@ -151,7 +151,8 @@ form (RegionList rlist) =
 regionCheckbox : Region -> Bool -> Html RegionMsg
 regionCheckbox region isEnabled =
     Checkbox.checkbox
-        [ Checkbox.onCheck
+        [ Checkbox.id ("region_" ++ toString region)
+        , Checkbox.onCheck
             (\checked ->
                 if checked then
                     AddRegion region

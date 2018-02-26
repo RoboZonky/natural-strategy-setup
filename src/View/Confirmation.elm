@@ -1,22 +1,23 @@
 module View.Confirmation exposing (form)
 
-import Bootstrap.Card as Card
-import Bootstrap.Form as Form
+import Bootstrap.Card.Block as CardBlock
+import Bootstrap.Form.Fieldset as Fieldset
 import Data.Confirmation exposing (ConfirmationSettings)
 import Data.Filter.Conditions.Rating as Rating
 import Data.Tooltip as Tooltip
-import Html exposing (legend, text)
+import Html
 import Types exposing (Msg(ConfirmationFormMsg))
 import View.Tooltip as Tooltip
 
 
-form : ConfirmationSettings -> Tooltip.States -> Card.BlockItem Msg
+form : ConfirmationSettings -> Tooltip.States -> CardBlock.Item Msg
 form settings tooltipStates =
-    Card.custom <|
-        Form.group []
-            [ legend []
-                [ text "Potvrzovat mobilem investice do úvěrů s ratingem"
-                , Tooltip.popoverTip Tooltip.zonkoidTip tooltipStates
-                ]
-            , Html.map ConfirmationFormMsg <| Rating.form settings
+    Fieldset.config
+        |> Fieldset.asGroup
+        |> Fieldset.legend []
+            [ Html.text "Potvrzovat mobilem investice do úvěrů s ratingem"
+            , Tooltip.popoverTip Tooltip.zonkoidTip tooltipStates
             ]
+        |> Fieldset.children [ Html.map ConfirmationFormMsg (Rating.form "confirm_" settings) ]
+        |> Fieldset.view
+        |> CardBlock.custom

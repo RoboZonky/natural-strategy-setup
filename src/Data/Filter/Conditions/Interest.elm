@@ -15,8 +15,10 @@ module Data.Filter.Conditions.Interest
 import Bootstrap.Form as Form
 import Bootstrap.Form.Input as Input
 import Bootstrap.Form.Radio as Radio
+import Bootstrap.Utilities.Spacing as Spacing
+import DomId exposing (DomId)
 import Html exposing (Html, text)
-import Html.Attributes as Attr exposing (class)
+import Html.Attributes as Attr
 import Html.Events exposing (onSubmit)
 import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as Encode exposing (Value)
@@ -154,21 +156,21 @@ form (InterestCondition interest) =
         ( ltEnabled, btwEnabled, mtEnabled ) =
             whichEnabled interest
     in
-    Form.form [ onSubmit InterestNoOp ]
+    Html.div []
         [ Form.formInline [ onSubmit InterestNoOp ]
-            [ interestRadio ltEnabled (SetLessThan "0") "nedosahuje"
+            [ interestRadio ltEnabled (SetLessThan "0") "nedosahuje" "interest1"
             , numericInput SetLessThan ltEnabled ltVal
             , text "%"
             ]
         , Form.formInline [ onSubmit InterestNoOp ]
-            [ interestRadio btwEnabled (SetBetween "0" "0") "je"
+            [ interestRadio btwEnabled (SetBetween "0" "0") "je" "interest2"
             , numericInput (\x -> SetBetween x btwMaxVal) btwEnabled btwMinVal
             , text "až"
             , numericInput (\y -> SetBetween btwMinVal y) btwEnabled btwMaxVal
             , text "%"
             ]
         , Form.formInline [ onSubmit InterestNoOp ]
-            [ interestRadio mtEnabled (SetMoreThan "0") "přesahuje"
+            [ interestRadio mtEnabled (SetMoreThan "0") "přesahuje" "interest3"
             , numericInput SetMoreThan mtEnabled mtVal
             , text "%"
             ]
@@ -182,14 +184,15 @@ numericInput msg enabled value =
         , Input.onInput msg
         , Input.disabled <| not enabled
         , Input.value value
-        , Input.attrs [ Attr.min "0", Attr.max "100", class "mx-1" ]
+        , Input.attrs [ Attr.min "0", Attr.max "100", Spacing.mx1 ]
         ]
 
 
-interestRadio : Bool -> InterestMsg -> String -> Html InterestMsg
-interestRadio checked msg label =
+interestRadio : Bool -> InterestMsg -> String -> DomId -> Html InterestMsg
+interestRadio checked msg label domId =
     Radio.radio
-        [ Radio.name "interest"
+        [ Radio.id domId
+        , Radio.name "interest"
         , Radio.checked checked
         , Radio.onClick msg
         ]

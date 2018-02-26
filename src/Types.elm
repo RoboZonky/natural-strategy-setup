@@ -39,7 +39,7 @@ type Msg
 
 type CreationModalMsg
     = TogglePositiveNegativeSubform
-    | ModalStateMsg FilteredItem Modal.State
+    | ModalStateMsg FilteredItem Modal.Visibility
     | PositiveConditionsChange Conditions.Msg
     | NegativeConditionsChange Conditions.Msg
     | ModalTooltipMsg TipId Popover.State
@@ -49,7 +49,7 @@ type CreationModalMsg
 
 type DeletionModalMsg
     = ConfirmDeletion
-    | DeletionModalStateMsg Modal.State
+    | DeletionModalStateMsg Modal.Visibility
 
 
 type alias BaseUrl =

@@ -15,8 +15,10 @@ module Data.Filter.Conditions.ElapsedTermPercent
 import Bootstrap.Form as Form
 import Bootstrap.Form.Input as Input
 import Bootstrap.Form.Radio as Radio
+import Bootstrap.Utilities.Spacing as Spacing
+import DomId exposing (DomId)
 import Html exposing (Html, text)
-import Html.Attributes as Attr exposing (class)
+import Html.Attributes as Attr
 import Html.Events exposing (onSubmit)
 import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as Encode exposing (Value)
@@ -140,21 +142,21 @@ form (ElapsedTermPercentCondition elapsedTermPercent) =
         ( ltEnabled, btwEnabled, mtEnabled ) =
             whichEnabled elapsedTermPercent
     in
-    Form.form [ onSubmit ElapsedTermPercentNoOp ]
+    Html.div []
         [ Form.formInline [ onSubmit ElapsedTermPercentNoOp ]
-            [ elapsedTermPercentRadio ltEnabled (SetLessThan "0") "méně než"
+            [ elapsedTermPercentRadio ltEnabled (SetLessThan "0") "méně než" "etp1"
             , numericInput SetLessThan ltEnabled ltVal
             , text "% splátek"
             ]
         , Form.formInline [ onSubmit ElapsedTermPercentNoOp ]
-            [ elapsedTermPercentRadio btwEnabled (SetBetween "0" "0") "je"
+            [ elapsedTermPercentRadio btwEnabled (SetBetween "0" "0") "je" "etp2"
             , numericInput (\x -> SetBetween x btwMaxVal) btwEnabled btwMinVal
             , text "až"
             , numericInput (\y -> SetBetween btwMinVal y) btwEnabled btwMaxVal
             , text "% splátek"
             ]
         , Form.formInline [ onSubmit ElapsedTermPercentNoOp ]
-            [ elapsedTermPercentRadio mtEnabled (SetMoreThan "0") "více než"
+            [ elapsedTermPercentRadio mtEnabled (SetMoreThan "0") "více než" "etp3"
             , numericInput SetMoreThan mtEnabled mtVal
             , text "% splátek"
             ]
@@ -168,14 +170,15 @@ numericInput msg enabled value =
         , Input.onInput msg
         , Input.disabled <| not enabled
         , Input.value value
-        , Input.attrs [ Attr.min "0", Attr.max "100", class "mx-1" ]
+        , Input.attrs [ Attr.min "0", Attr.max "100", Spacing.mx1 ]
         ]
 
 
-elapsedTermPercentRadio : Bool -> ElapsedTermPercentMsg -> String -> Html ElapsedTermPercentMsg
-elapsedTermPercentRadio checked msg label =
+elapsedTermPercentRadio : Bool -> ElapsedTermPercentMsg -> String -> DomId -> Html ElapsedTermPercentMsg
+elapsedTermPercentRadio checked msg label domId =
     Radio.radio
-        [ Radio.name "elapsedTermPercent"
+        [ Radio.id domId
+        , Radio.name "elapsedTermPercent"
         , Radio.checked checked
         , Radio.onClick msg
         ]

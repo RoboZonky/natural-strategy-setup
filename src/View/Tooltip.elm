@@ -1,6 +1,7 @@
 module View.Tooltip exposing (popoverTip, popoverTipForModal)
 
 import Bootstrap.Popover as Popover
+import Bootstrap.Utilities.Spacing as Spacing
 import Data.Tooltip as Tooltip exposing (TipId)
 import Html exposing (Html, div, i, text)
 import Html.Attributes exposing (class, style)
@@ -12,8 +13,9 @@ import Types exposing (CreationModalMsg(ModalNoOp, ModalTooltipMsg), Msg(NoOp, T
 icon : Html a
 icon =
     i
-        [ class "fa fa-question-circle ml-1"
+        [ class "fa fa-question-circle"
         , style [ ( "font-size", "18px" ), ( "color", "gray" ) ]
+        , Spacing.ml1
         ]
         []
 

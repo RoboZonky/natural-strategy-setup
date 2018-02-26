@@ -17,7 +17,7 @@ import View.Tooltip as Tooltip
 type alias Model =
     { editedFilter : MarketplaceFilter
     , editingPositiveSubform : Bool
-    , openCloseState : Modal.State
+    , openCloseState : Modal.Visibility
     }
 
 
@@ -25,7 +25,7 @@ init : Model
 init =
     { editedFilter = Filter.emptyFilter
     , editingPositiveSubform = True
-    , openCloseState = Modal.hiddenState
+    , openCloseState = Modal.hidden
     }
 
 
@@ -59,7 +59,7 @@ updateHelp msg model =
             { model
                 | editedFilter = Filter.emptyFilter
                 , editingPositiveSubform = True
-                , openCloseState = Modal.hiddenState
+                , openCloseState = Modal.hidden
             }
 
         TogglePositiveNegativeSubform ->
@@ -96,10 +96,10 @@ view { editedFilter, openCloseState, editingPositiveSubform } tooltipStates =
                 _ ->
                     ( "Vytvořit pravidlo pro nákup", Tooltip.buyFilterCreationTip )
 
-        stateChangeMsg =
-            ModalStateMsg editedFilter.whatToFilter
+        closeMessage =
+            ModalStateMsg editedFilter.whatToFilter Modal.hidden
     in
-    Modal.config stateChangeMsg
+    Modal.config closeMessage
         |> Modal.large
         |> Modal.h5 []
             [ text modalTitle
@@ -110,7 +110,7 @@ view { editedFilter, openCloseState, editingPositiveSubform } tooltipStates =
         |> Modal.footer []
             [ Button.button
                 [ Button.danger
-                , Button.attrs [ onClick (stateChangeMsg Modal.hiddenState) ]
+                , Button.attrs [ onClick closeMessage ]
                 ]
                 [ text "Zrušit" ]
             , Button.button

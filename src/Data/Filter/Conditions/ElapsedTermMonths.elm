@@ -15,8 +15,10 @@ module Data.Filter.Conditions.ElapsedTermMonths
 import Bootstrap.Form as Form
 import Bootstrap.Form.Input as Input
 import Bootstrap.Form.Radio as Radio
+import Bootstrap.Utilities.Spacing as Spacing
+import DomId exposing (DomId)
 import Html exposing (Html, text)
-import Html.Attributes as Attr exposing (class)
+import Html.Attributes as Attr
 import Html.Events exposing (onSubmit)
 import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as Encode exposing (Value)
@@ -140,21 +142,21 @@ form (ElapsedTermMonthsCondition elapsedTermMonths) =
         ( ltEnabled, btwEnabled, mtEnabled ) =
             whichEnabled elapsedTermMonths
     in
-    Form.form [ onSubmit ElapsedTermMonthsNoOp ]
+    Html.div []
         [ Form.formInline [ onSubmit ElapsedTermMonthsNoOp ]
-            [ elapsedTermMonthsRadio ltEnabled (SetLessThan "0") "méně než"
+            [ elapsedTermMonthsRadio ltEnabled (SetLessThan "0") "méně než" "etm1"
             , numericInput SetLessThan ltEnabled ltVal
             , text "splátek"
             ]
         , Form.formInline [ onSubmit ElapsedTermMonthsNoOp ]
-            [ elapsedTermMonthsRadio btwEnabled (SetBetween "0" "0") "je"
+            [ elapsedTermMonthsRadio btwEnabled (SetBetween "0" "0") "je" "etm2"
             , numericInput (\x -> SetBetween x btwMaxVal) btwEnabled btwMinVal
             , text "až"
             , numericInput (\y -> SetBetween btwMinVal y) btwEnabled btwMaxVal
             , text "splátek"
             ]
         , Form.formInline [ onSubmit ElapsedTermMonthsNoOp ]
-            [ elapsedTermMonthsRadio mtEnabled (SetMoreThan "0") "více než"
+            [ elapsedTermMonthsRadio mtEnabled (SetMoreThan "0") "více než" "etm3"
             , numericInput SetMoreThan mtEnabled mtVal
             , text "splátek"
             ]
@@ -168,14 +170,15 @@ numericInput msg enabled value =
         , Input.onInput msg
         , Input.disabled <| not enabled
         , Input.value value
-        , Input.attrs [ Attr.min "0", Attr.max "85", class "mx-1" ]
+        , Input.attrs [ Attr.min "0", Attr.max "85", Spacing.mx1 ]
         ]
 
 
-elapsedTermMonthsRadio : Bool -> ElapsedTermMonthsMsg -> String -> Html ElapsedTermMonthsMsg
-elapsedTermMonthsRadio checked msg label =
+elapsedTermMonthsRadio : Bool -> ElapsedTermMonthsMsg -> String -> DomId -> Html ElapsedTermMonthsMsg
+elapsedTermMonthsRadio checked msg label domId =
     Radio.radio
-        [ Radio.name "elapsedTermMonths"
+        [ Radio.id domId
+        , Radio.name "elapsedTermMonths"
         , Radio.checked checked
         , Radio.onClick msg
         ]

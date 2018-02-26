@@ -4,6 +4,7 @@ import Bootstrap.Form.Checkbox as Checkbox
 import Bootstrap.Form.Fieldset as Fieldset
 import Bootstrap.Grid as Grid
 import Bootstrap.Grid.Col as Col
+import Char
 import Data.Filter exposing (FilteredItem(..))
 import Data.Filter.Conditions exposing (..)
 import Data.Filter.Conditions.Amount as Amount exposing (Amount(..), AmountCondition(..), AmountMsg)
@@ -17,6 +18,7 @@ import Data.Filter.Conditions.Region as Region exposing (Region(..), RegionCondi
 import Data.Filter.Conditions.Story as Story exposing (Story(..), StoryCondition(..), StoryMsg)
 import Data.Filter.Conditions.TermMonths as TermMonths exposing (TermMonths(..), TermMonthsCondition(..), TermMonthsMsg)
 import Data.Filter.Conditions.TermPercent as TermPercent exposing (TermPercent(..), TermPercentCondition(..), TermPercentMsg)
+import DomId exposing (DomId)
 import Html exposing (Html, div, text)
 import Html.Attributes exposing (classList, style)
 
@@ -129,7 +131,7 @@ conditionRow conditions conditionName condition removeCondMsg =
                     ( subformEnabled conditions.region, showFormForNonemptyCondition RegionMsg Region.form conditions.region )
 
                 Condition_Rating _ ->
-                    ( subformEnabled conditions.rating, showFormForNonemptyCondition RatingMsg Rating.form conditions.rating )
+                    ( subformEnabled conditions.rating, showFormForNonemptyCondition RatingMsg (Rating.form "rating_") conditions.rating )
 
                 Condition_Story _ ->
                     ( subformEnabled conditions.story, showFormForNonemptyCondition StoryMsg Story.form conditions.story )
@@ -139,11 +141,23 @@ conditionRow conditions conditionName condition removeCondMsg =
         |> Fieldset.attrs [ classList [ ( "condition-row", True ), ( "active", isSubformEnabled ) ] ]
         |> Fieldset.children
             [ Grid.row []
-                [ Grid.col [ Col.xs5 ] [ Checkbox.checkbox [ Checkbox.checked isSubformEnabled, Checkbox.onCheck onChk ] conditionName ]
+                [ Grid.col [ Col.xs5 ]
+                    [ Checkbox.checkbox
+                        [ Checkbox.id (toDomId conditionName)
+                        , Checkbox.checked isSubformEnabled
+                        , Checkbox.onCheck onChk
+                        ]
+                        conditionName
+                    ]
                 , Grid.col [ Col.xs7 ] [ subform ]
                 ]
             ]
         |> Fieldset.view
+
+
+toDomId : String -> DomId
+toDomId =
+    String.filter (\c -> Char.isUpper c || Char.isLower c)
 
 
 subformEnabled : Maybe a -> Bool

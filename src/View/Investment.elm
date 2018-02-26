@@ -3,14 +3,15 @@ module View.Investment exposing (form)
 import AllDict
 import Bootstrap.Accordion as Accordion
 import Bootstrap.Alert as Alert
-import Bootstrap.Card as Card
+import Bootstrap.Card.Block as CardBlock
 import Bootstrap.Form as Form
 import Bootstrap.Grid as Grid
 import Bootstrap.Grid.Col as Col
+import Bootstrap.Utilities.Spacing as Spacing
 import Data.Filter.Conditions.Rating exposing (Rating, ratingToString)
 import Data.Investment as Investment exposing (InvestmentsPerRating)
 import Html exposing (Html, a, div, span, strong, text)
-import Html.Attributes exposing (class, href, style)
+import Html.Attributes exposing (href, style)
 import Html.Events exposing (onSubmit)
 import RangeSlider
 import Types exposing (Msg(ChangeDefaultInvestment, ChangeInvestment, NoOp))
@@ -31,18 +32,18 @@ form invDefault invOverrides =
         }
 
 
-defaultInvestmentForm : Investment.Size -> Card.BlockItem Msg
+defaultInvestmentForm : Investment.Size -> CardBlock.Item Msg
 defaultInvestmentForm invDefault =
-    Card.custom <|
+    CardBlock.custom <|
         Form.formInline [ onSubmit NoOp ]
-            [ span [ class "mr-2" ] [ text "Běžná výše investice je" ]
+            [ span [ Spacing.mr2 ] [ text "Běžná výše investice je" ]
             , Html.map ChangeDefaultInvestment <| RangeSlider.view invDefault
             ]
 
 
-investmentOverridesForm : Investment.Size -> InvestmentsPerRating -> Card.BlockItem Msg
+investmentOverridesForm : Investment.Size -> InvestmentsPerRating -> CardBlock.Item Msg
 investmentOverridesForm invDefault invOverrides =
-    Card.custom <|
+    CardBlock.custom <|
         div []
             [ text "Pokud si přejete, aby se výše investice do půjček jednotlivých ratingů lišily od běžné výše, upravte je pomocí posuvníků"
             , Grid.row []
@@ -55,7 +56,7 @@ investmentOverridesForm invDefault invOverrides =
 warningWhenSizeExceeds5K : Investment.Size -> InvestmentsPerRating -> Html a
 warningWhenSizeExceeds5K invDefault invOverrides =
     if Investment.anyInvestmentExceeds5k invDefault invOverrides then
-        Alert.danger
+        Alert.simpleDanger []
             [ strong [] [ text "Upozornění. " ]
             , text "Maximální výše investice na Zonky se řídí"
             , a [ href "https://zonky.cz/downloads/Zonky_Parametry_castek_pro_investovani.pdf" ] [ text " následujícími pravidly" ]

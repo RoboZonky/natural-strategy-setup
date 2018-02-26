@@ -1,13 +1,15 @@
 module View.ExitConfig exposing (form)
 
-import Bootstrap.Card as Card
+import Bootstrap.Card.Block as CardBlock
 import Bootstrap.Form as Form
+import Bootstrap.Form.Fieldset as Fieldset
 import Bootstrap.Form.Input as Input
 import Bootstrap.Form.Radio as Radio
+import Bootstrap.Utilities.Spacing as Spacing
 import Data.ExitConfig as ExitConfig exposing (ExitConfig(..))
 import Data.Tooltip as Tooltip
-import Html exposing (Html, div, legend, text)
-import Html.Attributes exposing (class, size)
+import Html exposing (Html, div, text)
+import Html.Attributes exposing (size)
 import Html.Events exposing (onSubmit)
 import Time.Date as Date exposing (Date)
 import Types exposing (Msg(ExitConfigChanged, NoOp))
@@ -15,7 +17,7 @@ import Util
 import View.Tooltip as Tooltip
 
 
-form : ExitConfig -> Date -> Tooltip.States -> Card.BlockItem Msg
+form : ExitConfig -> Date -> Tooltip.States -> CardBlock.Item Msg
 form exitConfig generatedOn tooltipStates =
     let
         validationErrors =
@@ -32,18 +34,21 @@ form exitConfig generatedOn tooltipStates =
                 ExitByWithSelloff date1 date2 ->
                     ( WithSelloff, date1, date2 )
     in
-    Card.custom <|
-        Form.group []
-            [ legend [] [ text "Opuštění Zonky" ]
-            , Radio.radio
-                [ Radio.checked (exitEnum == Dont)
+    Fieldset.config
+        |> Fieldset.asGroup
+        |> Fieldset.legend [] [ text "Opuštění Zonky" ]
+        |> Fieldset.children
+            [ Radio.radio
+                [ Radio.id "exit1"
+                , Radio.checked (exitEnum == Dont)
                 , Radio.name "exitConfig"
                 , Radio.onClick (ExitConfigChanged DontExit)
                 ]
                 "Neopouštět Zonky"
             , Form.formInline [ onSubmit NoOp ]
                 [ Radio.radio
-                    [ Radio.checked (exitEnum /= Dont)
+                    [ Radio.id "exit2"
+                    , Radio.checked (exitEnum /= Dont)
                     , Radio.name "exitConfig"
                     , Radio.onClick <| ExitConfigChanged <| ExitBy <| dateToString <| lastDayOfNextYear generatedOn
                     ]
@@ -53,7 +58,7 @@ form exitConfig generatedOn tooltipStates =
                     , Input.disabled (exitEnum == Dont)
                     , Input.value exitDate
                     , Input.onInput (changeExitDate exitConfig)
-                    , Input.attrs [ class "mx-1", size 10 ]
+                    , Input.attrs [ Spacing.mx1, size 10 ]
                     ]
                 , Tooltip.popoverTip Tooltip.exitDateTip tooltipStates
                 ]
@@ -63,6 +68,8 @@ form exitConfig generatedOn tooltipStates =
                 text ""
             , validationErrors
             ]
+        |> Fieldset.view
+        |> CardBlock.custom
 
 
 {-| Generate last day of next year relative to current date
@@ -82,10 +89,11 @@ dateToString =
 
 leaveConfigSubform : ExitConfigEnum -> String -> String -> Tooltip.States -> Html Msg
 leaveConfigSubform exitEnum exitDate selloffDate tooltipStates =
-    div [ class "mx-4" ]
+    div [ Spacing.mx4 ]
         [ Form.formInline [ onSubmit NoOp ]
             [ Radio.radio
-                [ Radio.checked (exitEnum == By)
+                [ Radio.id "ex3"
+                , Radio.checked (exitEnum == By)
                 , Radio.name "selloffRadio"
                 , Radio.onClick (ExitConfigChanged (ExitBy exitDate))
                 ]
@@ -94,7 +102,8 @@ leaveConfigSubform exitEnum exitDate selloffDate tooltipStates =
             ]
         , Form.formInline [ onSubmit NoOp ]
             [ Radio.radio
-                [ Radio.checked (exitEnum == WithSelloff)
+                [ Radio.id "ex4"
+                , Radio.checked (exitEnum == WithSelloff)
                 , Radio.name "selloffRadio"
                 , Radio.onClick <| ExitConfigChanged <| ExitByWithSelloff exitDate <| threeMonthsBeforeExitDate exitDate
                 ]
@@ -104,7 +113,7 @@ leaveConfigSubform exitEnum exitDate selloffDate tooltipStates =
                 , Input.disabled (exitEnum /= WithSelloff)
                 , Input.value selloffDate
                 , Input.onInput (ExitConfigChanged << ExitByWithSelloff exitDate)
-                , Input.attrs [ class "mx-1", size 10 ]
+                , Input.attrs [ Spacing.mx1, size 10 ]
                 ]
             ]
         ]

@@ -3,10 +3,12 @@ module View.SellConfig exposing (form)
 import Bootstrap.Accordion as Accordion
 import Bootstrap.Button as Button
 import Bootstrap.Card as Card
+import Bootstrap.Card.Block as CardBlock
 import Bootstrap.Form.Radio as Radio
 import Bootstrap.Grid as Grid
 import Bootstrap.Grid.Col as Col
 import Bootstrap.Modal as Modal
+import Bootstrap.Utilities.Spacing as Spacing
 import Data.Filter as Filter exposing (FilteredItem(Participation_To_Sell), MarketplaceFilter, SellConf(..), SellingConfiguration(..), renderSellFilter)
 import Data.Tooltip as Tooltip
 import Html exposing (Html, div, span, text)
@@ -30,9 +32,9 @@ form sellingConfiguration tooltipStates =
         }
 
 
-sellingConfigurationRadios : SellingConfiguration -> Card.BlockItem Msg
+sellingConfigurationRadios : SellingConfiguration -> CardBlock.Item Msg
 sellingConfigurationRadios sellingConfiguration =
-    Card.custom <|
+    CardBlock.custom <|
         div []
             [ sellingConfigurationRadio sellingConfiguration Filter.SNothing
             , sellingConfigurationRadio sellingConfiguration Filter.SSomething
@@ -43,7 +45,8 @@ sellingConfigurationRadios sellingConfiguration =
 sellingConfigurationRadio : SellingConfiguration -> SellConf -> Html Msg
 sellingConfigurationRadio currentConfiguration thisRadiosConf =
     Radio.radio
-        [ Radio.name "sellingConfiguration"
+        [ Radio.id (toString thisRadiosConf)
+        , Radio.name "sellingConfiguration"
         , Radio.checked <| Filter.toSellConfEnum currentConfiguration == thisRadiosConf
         , Radio.onClick (SetSellingConfiguration thisRadiosConf)
         ]
@@ -66,7 +69,7 @@ viewSellingConfiguration sellingConfiguration =
 
 filtersView : List MarketplaceFilter -> Html Msg
 filtersView filters =
-    div [ class "p-2" ] <| List.indexedMap viewFilter filters
+    div [ Spacing.p2 ] <| List.indexedMap viewFilter filters
 
 
 viewFilter : Int -> MarketplaceFilter -> Html Msg
@@ -79,8 +82,8 @@ viewFilter index mf =
             span [] [ text <| renderSellFilter mf ]
     in
     Card.config []
-        |> Card.block [ Card.blockAttrs [ class "smaller-pad" ] ]
-            [ Card.custom <|
+        |> Card.block [ CardBlock.attrs [ Spacing.p2 ] ]
+            [ CardBlock.custom <|
                 Grid.row []
                     [ Grid.col [ Col.xs11 ] [ filterText ]
                     , Grid.col [ Col.xs1 ] [ removeButton ]
@@ -94,8 +97,8 @@ filterCreationControls =
     div []
         [ Button.button
             [ Button.primary
-            , Button.onClick <| CreationModalMsg <| ModalStateMsg Participation_To_Sell Modal.visibleState
-            , Button.attrs [ class "mx-1" ]
+            , Button.onClick <| CreationModalMsg <| ModalStateMsg Participation_To_Sell Modal.shown
+            , Button.attrs [ Spacing.mx1 ]
             , Button.small
             ]
             [ text "Přidat pravidlo" ]
