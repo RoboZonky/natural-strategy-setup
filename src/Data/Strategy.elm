@@ -361,13 +361,42 @@ strategyToUrlHash : StrategyConfiguration -> UrlHash
 strategyToUrlHash strategyConfiguration =
     encodeStrategy strategyConfiguration
         |> Encode.encode 0
+        |> (\strategyJson -> "1;" ++ strategyJson)
         |> Base64.encode
 
 
 strategyFromUrlHash : UrlHash -> Result String StrategyConfiguration
 strategyFromUrlHash hash =
     Base64.decode hash
-        |> Result.andThen (\strategyJson -> Decode.decodeString strategyDecoder strategyJson)
+        |> Result.andThen
+            (\versionSemicolonStrategyJson ->
+                versionSemicolonStrategyJson
+                    |> String.split ";"
+                    |> (\pieces ->
+                            case pieces of
+                                [ versionStr, strategyJson ] ->
+                                    case String.toInt versionStr of
+                                        Ok version ->
+                                            pickStrategyDecoder version
+                                                |> Result.andThen (\decoder -> Decode.decodeString decoder strategyJson)
+
+                                        Err _ ->
+                                            Err ("Failed to read strategy version from " ++ versionStr)
+
+                                _ ->
+                                    Err ("Unexpected number of semicolon separated things in " ++ versionSemicolonStrategyJson)
+                       )
+            )
+
+
+pickStrategyDecoder : Int -> Result String (Decoder StrategyConfiguration)
+pickStrategyDecoder version =
+    case version of
+        1 ->
+            Ok strategyDecoder
+
+        uspupportedVersion ->
+            Err ("Unsupported strategy version " ++ toString uspupportedVersion)
 
 
 shareableUrlComment : BaseUrl -> StrategyConfiguration -> String

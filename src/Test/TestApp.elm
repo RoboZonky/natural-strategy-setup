@@ -90,7 +90,7 @@ testEncodeDecodeDoesntChangeStrategy original =
                     ]
 
         Err e ->
-            "There was an error when decoding strategy : " ++ e
+            "Failed to decode strategy : " ++ e
 
 
 encodeDecodeStrategy : StrategyConfiguration -> Result String StrategyConfiguration
