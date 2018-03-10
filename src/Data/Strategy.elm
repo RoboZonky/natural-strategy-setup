@@ -2,6 +2,7 @@ module Data.Strategy
     exposing
         ( GeneralSettings
         , StrategyConfiguration
+        , UrlHash
         , addBuyFilter
         , addSellFilter
         , defaultStrategyConfiguration
