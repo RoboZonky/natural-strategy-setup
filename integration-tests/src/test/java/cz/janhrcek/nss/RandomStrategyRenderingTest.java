@@ -1,69 +1,66 @@
 package cz.janhrcek.nss;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.OptionalDouble;
 import java.util.logging.Level;
 
 import com.github.robozonky.strategy.natural.GeneratedStrategyVerifier;
+import org.assertj.core.api.Assertions;
+import org.assertj.core.data.Offset;
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.logging.LogEntry;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class RandomStrategyRenderingTest {
 
     private final TestApp testApp = new TestApp(new ChromeDriver());
 
     @Test
-    public void randomStrategiesCanBeParsed() throws IOException {
+    public void randomStrategiesCanBeParsed() {
         testApp.open();
 
-        List<Integer> lengths = new ArrayList<>();
+        List<Integer> encodedStrategyLengths = new ArrayList<>();
+
         for (int i = 0; i < 1000; i++) {
             String renderedStrategy = testApp.nextStrategy();
 
+            encodedStrategyLengths.add(testApp.getStrategyHash().length());
+
             strategyIsParsableByRobozonky(renderedStrategy);
 
-            lengths.add(urlLen(renderedStrategy));
+            assertThat(testApp.getValidationErrors())
+                    .as("Strategy must not have validation errors")
+                    .isEqualTo("[]");
 
-            assertEquals("Strategy must not have validation errors",
-                         "[]", testApp.getValidationErrors()
-            );
-
-            assertEquals("After JSON Encode/Decode roundtrip the strategy must be the same",
-                         "Ok", testApp.getJsonEncodeDecodeResult()
-            );
+            assertThat(testApp.getJsonEncodeDecodeResult())
+                    .as("After JSON Encode/Decode roundtrip the strategy must be the same")
+                    .isEqualTo("Ok");
         }
 
-        OptionalDouble average = lengths.stream().mapToInt(Integer::intValue).average();
-        System.out.println(average);
-        
+        OptionalDouble averageLengthOfUrlEncodedStrategy = encodedStrategyLengths.stream().mapToInt(Integer::intValue).average();
+        assertThat(averageLengthOfUrlEncodedStrategy)
+                .as("Average length of strategy encoded in URL should be around 1900 characters")
+                .isNotEmpty()
+                .hasValueCloseTo(1900.0, Offset.offset(100.0));
+
         List<LogEntry> errorsAndWarnings = testApp.getBrowserConsoleLogs().filter(Level.WARNING);
-        errorsAndWarnings.forEach(System.out::println);
-        assertTrue("Browser console log must not contain errors", errorsAndWarnings.isEmpty());
+        assertThat(errorsAndWarnings)
+                .as("Browser console log must not contain errors")
+                .isEmpty();
     }
 
     private void strategyIsParsableByRobozonky(String strategy) {
         try {
             GeneratedStrategyVerifier.parseWithAntlr(strategy);
-        } catch (Exception e) {
-            Assert.fail("----- Failed to parse strategy (seed = " + testApp.getStrategySeed() + ") -----\n"
-                                + strategy + "\nException was\n" + e.toString());
+        } catch (Exception exception) {
+            Assertions.fail("---------- Strategy with seed " + testApp.getStrategySeed() + " could not be parsed by robozonky  ----------\n" + strategy,
+                            exception
+            );
         }
-    }
-
-    private static int urlLen(String strategy) {
-        String lineWithUrl = new BufferedReader(new StringReader(strategy)).lines()
-                .filter(line -> line.contains("dummy#")).findFirst().get();
-        return lineWithUrl.substring(lineWithUrl.indexOf("dummy#") + "dummy#".length()).length();
     }
 
     @After

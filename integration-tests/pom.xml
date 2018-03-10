@@ -9,8 +9,7 @@
   <properties>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
-    <selenium.version>3.8.1</selenium.version>
-    <robozonky.version>4.3.0-SNAPSHOT</robozonky.version>
+    <version.selenium>3.10.0</version.selenium>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
 
@@ -18,13 +17,13 @@
     <dependency>
       <groupId>org.seleniumhq.selenium</groupId>
       <artifactId>selenium-api</artifactId>
-      <version>${selenium.version}</version>
+      <version>${version.selenium}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.seleniumhq.selenium</groupId>
       <artifactId>selenium-chrome-driver</artifactId>
-      <version>${selenium.version}</version>
+      <version>${version.selenium}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -34,9 +33,15 @@
       <scope>test</scope>
     </dependency>
     <dependency>
+      <groupId>org.assertj</groupId>
+      <artifactId>assertj-core</artifactId>
+      <version>3.9.1</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
       <groupId>com.github.robozonky</groupId>
       <artifactId>robozonky-strategy-natural</artifactId>
-      <version>${robozonky.version}</version>
+      <version>4.4.0-SNAPSHOT</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
