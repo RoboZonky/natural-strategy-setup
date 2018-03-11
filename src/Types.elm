@@ -1,4 +1,11 @@
-module Types exposing (BaseUrl, CreationModalMsg(..), DeletionModalMsg(..), Msg(..))
+module Types
+    exposing
+        ( AlertData(..)
+        , BaseUrl
+        , CreationModalMsg(..)
+        , DeletionModalMsg(..)
+        , Msg(..)
+        )
 
 import Bootstrap.Accordion as Accordion
 import Bootstrap.Modal as Modal
@@ -34,6 +41,7 @@ type Msg
     | DeletionModalMsg DeletionModalMsg
     | TooltipMsg TipId Popover.State
     | SetDateTime Time
+    | DismisAlert
     | NoOp
 
 
@@ -54,3 +62,9 @@ type DeletionModalMsg
 
 type alias BaseUrl =
     String
+
+
+type AlertData
+    = SuccessAlert String
+    | ErrorAlert String
+    | NoAlert

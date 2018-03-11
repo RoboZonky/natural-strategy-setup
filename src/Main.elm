@@ -17,9 +17,10 @@ import Task
 import Time
 import Time.Date exposing (Date)
 import Time.DateTime as DateTime
-import Types exposing (BaseUrl, CreationModalMsg(ModalTooltipMsg), Msg(..))
+import Types exposing (AlertData(..), BaseUrl, CreationModalMsg(ModalTooltipMsg), Msg(..))
 import Util
 import Version
+import View.Alert as Alert
 import View.ConfigPreview as ConfigPreview
 import View.Filter.FilterCreationModal as FilterCreationModal
 import View.Filter.FilterDeletionModal as FilterDeletionModal
@@ -34,11 +35,12 @@ type alias Model =
     , tooltipStates : Tooltip.States
     , generatedOn : Date
     , baseUrl : BaseUrl
+    , alert : AlertData
     }
 
 
-initialModel : BaseUrl -> StrategyConfiguration -> Model
-initialModel baseUrl strategyConfig =
+initialModel : BaseUrl -> StrategyConfiguration -> AlertData -> Model
+initialModel baseUrl strategyConfig initialAlert =
     { strategyConfig = strategyConfig
     , accordionState = Accordion.initialState
     , filterCreationState = FilterCreationModal.init
@@ -46,6 +48,7 @@ initialModel baseUrl strategyConfig =
     , tooltipStates = Tooltip.initialStates
     , generatedOn = DateTime.date DateTime.epoch
     , baseUrl = baseUrl
+    , alert = initialAlert
     }
 
 
@@ -62,16 +65,15 @@ main =
 init : Navigation.Location -> ( Model, Cmd Msg )
 init location =
     let
-        initialStrategy =
+        ( initialStrategy, initialAlert ) =
             loadStrategyFromUrl location
-                |> Maybe.withDefault Strategy.defaultStrategyConfiguration
 
         baseUrl =
             String.split "#" location.href
                 |> List.head
                 |> Maybe.withDefault "Impossible, as the split will always have 1+ elements"
     in
-    ( initialModel baseUrl initialStrategy
+    ( initialModel baseUrl initialStrategy initialAlert
     , Cmd.batch
         [ Task.perform SetDateTime Time.now
 
@@ -212,6 +214,9 @@ updateHelper msg model =
             in
             askForSellFilterDeletionConfirmation model newModel
 
+        DismisAlert ->
+            { model | alert = NoAlert }
+
         NoOp ->
             model
 
@@ -291,9 +296,10 @@ wrapIntOrEmpty intWrapper emptyVal str =
 
 
 view : Model -> Html Msg
-view { strategyConfig, accordionState, filterCreationState, filterDeletionState, tooltipStates, generatedOn, baseUrl } =
+view { strategyConfig, accordionState, filterCreationState, filterDeletionState, tooltipStates, generatedOn, baseUrl, alert } =
     Grid.containerFluid []
         [ h1 [] [ text "Konfigurace strategie" ]
+        , Alert.view alert
         , Grid.row []
             [ Strategy.form strategyConfig accordionState filterCreationState filterDeletionState tooltipStates generatedOn
             , ConfigPreview.view baseUrl generatedOn strategyConfig
@@ -314,16 +320,16 @@ infoFooter =
         ]
 
 
-loadStrategyFromUrl : Navigation.Location -> Maybe StrategyConfiguration
+loadStrategyFromUrl : Navigation.Location -> ( StrategyConfiguration, AlertData )
 loadStrategyFromUrl location =
-    let
-        base64EncodedStrategyJson =
-            String.dropLeft 1 {- drop '#' -} location.hash
-    in
-    case Strategy.strategyFromUrlHash base64EncodedStrategyJson of
-        Ok strategy ->
-            Just strategy
+    if String.isEmpty location.hash then
+        ( Strategy.defaultStrategyConfiguration, NoAlert )
+    else
+        case Strategy.strategyFromUrlHash (String.dropLeft 1 {- drop '#' -} location.hash) of
+            Ok strategy ->
+                ( strategy, SuccessAlert "Strategie byla úspěšně načtena z URL" )
 
-        Err err ->
-            Debug.log ("Failed to load strategy from URL " ++ location.href ++ " - The error was " ++ err)
-                Nothing
+            Err e ->
+                ( Strategy.defaultStrategyConfiguration
+                , ErrorAlert ("Při pokusu obnovit strategii z URL " ++ location.href ++ "\n\n došlo k chybě: " ++ e)
+                )
