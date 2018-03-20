@@ -9,7 +9,7 @@
     "exposed-modules": [],
     "dependencies": {
         "eeue56/elm-all-dict": "2.0.1 <= v < 3.0.0",
-        "elm-community/elm-time": "1.0.14 <= v < 2.0.0",
+        "elm-community/elm-time": "2.0.0 <= v < 3.0.0",
         "elm-community/json-extra": "2.6.0 <= v < 3.0.0",
         "elm-community/list-extra": "7.1.0 <= v < 8.0.0",
         "elm-community/random-extra": "2.0.0 <= v < 3.0.0",
