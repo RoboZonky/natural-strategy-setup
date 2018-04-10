@@ -11,6 +11,7 @@ module Data.Filter.Conditions
         , removeAmountCondition
         , removeElapsedTermMonthsCondition
         , removeElapsedTermPercentCondition
+        , removeInsuranceCondition
         , removeInterestCondition
         , removeMainIncomeCondition
         , removePurposeCondition
@@ -23,6 +24,7 @@ module Data.Filter.Conditions
         , updateAmount
         , updateElapsedTermMonths
         , updateElapsedTermPercent
+        , updateInsurance
         , updateInterest
         , updateMainIncome
         , updatePurpose
@@ -36,6 +38,7 @@ module Data.Filter.Conditions
 import Data.Filter.Conditions.Amount as Amount exposing (AmountCondition, AmountMsg)
 import Data.Filter.Conditions.ElapsedTermMonths as ElapsedTermMonths exposing (ElapsedTermMonthsCondition, ElapsedTermMonthsMsg)
 import Data.Filter.Conditions.ElapsedTermPercent as ElapsedTermPercent exposing (ElapsedTermPercentCondition, ElapsedTermPercentMsg)
+import Data.Filter.Conditions.Insurance as Insurance exposing (InsuranceCondition, InsuranceMsg)
 import Data.Filter.Conditions.Interest as Interest exposing (InterestCondition, InterestMsg)
 import Data.Filter.Conditions.MainIncome as MainIncome exposing (MainIncomeCondition, MainIncomeMsg)
 import Data.Filter.Conditions.Purpose as Purpose exposing (PurposeCondition, PurposeMsg)
@@ -61,6 +64,7 @@ type alias Conditions =
     , elapsedTermPercent : Maybe ElapsedTermPercentCondition
     , interest : Maybe InterestCondition
     , amount : Maybe AmountCondition
+    , insurance : Maybe InsuranceCondition
     }
 
 
@@ -76,6 +80,7 @@ type Condition
     | Condition_Elapsed_Term_Percent ElapsedTermPercentCondition
     | Condition_Interest InterestCondition
     | Condition_Amount AmountCondition
+    | Condition_Insurance InsuranceCondition
 
 
 emptyConditions : Conditions
@@ -91,6 +96,7 @@ emptyConditions =
     , elapsedTermPercent = Nothing
     , interest = Nothing
     , amount = Nothing
+    , insurance = Nothing
     }
 
 
@@ -129,6 +135,9 @@ renderCondition condition =
 
         Condition_Amount c ->
             Amount.renderCondition c
+
+        Condition_Insurance c ->
+            Insurance.renderCondition c
 
 
 conditionsValidationErrors : String -> Conditions -> List String
@@ -172,9 +181,12 @@ conditionValidationError c =
         Condition_Amount amountCond ->
             Amount.validationErrors amountCond
 
+        Condition_Insurance _ ->
+            [{- Insurance condition can't be invalid -> valid. errors list always empty -}]
+
 
 conditionsToList : Conditions -> List Condition
-conditionsToList { region, rating, income, purpose, story, termMonths, termPercent, elapsedTermMonths, elapsedTermPercent, amount, interest } =
+conditionsToList { region, rating, income, purpose, story, termMonths, termPercent, elapsedTermMonths, elapsedTermPercent, amount, interest, insurance } =
     let
         fromMaybe : (a -> Condition) -> Maybe a -> List Condition
         fromMaybe wrap =
@@ -212,8 +224,11 @@ conditionsToList { region, rating, income, purpose, story, termMonths, termPerce
 
         amo =
             fromMaybe Condition_Amount amount
+
+        ins =
+            fromMaybe Condition_Insurance insurance
     in
-    List.concat [ reg, rat, inc, pur, sto, terM, terP, elTermM, elTermP, inte, amo ]
+    List.concat [ reg, rat, inc, pur, sto, terM, terP, elTermM, elTermP, inte, amo, ins ]
 
 
 addCondition : Condition -> Conditions -> Conditions
@@ -251,6 +266,9 @@ addCondition c cs =
 
         Condition_Amount amountCond ->
             setAmountCondition amountCond cs
+
+        Condition_Insurance insuraceCond ->
+            setInsuranceCondition insuraceCond cs
 
 
 setRegionCondition : RegionCondition -> Conditions -> Conditions
@@ -308,6 +326,11 @@ setAmountCondition c cs =
     { cs | amount = Just c }
 
 
+setInsuranceCondition : InsuranceCondition -> Conditions -> Conditions
+setInsuranceCondition c cs =
+    { cs | insurance = Just c }
+
+
 updateInterest : InterestMsg -> Conditions -> Conditions
 updateInterest msg conditions =
     { conditions | interest = Maybe.map (Interest.update msg) conditions.interest }
@@ -361,6 +384,11 @@ updateRating msg conditions =
 updateRegion : RegionMsg -> Conditions -> Conditions
 updateRegion msg conditions =
     { conditions | region = Maybe.map (Region.update msg) conditions.region }
+
+
+updateInsurance : InsuranceMsg -> Conditions -> Conditions
+updateInsurance msg conditions =
+    { conditions | insurance = Maybe.map (Insurance.update msg) conditions.insurance }
 
 
 removeAmountCondition : Conditions -> Conditions
@@ -418,6 +446,11 @@ removeRegionCondition cs =
     { cs | region = Nothing }
 
 
+removeInsuranceCondition : Conditions -> Conditions
+removeInsuranceCondition cs =
+    { cs | insurance = Nothing }
+
+
 
 -- JSON
 
@@ -465,6 +498,9 @@ encodeCondition c =
         Condition_Amount amountCond ->
             ( "K", Amount.encodeCondition amountCond )
 
+        Condition_Insurance insuranceCond ->
+            ( "L", Insurance.encodeCondition insuranceCond )
+
 
 conditionsDecoder : Decoder Conditions
 conditionsDecoder =
@@ -480,3 +516,4 @@ conditionsDecoder =
         |: optionalField "I" ElapsedTermPercent.conditionDecoder
         |: optionalField "J" Interest.conditionDecoder
         |: optionalField "K" Amount.conditionDecoder
+        |: optionalField "L" Insurance.conditionDecoder

@@ -10,6 +10,7 @@ import Data.Filter.Conditions exposing (..)
 import Data.Filter.Conditions.Amount as Amount exposing (Amount(..), AmountCondition(..), AmountMsg)
 import Data.Filter.Conditions.ElapsedTermMonths as ElapsedTermMonths exposing (ElapsedTermMonths(..), ElapsedTermMonthsCondition(..), ElapsedTermMonthsMsg)
 import Data.Filter.Conditions.ElapsedTermPercent as ElapsedTermPercent exposing (ElapsedTermPercent(..), ElapsedTermPercentCondition(..), ElapsedTermPercentMsg)
+import Data.Filter.Conditions.Insurance as Insurance exposing (Insurance(..), InsuranceCondition(..), InsuranceMsg)
 import Data.Filter.Conditions.Interest as Interest exposing (Interest(..), InterestCondition(..), InterestMsg)
 import Data.Filter.Conditions.MainIncome as MainIncome exposing (MainIncome(..), MainIncomeCondition(..), MainIncomeMsg)
 import Data.Filter.Conditions.Purpose as Purpose exposing (Purpose(..), PurposeCondition(..), PurposeMsg)
@@ -78,6 +79,7 @@ form filteredItem conditions =
         , conditionRow conditions "Příběh" (Condition_Story Story.defaultCondition) RemoveStoryCondition
         , conditionRow conditions "Kraj klienta" (Condition_Region Region.defaultCondition) RemoveRegionCondition
         , conditionRow conditions (termConditionLabel filteredItem "(v měsících)") (Condition_Term_Months TermMonths.defaultCondition) RemoveTermMonthsCondition
+        , conditionRow conditions "Pojištění" (Condition_Insurance Insurance.defaultCondition) RemoveInsuranceCondition
         ]
             ++ extraRows
 
@@ -135,6 +137,9 @@ conditionRow conditions conditionName condition removeCondMsg =
 
                 Condition_Story _ ->
                     ( subformEnabled conditions.story, showFormForNonemptyCondition StoryMsg Story.form conditions.story )
+
+                Condition_Insurance _ ->
+                    ( subformEnabled conditions.insurance, showFormForNonemptyCondition InsuranceMsg Insurance.form conditions.insurance )
     in
     Fieldset.config
         |> Fieldset.asGroup
@@ -191,6 +196,7 @@ type Msg
     | MainIncomeMsg MainIncomeMsg
     | RatingMsg RatingMsg
     | RegionMsg RegionMsg
+    | InsuranceMsg InsuranceMsg
     | AddCondition Condition
     | RemoveInterestCondition
     | RemoveAmountCondition
@@ -203,6 +209,7 @@ type Msg
     | RemoveMainIncomeCondition
     | RemoveRatingCondition
     | RemoveRegionCondition
+    | RemoveInsuranceCondition
 
 
 update : Msg -> Model -> Model
@@ -241,6 +248,9 @@ update msg model =
         RegionMsg rmsg ->
             updateRegion rmsg model
 
+        InsuranceMsg imsg ->
+            updateInsurance imsg model
+
         AddCondition c ->
             addCondition c model
 
@@ -276,3 +286,6 @@ update msg model =
 
         RemoveRegionCondition ->
             removeRegionCondition model
+
+        RemoveInsuranceCondition ->
+            removeInsuranceCondition model

@@ -8,6 +8,7 @@ import Data.Filter.Conditions exposing (Condition(..), Conditions, addCondition,
 import Data.Filter.Conditions.Amount as Amount exposing (AmountCondition(AmountCondition))
 import Data.Filter.Conditions.ElapsedTermMonths as ElapsedTermMonths exposing (ElapsedTermMonthsCondition(..))
 import Data.Filter.Conditions.ElapsedTermPercent as ElapsedTermPercent exposing (ElapsedTermPercentCondition(..))
+import Data.Filter.Conditions.Insurance exposing (Insurance(..), InsuranceCondition(..))
 import Data.Filter.Conditions.Interest as Interest exposing (InterestCondition(..))
 import Data.Filter.Conditions.MainIncome as MainIncome exposing (MainIncomeCondition(..))
 import Data.Filter.Conditions.Purpose as Purpose exposing (PurposeCondition(PurposeList))
@@ -157,6 +158,7 @@ conditionsSharedByAllFilteredItems =
     , storyConditionGen
     , termMonthsConditionGen
     , interestConditionGen
+    , insuranceConditionGen
     ]
 
 
@@ -184,6 +186,12 @@ storyConditionGen : Generator Condition
 storyConditionGen =
     Random.sample [ SHORT, BELOW_AVERAGE, AVERAGE, ABOVE_AVERAGE ]
         |> Random.map (Maybe.withDefault SHORT >> StoryCondition >> Condition_Story)
+
+
+insuranceConditionGen : Generator Condition
+insuranceConditionGen =
+    Random.sample [ Active, Inactive ]
+        |> Random.map (Maybe.withDefault Active >> InsuranceCondition >> Condition_Insurance)
 
 
 termMonthsConditionGen : Generator Condition
