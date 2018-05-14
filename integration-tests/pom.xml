@@ -9,7 +9,7 @@
   <properties>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
-    <version.selenium>3.11.0</version.selenium>
+    <version.selenium>3.12.0</version.selenium>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
 
@@ -35,13 +35,13 @@
     <dependency>
       <groupId>org.assertj</groupId>
       <artifactId>assertj-core</artifactId>
-      <version>3.9.1</version>
+      <version>3.10.0</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>com.github.robozonky</groupId>
       <artifactId>robozonky-strategy-natural</artifactId>
-      <version>4.6.0-SNAPSHOT</version>
+      <version>4.7.0-SNAPSHOT</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
