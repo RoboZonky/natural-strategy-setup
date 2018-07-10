@@ -1,8 +1,8 @@
 /* Make text in range slider labels non-selectable */
 
 .rangeSliderValue {
-  user-select: none!important;
-  -moz-user-select: none!important;
+  user-select: none !important;
+  -moz-user-select: none !important;
 }
 
 /*

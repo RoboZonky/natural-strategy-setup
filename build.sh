@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-elm make --warn src/Main.elm --output dist/js/elm.js
+elm make --yes --warn src/Main.elm --output dist/js/elm.js
 
 # Hardcode current commit hash into distribution
 # to make it easy to link generated strategy configs to specific version of this tool
