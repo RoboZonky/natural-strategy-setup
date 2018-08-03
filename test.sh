@@ -8,8 +8,8 @@ elm test
 TESTS_DIR=integration-tests
 # Download chromedriver binary if it doesn't exist
 if [ ! -f "${TESTS_DIR}/chromedriver" ]; then
-  echo "chromedriver binary required by tests doesn't exist. Attempting download.."
-  wget --quiet --directory-prefix ${TESTS_DIR} https://chromedriver.storage.googleapis.com/2.40/chromedriver_linux64.zip
+  echo "Downloading chromedriver binary"
+  wget --quiet --directory-prefix ${TESTS_DIR} https://chromedriver.storage.googleapis.com/2.41/chromedriver_linux64.zip
   unzip ${TESTS_DIR}/chromedriver_linux64.zip -d ${TESTS_DIR}
 fi
 

@@ -19,3 +19,9 @@
   padding: 5px;
   margin-bottom: 8px;
 }
+
+/* 2nd of 2 parts of the workaround for https://github.com/RoboZonky/natural-strategy-setup/issues/8 */
+
+.card-open [id$=Card] {
+  height: 100% !important;
+}

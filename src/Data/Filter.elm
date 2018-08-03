@@ -363,22 +363,18 @@ renderFilters heading { primaryEnabled, secondaryEnabled } filterRenderer filter
 
 renderPrimaryEnablement : Bool -> String
 renderPrimaryEnablement isEnabled =
-    case isEnabled of
-        True ->
-            "Investovat do všech půjček."
-
-        False ->
-            "Ignorovat všechny půjčky."
+    if isEnabled then
+        "Investovat do všech půjček."
+    else
+        "Ignorovat všechny půjčky."
 
 
 renderSecondaryEnablement : Bool -> String
 renderSecondaryEnablement isEnabled =
-    case isEnabled of
-        True ->
-            "Investovat do všech participací."
-
-        False ->
-            "Ignorovat všechny participace."
+    if isEnabled then
+        "Investovat do všech participací."
+    else
+        "Ignorovat všechny participace."
 
 
 isValid : MarketplaceFilter -> Bool

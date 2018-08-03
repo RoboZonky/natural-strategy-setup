@@ -16,14 +16,19 @@ import Html.Attributes exposing (class)
 import Html.Events exposing (onClick)
 import Types exposing (CreationModalMsg(ModalStateMsg), Msg(CreationModalMsg, RemoveSellFilter, SetSellingConfiguration))
 import Util
+import View.CardHeightWorkaround exposing (markOpenedAccordionCard)
 import View.Tooltip as Tooltip
 
 
-form : SellingConfiguration -> Tooltip.States -> Accordion.Card Msg
-form sellingConfiguration tooltipStates =
+form : SellingConfiguration -> Accordion.State -> Tooltip.States -> Accordion.Card Msg
+form sellingConfiguration accordionState tooltipStates =
+    let
+        cardId =
+            "sellingConfigCard"
+    in
     Accordion.card
-        { id = "sellingConfigCard"
-        , options = []
+        { id = cardId
+        , options = [ markOpenedAccordionCard cardId accordionState ]
         , header =
             Accordion.headerH4 [] (Accordion.toggle [] [ text "Pravidla prodeje" ])
                 |> Accordion.appendHeader [ Tooltip.popoverTip Tooltip.sellFilterListTip tooltipStates ]

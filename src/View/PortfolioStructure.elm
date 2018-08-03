@@ -19,13 +19,17 @@ import Html.Events exposing (onSubmit)
 import RangeSlider
 import Types exposing (Msg(ChangePortfolioSharePercentage, NoOp, PortfolioChanged))
 import Util
+import View.CardHeightWorkaround exposing (markOpenedAccordionCard)
 import View.PortfolioStructure.PieChart exposing (viewChart)
 import View.Tooltip as Tooltip
 
 
-form : Portfolio -> PortfolioShares -> Tooltip.States -> Accordion.Card Msg
-form portfolio shares tooltipStates =
+form : Portfolio -> PortfolioShares -> Accordion.State -> Tooltip.States -> Accordion.Card Msg
+form portfolio shares accordionState tooltipStates =
     let
+        cardId =
+            "portfolioStructureCard"
+
         ( sharesTableOrSliders, contentDescription ) =
             case portfolio of
                 Empty ->
@@ -35,8 +39,8 @@ form portfolio shares tooltipStates =
                     ( portfolioSharesTable shares, "Následující tabulka ukazuje" )
     in
     Accordion.card
-        { id = "portfolioStructureCard"
-        , options = []
+        { id = cardId
+        , options = [ markOpenedAccordionCard cardId accordionState ]
         , header =
             Accordion.headerH4 [] (Accordion.toggle [] [ text "Struktura portfolia" ])
                 |> Accordion.appendHeader [ Tooltip.popoverTip Tooltip.portfolioStructureTip tooltipStates ]

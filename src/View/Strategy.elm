@@ -9,6 +9,7 @@ import Html exposing (Html, text)
 import Time.Date exposing (Date)
 import Types exposing (Msg(AccordionMsg, CreationModalMsg, DeletionModalMsg))
 import View.BuyingConfig as BuyingConfig
+import View.CardHeightWorkaround exposing (markOpenedAccordionCard)
 import View.Confirmation as Confirmation
 import View.ExitConfig as ExitConfig
 import View.Filter.FilterCreationModal as FilterCreationModal
@@ -34,29 +35,34 @@ form config accordionState filterCreationState filterDeletionState tooltipStates
 strategyForm : StrategyConfiguration -> Accordion.State -> Tooltip.States -> Date -> Html Msg
 strategyForm { generalSettings, portfolioShares, investmentSizeOverrides, buyingConfig, sellingConfig } accordionState tooltipStates generatedOn =
     Accordion.config AccordionMsg
+        |> Accordion.onlyOneOpen
         |> Accordion.cards
-            [ generalSettingsCard generalSettings tooltipStates generatedOn
-            , PortfolioStructure.form generalSettings.portfolio portfolioShares tooltipStates
+            [ generalSettingsCard generalSettings accordionState tooltipStates generatedOn
+            , PortfolioStructure.form generalSettings.portfolio portfolioShares accordionState tooltipStates
             , Investment.form generalSettings.defaultInvestmentSize investmentSizeOverrides
-            , BuyingConfig.form buyingConfig tooltipStates
-            , SellConfig.form sellingConfig tooltipStates
+            , BuyingConfig.form buyingConfig accordionState tooltipStates
+            , SellConfig.form sellingConfig accordionState tooltipStates
             ]
         |> Accordion.view accordionState
 
 
-generalSettingsCard : GeneralSettings -> Tooltip.States -> Date -> Accordion.Card Msg
-generalSettingsCard { targetPortfolioSize, exitConfig, defaultInvestmentShare, defaultTargetBalance, confirmationSettings } tooltipStates generatedOn =
+generalSettingsCard : GeneralSettings -> Accordion.State -> Tooltip.States -> Date -> Accordion.Card Msg
+generalSettingsCard settings accordionState tooltipStates generatedOn =
+    let
+        cardId =
+            "generalSettigsCard"
+    in
     Accordion.card
-        { id = "generalSettigsCard"
-        , options = []
+        { id = cardId
+        , options = [ markOpenedAccordionCard cardId accordionState ]
         , header = Accordion.headerH4 [] <| Accordion.toggle [] [ text "Obecná nastavení" ]
         , blocks =
             [ Accordion.block []
-                [ TargetPortfolioSize.form targetPortfolioSize
-                , InvestmentShare.form defaultInvestmentShare
-                , TargetBalance.form defaultTargetBalance
-                , Confirmation.form confirmationSettings tooltipStates
-                , ExitConfig.form exitConfig generatedOn tooltipStates
+                [ TargetPortfolioSize.form settings.targetPortfolioSize
+                , InvestmentShare.form settings.defaultInvestmentShare
+                , TargetBalance.form settings.defaultTargetBalance
+                , Confirmation.form settings.confirmationSettings tooltipStates
+                , ExitConfig.form settings.exitConfig generatedOn tooltipStates
                 ]
             ]
         }
