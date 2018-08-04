@@ -1,12 +1,11 @@
 module View.Filter.Conditions exposing (Msg, form, update)
 
-import Bootstrap.Form.Checkbox as Checkbox
-import Bootstrap.Form.Fieldset as Fieldset
 import Bootstrap.Grid as Grid
 import Bootstrap.Grid.Col as Col
+import Bootstrap.Grid.Row as Row
 import Char
 import Data.Filter exposing (FilteredItem(..))
-import Data.Filter.Conditions exposing (..)
+import Data.Filter.Conditions as C exposing (Condition(..), ConditionType(..), Conditions)
 import Data.Filter.Conditions.Amount as Amount exposing (Amount(..), AmountCondition(..), AmountMsg)
 import Data.Filter.Conditions.ElapsedTermMonths as ElapsedTermMonths exposing (ElapsedTermMonths(..), ElapsedTermMonthsCondition(..), ElapsedTermMonthsMsg)
 import Data.Filter.Conditions.ElapsedTermPercent as ElapsedTermPercent exposing (ElapsedTermPercent(..), ElapsedTermPercentCondition(..), ElapsedTermPercentMsg)
@@ -19,9 +18,10 @@ import Data.Filter.Conditions.Region as Region exposing (Region(..), RegionCondi
 import Data.Filter.Conditions.Story as Story exposing (Story(..), StoryCondition(..), StoryMsg)
 import Data.Filter.Conditions.TermMonths as TermMonths exposing (TermMonths(..), TermMonthsCondition(..), TermMonthsMsg)
 import Data.Filter.Conditions.TermPercent as TermPercent exposing (TermPercent(..), TermPercentCondition(..), TermPercentMsg)
-import DomId exposing (DomId)
-import Html exposing (Html, div, text)
-import Html.Attributes exposing (classList, style)
+import Html exposing (Html, div, span, text)
+import Html.Attributes exposing (class)
+import Html.Events exposing (onClick)
+import View.EnumSelect as Select
 
 
 -- MODEL
@@ -38,50 +38,62 @@ type alias Model =
 form : FilteredItem -> Model -> Html Msg
 form filteredItem conditions =
     let
-        extraRows =
-            case filteredItem of
-                Loan ->
-                    [ amountRow ]
+        enabledConditions =
+            C.getEnabledConditions conditions
 
-                Participation ->
-                    [ termPercentRow, elapsedTermMonthsRow, elapsedTermPercentRow ]
-
-                Participation_To_Sell ->
-                    [ termPercentRow, elapsedTermMonthsRow, elapsedTermPercentRow ]
-
-                Loan_And_Participation ->
-                    []
-
-        amountRow =
-            conditionRow conditions "Výše úvěru" (Condition_Amount Amount.defaultCondition) RemoveAmountCondition
-
-        termPercentRow =
-            conditionRow conditions (termConditionLabel filteredItem "(v %)") (Condition_Term_Percent TermPercent.defaultCondition) RemoveTermPercentContion
-
-        elapsedTermMonthsRow =
-            conditionRow conditions "Uhrazeno splátek (v měsících)" (Condition_Elapsed_Term_Months ElapsedTermMonths.defaultCondition) RemoveElapsedTermMonthsCondition
-
-        elapsedTermPercentRow =
-            conditionRow conditions "Uhrazeno splátek (v %)" (Condition_Elapsed_Term_Percent ElapsedTermPercent.defaultCondition) RemoveElapsedTermPercentCondition
+        dropdown =
+            conditionEnablementDropdown filteredItem conditions
     in
-    div
-        [ style
-            [ ( "overflow-x", "hidden" )
-            , ( "overflow-y", "auto" {- scrollbar so that modal footer doesn't disappear below the bottom of viewport, when too many conditions enabled -} )
-            , ( "max-height", "60vh" {- 60% viewport height -} )
-            ]
-        ]
-    <|
-        [ conditionRow conditions "Rating" (Condition_Rating Rating.defaultCondition) RemoveRatingCondition
-        , conditionRow conditions "Úrok" (Condition_Interest Interest.defaultCondition) RemoveInterestCondition
-        , conditionRow conditions "Účel úvěru" (Condition_Purpose Purpose.defaultCondition) RemovePurposeCondition
-        , conditionRow conditions "Zdroj příjmů klienta" (Condition_Income MainIncome.defaultCondition) RemoveMainIncomeCondition
-        , conditionRow conditions "Příběh" (Condition_Story Story.defaultCondition) RemoveStoryCondition
-        , conditionRow conditions "Kraj klienta" (Condition_Region Region.defaultCondition) RemoveRegionCondition
-        , conditionRow conditions (termConditionLabel filteredItem "(v měsících)") (Condition_Term_Months TermMonths.defaultCondition) RemoveTermMonthsCondition
-        , conditionRow conditions "Pojištění" (Condition_Insurance Insurance.defaultCondition) RemoveInsuranceCondition
-        ]
-            ++ extraRows
+    div [ class "condition-subform-container" ]
+        (List.map (conditionSubform filteredItem) enabledConditions
+            ++ [ dropdown ]
+        )
+
+
+conditionTypesThatApplyTo : FilteredItem -> List ConditionType
+conditionTypesThatApplyTo filteredItem =
+    let
+        commonForAll =
+            [ Rating, Interest, Purpose, Income, Story, Region, Term_Months, Insurance ]
+
+        commonForParticipations =
+            [ Term_Percent, Elapsed_Term_Months, Elapsed_Term_Percent ]
+    in
+    case filteredItem of
+        Loan ->
+            Amount :: commonForAll
+
+        Participation ->
+            commonForParticipations ++ commonForAll
+
+        Participation_To_Sell ->
+            commonForParticipations ++ commonForAll
+
+        Loan_And_Participation ->
+            commonForAll
+
+
+{-| Dropdown for enabling conditionts that are currently disabled, but can be enabled for given FilteredItem
+-}
+conditionEnablementDropdown : FilteredItem -> Conditions -> Html Msg
+conditionEnablementDropdown filteredItem conditions =
+    let
+        validConditions =
+            conditionTypesThatApplyTo filteredItem
+
+        conditionsThatCanBeEnabled =
+            List.filter (\c -> List.member c validConditions) <| C.getDisabledConditions conditions
+
+        createConditionEnablingMessage conditionType =
+            AddCondition <| C.getDefaultCondition conditionType
+
+        enumToString =
+            getVisibleLabel filteredItem
+    in
+    if List.isEmpty conditionsThatCanBeEnabled then
+        text ""
+    else
+        Select.from conditionsThatCanBeEnabled createConditionEnablingMessage NoOp "-- Přidat podmínku --" enumToString
 
 
 termConditionLabel : FilteredItem -> String -> String
@@ -94,198 +106,181 @@ termConditionLabel filteredItem unitStr =
             "Zbývající délka úvěru " ++ unitStr
 
 
-conditionRow : Conditions -> String -> Condition -> Msg -> Html Msg
-conditionRow conditions conditionName condition removeCondMsg =
+conditionSubform : FilteredItem -> Condition -> Html Msg
+conditionSubform item condition =
     let
-        onChk checked =
-            if checked then
-                AddCondition condition
-            else
-                removeCondMsg
-
-        ( isSubformEnabled, subform ) =
-            case condition of
-                Condition_Amount _ ->
-                    ( subformEnabled conditions.amount, showFormForNonemptyCondition AmountMsg Amount.form conditions.amount )
-
-                Condition_Income _ ->
-                    ( subformEnabled conditions.income, showFormForNonemptyCondition MainIncomeMsg MainIncome.form conditions.income )
-
-                Condition_Interest _ ->
-                    ( subformEnabled conditions.interest, showFormForNonemptyCondition InterestMsg Interest.form conditions.interest )
-
-                Condition_Purpose _ ->
-                    ( subformEnabled conditions.purpose, showFormForNonemptyCondition PurposeMsg Purpose.form conditions.purpose )
-
-                Condition_Term_Months _ ->
-                    ( subformEnabled conditions.termMonths, showFormForNonemptyCondition TermMonthsMsg TermMonths.form conditions.termMonths )
-
-                Condition_Term_Percent _ ->
-                    ( subformEnabled conditions.termPercent, showFormForNonemptyCondition TermPercentMsg TermPercent.form conditions.termPercent )
-
-                Condition_Elapsed_Term_Months _ ->
-                    ( subformEnabled conditions.elapsedTermMonths, showFormForNonemptyCondition ElapsedTermMonthsMsg ElapsedTermMonths.form conditions.elapsedTermMonths )
-
-                Condition_Elapsed_Term_Percent _ ->
-                    ( subformEnabled conditions.elapsedTermPercent, showFormForNonemptyCondition ElapsedTermPercentMsg ElapsedTermPercent.form conditions.elapsedTermPercent )
-
-                Condition_Region _ ->
-                    ( subformEnabled conditions.region, showFormForNonemptyCondition RegionMsg Region.form conditions.region )
-
-                Condition_Rating _ ->
-                    ( subformEnabled conditions.rating, showFormForNonemptyCondition RatingMsg (Rating.form "rating_") conditions.rating )
-
-                Condition_Story _ ->
-                    ( subformEnabled conditions.story, showFormForNonemptyCondition StoryMsg Story.form conditions.story )
-
-                Condition_Insurance _ ->
-                    ( subformEnabled conditions.insurance, showFormForNonemptyCondition InsuranceMsg Insurance.form conditions.insurance )
+        wrap =
+            closeableWrapper item
     in
-    Fieldset.config
-        |> Fieldset.asGroup
-        |> Fieldset.attrs [ classList [ ( "condition-row", True ), ( "active", isSubformEnabled ) ] ]
-        |> Fieldset.children
-            [ Grid.row []
-                [ Grid.col [ Col.xs5 ]
-                    [ Checkbox.checkbox
-                        [ Checkbox.id (toDomId conditionName)
-                        , Checkbox.checked isSubformEnabled
-                        , Checkbox.onCheck onChk
-                        ]
-                        conditionName
-                    ]
-                , Grid.col [ Col.xs7 ] [ subform ]
-                ]
-            ]
-        |> Fieldset.view
+    case condition of
+        Condition_Amount c ->
+            wrap Amount (Html.map AmountMsg <| Amount.form c)
+
+        Condition_Elapsed_Term_Months c ->
+            wrap Elapsed_Term_Months (Html.map ElapsedTermMonthsMsg <| ElapsedTermMonths.form c)
+
+        Condition_Elapsed_Term_Percent c ->
+            wrap Elapsed_Term_Percent (Html.map ElapsedTermPercentMsg <| ElapsedTermPercent.form c)
+
+        Condition_Income c ->
+            wrap Income (Html.map MainIncomeMsg <| MainIncome.form c)
+
+        Condition_Insurance c ->
+            wrap Insurance (Html.map InsuranceMsg <| Insurance.form c)
+
+        Condition_Interest c ->
+            wrap Interest (Html.map InterestMsg <| Interest.form c)
+
+        Condition_Purpose c ->
+            wrap Purpose (Html.map PurposeMsg <| Purpose.form c)
+
+        Condition_Rating c ->
+            wrap Rating (Html.map RatingMsg <| Rating.form "rating_" c)
+
+        Condition_Region c ->
+            wrap Region (Html.map RegionMsg <| Region.form c)
+
+        Condition_Story c ->
+            wrap Story (Html.map StoryMsg <| Story.form c)
+
+        Condition_Term_Months c ->
+            wrap Term_Months (Html.map TermMonthsMsg <| TermMonths.form c)
+
+        Condition_Term_Percent c ->
+            wrap Term_Percent (Html.map TermPercentMsg <| TermPercent.form c)
 
 
-toDomId : String -> DomId
-toDomId =
-    String.filter (\c -> Char.isUpper c || Char.isLower c)
+getVisibleLabel : FilteredItem -> ConditionType -> String
+getVisibleLabel filteredItem conditionType =
+    case conditionType of
+        Amount ->
+            "Výše úvěru"
+
+        Elapsed_Term_Months ->
+            "Uhrazeno splátek (v" ++ nbsp ++ "měsících)"
+
+        Elapsed_Term_Percent ->
+            "Uhrazeno splátek (v" ++ nbsp ++ "%)"
+
+        Income ->
+            "Zdroj příjmů klienta"
+
+        Insurance ->
+            "Pojištění"
+
+        Interest ->
+            "Úrok"
+
+        Purpose ->
+            "Účel úvěru"
+
+        Rating ->
+            "Rating"
+
+        Region ->
+            "Kraj klienta"
+
+        Story ->
+            "Příběh"
+
+        Term_Months ->
+            termConditionLabel filteredItem ("(v" ++ nbsp ++ "měsících)")
+
+        Term_Percent ->
+            termConditionLabel filteredItem ("(v" ++ nbsp ++ "%)")
 
 
-subformEnabled : Maybe a -> Bool
-subformEnabled mCondition =
-    case mCondition of
-        Nothing ->
-            False
-
-        _ ->
-            True
+nbsp : String
+nbsp =
+    -- Is tehere a better way to insert '&nbsp;'?
+    String.fromChar (Char.fromCode 160)
 
 
-showFormForNonemptyCondition : (condMsg -> Msg) -> (condition -> Html condMsg) -> Maybe condition -> Html Msg
-showFormForNonemptyCondition condWrapper condForm =
-    Maybe.withDefault (text "") << Maybe.map (Html.map condWrapper << condForm)
+closeableWrapper : FilteredItem -> ConditionType -> Html Msg -> Html Msg
+closeableWrapper filteredItem conditionType subform =
+    let
+        removeButton =
+            span [ onClick (RemoveCondition conditionType), class "float-right" ] [ text "✖" ]
+
+        conditionLabel =
+            text <| getVisibleLabel filteredItem conditionType
+    in
+    Grid.row [ Row.attrs [ class "condition-subform" ] ]
+        [ Grid.col [ Col.xs3 ] [ conditionLabel ]
+        , Grid.col [ Col.xs8 ] [ subform ]
+        , Grid.col [ Col.xs1 ] [ removeButton ]
+        ]
 
 
 
 -- UPDATE
 
 
-type Msg
-    = InterestMsg InterestMsg
-    | AmountMsg AmountMsg
-    | StoryMsg StoryMsg
-    | PurposeMsg PurposeMsg
-    | TermMonthsMsg TermMonthsMsg
-    | TermPercentMsg TermPercentMsg
+type
+    Msg
+    -- Forwarding messages to individual condition subforms
+    = AmountMsg AmountMsg
     | ElapsedTermMonthsMsg ElapsedTermMonthsMsg
     | ElapsedTermPercentMsg ElapsedTermPercentMsg
+    | InsuranceMsg InsuranceMsg
+    | InterestMsg InterestMsg
     | MainIncomeMsg MainIncomeMsg
+    | PurposeMsg PurposeMsg
     | RatingMsg RatingMsg
     | RegionMsg RegionMsg
-    | InsuranceMsg InsuranceMsg
+    | StoryMsg StoryMsg
+    | TermMonthsMsg TermMonthsMsg
+    | TermPercentMsg TermPercentMsg
+      -- Control enabling / disabling conditions
     | AddCondition Condition
-    | RemoveInterestCondition
-    | RemoveAmountCondition
-    | RemoveStoryCondition
-    | RemovePurposeCondition
-    | RemoveTermMonthsCondition
-    | RemoveTermPercentContion
-    | RemoveElapsedTermMonthsCondition
-    | RemoveElapsedTermPercentCondition
-    | RemoveMainIncomeCondition
-    | RemoveRatingCondition
-    | RemoveRegionCondition
-    | RemoveInsuranceCondition
+    | RemoveCondition ConditionType
+    | NoOp
 
 
 update : Msg -> Model -> Model
 update msg model =
     case msg of
-        RatingMsg rmsg ->
-            updateRating rmsg model
-
-        InterestMsg imsg ->
-            updateInterest imsg model
-
-        PurposeMsg pmsg ->
-            updatePurpose pmsg model
-
-        TermMonthsMsg tmmsg ->
-            updateTermMonths tmmsg model
-
-        TermPercentMsg tpmsg ->
-            updateTermPercent tpmsg model
+        AmountMsg amsg ->
+            C.updateAmount amsg model
 
         ElapsedTermMonthsMsg emsg ->
-            updateElapsedTermMonths emsg model
+            C.updateElapsedTermMonths emsg model
 
         ElapsedTermPercentMsg emsg ->
-            updateElapsedTermPercent emsg model
+            C.updateElapsedTermPercent emsg model
+
+        RatingMsg rmsg ->
+            C.updateRating rmsg model
+
+        InterestMsg imsg ->
+            C.updateInterest imsg model
+
+        PurposeMsg pmsg ->
+            C.updatePurpose pmsg model
+
+        TermMonthsMsg tmmsg ->
+            C.updateTermMonths tmmsg model
+
+        TermPercentMsg tpmsg ->
+            C.updateTermPercent tpmsg model
 
         MainIncomeMsg mimsg ->
-            updateMainIncome mimsg model
+            C.updateMainIncome mimsg model
 
         StoryMsg smsg ->
-            updateStory smsg model
-
-        AmountMsg amsg ->
-            updateAmount amsg model
+            C.updateStory smsg model
 
         RegionMsg rmsg ->
-            updateRegion rmsg model
+            C.updateRegion rmsg model
 
         InsuranceMsg imsg ->
-            updateInsurance imsg model
+            C.updateInsurance imsg model
 
-        AddCondition c ->
-            addCondition c model
+        AddCondition condition ->
+            C.addCondition condition model
 
-        RemoveInterestCondition ->
-            removeInterestCondition model
+        RemoveCondition conditionType ->
+            C.removeCondition conditionType model
 
-        RemoveAmountCondition ->
-            removeAmountCondition model
-
-        RemoveStoryCondition ->
-            removeStoryCondition model
-
-        RemovePurposeCondition ->
-            removePurposeCondition model
-
-        RemoveTermMonthsCondition ->
-            removeTermMonthsCondition model
-
-        RemoveTermPercentContion ->
-            removeTermPercentCondition model
-
-        RemoveElapsedTermMonthsCondition ->
-            removeElapsedTermMonthsCondition model
-
-        RemoveElapsedTermPercentCondition ->
-            removeElapsedTermPercentCondition model
-
-        RemoveMainIncomeCondition ->
-            removeMainIncomeCondition model
-
-        RemoveRatingCondition ->
-            removeRatingCondition model
-
-        RemoveRegionCondition ->
-            removeRegionCondition model
-
-        RemoveInsuranceCondition ->
-            removeInsuranceCondition model
+        NoOp ->
+            model

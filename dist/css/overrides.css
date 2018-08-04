@@ -5,23 +5,30 @@
   -moz-user-select: none !important;
 }
 
-/*
- To make selected conditions in FilterCreationModal better distinguishable I put them in a fieldset.
- But bootstrap disables fieldset borders, so reenable them.
-*/
+/* Highlight of "a zároveň" joining multiple conditions of the filter*/
 
-.condition-row {
-  margin-bottom: 0px;
-}
-
-.condition-row.active {
-  border: solid 1px lightgrey !important;
-  padding: 5px;
-  margin-bottom: 8px;
+.conjunction {
+  color: darkorange;
 }
 
 /* 2nd of 2 parts of the workaround for https://github.com/RoboZonky/natural-strategy-setup/issues/8 */
 
 .card-open [id$=Card] {
   height: 100% !important;
+}
+
+.condition-subform-container {
+  overflow-x: hidden;
+  /* scrollbar so that modal footer doesn't disappear below the bottom of viewport, when too many conditions enabled */
+  overflow-y: auto;
+  /* 60% viewport height */
+  max-height: 60vh;
+  min-height: 40vh;
+}
+
+.condition-subform {
+  border: solid 1px lightgrey !important;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  margin: 2px;
 }

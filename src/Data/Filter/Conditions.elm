@@ -1,25 +1,17 @@
 module Data.Filter.Conditions
     exposing
         ( Condition(..)
+        , ConditionType(..)
         , Conditions
         , addCondition
         , conditionsDecoder
-        , conditionsToList
         , conditionsValidationErrors
         , emptyConditions
         , encodeConditions
-        , removeAmountCondition
-        , removeElapsedTermMonthsCondition
-        , removeElapsedTermPercentCondition
-        , removeInsuranceCondition
-        , removeInterestCondition
-        , removeMainIncomeCondition
-        , removePurposeCondition
-        , removeRatingCondition
-        , removeRegionCondition
-        , removeStoryCondition
-        , removeTermMonthsCondition
-        , removeTermPercentCondition
+        , getDefaultCondition
+        , getDisabledConditions
+        , getEnabledConditions
+        , removeCondition
         , renderCondition
         , updateAmount
         , updateElapsedTermMonths
@@ -50,6 +42,7 @@ import Data.Filter.Conditions.TermPercent as TermPercent exposing (TermPercentCo
 import Json.Decode as Decode exposing (Decoder)
 import Json.Decode.Extra exposing ((|:), optionalField)
 import Json.Encode as Encode exposing (Value)
+import List
 
 
 type alias Conditions =
@@ -69,18 +62,33 @@ type alias Conditions =
 
 
 type Condition
-    = Condition_Region RegionCondition
-    | Condition_Rating RatingCondition
+    = Condition_Amount AmountCondition
+    | Condition_Elapsed_Term_Months ElapsedTermMonthsCondition
+    | Condition_Elapsed_Term_Percent ElapsedTermPercentCondition
     | Condition_Income MainIncomeCondition
+    | Condition_Insurance InsuranceCondition
+    | Condition_Interest InterestCondition
     | Condition_Purpose PurposeCondition
+    | Condition_Rating RatingCondition
+    | Condition_Region RegionCondition
     | Condition_Story StoryCondition
     | Condition_Term_Months TermMonthsCondition
     | Condition_Term_Percent TermPercentCondition
-    | Condition_Elapsed_Term_Months ElapsedTermMonthsCondition
-    | Condition_Elapsed_Term_Percent ElapsedTermPercentCondition
-    | Condition_Interest InterestCondition
-    | Condition_Amount AmountCondition
-    | Condition_Insurance InsuranceCondition
+
+
+type ConditionType
+    = Amount
+    | Elapsed_Term_Months
+    | Elapsed_Term_Percent
+    | Income
+    | Insurance
+    | Interest
+    | Purpose
+    | Rating
+    | Region
+    | Story
+    | Term_Months
+    | Term_Percent
 
 
 emptyConditions : Conditions
@@ -142,7 +150,7 @@ renderCondition condition =
 
 conditionsValidationErrors : String -> Conditions -> List String
 conditionsValidationErrors errorPrefix =
-    List.map (\e -> errorPrefix ++ e) << List.concat << List.map conditionValidationError << conditionsToList
+    List.map (\e -> errorPrefix ++ e) << List.concat << List.map conditionValidationError << getEnabledConditions
 
 
 conditionValidationError : Condition -> List String
@@ -185,66 +193,81 @@ conditionValidationError c =
             [{- Insurance condition can't be invalid -> valid. errors list always empty -}]
 
 
-conditionsToList : Conditions -> List Condition
-conditionsToList { region, rating, income, purpose, story, termMonths, termPercent, elapsedTermMonths, elapsedTermPercent, amount, interest, insurance } =
+getDisabledConditions : Conditions -> List ConditionType
+getDisabledConditions cs =
     let
-        fromMaybe : (a -> Condition) -> Maybe a -> List Condition
-        fromMaybe wrap =
-            Maybe.withDefault [] << Maybe.map (List.singleton << wrap)
-
-        reg =
-            fromMaybe Condition_Region region
-
-        rat =
-            fromMaybe Condition_Rating rating
-
-        inc =
-            fromMaybe Condition_Income income
-
-        pur =
-            fromMaybe Condition_Purpose purpose
-
-        sto =
-            fromMaybe Condition_Story story
-
-        terM =
-            fromMaybe Condition_Term_Months termMonths
-
-        terP =
-            fromMaybe Condition_Term_Percent termPercent
-
-        elTermM =
-            fromMaybe Condition_Elapsed_Term_Months elapsedTermMonths
-
-        elTermP =
-            fromMaybe Condition_Elapsed_Term_Percent elapsedTermPercent
-
-        inte =
-            fromMaybe Condition_Interest interest
-
-        amo =
-            fromMaybe Condition_Amount amount
-
-        ins =
-            fromMaybe Condition_Insurance insurance
+        addIfNothing : (Conditions -> Maybe a) -> ConditionType -> List ConditionType
+        addIfNothing field conditionType =
+            Maybe.withDefault [ conditionType ] <| Maybe.map (always []) <| field cs
     in
-    List.concat [ reg, rat, inc, pur, sto, terM, terP, elTermM, elTermP, inte, amo, ins ]
+    List.concat
+        [ addIfNothing .amount Amount
+        , addIfNothing .elapsedTermMonths Elapsed_Term_Months
+        , addIfNothing .elapsedTermPercent Elapsed_Term_Percent
+        , addIfNothing .income Income
+        , addIfNothing .insurance Insurance
+        , addIfNothing .interest Interest
+        , addIfNothing .purpose Purpose
+        , addIfNothing .rating Rating
+        , addIfNothing .region Region
+        , addIfNothing .story Story
+        , addIfNothing .termMonths Term_Months
+        , addIfNothing .termPercent Term_Percent
+        ]
+
+
+getEnabledConditions : Conditions -> List Condition
+getEnabledConditions cs =
+    let
+        addIfJust : (Conditions -> Maybe a) -> (a -> Condition) -> List Condition
+        addIfJust field wrap =
+            Maybe.withDefault [] <| Maybe.map (List.singleton << wrap) <| field cs
+    in
+    List.concat
+        [ addIfJust .amount Condition_Amount
+        , addIfJust .elapsedTermMonths Condition_Elapsed_Term_Months
+        , addIfJust .elapsedTermPercent Condition_Elapsed_Term_Percent
+        , addIfJust .income Condition_Income
+        , addIfJust .insurance Condition_Insurance
+        , addIfJust .interest Condition_Interest
+        , addIfJust .purpose Condition_Purpose
+        , addIfJust .rating Condition_Rating
+        , addIfJust .region Condition_Region
+        , addIfJust .story Condition_Story
+        , addIfJust .termMonths Condition_Term_Months
+        , addIfJust .termPercent Condition_Term_Percent
+        ]
 
 
 addCondition : Condition -> Conditions -> Conditions
 addCondition c cs =
     case c of
-        Condition_Region regionCond ->
-            setRegionCondition regionCond cs
+        Condition_Amount amountCond ->
+            setAmountCondition amountCond cs
 
-        Condition_Rating ratingCond ->
-            setRatingCondition ratingCond cs
+        Condition_Elapsed_Term_Months elapsedTermMonthsCond ->
+            setElapsedTermMonthsCondition elapsedTermMonthsCond cs
+
+        Condition_Elapsed_Term_Percent elapsedTermPercentCond ->
+            setElapsedTermPercentCondition elapsedTermPercentCond cs
 
         Condition_Income incomeCond ->
             setIncomeCondition incomeCond cs
 
+        Condition_Insurance insuraceCond ->
+            setInsuranceCondition insuraceCond cs
+
+        Condition_Interest interestCond ->
+            setInterestCondition interestCond cs
+
         Condition_Purpose purposeCond ->
             setPurposeCondition purposeCond cs
+
+        Condition_Rating ratingCond ->
+            setRatingCondition ratingCond cs
+
+        Condition_Region regionCond ->
+            setRegionCondition regionCond cs
 
         Condition_Story storyCond ->
             setStoryCondition storyCond cs
@@ -254,21 +277,6 @@ addCondition c cs =
 
         Condition_Term_Percent termPercentCond ->
             setTermPercentCondition termPercentCond cs
-
-        Condition_Elapsed_Term_Months elapsedTermMonthsCond ->
-            setElapsedTermMonthsCondition elapsedTermMonthsCond cs
-
-        Condition_Elapsed_Term_Percent elapsedTermPercentCond ->
-            setElapsedTermPercentCondition elapsedTermPercentCond cs
-
-        Condition_Interest interestCond ->
-            setInterestCondition interestCond cs
-
-        Condition_Amount amountCond ->
-            setAmountCondition amountCond cs
-
-        Condition_Insurance insuraceCond ->
-            setInsuranceCondition insuraceCond cs
 
 
 setRegionCondition : RegionCondition -> Conditions -> Conditions
@@ -391,64 +399,84 @@ updateInsurance msg conditions =
     { conditions | insurance = Maybe.map (Insurance.update msg) conditions.insurance }
 
 
-removeAmountCondition : Conditions -> Conditions
-removeAmountCondition cs =
-    { cs | amount = Nothing }
+removeCondition : ConditionType -> Conditions -> Conditions
+removeCondition conditionType cs =
+    case conditionType of
+        Amount ->
+            { cs | amount = Nothing }
+
+        Elapsed_Term_Months ->
+            { cs | elapsedTermMonths = Nothing }
+
+        Elapsed_Term_Percent ->
+            { cs | elapsedTermPercent = Nothing }
+
+        Income ->
+            { cs | income = Nothing }
+
+        Insurance ->
+            { cs | insurance = Nothing }
+
+        Interest ->
+            { cs | interest = Nothing }
+
+        Purpose ->
+            { cs | purpose = Nothing }
+
+        Rating ->
+            { cs | rating = Nothing }
+
+        Region ->
+            { cs | region = Nothing }
+
+        Story ->
+            { cs | story = Nothing }
+
+        Term_Months ->
+            { cs | termMonths = Nothing }
+
+        Term_Percent ->
+            { cs | termPercent = Nothing }
 
 
-removeStoryCondition : Conditions -> Conditions
-removeStoryCondition cs =
-    { cs | story = Nothing }
+getDefaultCondition : ConditionType -> Condition
+getDefaultCondition conditionType =
+    case conditionType of
+        Amount ->
+            Condition_Amount Amount.defaultCondition
 
+        Elapsed_Term_Months ->
+            Condition_Elapsed_Term_Months ElapsedTermMonths.defaultCondition
 
-removeInterestCondition : Conditions -> Conditions
-removeInterestCondition cs =
-    { cs | interest = Nothing }
+        Elapsed_Term_Percent ->
+            Condition_Elapsed_Term_Percent ElapsedTermPercent.defaultCondition
 
+        Income ->
+            Condition_Income MainIncome.defaultCondition
 
-removePurposeCondition : Conditions -> Conditions
-removePurposeCondition cs =
-    { cs | purpose = Nothing }
+        Insurance ->
+            Condition_Insurance Insurance.defaultCondition
 
+        Interest ->
+            Condition_Interest Interest.defaultCondition
 
-removeTermMonthsCondition : Conditions -> Conditions
-removeTermMonthsCondition cs =
-    { cs | termMonths = Nothing }
+        Purpose ->
+            Condition_Purpose Purpose.defaultCondition
 
+        Rating ->
+            Condition_Rating Rating.defaultCondition
 
-removeTermPercentCondition : Conditions -> Conditions
-removeTermPercentCondition cs =
-    { cs | termPercent = Nothing }
+        Region ->
+            Condition_Region Region.defaultCondition
 
+        Story ->
+            Condition_Story Story.defaultCondition
 
-removeElapsedTermMonthsCondition : Conditions -> Conditions
-removeElapsedTermMonthsCondition cs =
-    { cs | elapsedTermMonths = Nothing }
+        Term_Months ->
+            Condition_Term_Months TermMonths.defaultCondition
 
-
-removeElapsedTermPercentCondition : Conditions -> Conditions
-removeElapsedTermPercentCondition cs =
-    { cs | elapsedTermPercent = Nothing }
-
-
-removeMainIncomeCondition : Conditions -> Conditions
-removeMainIncomeCondition cs =
-    { cs | income = Nothing }
-
-
-removeRatingCondition : Conditions -> Conditions
-removeRatingCondition cs =
-    { cs | rating = Nothing }
-
-
-removeRegionCondition : Conditions -> Conditions
-removeRegionCondition cs =
-    { cs | region = Nothing }
-
-
-removeInsuranceCondition : Conditions -> Conditions
-removeInsuranceCondition cs =
-    { cs | insurance = Nothing }
+        Term_Percent ->
+            Condition_Term_Percent TermPercent.defaultCondition
 
 
 
@@ -457,7 +485,7 @@ removeInsuranceCondition cs =
 
 encodeConditions : Conditions -> Value
 encodeConditions conditions =
-    conditionsToList conditions
+    getEnabledConditions conditions
         |> List.map encodeCondition
         |> Encode.object
 

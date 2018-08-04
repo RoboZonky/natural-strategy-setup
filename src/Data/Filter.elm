@@ -38,7 +38,7 @@ module Data.Filter
 
 import Data.Filter.Conditions as Conditions exposing (Condition, Conditions)
 import Html exposing (Html)
-import Html.Attributes exposing (style)
+import Html.Attributes exposing (class)
 import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as Encode exposing (Value)
 import Util
@@ -385,7 +385,7 @@ marketplaceFilterValidationErrors : MarketplaceFilter -> List String
 marketplaceFilterValidationErrors mf =
     let
         atLeastOnePositiveCondition =
-            Util.validate (List.isEmpty <| Conditions.conditionsToList mf.ignoreWhen) "Pravidlo musí obsahovat aspoň jednu podmínku"
+            Util.validate (List.isEmpty <| Conditions.getEnabledConditions mf.ignoreWhen) "Pravidlo musí obsahovat aspoň jednu podmínku"
     in
     atLeastOnePositiveCondition
         ++ Conditions.conditionsValidationErrors "" mf.ignoreWhen
@@ -430,10 +430,10 @@ renderFilter { whatToFilter, ignoreWhen, butNotWhen } =
             filterPrefix whatToFilter ++ ", kde: "
 
         positivePart =
-            renderConditionList <| Conditions.conditionsToList ignoreWhen
+            renderConditionList <| Conditions.getEnabledConditions ignoreWhen
 
         negativePart =
-            case Conditions.conditionsToList butNotWhen of
+            case Conditions.getEnabledConditions butNotWhen of
                 [] ->
                     ""
 
@@ -455,10 +455,10 @@ filterTextView { whatToFilter, ignoreWhen, butNotWhen } =
             Html.text <| filterPrefix whatToFilter ++ ", kde: "
 
         positivePart =
-            renderConditionListWithExplicitConjunction <| Conditions.conditionsToList ignoreWhen
+            renderConditionListWithExplicitConjunction <| Conditions.getEnabledConditions ignoreWhen
 
         negativePart =
-            case Conditions.conditionsToList butNotWhen of
+            case Conditions.getEnabledConditions butNotWhen of
                 [] ->
                     []
 
@@ -484,7 +484,7 @@ renderConditionListWithExplicitConjunction =
 
 redHighlightedAnd : Html a
 redHighlightedAnd =
-    Html.span [ style [ ( "color", "red" ) ] ] [ Html.text " a zároveň " ]
+    Html.span [ class "conjunction" ] [ Html.text " a zároveň " ]
 
 
 addDotIfNotEmptyString : String -> String
