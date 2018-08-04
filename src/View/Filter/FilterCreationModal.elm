@@ -4,7 +4,7 @@ import Bootstrap.Button as Button
 import Bootstrap.Grid as Grid
 import Bootstrap.Grid.Col as Col
 import Bootstrap.Modal as Modal
-import Data.Filter as Filter exposing (FilteredItem(Participation_To_Sell), MarketplaceFilter, renderBuyFilter, renderSellFilter, setFilteredItem)
+import Data.Filter as Filter exposing (FilteredItem(..), MarketplaceFilter, setFilteredItem)
 import Data.Tooltip as Tooltip
 import Html exposing (Html, div, hr, li, text, ul)
 import Html.Attributes exposing (style)
@@ -134,17 +134,9 @@ modalBody mf editingPositiveSubform =
         validationErrors =
             Filter.marketplaceFilterValidationErrors mf
 
-        filterRenderer =
-            case mf.whatToFilter of
-                Participation_To_Sell ->
-                    renderSellFilter
-
-                _ ->
-                    renderBuyFilter
-
         previewOrValidationErrors =
             if List.isEmpty validationErrors then
-                text <| filterRenderer mf
+                text <| Filter.renderFilter mf
             else
                 ul [ style [ ( "color", "red" ) ] ] <|
                     List.map (\e -> li [] [ text e ]) validationErrors

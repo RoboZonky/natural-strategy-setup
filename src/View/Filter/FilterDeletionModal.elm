@@ -95,19 +95,19 @@ view { changeToConfirm, openCloseState } =
 modalBody : ChangeToConfirm -> Html a
 modalBody change =
     let
-        ( listOfFiltersToBeRemoved, filterToStringFunction, itemBeingChanged ) =
+        ( listOfFiltersToBeRemoved, itemBeingChanged ) =
             case change of
                 BuyingConfigChange from to ->
-                    ( Filter.getFiltersRemovedByBuyingConfigurationChange from to, Filter.renderBuyFilter, "nákupu" )
+                    ( Filter.getFiltersRemovedByBuyingConfigurationChange from to, "nákupu" )
 
                 SellingConfigChange from to ->
-                    ( Filter.getFiltersRemovedBySellingConfigurationChange from to, Filter.renderSellFilter, "prodeje" )
+                    ( Filter.getFiltersRemovedBySellingConfigurationChange from to, "prodeje" )
 
                 NoChange ->
-                    ( [], always "", "" )
+                    ( [], "" )
     in
     Html.div []
         [ text <| "Tato změna pravidel " ++ itemBeingChanged ++ " vyžaduje odstranění následujících filtrů"
         , Html.ul [] <|
-            List.map (\f -> Html.li [] [ text <| filterToStringFunction f ]) listOfFiltersToBeRemoved
+            List.map (\f -> Html.li [] [ text <| Filter.renderFilter f ]) listOfFiltersToBeRemoved
         ]

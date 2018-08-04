@@ -9,7 +9,7 @@ import Bootstrap.Grid as Grid
 import Bootstrap.Grid.Col as Col
 import Bootstrap.Modal as Modal
 import Bootstrap.Utilities.Spacing as Spacing
-import Data.Filter as Filter exposing (FilteredItem(Participation_To_Sell), MarketplaceFilter, SellConf(..), SellingConfiguration(..), renderSellFilter)
+import Data.Filter as Filter exposing (FilteredItem(Participation_To_Sell), MarketplaceFilter, SellConf(..), SellingConfiguration(..))
 import Data.Tooltip as Tooltip
 import Html exposing (Html, div, span, text)
 import Html.Attributes exposing (class)
@@ -84,7 +84,7 @@ viewFilter index mf =
             span [ onClick (RemoveSellFilter index), class "float-right" ] [ text "✖" ]
 
         filterText =
-            span [] [ text <| renderSellFilter mf ]
+            text <| Filter.renderFilter mf
     in
     Card.config []
         |> Card.block [ CardBlock.attrs [ Spacing.p2 ] ]

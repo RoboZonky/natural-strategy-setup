@@ -20,9 +20,8 @@ module Data.Filter
         , isValid
         , itemToPluralString
         , marketplaceFilterValidationErrors
-        , renderBuyFilter
         , renderBuyingConfiguration
-        , renderSellFilter
+        , renderFilter
         , renderSellingConfiguration
         , sellConfRadioLabel
         , setFilteredItem
@@ -314,7 +313,7 @@ renderBuyingConfiguration buyingConfiguration =
             "Investovat do všech půjček a participací."
 
         InvestSomething enablement filters ->
-            renderFilters "\n- Filtrování tržiště" enablement renderBuyFilter filters
+            renderFilters "\n- Filtrování tržiště" enablement renderFilter filters
 
         InvestNothing ->
             "Ignorovat všechny půjčky i participace."
@@ -325,7 +324,7 @@ renderSellFilters filters =
     if List.isEmpty filters then
         ""
     else
-        Util.joinNonemptyLines <| "\n- Prodej participací" :: List.map renderSellFilter filters
+        Util.joinNonemptyLines <| "\n- Prodej participací" :: List.map renderFilter filters
 
 
 renderFilters : String -> MarketplaceEnablement -> (MarketplaceFilter -> String) -> List MarketplaceFilter -> String
@@ -408,29 +407,37 @@ updateNegativeConditions conditionsUpdater mf =
     { mf | butNotWhen = conditionsUpdater mf.butNotWhen }
 
 
-renderBuyFilter : MarketplaceFilter -> String
-renderBuyFilter mf =
-    "Ignorovat " ++ renderFilteredItem mf.whatToFilter ++ renderCommonPartOfBuyAndSellFilters mf
-
-
-renderSellFilter : MarketplaceFilter -> String
-renderSellFilter mf =
-    "Prodat participaci" ++ renderCommonPartOfBuyAndSellFilters mf
-
-
-renderCommonPartOfBuyAndSellFilters : MarketplaceFilter -> String
-renderCommonPartOfBuyAndSellFilters { ignoreWhen, butNotWhen } =
+renderFilter : MarketplaceFilter -> String
+renderFilter { whatToFilter, ignoreWhen, butNotWhen } =
     let
-        negativePart =
-            if List.isEmpty (Conditions.conditionsToList butNotWhen) then
-                ""
-            else
-                "\n(Ale ne když: " ++ renderConditionList (Conditions.conditionsToList butNotWhen) ++ ")"
-
         positivePart =
             renderConditionList <| Conditions.conditionsToList ignoreWhen
+
+        negativePart =
+            case Conditions.conditionsToList butNotWhen of
+                [] ->
+                    ""
+
+                nonEmptyList ->
+                    "\n(Ale ne když: " ++ renderConditionList nonEmptyList ++ ")"
     in
-    ", kde: " ++ positivePart ++ negativePart
+    filterPrefix whatToFilter ++ ", kde: " ++ positivePart ++ negativePart
+
+
+filterPrefix : FilteredItem -> String
+filterPrefix item =
+    case item of
+        Loan ->
+            "Ignorovat úvěr"
+
+        Participation ->
+            "Ignorovat participaci"
+
+        Loan_And_Participation ->
+            "Ignorovat vše"
+
+        Participation_To_Sell ->
+            "Prodat participaci"
 
 
 renderConditionList : List Condition -> String
@@ -458,22 +465,6 @@ type FilteredItem
 allFilteredItems : List FilteredItem
 allFilteredItems =
     [ Loan, Participation, Loan_And_Participation, Participation_To_Sell ]
-
-
-renderFilteredItem : FilteredItem -> String
-renderFilteredItem item =
-    case item of
-        Loan_And_Participation ->
-            "vše"
-
-        Participation ->
-            "participaci"
-
-        Loan ->
-            "úvěr"
-
-        Participation_To_Sell ->
-            "participace na prodej"
 
 
 itemToPluralString : FilteredItem -> String
