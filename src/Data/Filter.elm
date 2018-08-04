@@ -321,10 +321,8 @@ renderBuyingConfiguration buyingConfiguration =
 
 renderSellFilters : List MarketplaceFilter -> String
 renderSellFilters filters =
-    if List.isEmpty filters then
-        ""
-    else
-        Util.joinNonemptyLines <| "\n- Prodej participací" :: List.map renderFilter filters
+    Util.renderNonemptySection "\n- Prodej participací" <|
+        List.map renderFilter filters
 
 
 renderFilters : String -> MarketplaceEnablement -> (MarketplaceFilter -> String) -> List MarketplaceFilter -> String
