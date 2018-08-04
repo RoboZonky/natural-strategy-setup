@@ -22,8 +22,8 @@ import Util
 import Version
 import View.Alert as Alert
 import View.ConfigPreview as ConfigPreview
-import View.Filter.FilterCreationModal as FilterCreationModal
-import View.Filter.FilterDeletionModal as FilterDeletionModal
+import View.Filter.CreationModal as FilterCreationModal
+import View.Filter.DeletionModal as FilterDeletionModal
 import View.Strategy as Strategy
 
 

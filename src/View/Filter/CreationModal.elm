@@ -1,4 +1,4 @@
-module View.Filter.FilterCreationModal exposing (Model, init, update, view)
+module View.Filter.CreationModal exposing (Model, init, update, view)
 
 import Bootstrap.Button as Button
 import Bootstrap.Grid as Grid

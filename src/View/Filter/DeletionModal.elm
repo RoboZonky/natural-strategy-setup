@@ -1,4 +1,4 @@
-module View.Filter.FilterDeletionModal
+module View.Filter.DeletionModal
     exposing
         ( ChangeToConfirm(..)
         , Model

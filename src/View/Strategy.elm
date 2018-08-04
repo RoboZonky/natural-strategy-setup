@@ -12,8 +12,8 @@ import View.BuyingConfig as BuyingConfig
 import View.CardHeightWorkaround exposing (markOpenedAccordionCard)
 import View.Confirmation as Confirmation
 import View.ExitConfig as ExitConfig
-import View.Filter.FilterCreationModal as FilterCreationModal
-import View.Filter.FilterDeletionModal as FilterDeletionModal
+import View.Filter.CreationModal as FilterCreationModal
+import View.Filter.DeletionModal as FilterDeletionModal
 import View.Investment as Investment
 import View.InvestmentShare as InvestmentShare
 import View.PortfolioStructure as PortfolioStructure
