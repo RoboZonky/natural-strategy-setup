@@ -11,7 +11,7 @@ module View.Filter.FilterDeletionModal
 
 import Bootstrap.Button as Button
 import Bootstrap.Modal as Modal
-import Data.Filter as Filter exposing (BuyingConfiguration, SellingConfiguration)
+import Data.Filter as Filter exposing (BuyingConfiguration, MarketplaceFilter, SellingConfiguration)
 import Html exposing (Html, text)
 import Html.Events exposing (onClick)
 import Types exposing (DeletionModalMsg(..))
@@ -109,5 +109,10 @@ modalBody change =
     Html.div []
         [ text <| "Tato změna pravidel " ++ itemBeingChanged ++ " vyžaduje odstranění následujících filtrů"
         , Html.ul [] <|
-            List.map (\f -> Html.li [] [ text <| Filter.renderFilter f ]) listOfFiltersToBeRemoved
+            List.map viewFilter listOfFiltersToBeRemoved
         ]
+
+
+viewFilter : MarketplaceFilter -> Html a
+viewFilter mf =
+    Html.li [] [ Filter.filterTextView mf ]

@@ -84,7 +84,7 @@ viewFilter index mf =
             span [ onClick (RemoveSellFilter index), class "float-right" ] [ text "✖" ]
 
         filterText =
-            text <| Filter.renderFilter mf
+            Filter.filterTextView mf
     in
     Card.config []
         |> Card.block [ CardBlock.attrs [ Spacing.p2 ] ]

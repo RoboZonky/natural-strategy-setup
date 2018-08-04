@@ -13,6 +13,7 @@ module Data.Filter
         , emptyFilter
         , encodeBuyingConfiguration
         , encodeSellingConfiguration
+        , filterTextView
         , fromBuyConfEnum
         , fromSellConfEnum
         , getFiltersRemovedByBuyingConfigurationChange
@@ -21,7 +22,6 @@ module Data.Filter
         , itemToPluralString
         , marketplaceFilterValidationErrors
         , renderBuyingConfiguration
-        , renderFilter
         , renderSellingConfiguration
         , sellConfRadioLabel
         , setFilteredItem
@@ -37,6 +37,8 @@ module Data.Filter
         )
 
 import Data.Filter.Conditions as Conditions exposing (Condition, Conditions)
+import Html exposing (Html)
+import Html.Attributes exposing (style)
 import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as Encode exposing (Value)
 import Util
@@ -405,23 +407,6 @@ updateNegativeConditions conditionsUpdater mf =
     { mf | butNotWhen = conditionsUpdater mf.butNotWhen }
 
 
-renderFilter : MarketplaceFilter -> String
-renderFilter { whatToFilter, ignoreWhen, butNotWhen } =
-    let
-        positivePart =
-            renderConditionList <| Conditions.conditionsToList ignoreWhen
-
-        negativePart =
-            case Conditions.conditionsToList butNotWhen of
-                [] ->
-                    ""
-
-                nonEmptyList ->
-                    "\n(Ale ne když: " ++ renderConditionList nonEmptyList ++ ")"
-    in
-    filterPrefix whatToFilter ++ ", kde: " ++ positivePart ++ negativePart
-
-
 filterPrefix : FilteredItem -> String
 filterPrefix item =
     case item of
@@ -438,18 +423,87 @@ filterPrefix item =
             "Prodat participaci"
 
 
+renderFilter : MarketplaceFilter -> String
+renderFilter { whatToFilter, ignoreWhen, butNotWhen } =
+    let
+        prefix =
+            filterPrefix whatToFilter ++ ", kde: "
+
+        positivePart =
+            renderConditionList <| Conditions.conditionsToList ignoreWhen
+
+        negativePart =
+            case Conditions.conditionsToList butNotWhen of
+                [] ->
+                    ""
+
+                nonEmptyList ->
+                    "\n(Ale ne když: " ++ renderConditionList nonEmptyList ++ ")"
+    in
+    prefix ++ positivePart ++ negativePart
+
+
+{-| This renders condition text similar to renderFilter, but instead of joining
+multiple conditions using ';' required by RoboZonky natural strategy parser,
+it joins them by "a zároveň" highlighted in red to prevent issue reported in
+<https://github.com/RoboZonky/natural-strategy-setup/issues/41>
+-}
+filterTextView : MarketplaceFilter -> Html a
+filterTextView { whatToFilter, ignoreWhen, butNotWhen } =
+    let
+        prefix =
+            Html.text <| filterPrefix whatToFilter ++ ", kde: "
+
+        positivePart =
+            renderConditionListWithExplicitConjunction <| Conditions.conditionsToList ignoreWhen
+
+        negativePart =
+            case Conditions.conditionsToList butNotWhen of
+                [] ->
+                    []
+
+                nonEmptyList ->
+                    Html.text "\n(Ale ne když: " :: renderConditionListWithExplicitConjunction nonEmptyList ++ [ Html.text ")" ]
+    in
+    Html.div [] <| prefix :: positivePart ++ negativePart
+
+
 renderConditionList : List Condition -> String
 renderConditionList =
-    List.map Conditions.renderCondition >> String.join "; " >> addDotIfNotEmpty
+    List.map Conditions.renderCondition
+        >> String.join "; "
+        >> addDotIfNotEmptyString
 
 
-addDotIfNotEmpty : String -> String
-addDotIfNotEmpty s =
+renderConditionListWithExplicitConjunction : List Condition -> List (Html a)
+renderConditionListWithExplicitConjunction =
+    List.map (Conditions.renderCondition >> Html.text)
+        >> List.intersperse redHighlightedAnd
+        >> addDotIfNotEmptyList
+
+
+redHighlightedAnd : Html a
+redHighlightedAnd =
+    Html.span [ style [ ( "color", "red" ) ] ] [ Html.text " a zároveň " ]
+
+
+addDotIfNotEmptyString : String -> String
+addDotIfNotEmptyString s =
     s
         ++ (if String.isEmpty s then
                 ""
             else
                 "."
+           )
+
+
+addDotIfNotEmptyList : List (Html a) -> List (Html a)
+addDotIfNotEmptyList xs =
+    xs
+        ++ (if List.isEmpty xs then
+                []
+            else
+                [ Html.text "." ]
            )
 
 

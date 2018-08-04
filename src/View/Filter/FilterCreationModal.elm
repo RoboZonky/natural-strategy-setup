@@ -136,7 +136,7 @@ modalBody mf editingPositiveSubform =
 
         previewOrValidationErrors =
             if List.isEmpty validationErrors then
-                text <| Filter.renderFilter mf
+                Filter.filterTextView mf
             else
                 ul [ style [ ( "color", "red" ) ] ] <|
                     List.map (\e -> li [] [ text e ]) validationErrors
