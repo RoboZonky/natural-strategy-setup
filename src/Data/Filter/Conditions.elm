@@ -16,9 +16,9 @@ module Data.Filter.Conditions
         , updateAmount
         , updateElapsedTermMonths
         , updateElapsedTermPercent
+        , updateIncome
         , updateInsurance
         , updateInterest
-        , updateMainIncome
         , updatePurpose
         , updateRating
         , updateRegion
@@ -30,9 +30,9 @@ module Data.Filter.Conditions
 import Data.Filter.Conditions.Amount as Amount exposing (AmountCondition, AmountMsg)
 import Data.Filter.Conditions.ElapsedTermMonths as ElapsedTermMonths exposing (ElapsedTermMonthsCondition, ElapsedTermMonthsMsg)
 import Data.Filter.Conditions.ElapsedTermPercent as ElapsedTermPercent exposing (ElapsedTermPercentCondition, ElapsedTermPercentMsg)
+import Data.Filter.Conditions.Income as Income exposing (IncomeCondition, IncomeMsg)
 import Data.Filter.Conditions.Insurance as Insurance exposing (InsuranceCondition, InsuranceMsg)
 import Data.Filter.Conditions.Interest as Interest exposing (InterestCondition, InterestMsg)
-import Data.Filter.Conditions.MainIncome as MainIncome exposing (MainIncomeCondition, MainIncomeMsg)
 import Data.Filter.Conditions.Purpose as Purpose exposing (PurposeCondition, PurposeMsg)
 import Data.Filter.Conditions.Rating as Rating exposing (RatingCondition, RatingMsg)
 import Data.Filter.Conditions.Region as Region exposing (RegionCondition, RegionMsg)
@@ -48,7 +48,7 @@ import List
 type alias Conditions =
     { region : Maybe RegionCondition
     , rating : Maybe RatingCondition
-    , income : Maybe MainIncomeCondition
+    , income : Maybe IncomeCondition
     , purpose : Maybe PurposeCondition
     , story : Maybe StoryCondition
     , termMonths : Maybe TermMonthsCondition
@@ -65,7 +65,7 @@ type Condition
     = Condition_Amount AmountCondition
     | Condition_Elapsed_Term_Months ElapsedTermMonthsCondition
     | Condition_Elapsed_Term_Percent ElapsedTermPercentCondition
-    | Condition_Income MainIncomeCondition
+    | Condition_Income IncomeCondition
     | Condition_Insurance InsuranceCondition
     | Condition_Interest InterestCondition
     | Condition_Purpose PurposeCondition
@@ -118,7 +118,7 @@ renderCondition condition =
             Rating.renderCondition c
 
         Condition_Income c ->
-            MainIncome.renderCondition c
+            Income.renderCondition c
 
         Condition_Purpose c ->
             Purpose.renderCondition c
@@ -163,7 +163,7 @@ conditionValidationError c =
             Rating.validationErrors ratingCond
 
         Condition_Income incomeCond ->
-            MainIncome.validationErrors incomeCond
+            Income.validationErrors incomeCond
 
         Condition_Purpose purposeCond ->
             Purpose.validationErrors purposeCond
@@ -289,7 +289,7 @@ setRatingCondition c cs =
     { cs | rating = Just c }
 
 
-setIncomeCondition : MainIncomeCondition -> Conditions -> Conditions
+setIncomeCondition : IncomeCondition -> Conditions -> Conditions
 setIncomeCondition c cs =
     { cs | income = Just c }
 
@@ -379,9 +379,9 @@ updateElapsedTermPercent msg conditions =
     { conditions | elapsedTermPercent = Maybe.map (ElapsedTermPercent.update msg) conditions.elapsedTermPercent }
 
 
-updateMainIncome : MainIncomeMsg -> Conditions -> Conditions
-updateMainIncome msg conditions =
-    { conditions | income = Maybe.map (MainIncome.update msg) conditions.income }
+updateIncome : IncomeMsg -> Conditions -> Conditions
+updateIncome msg conditions =
+    { conditions | income = Maybe.map (Income.update msg) conditions.income }
 
 
 updateRating : RatingMsg -> Conditions -> Conditions
@@ -452,7 +452,7 @@ getDefaultCondition conditionType =
             Condition_Elapsed_Term_Percent ElapsedTermPercent.defaultCondition
 
         Income ->
-            Condition_Income MainIncome.defaultCondition
+            Condition_Income Income.defaultCondition
 
         Insurance ->
             Condition_Insurance Insurance.defaultCondition
@@ -500,7 +500,7 @@ encodeCondition c =
             ( "B", Rating.encodeCondition ratingCond )
 
         Condition_Income incomeCond ->
-            ( "C", MainIncome.encodeCondition incomeCond )
+            ( "C", Income.encodeCondition incomeCond )
 
         Condition_Purpose purposeCond ->
             ( "D", Purpose.encodeCondition purposeCond )
@@ -535,7 +535,7 @@ conditionsDecoder =
     Decode.succeed Conditions
         |: optionalField "A" Region.conditionDecoder
         |: optionalField "B" Rating.conditionDecoder
-        |: optionalField "C" MainIncome.conditionDecoder
+        |: optionalField "C" Income.conditionDecoder
         |: optionalField "D" Purpose.conditionDecoder
         |: optionalField "E" Story.conditionDecoder
         |: optionalField "F" TermMonths.conditionDecoder

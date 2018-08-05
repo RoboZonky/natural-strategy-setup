@@ -8,9 +8,9 @@ import Data.Filter.Conditions exposing (Condition(..), Conditions, addCondition,
 import Data.Filter.Conditions.Amount as Amount exposing (AmountCondition(AmountCondition))
 import Data.Filter.Conditions.ElapsedTermMonths as ElapsedTermMonths exposing (ElapsedTermMonthsCondition(..))
 import Data.Filter.Conditions.ElapsedTermPercent as ElapsedTermPercent exposing (ElapsedTermPercentCondition(..))
+import Data.Filter.Conditions.Income as Income exposing (IncomeCondition(..))
 import Data.Filter.Conditions.Insurance exposing (Insurance(..), InsuranceCondition(..))
 import Data.Filter.Conditions.Interest as Interest exposing (InterestCondition(..))
-import Data.Filter.Conditions.MainIncome as MainIncome exposing (MainIncomeCondition(..))
 import Data.Filter.Conditions.Purpose as Purpose exposing (PurposeCondition(PurposeList))
 import Data.Filter.Conditions.Rating as Rating exposing (RatingCondition(RatingList))
 import Data.Filter.Conditions.Region as Region exposing (RegionCondition(RegionList))
@@ -174,7 +174,7 @@ ratingConditionGen =
 
 incomeConditionGen : Generator Condition
 incomeConditionGen =
-    nonemptySubset MainIncome.allIncomes |> Random.map (MainIncomeList >> Condition_Income)
+    nonemptySubset Income.allIncomes |> Random.map (IncomeList >> Condition_Income)
 
 
 purposeConditionGen : Generator Condition

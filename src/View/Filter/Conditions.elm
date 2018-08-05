@@ -9,9 +9,9 @@ import Data.Filter.Conditions as C exposing (Condition(..), ConditionType(..), C
 import Data.Filter.Conditions.Amount as Amount exposing (Amount(..), AmountCondition(..), AmountMsg)
 import Data.Filter.Conditions.ElapsedTermMonths as ElapsedTermMonths exposing (ElapsedTermMonths(..), ElapsedTermMonthsCondition(..), ElapsedTermMonthsMsg)
 import Data.Filter.Conditions.ElapsedTermPercent as ElapsedTermPercent exposing (ElapsedTermPercent(..), ElapsedTermPercentCondition(..), ElapsedTermPercentMsg)
+import Data.Filter.Conditions.Income as Income exposing (Income(..), IncomeCondition(..), IncomeMsg)
 import Data.Filter.Conditions.Insurance as Insurance exposing (Insurance(..), InsuranceCondition(..), InsuranceMsg)
 import Data.Filter.Conditions.Interest as Interest exposing (Interest(..), InterestCondition(..), InterestMsg)
-import Data.Filter.Conditions.MainIncome as MainIncome exposing (MainIncome(..), MainIncomeCondition(..), MainIncomeMsg)
 import Data.Filter.Conditions.Purpose as Purpose exposing (Purpose(..), PurposeCondition(..), PurposeMsg)
 import Data.Filter.Conditions.Rating as Rating exposing (Rating(..), RatingCondition(..), RatingMsg)
 import Data.Filter.Conditions.Region as Region exposing (Region(..), RegionCondition(..), RegionMsg)
@@ -123,7 +123,7 @@ conditionSubform item condition =
             wrap Elapsed_Term_Percent (Html.map ElapsedTermPercentMsg <| ElapsedTermPercent.form c)
 
         Condition_Income c ->
-            wrap Income (Html.map MainIncomeMsg <| MainIncome.form c)
+            wrap Income (Html.map IncomeMsg <| Income.form c)
 
         Condition_Insurance c ->
             wrap Insurance (Html.map InsuranceMsg <| Insurance.form c)
@@ -224,7 +224,7 @@ type
     | ElapsedTermPercentMsg ElapsedTermPercentMsg
     | InsuranceMsg InsuranceMsg
     | InterestMsg InterestMsg
-    | MainIncomeMsg MainIncomeMsg
+    | IncomeMsg IncomeMsg
     | PurposeMsg PurposeMsg
     | RatingMsg RatingMsg
     | RegionMsg RegionMsg
@@ -264,8 +264,8 @@ update msg model =
         TermPercentMsg tpmsg ->
             C.updateTermPercent tpmsg model
 
-        MainIncomeMsg mimsg ->
-            C.updateMainIncome mimsg model
+        IncomeMsg mimsg ->
+            C.updateIncome mimsg model
 
         StoryMsg smsg ->
             C.updateStory smsg model
