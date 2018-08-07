@@ -2,21 +2,17 @@ module View.SellConfig exposing (form)
 
 import Bootstrap.Accordion as Accordion
 import Bootstrap.Button as Button
-import Bootstrap.Card as Card
 import Bootstrap.Card.Block as CardBlock
 import Bootstrap.Form.Radio as Radio
-import Bootstrap.Grid as Grid
-import Bootstrap.Grid.Col as Col
 import Bootstrap.Modal as Modal
 import Bootstrap.Utilities.Spacing as Spacing
-import Data.Filter as Filter exposing (FilteredItem(Participation_To_Sell), MarketplaceFilter, SellConf(..), SellingConfiguration(..))
+import Data.Filter as Filter exposing (FilteredItem(Participation_To_Sell), SellConf(..), SellingConfiguration(..))
 import Data.Tooltip as Tooltip
-import Html exposing (Html, div, span, text)
-import Html.Attributes exposing (class)
-import Html.Events exposing (onClick)
+import Html exposing (Html, div, text)
 import Types exposing (CreationModalMsg(ModalStateMsg), Msg(CreationModalMsg, RemoveSellFilter, SetSellingConfiguration))
 import Util
 import View.CardHeightWorkaround exposing (markOpenedAccordionCard)
+import View.Filter exposing (filterListView)
 import View.Tooltip as Tooltip
 
 
@@ -64,7 +60,7 @@ viewSellingConfiguration sellingConfiguration =
         SellSomething filters ->
             div []
                 [ filterCreationControls
-                , filtersView filters
+                , filterListView RemoveSellFilter filters
                 , Util.viewErrors <| Filter.validateSellingConfiguration sellingConfiguration
                 ]
 
@@ -72,39 +68,12 @@ viewSellingConfiguration sellingConfiguration =
             text ""
 
 
-filtersView : List MarketplaceFilter -> Html Msg
-filtersView filters =
-    div [ Spacing.p2 ] <| List.indexedMap viewFilter filters
-
-
-viewFilter : Int -> MarketplaceFilter -> Html Msg
-viewFilter index mf =
-    let
-        removeButton =
-            span [ onClick (RemoveSellFilter index), class "float-right" ] [ text "✖" ]
-
-        filterText =
-            Filter.filterTextView mf
-    in
-    Card.config []
-        |> Card.block [ CardBlock.attrs [ Spacing.p2 ] ]
-            [ CardBlock.custom <|
-                Grid.row []
-                    [ Grid.col [ Col.xs11 ] [ filterText ]
-                    , Grid.col [ Col.xs1 ] [ removeButton ]
-                    ]
-            ]
-        |> Card.view
-
-
 filterCreationControls : Html Msg
 filterCreationControls =
-    div []
-        [ Button.button
-            [ Button.primary
-            , Button.onClick <| CreationModalMsg <| ModalStateMsg Participation_To_Sell Modal.shown
-            , Button.attrs [ Spacing.mx1 ]
-            , Button.small
-            ]
-            [ text "Přidat pravidlo" ]
+    Button.button
+        [ Button.primary
+        , Button.onClick <| CreationModalMsg <| ModalStateMsg Participation_To_Sell Modal.shown
+        , Button.attrs [ Spacing.mx1 ]
+        , Button.small
         ]
+        [ text "Přidat pravidlo" ]

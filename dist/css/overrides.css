@@ -5,12 +5,6 @@
   -moz-user-select: none !important;
 }
 
-/* Highlight of "a zároveň" joining multiple conditions of the filter*/
-
-.conjunction {
-  color: darkorange;
-}
-
 /* 2nd of 2 parts of the workaround for https://github.com/RoboZonky/natural-strategy-setup/issues/8 */
 
 .card-open [id$=Card] {
@@ -31,4 +25,14 @@
   padding-top: 5px;
   padding-bottom: 5px;
   margin: 2px;
+}
+
+/* This is to achieve overlapping of "a nebo" pill badge with individual filter cards */
+
+.or-connective {
+  position: relative;
+  z-index: 1;
+  margin-top: -10px;
+  margin-bottom: -10px;
+  margin-left: -20px;
 }

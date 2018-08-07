@@ -2,22 +2,18 @@ module View.BuyingConfig exposing (form)
 
 import Bootstrap.Accordion as Accordion
 import Bootstrap.Button as Button
-import Bootstrap.Card as Card
 import Bootstrap.Card.Block as CardBlock
 import Bootstrap.Form.Checkbox as Checkbox
 import Bootstrap.Form.Radio as Radio
-import Bootstrap.Grid as Grid
-import Bootstrap.Grid.Col as Col
 import Bootstrap.Modal as Modal
 import Bootstrap.Utilities.Spacing as Spacing
-import Data.Filter as Filter exposing (BuyConf, BuyingConfiguration, FilteredItem(..), MarketplaceEnablement, MarketplaceFilter)
+import Data.Filter as Filter exposing (BuyConf, BuyingConfiguration, FilteredItem(..), MarketplaceEnablement)
 import Data.Tooltip as Tooltip
 import DomId exposing (DomId)
-import Html exposing (Html, div, span, text)
-import Html.Attributes exposing (class)
-import Html.Events exposing (onClick)
+import Html exposing (Html, div, text)
 import Types exposing (CreationModalMsg(ModalStateMsg), Msg(CreationModalMsg, RemoveBuyFilter, SetBuyingConfiguration, TogglePrimaryMarket, ToggleSecondaryMarket))
 import View.CardHeightWorkaround exposing (markOpenedAccordionCard)
+import View.Filter exposing (filterListView)
 import View.Tooltip as Tooltip
 
 
@@ -56,7 +52,7 @@ viewBuyingConfiguration buyingConfiguration =
             div [ Spacing.px4 ]
                 [ primarySecondaryEnablementCheckboxes enablement
                 , filterCreationButtons enablement
-                , filtersView filters
+                , filterListView RemoveBuyFilter filters
                 ]
 
         _ ->
@@ -90,31 +86,6 @@ buyingConfigurationRadio currentConfiguration thisRadiosConf =
         , Radio.onClick (SetBuyingConfiguration thisRadiosConf)
         ]
         (Filter.buyConfRadioLabel thisRadiosConf)
-
-
-filtersView : List MarketplaceFilter -> Html Msg
-filtersView filters =
-    div [ Spacing.p2 ] <| List.indexedMap viewFilter filters
-
-
-viewFilter : Int -> MarketplaceFilter -> Html Msg
-viewFilter index mf =
-    let
-        removeButton =
-            span [ onClick (RemoveBuyFilter index), class "float-right" ] [ text "✖" ]
-
-        filterText =
-            Filter.filterTextView mf
-    in
-    Card.config []
-        |> Card.block [ CardBlock.attrs [ Spacing.p2 ] ]
-            [ CardBlock.custom <|
-                Grid.row []
-                    [ Grid.col [ Col.xs11 ] [ filterText ]
-                    , Grid.col [ Col.xs1 ] [ removeButton ]
-                    ]
-            ]
-        |> Card.view
 
 
 filterCreationButtons : MarketplaceEnablement -> Html Msg

@@ -36,9 +36,9 @@ module Data.Filter
         , validateSellingConfiguration
         )
 
+import Bootstrap.Badge as Badge
 import Data.Filter.Conditions as Conditions exposing (Condition, Conditions)
-import Html exposing (Html)
-import Html.Attributes exposing (class)
+import Html exposing (Html, span, text)
 import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as Encode exposing (Value)
 import Util
@@ -478,13 +478,17 @@ renderConditionList =
 renderConditionListWithExplicitConjunction : List Condition -> List (Html a)
 renderConditionListWithExplicitConjunction =
     List.map (Conditions.renderCondition >> Html.text)
-        >> List.intersperse redHighlightedAnd
+        >> List.intersperse andConnective
         >> addDotIfNotEmptyList
 
 
-redHighlightedAnd : Html a
-redHighlightedAnd =
-    Html.span [ class "conjunction" ] [ Html.text " a zároveň " ]
+andConnective : Html a
+andConnective =
+    span []
+        [ text " "
+        , Badge.pillInfo [] [ text "a zároveň" ]
+        , text " "
+        ]
 
 
 addDotIfNotEmptyString : String -> String
