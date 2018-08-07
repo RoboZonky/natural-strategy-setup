@@ -3,7 +3,6 @@ module View.Filter.Conditions exposing (Msg, form, update)
 import Bootstrap.Grid as Grid
 import Bootstrap.Grid.Col as Col
 import Bootstrap.Grid.Row as Row
-import Char
 import Data.Filter exposing (FilteredItem(..))
 import Data.Filter.Conditions as C exposing (Condition(..), ConditionType(..), Conditions)
 import Data.Filter.Conditions.Amount as Amount exposing (Amount(..), AmountCondition(..), AmountMsg)
@@ -157,10 +156,13 @@ getVisibleLabel filteredItem conditionType =
             "Výše úvěru"
 
         Elapsed_Term_Months ->
-            "Uhrazeno splátek (v" ++ nbsp ++ "měsících)"
+            -- Note that this string contains &nbsp; entered by pasting escape sequence "\x00A0"
+            -- (which is then transformed into corresponding unicode char by elm-format)
+            "Uhrazeno splátek (v měsících)"
 
+        --
         Elapsed_Term_Percent ->
-            "Uhrazeno splátek (v" ++ nbsp ++ "%)"
+            "Uhrazeno splátek (v %)"
 
         Income ->
             "Zdroj příjmů klienta"
@@ -184,16 +186,10 @@ getVisibleLabel filteredItem conditionType =
             "Příběh"
 
         Term_Months ->
-            termConditionLabel filteredItem ("(v" ++ nbsp ++ "měsících)")
+            termConditionLabel filteredItem "(v měsících)"
 
         Term_Percent ->
-            termConditionLabel filteredItem ("(v" ++ nbsp ++ "%)")
-
-
-nbsp : String
-nbsp =
-    -- Is tehere a better way to insert '&nbsp;'?
-    String.fromChar (Char.fromCode 160)
+            termConditionLabel filteredItem "(v %)"
 
 
 closeableWrapper : FilteredItem -> ConditionType -> Html Msg -> Html Msg
