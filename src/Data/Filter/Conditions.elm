@@ -22,6 +22,7 @@ module Data.Filter.Conditions
         , updatePurpose
         , updateRating
         , updateRegion
+        , updateRemainingAmount
         , updateStory
         , updateTermMonths
         , updateTermPercent
@@ -36,6 +37,7 @@ import Data.Filter.Conditions.Interest as Interest exposing (InterestCondition, 
 import Data.Filter.Conditions.Purpose as Purpose exposing (PurposeCondition, PurposeMsg)
 import Data.Filter.Conditions.Rating as Rating exposing (RatingCondition, RatingMsg)
 import Data.Filter.Conditions.Region as Region exposing (RegionCondition, RegionMsg)
+import Data.Filter.Conditions.RemainingAmount as RemainingAmount exposing (RemainingAmountCondition, RemainingAmountMsg)
 import Data.Filter.Conditions.Story as Story exposing (StoryCondition, StoryMsg)
 import Data.Filter.Conditions.TermMonths as TermMonths exposing (TermMonthsCondition, TermMonthsMsg)
 import Data.Filter.Conditions.TermPercent as TermPercent exposing (TermPercentCondition, TermPercentMsg)
@@ -58,6 +60,7 @@ type alias Conditions =
     , interest : Maybe InterestCondition
     , amount : Maybe AmountCondition
     , insurance : Maybe InsuranceCondition
+    , remainingAmount : Maybe RemainingAmountCondition
     }
 
 
@@ -70,6 +73,7 @@ type Condition
     | Condition_Interest InterestCondition
     | Condition_Purpose PurposeCondition
     | Condition_Rating RatingCondition
+    | Condition_Remaining_Amount RemainingAmountCondition
     | Condition_Region RegionCondition
     | Condition_Story StoryCondition
     | Condition_Term_Months TermMonthsCondition
@@ -85,6 +89,7 @@ type ConditionType
     | Interest
     | Purpose
     | Rating
+    | Remaining_Amount
     | Region
     | Story
     | Term_Months
@@ -105,23 +110,42 @@ emptyConditions =
     , interest = Nothing
     , amount = Nothing
     , insurance = Nothing
+    , remainingAmount = Nothing
     }
 
 
 renderCondition : Condition -> String
 renderCondition condition =
     case condition of
-        Condition_Region c ->
-            Region.renderCondition c
+        Condition_Amount c ->
+            Amount.renderCondition c
 
-        Condition_Rating c ->
-            Rating.renderCondition c
+        Condition_Elapsed_Term_Months c ->
+            ElapsedTermMonths.renderCondition c
+
+        Condition_Elapsed_Term_Percent c ->
+            ElapsedTermPercent.renderCondition c
 
         Condition_Income c ->
             Income.renderCondition c
 
+        Condition_Insurance c ->
+            Insurance.renderCondition c
+
+        Condition_Interest c ->
+            Interest.renderCondition c
+
         Condition_Purpose c ->
             Purpose.renderCondition c
+
+        Condition_Rating c ->
+            Rating.renderCondition c
+
+        Condition_Region c ->
+            Region.renderCondition c
+
+        Condition_Remaining_Amount c ->
+            RemainingAmount.renderCondition c
 
         Condition_Story c ->
             Story.renderCondition c
@@ -132,21 +156,6 @@ renderCondition condition =
         Condition_Term_Percent c ->
             TermPercent.renderCondition c
 
-        Condition_Elapsed_Term_Months c ->
-            ElapsedTermMonths.renderCondition c
-
-        Condition_Elapsed_Term_Percent c ->
-            ElapsedTermPercent.renderCondition c
-
-        Condition_Interest c ->
-            Interest.renderCondition c
-
-        Condition_Amount c ->
-            Amount.renderCondition c
-
-        Condition_Insurance c ->
-            Insurance.renderCondition c
-
 
 conditionsValidationErrors : String -> Conditions -> List String
 conditionsValidationErrors errorPrefix =
@@ -154,43 +163,46 @@ conditionsValidationErrors errorPrefix =
 
 
 conditionValidationError : Condition -> List String
-conditionValidationError c =
-    case c of
-        Condition_Region regionCond ->
-            Region.validationErrors regionCond
+conditionValidationError condition =
+    case condition of
+        Condition_Amount c ->
+            Amount.validationErrors c
 
-        Condition_Rating ratingCond ->
-            Rating.validationErrors ratingCond
+        Condition_Elapsed_Term_Months c ->
+            ElapsedTermMonths.validationErrors c
 
-        Condition_Income incomeCond ->
-            Income.validationErrors incomeCond
+        Condition_Elapsed_Term_Percent c ->
+            ElapsedTermPercent.validationErrors c
 
-        Condition_Purpose purposeCond ->
-            Purpose.validationErrors purposeCond
+        Condition_Income c ->
+            Income.validationErrors c
+
+        Condition_Insurance _ ->
+            [{- Insurance condition can't be invalid -> valid. errors list always empty -}]
+
+        Condition_Interest c ->
+            Interest.validationErrors c
+
+        Condition_Purpose c ->
+            Purpose.validationErrors c
+
+        Condition_Rating c ->
+            Rating.validationErrors c
+
+        Condition_Region c ->
+            Region.validationErrors c
+
+        Condition_Remaining_Amount c ->
+            RemainingAmount.validationErrors c
 
         Condition_Story _ ->
             [{- Story condition can't be invalid -> valid. errors list always empty -}]
 
-        Condition_Term_Months termMonthsCond ->
-            TermMonths.validationErrors termMonthsCond
+        Condition_Term_Months c ->
+            TermMonths.validationErrors c
 
-        Condition_Term_Percent termPercentCond ->
-            TermPercent.validationErrors termPercentCond
-
-        Condition_Elapsed_Term_Months elapsedTermMonthsCond ->
-            ElapsedTermMonths.validationErrors elapsedTermMonthsCond
-
-        Condition_Elapsed_Term_Percent elapsedTermPercentCond ->
-            ElapsedTermPercent.validationErrors elapsedTermPercentCond
-
-        Condition_Interest interestCond ->
-            Interest.validationErrors interestCond
-
-        Condition_Amount amountCond ->
-            Amount.validationErrors amountCond
-
-        Condition_Insurance _ ->
-            [{- Insurance condition can't be invalid -> valid. errors list always empty -}]
+        Condition_Term_Percent c ->
+            TermPercent.validationErrors c
 
 
 getDisabledConditions : Conditions -> List ConditionType
@@ -209,6 +221,7 @@ getDisabledConditions cs =
         , addIfNothing .interest Interest
         , addIfNothing .purpose Purpose
         , addIfNothing .rating Rating
+        , addIfNothing .remainingAmount Remaining_Amount
         , addIfNothing .region Region
         , addIfNothing .story Story
         , addIfNothing .termMonths Term_Months
@@ -233,6 +246,7 @@ getEnabledConditions cs =
         , addIfJust .purpose Condition_Purpose
         , addIfJust .rating Condition_Rating
         , addIfJust .region Condition_Region
+        , addIfJust .remainingAmount Condition_Remaining_Amount
         , addIfJust .story Condition_Story
         , addIfJust .termMonths Condition_Term_Months
         , addIfJust .termPercent Condition_Term_Percent
@@ -240,43 +254,46 @@ getEnabledConditions cs =
 
 
 addCondition : Condition -> Conditions -> Conditions
-addCondition c cs =
-    case c of
-        Condition_Amount amountCond ->
-            setAmountCondition amountCond cs
+addCondition condition cs =
+    case condition of
+        Condition_Amount c ->
+            setAmountCondition c cs
 
-        Condition_Elapsed_Term_Months elapsedTermMonthsCond ->
-            setElapsedTermMonthsCondition elapsedTermMonthsCond cs
+        Condition_Elapsed_Term_Months c ->
+            setElapsedTermMonthsCondition c cs
 
-        Condition_Elapsed_Term_Percent elapsedTermPercentCond ->
-            setElapsedTermPercentCondition elapsedTermPercentCond cs
+        Condition_Elapsed_Term_Percent c ->
+            setElapsedTermPercentCondition c cs
 
-        Condition_Income incomeCond ->
-            setIncomeCondition incomeCond cs
+        Condition_Income c ->
+            setIncomeCondition c cs
 
-        Condition_Insurance insuraceCond ->
-            setInsuranceCondition insuraceCond cs
+        Condition_Insurance c ->
+            setInsuranceCondition c cs
 
-        Condition_Interest interestCond ->
-            setInterestCondition interestCond cs
+        Condition_Interest c ->
+            setInterestCondition c cs
 
-        Condition_Purpose purposeCond ->
-            setPurposeCondition purposeCond cs
+        Condition_Purpose c ->
+            setPurposeCondition c cs
 
-        Condition_Rating ratingCond ->
-            setRatingCondition ratingCond cs
+        Condition_Rating c ->
+            setRatingCondition c cs
 
-        Condition_Region regionCond ->
-            setRegionCondition regionCond cs
+        Condition_Remaining_Amount c ->
+            setRemainingAmountCondition c cs
 
-        Condition_Story storyCond ->
-            setStoryCondition storyCond cs
+        Condition_Region c ->
+            setRegionCondition c cs
 
-        Condition_Term_Months termMonthsCond ->
-            setTermMonthsCondition termMonthsCond cs
+        Condition_Story c ->
+            setStoryCondition c cs
 
-        Condition_Term_Percent termPercentCond ->
-            setTermPercentCondition termPercentCond cs
+        Condition_Term_Months c ->
+            setTermMonthsCondition c cs
+
+        Condition_Term_Percent c ->
+            setTermPercentCondition c cs
 
 
 setRegionCondition : RegionCondition -> Conditions -> Conditions
@@ -339,6 +356,11 @@ setInsuranceCondition c cs =
     { cs | insurance = Just c }
 
 
+setRemainingAmountCondition : RemainingAmountCondition -> Conditions -> Conditions
+setRemainingAmountCondition c cs =
+    { cs | remainingAmount = Just c }
+
+
 updateInterest : InterestMsg -> Conditions -> Conditions
 updateInterest msg conditions =
     { conditions | interest = Maybe.map (Interest.update msg) conditions.interest }
@@ -347,6 +369,11 @@ updateInterest msg conditions =
 updateAmount : AmountMsg -> Conditions -> Conditions
 updateAmount msg conditions =
     { conditions | amount = Maybe.map (Amount.update msg) conditions.amount }
+
+
+updateRemainingAmount : RemainingAmountMsg -> Conditions -> Conditions
+updateRemainingAmount msg conditions =
+    { conditions | remainingAmount = Maybe.map (RemainingAmount.update msg) conditions.remainingAmount }
 
 
 updateStory : StoryMsg -> Conditions -> Conditions
@@ -429,6 +456,9 @@ removeCondition conditionType cs =
         Region ->
             { cs | region = Nothing }
 
+        Remaining_Amount ->
+            { cs | remainingAmount = Nothing }
+
         Story ->
             { cs | story = Nothing }
 
@@ -469,6 +499,9 @@ getDefaultCondition conditionType =
         Region ->
             Condition_Region Region.defaultCondition
 
+        Remaining_Amount ->
+            Condition_Remaining_Amount RemainingAmount.defaultCondition
+
         Story ->
             Condition_Story Story.defaultCondition
 
@@ -491,43 +524,46 @@ encodeConditions conditions =
 
 
 encodeCondition : Condition -> ( String, Value )
-encodeCondition c =
-    case c of
-        Condition_Region regionCond ->
-            ( "A", Region.encodeCondition regionCond )
+encodeCondition condition =
+    case condition of
+        Condition_Region c ->
+            ( "A", Region.encodeCondition c )
 
-        Condition_Rating ratingCond ->
-            ( "B", Rating.encodeCondition ratingCond )
+        Condition_Rating c ->
+            ( "B", Rating.encodeCondition c )
 
-        Condition_Income incomeCond ->
-            ( "C", Income.encodeCondition incomeCond )
+        Condition_Income c ->
+            ( "C", Income.encodeCondition c )
 
-        Condition_Purpose purposeCond ->
-            ( "D", Purpose.encodeCondition purposeCond )
+        Condition_Purpose c ->
+            ( "D", Purpose.encodeCondition c )
 
-        Condition_Story storyCond ->
-            ( "E", Story.encodeCondition storyCond )
+        Condition_Story c ->
+            ( "E", Story.encodeCondition c )
 
-        Condition_Term_Months termMonthsCond ->
-            ( "F", TermMonths.encodeCondition termMonthsCond )
+        Condition_Term_Months c ->
+            ( "F", TermMonths.encodeCondition c )
 
-        Condition_Term_Percent termPercentCond ->
-            ( "G", TermPercent.encodeCondition termPercentCond )
+        Condition_Term_Percent c ->
+            ( "G", TermPercent.encodeCondition c )
 
-        Condition_Elapsed_Term_Months elapsedTermMonthsCond ->
-            ( "H", ElapsedTermMonths.encodeCondition elapsedTermMonthsCond )
+        Condition_Elapsed_Term_Months c ->
+            ( "H", ElapsedTermMonths.encodeCondition c )
 
-        Condition_Elapsed_Term_Percent elapsedTermPercentCond ->
-            ( "I", ElapsedTermPercent.encodeCondition elapsedTermPercentCond )
+        Condition_Elapsed_Term_Percent c ->
+            ( "I", ElapsedTermPercent.encodeCondition c )
 
-        Condition_Interest interestCond ->
-            ( "J", Interest.encodeCondition interestCond )
+        Condition_Interest c ->
+            ( "J", Interest.encodeCondition c )
 
-        Condition_Amount amountCond ->
-            ( "K", Amount.encodeCondition amountCond )
+        Condition_Amount c ->
+            ( "K", Amount.encodeCondition c )
 
-        Condition_Insurance insuranceCond ->
-            ( "L", Insurance.encodeCondition insuranceCond )
+        Condition_Insurance c ->
+            ( "L", Insurance.encodeCondition c )
+
+        Condition_Remaining_Amount c ->
+            ( "M", RemainingAmount.encodeCondition c )
 
 
 conditionsDecoder : Decoder Conditions
@@ -545,3 +581,4 @@ conditionsDecoder =
         |: optionalField "J" Interest.conditionDecoder
         |: optionalField "K" Amount.conditionDecoder
         |: optionalField "L" Insurance.conditionDecoder
+        |: optionalField "M" RemainingAmount.conditionDecoder

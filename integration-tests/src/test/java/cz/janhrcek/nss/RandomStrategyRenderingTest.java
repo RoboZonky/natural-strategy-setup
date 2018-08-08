@@ -43,9 +43,9 @@ public class RandomStrategyRenderingTest {
 
         OptionalDouble averageLengthOfUrlEncodedStrategy = encodedStrategyLengths.stream().mapToInt(Integer::intValue).average();
         assertThat(averageLengthOfUrlEncodedStrategy)
-                .as("Average length of strategy encoded in URL should be around 1900 characters")
+                .as("Average length of strategy encoded in URL should be around 2000 characters")
                 .isNotEmpty()
-                .hasValueCloseTo(1900.0, Offset.offset(100.0));
+                .hasValueCloseTo(2000.0, Offset.offset(100.0));
 
         List<LogEntry> errorsAndWarnings = testApp.getBrowserConsoleLogs().filter(Level.WARNING);
         assertThat(errorsAndWarnings)

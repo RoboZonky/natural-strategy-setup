@@ -14,6 +14,7 @@ import Data.Filter.Conditions.Interest as Interest exposing (InterestCondition(.
 import Data.Filter.Conditions.Purpose as Purpose exposing (PurposeCondition(PurposeList))
 import Data.Filter.Conditions.Rating as Rating exposing (RatingCondition(RatingList))
 import Data.Filter.Conditions.Region as Region exposing (RegionCondition(RegionList))
+import Data.Filter.Conditions.RemainingAmount as RemainingAmount exposing (RemainingAmountCondition(RemainingAmountCondition))
 import Data.Filter.Conditions.Story exposing (Story(..), StoryCondition(StoryCondition))
 import Data.Filter.Conditions.TermMonths as TermMonths exposing (TermMonthsCondition(..))
 import Data.Filter.Conditions.TermPercent as TermPercent exposing (TermPercentCondition(..))
@@ -132,10 +133,10 @@ conditionsGen minConditions filteredItem =
                     [ amountConditionGen ]
 
                 Participation ->
-                    [ termPercentConditionGen, elapsedTermMonthsConditionGen, elapsedTermPercentConditionGen ]
+                    [ termPercentConditionGen, elapsedTermMonthsConditionGen, elapsedTermPercentConditionGen, remainingAmountConditionGen ]
 
                 Participation_To_Sell ->
-                    [ termPercentConditionGen, elapsedTermMonthsConditionGen, elapsedTermPercentConditionGen ]
+                    [ termPercentConditionGen, elapsedTermMonthsConditionGen, elapsedTermPercentConditionGen, remainingAmountConditionGen ]
 
                 Loan_And_Participation ->
                     []
@@ -276,6 +277,20 @@ amountConditionGen =
         , Random.map Amount.MoreThan (Random.int 0 maxAmount)
         ]
         |> Random.map (AmountCondition >> Condition_Amount)
+
+
+remainingAmountConditionGen : Generator Condition
+remainingAmountConditionGen =
+    let
+        maxRemainingAmount =
+            1000000
+    in
+    Random.choices
+        [ Random.map RemainingAmount.LessThan (Random.int 0 maxRemainingAmount)
+        , randomRangeGen 0 maxRemainingAmount |> Random.map (\( mi, mx ) -> RemainingAmount.Between mi mx)
+        , Random.map RemainingAmount.MoreThan (Random.int 0 maxRemainingAmount)
+        ]
+        |> Random.map (RemainingAmountCondition >> Condition_Remaining_Amount)
 
 
 interestConditionGen : Generator Condition

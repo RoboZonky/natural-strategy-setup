@@ -14,6 +14,7 @@ import Data.Filter.Conditions.Interest as Interest exposing (Interest(..), Inter
 import Data.Filter.Conditions.Purpose as Purpose exposing (Purpose(..), PurposeCondition(..), PurposeMsg)
 import Data.Filter.Conditions.Rating as Rating exposing (Rating(..), RatingCondition(..), RatingMsg)
 import Data.Filter.Conditions.Region as Region exposing (Region(..), RegionCondition(..), RegionMsg)
+import Data.Filter.Conditions.RemainingAmount as RemainingAmount exposing (RemainingAmount(..), RemainingAmountCondition(..), RemainingAmountMsg)
 import Data.Filter.Conditions.Story as Story exposing (Story(..), StoryCondition(..), StoryMsg)
 import Data.Filter.Conditions.TermMonths as TermMonths exposing (TermMonths(..), TermMonthsCondition(..), TermMonthsMsg)
 import Data.Filter.Conditions.TermPercent as TermPercent exposing (TermPercent(..), TermPercentCondition(..), TermPercentMsg)
@@ -56,7 +57,7 @@ conditionTypesThatApplyTo filteredItem =
             [ Rating, Interest, Purpose, Income, Story, Region, Term_Months, Insurance ]
 
         commonForParticipations =
-            [ Term_Percent, Elapsed_Term_Months, Elapsed_Term_Percent ]
+            [ Term_Percent, Elapsed_Term_Months, Elapsed_Term_Percent, Remaining_Amount ]
     in
     case filteredItem of
         Loan ->
@@ -139,6 +140,9 @@ conditionSubform item condition =
         Condition_Region c ->
             wrap Region (Html.map RegionMsg <| Region.form c)
 
+        Condition_Remaining_Amount c ->
+            wrap Remaining_Amount (Html.map RemainingAmountMsg <| RemainingAmount.form c)
+
         Condition_Story c ->
             wrap Story (Html.map StoryMsg <| Story.form c)
 
@@ -182,6 +186,9 @@ getVisibleLabel filteredItem conditionType =
         Region ->
             "Kraj klienta"
 
+        Remaining_Amount ->
+            "Zbývající jistina"
+
         Story ->
             "Příběh"
 
@@ -224,6 +231,7 @@ type
     | PurposeMsg PurposeMsg
     | RatingMsg RatingMsg
     | RegionMsg RegionMsg
+    | RemainingAmountMsg RemainingAmountMsg
     | StoryMsg StoryMsg
     | TermMonthsMsg TermMonthsMsg
     | TermPercentMsg TermPercentMsg
@@ -236,47 +244,50 @@ type
 update : Msg -> Model -> Model
 update msg model =
     case msg of
-        AmountMsg amsg ->
-            C.updateAmount amsg model
+        AmountMsg m ->
+            C.updateAmount m model
 
-        ElapsedTermMonthsMsg emsg ->
-            C.updateElapsedTermMonths emsg model
+        ElapsedTermMonthsMsg m ->
+            C.updateElapsedTermMonths m model
 
-        ElapsedTermPercentMsg emsg ->
-            C.updateElapsedTermPercent emsg model
+        ElapsedTermPercentMsg m ->
+            C.updateElapsedTermPercent m model
 
-        RatingMsg rmsg ->
-            C.updateRating rmsg model
+        IncomeMsg m ->
+            C.updateIncome m model
 
-        InterestMsg imsg ->
-            C.updateInterest imsg model
+        InsuranceMsg m ->
+            C.updateInsurance m model
 
-        PurposeMsg pmsg ->
-            C.updatePurpose pmsg model
+        InterestMsg m ->
+            C.updateInterest m model
 
-        TermMonthsMsg tmmsg ->
-            C.updateTermMonths tmmsg model
+        PurposeMsg m ->
+            C.updatePurpose m model
 
-        TermPercentMsg tpmsg ->
-            C.updateTermPercent tpmsg model
+        RatingMsg m ->
+            C.updateRating m model
 
-        IncomeMsg mimsg ->
-            C.updateIncome mimsg model
+        RegionMsg m ->
+            C.updateRegion m model
 
-        StoryMsg smsg ->
-            C.updateStory smsg model
+        RemainingAmountMsg m ->
+            C.updateRemainingAmount m model
 
-        RegionMsg rmsg ->
-            C.updateRegion rmsg model
+        StoryMsg m ->
+            C.updateStory m model
 
-        InsuranceMsg imsg ->
-            C.updateInsurance imsg model
+        TermMonthsMsg m ->
+            C.updateTermMonths m model
 
-        AddCondition condition ->
-            C.addCondition condition model
+        TermPercentMsg m ->
+            C.updateTermPercent m model
 
-        RemoveCondition conditionType ->
-            C.removeCondition conditionType model
+        AddCondition c ->
+            C.addCondition c model
+
+        RemoveCondition ct ->
+            C.removeCondition ct model
 
         NoOp ->
             model
