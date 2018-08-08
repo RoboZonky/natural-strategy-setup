@@ -13,16 +13,14 @@ module Data.Filter.Conditions.ElapsedTermMonths
         )
 
 import Bootstrap.Form as Form
-import Bootstrap.Form.Input as Input
 import Bootstrap.Form.Radio as Radio
-import Bootstrap.Utilities.Spacing as Spacing
 import DomId exposing (DomId)
 import Html exposing (Html, text)
-import Html.Attributes as Attr
 import Html.Events exposing (onSubmit)
 import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as Encode exposing (Value)
 import Util exposing (emptyToZero, zeroToEmpty)
+import View.NumericInput
 
 
 type ElapsedTermMonths
@@ -164,14 +162,8 @@ form (ElapsedTermMonthsCondition elapsedTermMonths) =
 
 
 numericInput : (String -> ElapsedTermMonthsMsg) -> Bool -> String -> Html ElapsedTermMonthsMsg
-numericInput msg enabled value =
-    Input.number
-        [ Input.small
-        , Input.onInput msg
-        , Input.disabled <| not enabled
-        , Input.value value
-        , Input.attrs [ Attr.min "0", Attr.max "85", Spacing.mx1 ]
-        ]
+numericInput =
+    View.NumericInput.numericInput 0 85
 
 
 elapsedTermMonthsRadio : Bool -> ElapsedTermMonthsMsg -> String -> DomId -> Html ElapsedTermMonthsMsg

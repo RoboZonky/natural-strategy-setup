@@ -3,27 +3,25 @@ module View.InvestmentShare exposing (form)
 import Bootstrap.Card.Block as CardBlock
 import Bootstrap.Form as Form
 import Bootstrap.Form.Fieldset as Fieldset
-import Bootstrap.Form.Input as Input
 import Bootstrap.Form.Radio as Radio
-import Bootstrap.Utilities.Spacing as Spacing
 import Data.InvestmentShare as InvestmentShare exposing (InvestmentShare)
-import Html exposing (text)
-import Html.Attributes as Attr exposing (disabled)
-import Html.Events exposing (onInput, onSubmit)
+import Html exposing (Html, text)
+import Html.Events exposing (onSubmit)
 import Types exposing (Msg(NoOp, TargetPortfolioShareChanged))
 import Util
+import View.NumericInput
 
 
 form : InvestmentShare -> CardBlock.Item Msg
 form investmentShare =
     let
-        ( isUnrestricted, inputValue ) =
+        ( isRestricted, value ) =
             case investmentShare of
                 InvestmentShare.NotSpecified ->
-                    ( True, Input.value defaultValue )
+                    ( False, defaultValue )
 
                 InvestmentShare.Percent pct ->
-                    ( False, Input.value <| Util.zeroToEmpty pct )
+                    ( True, Util.zeroToEmpty pct )
 
         validationErrors =
             Util.viewErrors <| InvestmentShare.validate investmentShare
@@ -34,7 +32,7 @@ form investmentShare =
         |> Fieldset.children
             [ Radio.radio
                 [ Radio.id "is1"
-                , Radio.checked isUnrestricted
+                , Radio.checked (not isRestricted)
                 , Radio.name "investmentShare"
                 , Radio.onClick (TargetPortfolioShareChanged "undefined")
                 ]
@@ -42,22 +40,23 @@ form investmentShare =
             , Form.formInline [ onSubmit NoOp ]
                 [ Radio.radio
                     [ Radio.id "is2"
-                    , Radio.checked (not isUnrestricted)
+                    , Radio.checked isRestricted
                     , Radio.name "investmentShare"
                     , Radio.onClick (TargetPortfolioShareChanged defaultValue)
                     ]
                     "Investovat maximálně"
-                , Input.number
-                    [ Input.small
-                    , inputValue
-                    , Input.attrs [ Attr.min "1", Attr.max "100", onInput TargetPortfolioShareChanged, disabled isUnrestricted, Spacing.mx1 ]
-                    ]
+                , numericInput TargetPortfolioShareChanged isRestricted value
                 , text "% výše úvěru."
                 ]
             , validationErrors
             ]
         |> Fieldset.view
         |> CardBlock.custom
+
+
+numericInput : (String -> Msg) -> Bool -> String -> Html Msg
+numericInput =
+    View.NumericInput.numericInput 1 100
 
 
 defaultValue : String

@@ -13,16 +13,14 @@ module Data.Filter.Conditions.Amount
         )
 
 import Bootstrap.Form as Form
-import Bootstrap.Form.Input as Input
 import Bootstrap.Form.Radio as Radio
-import Bootstrap.Utilities.Spacing as Spacing
 import DomId exposing (DomId)
 import Html exposing (Html, text)
-import Html.Attributes as Attr
 import Html.Events exposing (onSubmit)
 import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as Encode exposing (Value)
 import Util exposing (emptyToZero, zeroToEmpty)
+import View.NumericInput
 
 
 type Amount
@@ -159,14 +157,8 @@ form (AmountCondition amt) =
 
 
 numericInput : (String -> AmountMsg) -> Bool -> String -> Html AmountMsg
-numericInput msg enabled value =
-    Input.number
-        [ Input.small
-        , Input.onInput msg
-        , Input.disabled <| not enabled
-        , Input.value value
-        , Input.attrs [ Attr.min "0", Attr.max "10000000", Spacing.mx1 ]
-        ]
+numericInput =
+    View.NumericInput.numericInput 0 10000000
 
 
 amountRadio : Bool -> AmountMsg -> String -> DomId -> Html AmountMsg
