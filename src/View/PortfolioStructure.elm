@@ -78,7 +78,7 @@ defaultPortfolioSelect currentPortfolio =
                 (\portfolio ->
                     Select.item
                         [ value (toString portfolio), selected (portfolio == currentPortfolio) ]
-                        [ text (Portfolio.toString portfolio) ]
+                        [ text (Portfolio.toUiLabel portfolio) ]
                 )
                 [ Conservative, Balanced, Progressive, Empty ]
     in

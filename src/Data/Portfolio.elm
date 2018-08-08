@@ -5,7 +5,7 @@ module Data.Portfolio
         , encode
         , fromString
         , render
-        , toString
+        , toUiLabel
         )
 
 import Json.Decode exposing (Decoder)
@@ -39,6 +39,25 @@ toString pt =
 
         Empty ->
             "prázdné"
+
+
+{-| Unlike toString (used to render strategy config) this uses more
+"user friendly" name for Empty portfolio.
+-}
+toUiLabel : Portfolio -> String
+toUiLabel pt =
+    case pt of
+        Conservative ->
+            "konzervativní"
+
+        Balanced ->
+            "balancované"
+
+        Progressive ->
+            "progresivní"
+
+        Empty ->
+            "mnou definované"
 
 
 fromString : String -> Portfolio
