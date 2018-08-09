@@ -10,22 +10,25 @@ import org.assertj.core.api.Assertions;
 import org.assertj.core.data.Offset;
 import org.junit.After;
 import org.junit.Test;
+import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.logging.LogEntry;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class RandomStrategyRenderingTest {
 
-    private final TestApp testApp = new TestApp(new ChromeDriver());
+    private final TestApp testApp = new TestApp(initWebDriver());
 
     @Test
     public void randomStrategiesCanBeParsed() {
         testApp.open();
 
         List<Integer> encodedStrategyLengths = new ArrayList<>();
-
-        for (int i = 0; i < 1000; i++) {
+        ProgressBar progressBar = new ProgressBar();
+        final int numberOfStategiesToGenerate = 1000;
+        for (int i = 1; i <= numberOfStategiesToGenerate; i++) {
             String renderedStrategy = testApp.nextStrategy();
 
             encodedStrategyLengths.add(testApp.getStrategyHash().length());
@@ -39,13 +42,15 @@ public class RandomStrategyRenderingTest {
             assertThat(testApp.getJsonEncodeDecodeResult())
                     .as("After JSON Encode/Decode roundtrip the strategy must be the same")
                     .isEqualTo("Ok");
+
+            progressBar.update(i, numberOfStategiesToGenerate);
         }
 
         OptionalDouble averageLengthOfUrlEncodedStrategy = encodedStrategyLengths.stream().mapToInt(Integer::intValue).average();
         assertThat(averageLengthOfUrlEncodedStrategy)
-                .as("Average length of strategy encoded in URL should be around 2000 characters")
+                .as("Average length of strategy encoded in URL should be around 2100 characters")
                 .isNotEmpty()
-                .hasValueCloseTo(2000.0, Offset.offset(100.0));
+                .hasValueCloseTo(2100.0, Offset.offset(50.0));
 
         List<LogEntry> errorsAndWarnings = testApp.getBrowserConsoleLogs().filter(Level.WARNING);
         assertThat(errorsAndWarnings)
@@ -66,5 +71,11 @@ public class RandomStrategyRenderingTest {
     @After
     public void closeDriver() {
         testApp.close();
+    }
+
+    private WebDriver initWebDriver() {
+        ChromeOptions options = new ChromeOptions();
+        options.setHeadless(true);
+        return new ChromeDriver(options);
     }
 }

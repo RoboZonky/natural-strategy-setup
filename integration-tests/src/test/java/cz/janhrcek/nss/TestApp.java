@@ -26,7 +26,6 @@ class TestApp {
 
     String nextStrategy() {
         next();
-        System.out.print(".");
         return getStrategy();
     }
 
