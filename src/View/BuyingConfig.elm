@@ -4,14 +4,13 @@ import Bootstrap.Accordion as Accordion
 import Bootstrap.Button as Button
 import Bootstrap.Card.Block as CardBlock
 import Bootstrap.Form.Checkbox as Checkbox
-import Bootstrap.Form.Radio as Radio
 import Bootstrap.Modal as Modal
 import Bootstrap.Utilities.Spacing as Spacing
-import Data.Filter as Filter exposing (BuyConf, BuyingConfiguration, FilteredItem(..), MarketplaceEnablement)
+import Data.Filter as Filter exposing (BuyingConfiguration, FilteredItem(..), MarketplaceEnablement)
 import Data.Tooltip as Tooltip
 import DomId exposing (DomId)
 import Html exposing (Html, div, text)
-import Types exposing (CreationModalMsg(ModalStateMsg), Msg(CreationModalMsg, RemoveBuyFilter, SetBuyingConfiguration, TogglePrimaryMarket, ToggleSecondaryMarket))
+import Types exposing (CreationModalMsg(ModalStateMsg), Msg(CreationModalMsg, RemoveBuyFilter, TogglePrimaryMarket, ToggleSecondaryMarket))
 import View.CardHeightWorkaround exposing (markOpenedAccordionCard)
 import View.Filter exposing (filterListView)
 import View.Tooltip as Tooltip
@@ -30,33 +29,39 @@ form buyingConfiguration accordionState tooltipStates =
             Accordion.headerH4 [] (Accordion.toggle [] [ text "Pravidla nákupu" ])
                 |> Accordion.appendHeader [ Tooltip.popoverTip Tooltip.buyFilterListTip tooltipStates ]
         , blocks =
-            [ Accordion.block [] [ buyingConfigurationRadios buyingConfiguration ] ]
+            [ Accordion.block [] [ viewBuyingConfiguration buyingConfiguration ] ]
         }
 
 
-buyingConfigurationRadios : BuyingConfiguration -> CardBlock.Item Msg
-buyingConfigurationRadios buyingConfiguration =
-    CardBlock.custom <|
-        div []
-            [ buyingConfigurationRadio buyingConfiguration Filter.InvEverything
-            , buyingConfigurationRadio buyingConfiguration Filter.InvSomething
-            , viewBuyingConfiguration buyingConfiguration
-            , buyingConfigurationRadio buyingConfiguration Filter.InvNothing
-            ]
-
-
-viewBuyingConfiguration : BuyingConfiguration -> Html Msg
+viewBuyingConfiguration : BuyingConfiguration -> CardBlock.Item Msg
 viewBuyingConfiguration buyingConfiguration =
-    case buyingConfiguration of
-        Filter.InvestSomething enablement filters ->
-            div [ Spacing.px4 ]
-                [ primarySecondaryEnablementCheckboxes enablement
-                , filterCreationButtons enablement
-                , filterListView RemoveBuyFilter filters
-                ]
+    CardBlock.custom <|
+        case buyingConfiguration of
+            Filter.InvestSomething enablement filters ->
+                div [ Spacing.px4 ]
+                    [ primarySecondaryEnablementCheckboxes enablement
+                    , filterCreationButtons enablement
+                    , filterListView RemoveBuyFilter filters
+                    ]
 
-        _ ->
-            text ""
+            Filter.InvestEverything ->
+                let
+                    enablement =
+                        { primaryEnabled = True, secondaryEnabled = True }
+                in
+                div [ Spacing.px4 ]
+                    [ primarySecondaryEnablementCheckboxes enablement
+                    , filterCreationButtons enablement
+                    ]
+
+            Filter.InvestNothing ->
+                let
+                    enablement =
+                        { primaryEnabled = False, secondaryEnabled = False }
+                in
+                div [ Spacing.px4 ]
+                    [ primarySecondaryEnablementCheckboxes enablement
+                    ]
 
 
 primarySecondaryEnablementCheckboxes : MarketplaceEnablement -> Html Msg
@@ -75,17 +80,6 @@ marketplaceEnablementCheckbox tag isChecked domId label =
         , Checkbox.checked isChecked
         ]
         label
-
-
-buyingConfigurationRadio : BuyingConfiguration -> BuyConf -> Html Msg
-buyingConfigurationRadio currentConfiguration thisRadiosConf =
-    Radio.radio
-        [ Radio.id (toString thisRadiosConf)
-        , Radio.name "buyingConfiguration"
-        , Radio.checked <| Filter.toBuyConfEnum currentConfiguration == thisRadiosConf
-        , Radio.onClick (SetBuyingConfiguration thisRadiosConf)
-        ]
-        (Filter.buyConfRadioLabel thisRadiosConf)
 
 
 filterCreationButtons : MarketplaceEnablement -> Html Msg

@@ -32,7 +32,6 @@ type Msg
     | TargetBalanceChanged String
     | RemoveBuyFilter Int
     | RemoveSellFilter Int
-    | SetBuyingConfiguration Filter.BuyConf
     | TogglePrimaryMarket Bool
     | ToggleSecondaryMarket Bool
     | SetSellingConfiguration Filter.SellConf

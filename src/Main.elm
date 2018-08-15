@@ -186,13 +186,6 @@ updateHelper msg model =
         SetDateTime timestamp ->
             { model | generatedOn = DateTime.date <| DateTime.fromTimestamp timestamp }
 
-        SetBuyingConfiguration buyConf ->
-            let
-                newModel =
-                    updateStrategy (Strategy.setBuyConf buyConf) model
-            in
-            askForBuyFilterDeletionConfirmation model newModel
-
         TogglePrimaryMarket enable ->
             let
                 newModel =

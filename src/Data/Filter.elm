@@ -1,20 +1,17 @@
 module Data.Filter
     exposing
-        ( BuyConf(..)
-        , BuyingConfiguration(..)
+        ( BuyingConfiguration(..)
         , FilteredItem(..)
         , MarketplaceEnablement
         , MarketplaceFilter
         , SellConf(..)
         , SellingConfiguration(..)
-        , buyConfRadioLabel
         , decodeBuyingConfiguration
         , decodeSellingConfiguration
         , emptyFilter
         , encodeBuyingConfiguration
         , encodeSellingConfiguration
         , filterTextView
-        , fromBuyConfEnum
         , fromSellConfEnum
         , getFiltersRemovedByBuyingConfigurationChange
         , getFiltersRemovedBySellingConfigurationChange
@@ -25,7 +22,6 @@ module Data.Filter
         , renderSellingConfiguration
         , sellConfRadioLabel
         , setFilteredItem
-        , toBuyConfEnum
         , toSellConfEnum
         , togglePrimaryEnablement
         , toggleSecondaryEnablement
@@ -50,62 +46,14 @@ type BuyingConfiguration
     | InvestNothing
 
 
-
--- TODO This is enum for comparison in radios - any idea how to make it without it?
--- I've got BuyingConfiguration and a radio button representing InvestSomething and I'd like to determine
--- if that radio should be enabled / disabled, but I can't compare wihout pattern matching on constructor..
-
-
-type BuyConf
-    = InvEverything
-    | InvSomething
-    | InvNothing
-
-
-toBuyConfEnum : BuyingConfiguration -> BuyConf
-toBuyConfEnum buyingConfiguration =
-    case buyingConfiguration of
-        InvestEverything ->
-            InvEverything
-
-        InvestSomething _ _ ->
-            InvSomething
-
-        InvestNothing ->
-            InvNothing
-
-
-fromBuyConfEnum : BuyConf -> BuyingConfiguration
-fromBuyConfEnum buyConf =
-    case buyConf of
-        InvEverything ->
-            InvestEverything
-
-        InvSomething ->
-            InvestSomething (MarketplaceEnablement True True) []
-
-        InvNothing ->
-            InvestNothing
-
-
-buyConfRadioLabel : BuyConf -> String
-buyConfRadioLabel bs =
-    case bs of
-        InvEverything ->
-            "Investovat do všech půjček a participací."
-
-        InvSomething ->
-            "Investovat do vybraných"
-
-        InvNothing ->
-            "Ignorovat všechny půjčky i participace."
-
-
 updateBuyFilters : (List MarketplaceFilter -> List MarketplaceFilter) -> BuyingConfiguration -> BuyingConfiguration
 updateBuyFilters updater buyingConfiguration =
     case buyingConfiguration of
         InvestSomething enablement filters ->
             InvestSomething enablement <| updater filters
+
+        InvestEverything ->
+            InvestSomething { primaryEnabled = True, secondaryEnabled = True } (updater [])
 
         other ->
             other
@@ -124,71 +72,98 @@ updateSellFilters updater sellingConfiguration =
 togglePrimaryEnablement : Bool -> BuyingConfiguration -> BuyingConfiguration
 togglePrimaryEnablement enablePrimary buyingConfiguration =
     case buyingConfiguration of
+        InvestEverything ->
+            if enablePrimary then
+                InvestEverything
+            else
+                InvestSomething { primaryEnabled = False, secondaryEnabled = True } []
+
         InvestSomething enablement filters ->
             let
-                newEnablement =
-                    { enablement
-                        | primaryEnabled = enablePrimary
-
-                        -- Ensure at most 1 of the 2 checkboxes is enabled at any given time
-                        , secondaryEnabled =
-                            if enablePrimary then
-                                enablement.secondaryEnabled
-                            else
-                                True
-                    }
-
-                newFilters =
-                    removeDisabledFilters newEnablement filters
+                newEna =
+                    { enablement | primaryEnabled = enablePrimary }
             in
-            InvestSomething newEnablement newFilters
+            case ( newEna.primaryEnabled, newEna.secondaryEnabled ) of
+                ( True, True ) ->
+                    if List.isEmpty filters then
+                        InvestEverything
+                    else
+                        InvestSomething newEna filters
 
-        other ->
-            other
+                ( True, False ) ->
+                    InvestSomething newEna filters
+
+                ( False, True ) ->
+                    InvestSomething newEna (removeDisabledFilters newEna filters)
+
+                ( False, False ) ->
+                    InvestNothing
+
+        InvestNothing ->
+            if enablePrimary then
+                InvestSomething { primaryEnabled = True, secondaryEnabled = False } []
+            else
+                InvestNothing
 
 
 toggleSecondaryEnablement : Bool -> BuyingConfiguration -> BuyingConfiguration
 toggleSecondaryEnablement enableSecondary buyingConfiguration =
     case buyingConfiguration of
+        InvestEverything ->
+            if enableSecondary then
+                InvestEverything
+            else
+                InvestSomething { primaryEnabled = True, secondaryEnabled = False } []
+
         InvestSomething enablement filters ->
             let
-                newEnablement =
-                    { enablement
-                        | -- Ensure at most 1 of the 2 checkboxes is enabled at any given time
-                          primaryEnabled =
-                            if enableSecondary then
-                                enablement.primaryEnabled
-                            else
-                                True
-                        , secondaryEnabled = enableSecondary
-                    }
-
-                newFilters =
-                    removeDisabledFilters newEnablement filters
+                newEna =
+                    { enablement | secondaryEnabled = enableSecondary }
             in
-            InvestSomething newEnablement newFilters
+            case ( newEna.primaryEnabled, newEna.secondaryEnabled ) of
+                ( True, True ) ->
+                    if List.isEmpty filters then
+                        InvestEverything
+                    else
+                        InvestSomething newEna filters
 
-        other ->
-            other
+                ( True, False ) ->
+                    InvestSomething newEna (removeDisabledFilters newEna filters)
+
+                ( False, True ) ->
+                    InvestSomething newEna filters
+
+                ( False, False ) ->
+                    InvestNothing
+
+        InvestNothing ->
+            if enableSecondary then
+                InvestSomething { primaryEnabled = False, secondaryEnabled = True } []
+            else
+                InvestNothing
 
 
 {-| Calculate which filters would be removed during BuyingConfiguration change to decide if FilterDeletionModal should be displayed
 -}
 getFiltersRemovedByBuyingConfigurationChange : BuyingConfiguration -> BuyingConfiguration -> List MarketplaceFilter
 getFiltersRemovedByBuyingConfigurationChange old new =
-    case old of
-        InvestSomething _ oldFilters ->
-            case new of
-                InvestSomething _ newFilters ->
-                    List.filter
-                        (\oldFilter -> not <| List.member oldFilter newFilters)
-                        oldFilters
-
-                _ ->
-                    oldFilters
-
-        _ ->
+    case ( old, new ) of
+        ( InvestNothing, _ ) ->
             []
+
+        ( InvestEverything, _ ) ->
+            []
+
+        ( InvestSomething _ oldFilters, InvestNothing ) ->
+            oldFilters
+
+        ( InvestSomething _ oldFilters, InvestEverything ) ->
+            oldFilters
+
+        ( InvestSomething _ oldFilters, InvestSomething _ newFilters ) ->
+            List.filter
+                (\oldFilter -> not <| List.member oldFilter newFilters)
+                oldFilters
 
 
 getFiltersRemovedBySellingConfigurationChange : SellingConfiguration -> SellingConfiguration -> List MarketplaceFilter

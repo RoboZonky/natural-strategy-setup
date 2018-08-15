@@ -9,7 +9,6 @@ module Data.Strategy
         , removeBuyFilter
         , removeSellFilter
         , renderStrategyConfiguration
-        , setBuyConf
         , setBuyingConfiguration
         , setDefaultInvestment
         , setDefaultInvestmentShare
@@ -199,11 +198,6 @@ setBuyingConfiguration buyingConfiguration strategy =
 setSellingConfiguration : Filters.SellingConfiguration -> StrategyConfiguration -> StrategyConfiguration
 setSellingConfiguration sellingConfiguration strategy =
     { strategy | sellingConfig = sellingConfiguration }
-
-
-setBuyConf : Filters.BuyConf -> StrategyConfiguration -> StrategyConfiguration
-setBuyConf buyConf =
-    setBuyingConfiguration (Filters.fromBuyConfEnum buyConf)
 
 
 setSellConf : Filters.SellConf -> StrategyConfiguration -> StrategyConfiguration
