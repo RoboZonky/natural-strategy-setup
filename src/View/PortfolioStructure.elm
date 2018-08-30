@@ -45,7 +45,9 @@ form portfolio shares accordionState tooltipStates =
                             [ Grid.col [ Col.xs6 ]
                                 [ portfolioSharesSliders shares ]
                             , Grid.col [ Col.xs6 ]
-                                [ viewChart shares ]
+                                [ viewChart shares
+                                , validationErrors shares
+                                ]
                             ]
                         ]
                 ]
@@ -79,18 +81,23 @@ defaultPortfolioSelect currentPortfolio =
         optionList
 
 
+validationErrors : PortfolioShares -> Html a
+validationErrors shares =
+    case PortfolioStructure.validate shares of
+        [] ->
+            text ""
+
+        errors ->
+            Util.viewErrors errors
+
+
 portfolioSharesSliders : PortfolioShares -> Html Msg
 portfolioSharesSliders shares =
     let
-        validationErrors =
-            Util.viewErrors <| PortfolioStructure.validate shares
+        ratingSlider ( rating, sliderState ) =
+            Form.formInline [ onSubmit NoOp ]
+                [ div [ style [ ( "width", "50px" ) ] ] [ text <| ratingToString rating ]
+                , Html.map (ChangePortfolioSharePercentage rating) <| RangeSlider.view sliderState
+                ]
     in
-    Dict.toList shares
-        |> List.map
-            (\( rating, sliderState ) ->
-                Form.formInline [ onSubmit NoOp ]
-                    [ div [ style [ ( "width", "50px" ) ] ] [ text <| ratingToString rating ]
-                    , Html.map (ChangePortfolioSharePercentage rating) <| RangeSlider.view sliderState
-                    ]
-            )
-        |> (\sliders -> div [] (sliders ++ [ validationErrors ]))
+    div [] <| List.map ratingSlider <| Dict.toList shares
