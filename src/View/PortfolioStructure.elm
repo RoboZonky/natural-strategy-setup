@@ -7,11 +7,10 @@ import Bootstrap.Form as Form
 import Bootstrap.Form.Select as Select
 import Bootstrap.Grid as Grid
 import Bootstrap.Grid.Col as Col
-import Bootstrap.Table as Table
 import Bootstrap.Utilities.Spacing as Spacing
-import Data.Filter.Conditions.Rating as Rating exposing (ratingToString)
+import Data.Filter.Conditions.Rating exposing (ratingToString)
 import Data.Portfolio as Portfolio exposing (Portfolio(..))
-import Data.PortfolioStructure as PortfolioStructure exposing (PortfolioShare, PortfolioShares)
+import Data.PortfolioStructure as PortfolioStructure exposing (PortfolioShares)
 import Data.Tooltip as Tooltip
 import Html exposing (Html, div, text)
 import Html.Attributes exposing (selected, style, value)
@@ -29,14 +28,6 @@ form portfolio shares accordionState tooltipStates =
     let
         cardId =
             "portfolioStructureCard"
-
-        ( sharesTableOrSliders, contentDescription ) =
-            case portfolio of
-                Empty ->
-                    ( portfolioSharesSliders shares, "Nastavte" )
-
-                _ ->
-                    ( portfolioSharesTable shares, "Následující tabulka ukazuje" )
     in
     Accordion.card
         { id = cardId
@@ -49,12 +40,10 @@ form portfolio shares accordionState tooltipStates =
                 [ CardBlock.custom <|
                     div []
                         [ defaultPortfolioForm portfolio
-                        , text <|
-                            contentDescription
-                                ++ " požadovaný procentuální podíl aktuální zůstatkové částky investovaný do půjček v daném ratingu"
+                        , text "Nastavte požadovaný procentuální podíl aktuální zůstatkové částky investovaný do půjček v daném ratingu"
                         , Grid.row []
                             [ Grid.col [ Col.xs6 ]
-                                [ sharesTableOrSliders ]
+                                [ portfolioSharesSliders shares ]
                             , Grid.col [ Col.xs6 ]
                                 [ viewChart shares ]
                             ]
@@ -88,35 +77,6 @@ defaultPortfolioSelect currentPortfolio =
         , Select.attrs [ Spacing.mx1 ]
         ]
         optionList
-
-
-portfolioSharesTable : PortfolioShares -> Html Msg
-portfolioSharesTable shares =
-    Table.table
-        { options = [ Table.bordered, Table.small ]
-        , thead =
-            Table.thead [ Table.defaultHead ]
-                [ Table.tr []
-                    [ Table.th [] [ text "Rating" ]
-                    , Table.th [] [ text "Od (%)" ]
-                    , Table.th [] [ text "Do (%)" ]
-                    ]
-                ]
-        , tbody = Table.tbody [] <| List.map portfolioShareRow <| Dict.toList shares
-        }
-
-
-portfolioShareRow : PortfolioShare -> Table.Row Msg
-portfolioShareRow ( rtg, share ) =
-    let
-        ( mi, mx ) =
-            PortfolioStructure.toIntRange share
-    in
-    Table.tr []
-        [ Table.td [] [ text <| Rating.ratingToString rtg ]
-        , Table.td [] [ text <| toString mi ]
-        , Table.td [] [ text <| toString mx ]
-        ]
 
 
 portfolioSharesSliders : PortfolioShares -> Html Msg

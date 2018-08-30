@@ -5,6 +5,7 @@ import Bootstrap.Grid as Grid
 import Data.Filter as Filters exposing (FilteredItem(Participation_To_Sell))
 import Data.Investment as Investment
 import Data.InvestmentShare as InvestmentShare
+import Data.Portfolio
 import Data.PortfolioStructure as PortfolioStructure
 import Data.Strategy as Strategy exposing (StrategyConfiguration)
 import Data.TargetBalance as TargetBalance exposing (TargetBalance(TargetBalance))
@@ -136,7 +137,11 @@ updateHelper msg model =
             updateStrategy (Strategy.updateNotificationSettings confMsg) model
 
         ChangePortfolioSharePercentage rating sliderMsg ->
-            updateStrategy (Strategy.setPortfolioShareRange rating sliderMsg) model
+            updateStrategy
+                (-- Any change from defaults automatically selects "user defined" portfolio
+                 Strategy.setPortfolio Data.Portfolio.Empty << Strategy.setPortfolioShareRange rating sliderMsg
+                )
+                model
 
         ChangeInvestment rating sliderMsg ->
             updateStrategy (Strategy.setInvestment rating sliderMsg) model

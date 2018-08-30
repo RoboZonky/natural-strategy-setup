@@ -105,7 +105,8 @@ setPortfolio portfolio strategy =
                     PredefinedShares.progressive
 
                 Empty ->
-                    PredefinedShares.empty
+                    {- switch to empty leaves the current slider configuration untouched -}
+                    strategy.portfolioShares
     in
     case strategy of
         { generalSettings } as settings ->

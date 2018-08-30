@@ -2,7 +2,6 @@ module Data.PortfolioStructure.PredefinedShares
     exposing
         ( balanced
         , conservative
-        , empty
         , progressive
         )
 
@@ -50,20 +49,6 @@ progressive =
         , ( B, 25 )
         , ( C, 20 )
         , ( D, 5 )
-        ]
-
-
-empty : PortfolioShares
-empty =
-    initShares
-        [ ( A_Double_Star, 0 )
-        , ( A_Star, 0 )
-        , ( A_Double_Plus, 0 )
-        , ( A_Plus, 0 )
-        , ( A, 0 )
-        , ( B, 0 )
-        , ( C, 0 )
-        , ( D, 0 )
         ]
 
 
