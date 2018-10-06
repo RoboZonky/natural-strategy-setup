@@ -12,9 +12,12 @@ module Data.Filter
         , encodeBuyingConfiguration
         , encodeSellingConfiguration
         , filterTextView
+        , getAllowedFilterItems
         , getFiltersRemovedByBuyingConfigurationChange
+        , getMarketplaceEnablement
         , isValid
         , itemToPluralString
+        , itemToPluralStringGenitive
         , marketplaceFilterValidationErrors
         , removeSellFilterAt
         , renderBuyingConfiguration
@@ -43,6 +46,19 @@ type BuyingConfiguration
     | InvestNothing
 
 
+getMarketplaceEnablement : BuyingConfiguration -> MarketplaceEnablement
+getMarketplaceEnablement buyingConfiguration =
+    case buyingConfiguration of
+        InvestEverything ->
+            { primaryEnabled = True, secondaryEnabled = True }
+
+        InvestNothing ->
+            { primaryEnabled = False, secondaryEnabled = False }
+
+        InvestSomething enablement _ ->
+            enablement
+
+
 updateBuyFilters : (List MarketplaceFilter -> List MarketplaceFilter) -> BuyingConfiguration -> BuyingConfiguration
 updateBuyFilters updater buyingConfiguration =
     case buyingConfiguration of
@@ -52,8 +68,8 @@ updateBuyFilters updater buyingConfiguration =
         InvestEverything ->
             InvestSomething { primaryEnabled = True, secondaryEnabled = True } (updater [])
 
-        other ->
-            other
+        InvestNothing ->
+            InvestNothing
 
 
 addSellFilter : MarketplaceFilter -> SellingConfiguration -> SellingConfiguration
@@ -205,6 +221,22 @@ type alias MarketplaceEnablement =
     }
 
 
+getAllowedFilterItems : MarketplaceEnablement -> List FilteredItem
+getAllowedFilterItems { primaryEnabled, secondaryEnabled } =
+    case ( primaryEnabled, secondaryEnabled ) of
+        ( True, True ) ->
+            [ Loan_And_Participation, Loan, Participation ]
+
+        ( True, False ) ->
+            [ Loan ]
+
+        ( False, True ) ->
+            [ Participation ]
+
+        ( False, False ) ->
+            []
+
+
 type SellingConfiguration
     = SellNothing
     | SellSomething (List MarketplaceFilter)
@@ -332,6 +364,7 @@ marketplaceFilterValidationErrors mf =
 
 setFilteredItem : FilteredItem -> MarketplaceFilter -> MarketplaceFilter
 setFilteredItem newItem mf =
+    -- TODO this needs to remove incompatible conditions from what's enabled, ideally and ideally ask user for confirmation
     { mf | whatToFilter = newItem }
 
 
@@ -474,7 +507,23 @@ itemToPluralString item =
             "Půjčky i participace"
 
         Participation_To_Sell ->
-            "Participace na prodej"
+            "Participace"
+
+
+itemToPluralStringGenitive : FilteredItem -> String
+itemToPluralStringGenitive item =
+    case item of
+        Loan ->
+            "půjček"
+
+        Participation ->
+            "participací"
+
+        Loan_And_Participation ->
+            "půjček a participací"
+
+        Participation_To_Sell ->
+            "participací"
 
 
 

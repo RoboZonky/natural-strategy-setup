@@ -4,13 +4,14 @@ import Bootstrap.Accordion as Accordion
 import Bootstrap.Button as Button
 import Bootstrap.Card.Block as CardBlock
 import Bootstrap.Form.Checkbox as Checkbox
-import Bootstrap.Modal as Modal
 import Bootstrap.Utilities.Spacing as Spacing
 import Data.Filter as Filter exposing (BuyingConfiguration, FilteredItem(..), MarketplaceEnablement)
+import Data.Filter.Complexity exposing (FilterComplexity(Complex, Simple), complexityButtonLabel)
 import Data.Tooltip as Tooltip
 import DomId exposing (DomId)
 import Html exposing (Html, div, text)
-import Types exposing (CreationModalMsg(ModalStateMsg), Msg(CreationModalMsg, RemoveBuyFilter, TogglePrimaryMarket, ToggleSecondaryMarket))
+import Types exposing (CreationModalMsg(OpenCreationModal), Msg(CreationModalMsg, RemoveBuyFilter, TogglePrimaryMarket, ToggleSecondaryMarket))
+import Version exposing (filtersHowToLink)
 import View.CardHeightWorkaround exposing (markOpenedAccordionCard)
 import View.Filter exposing (filterListView)
 import View.Tooltip as Tooltip
@@ -35,33 +36,27 @@ form buyingConfiguration accordionState tooltipStates =
 
 viewBuyingConfiguration : BuyingConfiguration -> CardBlock.Item Msg
 viewBuyingConfiguration buyingConfiguration =
+    let
+        enablement =
+            Filter.getMarketplaceEnablement buyingConfiguration
+
+        additionalControls =
+            case buyingConfiguration of
+                Filter.InvestSomething _ filters ->
+                    [ filterListView RemoveBuyFilter filters
+                    , filterCreationButtons enablement
+                    ]
+
+                Filter.InvestEverything ->
+                    [ filterCreationButtons enablement ]
+
+                Filter.InvestNothing ->
+                    []
+    in
     CardBlock.custom <|
-        case buyingConfiguration of
-            Filter.InvestSomething enablement filters ->
-                div [ Spacing.px4 ]
-                    [ primarySecondaryEnablementCheckboxes enablement
-                    , filterCreationButtons enablement
-                    , filterListView RemoveBuyFilter filters
-                    ]
-
-            Filter.InvestEverything ->
-                let
-                    enablement =
-                        { primaryEnabled = True, secondaryEnabled = True }
-                in
-                div [ Spacing.px4 ]
-                    [ primarySecondaryEnablementCheckboxes enablement
-                    , filterCreationButtons enablement
-                    ]
-
-            Filter.InvestNothing ->
-                let
-                    enablement =
-                        { primaryEnabled = False, secondaryEnabled = False }
-                in
-                div [ Spacing.px4 ]
-                    [ primarySecondaryEnablementCheckboxes enablement
-                    ]
+        div [] <|
+            primarySecondaryEnablementCheckboxes enablement
+                :: additionalControls
 
 
 primarySecondaryEnablementCheckboxes : MarketplaceEnablement -> Html Msg
@@ -83,37 +78,24 @@ marketplaceEnablementCheckbox tag isChecked domId label =
 
 
 filterCreationButtons : MarketplaceEnablement -> Html Msg
-filterCreationButtons { primaryEnabled, secondaryEnabled } =
+filterCreationButtons marketplaceEnablement =
     let
-        lbl =
-            text "Přidat pravidlo pro "
-
-        primButton =
-            filterCreationButton Loan "Primární trh"
-
-        secButton =
-            filterCreationButton Participation "Sekundární trh"
+        allowedFilteredItems =
+            Filter.getAllowedFilterItems marketplaceEnablement
     in
-    case ( primaryEnabled, secondaryEnabled ) of
-        ( True, True ) ->
-            div [] [ lbl, primButton, secButton, filterCreationButton Loan_And_Participation "Oba trhy" ]
-
-        ( True, False ) ->
-            div [] [ lbl, primButton ]
-
-        ( False, True ) ->
-            div [] [ lbl, secButton ]
-
-        ( False, False ) ->
-            text ""
+    div []
+        [ filterCreationButton allowedFilteredItems Simple Button.primary
+        , filterCreationButton allowedFilteredItems Complex Button.outlineSecondary
+        , filtersHowToLink
+        ]
 
 
-filterCreationButton : FilteredItem -> String -> Html Msg
-filterCreationButton filteredItem buttonText =
+filterCreationButton : List FilteredItem -> FilterComplexity -> Button.Option Msg -> Html Msg
+filterCreationButton allowedFilteredItems filterComplexity buttonType =
     Button.button
-        [ Button.primary
+        [ buttonType
         , Button.small
-        , Button.onClick <| CreationModalMsg <| ModalStateMsg filteredItem Modal.shown
+        , Button.onClick <| CreationModalMsg <| OpenCreationModal filterComplexity allowedFilteredItems
         , Button.attrs [ Spacing.mx1 ]
         ]
-        [ text buttonText ]
+        [ text <| complexityButtonLabel filterComplexity ]

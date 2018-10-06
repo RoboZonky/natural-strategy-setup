@@ -1,14 +1,19 @@
 module View.Filter.CreationModal exposing (Model, init, update, view)
 
 import Bootstrap.Button as Button
+import Bootstrap.Form as Form
+import Bootstrap.Form.Radio as Radio
 import Bootstrap.Grid as Grid
 import Bootstrap.Grid.Col as Col
 import Bootstrap.Modal as Modal
+import Bootstrap.Utilities.Spacing as Spacing
 import Data.Filter as Filter exposing (FilteredItem(..), MarketplaceFilter, setFilteredItem)
+import Data.Filter.Complexity exposing (FilterComplexity(..))
+import Data.Filter.Conditions exposing (ConditionType, Conditions, getEnabledConditionTypes, removeConditions)
 import Data.Tooltip as Tooltip
 import Html exposing (Html, div, hr, li, text, ul)
 import Html.Attributes exposing (style)
-import Html.Events exposing (onClick)
+import Html.Events exposing (onSubmit)
 import Types exposing (CreationModalMsg(..))
 import View.Filter.Conditions as Conditions
 import View.Tooltip as Tooltip
@@ -16,16 +21,24 @@ import View.Tooltip as Tooltip
 
 type alias Model =
     { editedFilter : MarketplaceFilter
+    , allowedFilteredItems : List FilteredItem
+    , filterComplexity : FilterComplexity
     , editingPositiveSubform : Bool
     , openCloseState : Modal.Visibility
+
+    -- Switching FilteredItem might require removing conditions that users enabled that don't apply to the target FilteredItem
+    , confirmRemoval : Maybe ( FilteredItem, List ConditionType, List ConditionType )
     }
 
 
 init : Model
 init =
     { editedFilter = Filter.emptyFilter
+    , allowedFilteredItems = []
+    , filterComplexity = Simple
     , editingPositiveSubform = True
     , openCloseState = Modal.hidden
+    , confirmRemoval = Nothing
     }
 
 
@@ -48,19 +61,53 @@ update msg model =
 updateHelp : CreationModalMsg -> Model -> Model
 updateHelp msg model =
     case msg of
-        ModalStateMsg filteredItem st ->
+        OpenCreationModal filterComplexity allowedFilteredItems ->
+            let
+                filteredItem =
+                    Maybe.withDefault Loan <| List.head allowedFilteredItems
+            in
             { model
                 | editedFilter = setFilteredItem filteredItem Filter.emptyFilter
+                , allowedFilteredItems = allowedFilteredItems
+                , filterComplexity = filterComplexity
                 , editingPositiveSubform = True
-                , openCloseState = st
+                , openCloseState = Modal.shown
+                , confirmRemoval = Nothing
             }
 
-        SaveFilter ->
-            { model
-                | editedFilter = Filter.emptyFilter
-                , editingPositiveSubform = True
-                , openCloseState = Modal.hidden
-            }
+        SetFilteredItem filteredItem ->
+            let
+                conditionsToBeRemoved =
+                    getConditionsRemovedByFilteredItemChange filteredItem model.editedFilter.ignoreWhen
+
+                conditionsToBeRemovedFromException =
+                    getConditionsRemovedByFilteredItemChange filteredItem model.editedFilter.butNotWhen
+            in
+            if List.isEmpty conditionsToBeRemoved && List.isEmpty conditionsToBeRemovedFromException then
+                { model | editedFilter = setFilteredItem filteredItem model.editedFilter }
+            else
+                { model | confirmRemoval = Just ( filteredItem, conditionsToBeRemoved, conditionsToBeRemovedFromException ) }
+
+        ConfirmConditionsRemoval ->
+            case model.confirmRemoval of
+                Nothing ->
+                    model
+
+                Just ( filteredItem, conditionsToBeRemoved, conditionsToBeRemovedFromException ) ->
+                    let
+                        updatedFilter =
+                            { whatToFilter = filteredItem
+                            , ignoreWhen = removeConditions conditionsToBeRemoved model.editedFilter.ignoreWhen
+                            , butNotWhen = removeConditions conditionsToBeRemovedFromException model.editedFilter.butNotWhen
+                            }
+                    in
+                    { model
+                        | editedFilter = updatedFilter
+                        , confirmRemoval = Nothing
+                    }
+
+        CancelConditionsRemoval ->
+            { model | confirmRemoval = Nothing }
 
         TogglePositiveNegativeSubform ->
             { model | editingPositiveSubform = not model.editingPositiveSubform }
@@ -71,6 +118,12 @@ updateHelp msg model =
         NegativeConditionsChange condMsg ->
             { model | editedFilter = Filter.updateNegativeConditions (Conditions.update condMsg) model.editedFilter }
 
+        SaveFilter ->
+            { model | openCloseState = Modal.hidden }
+
+        CloseModal ->
+            { model | openCloseState = Modal.hidden }
+
         ModalTooltipMsg _ _ ->
             {- This case is handled at the level of Main's update -}
             model
@@ -80,56 +133,99 @@ updateHelp msg model =
 
 
 view : Model -> Tooltip.States -> Html CreationModalMsg
-view { editedFilter, openCloseState, editingPositiveSubform } tooltipStates =
+view { editedFilter, openCloseState, editingPositiveSubform, allowedFilteredItems, filterComplexity, confirmRemoval } tooltipStates =
+    let
+        ( modalTitle, tooltipKey ) =
+            case editedFilter.whatToFilter of
+                Participation_To_Sell ->
+                    ( "Vytvořit pravidlo prodeje", Tooltip.sellFilterCreationTip )
+
+                _ ->
+                    ( "Vytvořit pravidlo nákupu", Tooltip.buyFilterCreationTip )
+
+        ( modalBody, modalFooter ) =
+            case confirmRemoval of
+                Nothing ->
+                    ( marketplaceFilterEditor editedFilter filterComplexity editingPositiveSubform allowedFilteredItems
+                    , [ Button.button
+                            [ Button.danger
+                            , Button.onClick CloseModal
+                            ]
+                            [ text "Zrušit" ]
+                      , Button.button
+                            [ Button.success
+                            , Button.disabled (not <| Filter.isValid editedFilter)
+                            , Button.onClick SaveFilter
+                            ]
+                            [ text "Uložit" ]
+                      , exceptionButtonWhenFilterComplex filterComplexity editingPositiveSubform
+                      ]
+                    )
+
+                Just ( filteredItem, conditionsToBeRemoved, conditionsToBeRemovedFromException ) ->
+                    ( askForConfirmationOfRemoval filteredItem conditionsToBeRemoved conditionsToBeRemovedFromException
+                    , [ Button.button
+                            [ Button.success
+                            , Button.onClick ConfirmConditionsRemoval
+                            ]
+                            [ text "Ano, provést změnu" ]
+                      , Button.button
+                            [ Button.danger
+                            , Button.onClick CancelConditionsRemoval
+                            ]
+                            [ text "Ne, zrušit změnu" ]
+                      ]
+                    )
+    in
+    Modal.config CloseModal
+        |> Modal.large
+        |> Modal.h5 []
+            [ text modalTitle
+            , Tooltip.popoverTipForModal tooltipKey tooltipStates
+            ]
+        |> Modal.body [] [ modalBody ]
+        |> Modal.footer [] modalFooter
+        |> Modal.view openCloseState
+
+
+askForConfirmationOfRemoval : FilteredItem -> List ConditionType -> List ConditionType -> Html CreationModalMsg
+askForConfirmationOfRemoval filteredItem conditionsToBeRemoved conditionsToBeRemovedFromException =
+    div []
+        [ text <|
+            "Chystáte se změnit pravidlo, aby sloužilo k filtrování "
+                ++ Filter.itemToPluralStringGenitive filteredItem
+                ++ ". Tato změna vyžaduje odstranění následujících podmínek pravidla či výjimky, které jste dříve přidali:"
+        , ul [] <|
+            List.map (\condToRemove -> li [] [ text <| Conditions.getVisibleLabel filteredItem condToRemove ])
+                (conditionsToBeRemoved ++ conditionsToBeRemovedFromException)
+        ]
+
+
+{-| Simple filters don't allow exception definition
+-}
+exceptionButtonWhenFilterComplex : FilterComplexity -> Bool -> Html CreationModalMsg
+exceptionButtonWhenFilterComplex filterComplexity editingPositiveSubform =
     let
         exceptionButtonText =
             if editingPositiveSubform then
                 "Přidat Výjimku >>"
             else
                 "<< Zpět"
-
-        ( modalTitle, tooltipKey ) =
-            case editedFilter.whatToFilter of
-                Participation_To_Sell ->
-                    ( "Vytvořit pravidlo pro prodej", Tooltip.sellFilterCreationTip )
-
-                _ ->
-                    ( "Vytvořit pravidlo pro nákup", Tooltip.buyFilterCreationTip )
-
-        closeMessage =
-            ModalStateMsg editedFilter.whatToFilter Modal.hidden
     in
-    Modal.config closeMessage
-        |> Modal.large
-        |> Modal.h5 []
-            [ text modalTitle
-            , Tooltip.popoverTipForModal tooltipKey tooltipStates
-            ]
-        |> Modal.body []
-            [ modalBody editedFilter editingPositiveSubform ]
-        |> Modal.footer []
-            [ Button.button
-                [ Button.danger
-                , Button.attrs [ onClick closeMessage ]
-                ]
-                [ text "Zrušit" ]
-            , Button.button
-                [ Button.success
-                , Button.disabled (not <| Filter.isValid editedFilter)
-                , Button.attrs [ onClick SaveFilter ]
-                ]
-                [ text "Uložit" ]
-            , Button.button
+    case filterComplexity of
+        Simple ->
+            text ""
+
+        Complex ->
+            Button.button
                 [ Button.secondary
-                , Button.attrs [ onClick TogglePositiveNegativeSubform ]
+                , Button.onClick TogglePositiveNegativeSubform
                 ]
                 [ text exceptionButtonText ]
-            ]
-        |> Modal.view openCloseState
 
 
-modalBody : MarketplaceFilter -> Bool -> Html CreationModalMsg
-modalBody mf editingPositiveSubform =
+marketplaceFilterEditor : MarketplaceFilter -> FilterComplexity -> Bool -> List FilteredItem -> Html CreationModalMsg
+marketplaceFilterEditor mf filterComplexity editingPositiveSubform allowedFilteredItems =
     let
         validationErrors =
             Filter.marketplaceFilterValidationErrors mf
@@ -143,16 +239,17 @@ modalBody mf editingPositiveSubform =
 
         conditionsSubform =
             if editingPositiveSubform then
-                Html.map PositiveConditionsChange <| Conditions.form mf.whatToFilter mf.ignoreWhen
+                Html.map PositiveConditionsChange <| Conditions.form filterComplexity mf.whatToFilter mf.ignoreWhen
             else
-                Html.map NegativeConditionsChange <| Conditions.form mf.whatToFilter mf.butNotWhen
+                Html.map NegativeConditionsChange <| Conditions.form filterComplexity mf.whatToFilter mf.butNotWhen
     in
     Grid.containerFluid []
         [ Grid.row []
             [ Grid.col
                 [ Col.xs12 ]
                 [ div []
-                    [ text <| whatToDoText mf.whatToFilter editingPositiveSubform
+                    [ filteredItemRadios allowedFilteredItems mf.whatToFilter
+                    , conditionsOrExceptionTitle editingPositiveSubform
                     , conditionsSubform
                     ]
                 , hr [] []
@@ -162,17 +259,60 @@ modalBody mf editingPositiveSubform =
         ]
 
 
-whatToDoText : FilteredItem -> Bool -> String
-whatToDoText filteredItem editingPositiveSubform =
-    case ( filteredItem, editingPositiveSubform ) of
-        ( Participation_To_Sell, True ) ->
-            "Nastavte podmínky pravidla. Participace splňující všechny podmínky budou prodány."
+filteredItemRadios : List FilteredItem -> FilteredItem -> Html CreationModalMsg
+filteredItemRadios allowedFilteredItems currentFilteredItem =
+    case allowedFilteredItems of
+        [] ->
+            text ""
 
-        ( Participation_To_Sell, False ) ->
-            "Nastavte výjimku pravidla. Participace splňující všechny podmínky výjimky NEBUDOU prodány."
+        [ _ {- only one item - just toString it without showing radios -} ] ->
+            text <|
+                case currentFilteredItem of
+                    Participation_To_Sell ->
+                        "Pravidlo pro prodej " ++ Filter.itemToPluralStringGenitive currentFilteredItem
 
-        ( _, True ) ->
-            "Nastavte podmínky pravidla. " ++ Filter.itemToPluralString filteredItem ++ " splňující všechny podmínky budou ignorovány."
+                    _ ->
+                        "Pravidlo pro nákup " ++ Filter.itemToPluralStringGenitive currentFilteredItem
 
-        ( _, False ) ->
-            "Nastavte výjimku pravidla. " ++ Filter.itemToPluralString filteredItem ++ " splňující všechny podmínky výjimky NEBUDOU ignorovány."
+        moreFilteredItems ->
+            Form.formInline [ onSubmit ModalNoOp ]
+                (text "Pravidlo pro nákup "
+                    :: List.indexedMap (filteredItemRadio currentFilteredItem) moreFilteredItems
+                )
+
+
+filteredItemRadio : FilteredItem -> Int -> FilteredItem -> Html CreationModalMsg
+filteredItemRadio currentFilteredItem idx filteredItem =
+    Radio.radio
+        [ Radio.id <| "filteredItem" ++ toString idx
+        , Radio.checked (currentFilteredItem == filteredItem)
+        , Radio.name "filteredItem"
+        , Radio.onClick <| SetFilteredItem filteredItem
+        , Radio.attrs [ Spacing.mx1 ]
+        ]
+        (Filter.itemToPluralStringGenitive filteredItem)
+
+
+conditionsOrExceptionTitle : Bool -> Html a
+conditionsOrExceptionTitle editingPositiveSubform =
+    text <|
+        if editingPositiveSubform then
+            ""
+        else
+            "Podmínky výjimky"
+
+
+{-| Calculate which ConditionType-s need to be removed when changing to new FilteredItem
+-}
+getConditionsRemovedByFilteredItemChange : FilteredItem -> Conditions -> List ConditionType
+getConditionsRemovedByFilteredItemChange filteredItem conditions =
+    let
+        currentlyEnabled : List ConditionType
+        currentlyEnabled =
+            getEnabledConditionTypes conditions
+
+        validForFilteredItem : List ConditionType
+        validForFilteredItem =
+            Conditions.conditionTypesThatApplyTo filteredItem
+    in
+    List.filter (\enabledCondType -> not <| List.member enabledCondType validForFilteredItem) currentlyEnabled

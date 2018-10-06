@@ -8,10 +8,10 @@ module Types
         )
 
 import Bootstrap.Accordion as Accordion
-import Bootstrap.Modal as Modal
 import Bootstrap.Popover as Popover
 import Data.ExitConfig as ExitConfig
 import Data.Filter exposing (FilteredItem)
+import Data.Filter.Complexity exposing (FilterComplexity)
 import Data.Filter.Conditions.Rating as Rating exposing (Rating)
 import Data.Portfolio exposing (Portfolio)
 import Data.Tooltip exposing (TipId)
@@ -45,17 +45,21 @@ type Msg
 
 type CreationModalMsg
     = TogglePositiveNegativeSubform
-    | ModalStateMsg FilteredItem Modal.Visibility
+    | OpenCreationModal FilterComplexity (List FilteredItem)
     | PositiveConditionsChange Conditions.Msg
     | NegativeConditionsChange Conditions.Msg
     | ModalTooltipMsg TipId Popover.State
+    | SetFilteredItem FilteredItem
+    | ConfirmConditionsRemoval
+    | CancelConditionsRemoval
     | SaveFilter
+    | CloseModal
     | ModalNoOp
 
 
 type DeletionModalMsg
     = ConfirmDeletion
-    | DeletionModalStateMsg Modal.Visibility
+    | CancelDeletion
 
 
 type alias BaseUrl =

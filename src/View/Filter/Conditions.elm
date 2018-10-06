@@ -1,9 +1,10 @@
-module View.Filter.Conditions exposing (Msg, form, update)
+module View.Filter.Conditions exposing (Msg, conditionTypesThatApplyTo, form, getVisibleLabel, update)
 
 import Bootstrap.Grid as Grid
 import Bootstrap.Grid.Col as Col
 import Bootstrap.Grid.Row as Row
 import Data.Filter exposing (FilteredItem(..))
+import Data.Filter.Complexity exposing (FilterComplexity(Complex))
 import Data.Filter.Conditions as C exposing (Condition(..), ConditionType(..), Conditions)
 import Data.Filter.Conditions.Amount as Amount exposing (Amount(..), AmountCondition(..), AmountMsg)
 import Data.Filter.Conditions.ElapsedTermMonths as ElapsedTermMonths exposing (ElapsedTermMonths(..), ElapsedTermMonthsCondition(..), ElapsedTermMonthsMsg)
@@ -35,18 +36,21 @@ type alias Model =
 -- VIEW
 
 
-form : FilteredItem -> Model -> Html Msg
-form filteredItem conditions =
+form : FilterComplexity -> FilteredItem -> Model -> Html Msg
+form filterComplexity filteredItem conditions =
     let
         enabledConditions =
             C.getEnabledConditions conditions
 
-        dropdown =
-            conditionEnablementDropdown filteredItem conditions
+        dropdownWhenFilterComplexOrConditionsEmpty =
+            if {- Simple rules can only have one condition -} filterComplexity == Complex || List.isEmpty enabledConditions then
+                conditionEnablementDropdown filteredItem conditions
+            else
+                text ""
     in
     div [ class "condition-subform-container" ]
         (List.map (conditionSubform filteredItem) enabledConditions
-            ++ [ dropdown ]
+            ++ [ dropdownWhenFilterComplexOrConditionsEmpty ]
         )
 
 
@@ -82,7 +86,7 @@ conditionEnablementDropdown filteredItem conditions =
             conditionTypesThatApplyTo filteredItem
 
         conditionsThatCanBeEnabled =
-            List.filter (\c -> List.member c validConditions) <| C.getDisabledConditions conditions
+            List.filter (\c -> List.member c validConditions) <| C.getDisabledConditionTypes conditions
 
         createConditionEnablingMessage conditionType =
             AddCondition <| C.getDefaultCondition conditionType

@@ -15,9 +15,14 @@ import Types exposing (Msg)
 
 filterListView : (Int -> Msg) -> List MarketplaceFilter -> Html Msg
 filterListView removeFilterByIndexMsg filters =
-    List.indexedMap (viewFilter removeFilterByIndexMsg) filters
-        |> List.intersperse orConnective
-        |> div [ Spacing.p2 ]
+    case filters of
+        [] ->
+            text ""
+
+        nonEmptyList ->
+            List.indexedMap (viewFilter removeFilterByIndexMsg) nonEmptyList
+                |> List.intersperse orConnective
+                |> div [ Spacing.p2 ]
 
 
 viewFilter : (Int -> Msg) -> Int -> MarketplaceFilter -> Html Msg

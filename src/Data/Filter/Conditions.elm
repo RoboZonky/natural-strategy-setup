@@ -9,9 +9,11 @@ module Data.Filter.Conditions
         , emptyConditions
         , encodeConditions
         , getDefaultCondition
-        , getDisabledConditions
+        , getDisabledConditionTypes
+        , getEnabledConditionTypes
         , getEnabledConditions
         , removeCondition
+        , removeConditions
         , renderCondition
         , updateAmount
         , updateElapsedTermMonths
@@ -205,8 +207,8 @@ conditionValidationError condition =
             TermPercent.validationErrors c
 
 
-getDisabledConditions : Conditions -> List ConditionType
-getDisabledConditions cs =
+getDisabledConditionTypes : Conditions -> List ConditionType
+getDisabledConditionTypes cs =
     let
         addIfNothing : (Conditions -> Maybe a) -> ConditionType -> List ConditionType
         addIfNothing field conditionType =
@@ -226,6 +228,30 @@ getDisabledConditions cs =
         , addIfNothing .story Story
         , addIfNothing .termMonths Term_Months
         , addIfNothing .termPercent Term_Percent
+        ]
+
+
+getEnabledConditionTypes : Conditions -> List ConditionType
+getEnabledConditionTypes cs =
+    let
+        addIfJust : (Conditions -> Maybe a) -> ConditionType -> List ConditionType
+        addIfJust field conditionType =
+            Maybe.withDefault [] <| Maybe.map (always [ conditionType ]) <| field cs
+    in
+    List.concat
+        [ addIfJust .amount Amount
+        , addIfJust .elapsedTermMonths Elapsed_Term_Months
+        , addIfJust .elapsedTermPercent Elapsed_Term_Percent
+        , addIfJust .income Income
+        , addIfJust .insurance Insurance
+        , addIfJust .interest Interest
+        , addIfJust .purpose Purpose
+        , addIfJust .rating Rating
+        , addIfJust .region Region
+        , addIfJust .remainingAmount Remaining_Amount
+        , addIfJust .story Story
+        , addIfJust .termMonths Term_Months
+        , addIfJust .termPercent Term_Percent
         ]
 
 
@@ -467,6 +493,11 @@ removeCondition conditionType cs =
 
         Term_Percent ->
             { cs | termPercent = Nothing }
+
+
+removeConditions : List ConditionType -> Conditions -> Conditions
+removeConditions conditionsToBeRemoved cs =
+    List.foldl removeCondition cs conditionsToBeRemoved
 
 
 getDefaultCondition : ConditionType -> Condition

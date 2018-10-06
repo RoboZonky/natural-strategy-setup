@@ -1,12 +1,23 @@
 module Version
     exposing
         ( commitHash
+        , filtersHowToLink
         , githubCommitLink
         , robozonkyVersionStatement
         , strategyComment
         )
 
+import Html exposing (Html, a, text)
+import Html.Attributes exposing (href)
 import Time.Date as Date exposing (Date)
+
+
+{-| Link to the document describing how filters should be configured.
+-}
+filtersHowToLink : Html a
+filtersHowToLink =
+    a [ href "https://github.com/RoboZonky/natural-strategy-setup/blob/master/docs/BuySellConfig.md" ]
+        [ text "Nápověda" ]
 
 
 githubCommitLink : String

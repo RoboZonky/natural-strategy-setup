@@ -2,7 +2,7 @@ module Main exposing (main)
 
 import Bootstrap.Accordion as Accordion
 import Bootstrap.Grid as Grid
-import Data.Filter as Filters exposing (FilteredItem(Participation_To_Sell))
+import Data.Filter as Filters exposing (FilteredItem(..))
 import Data.Investment as Investment
 import Data.InvestmentShare as InvestmentShare
 import Data.Portfolio
@@ -45,7 +45,7 @@ initialModel baseUrl strategyConfig initialAlert =
     { strategyConfig = strategyConfig
     , accordionState = Accordion.initialState
     , filterCreationState = FilterCreationModal.init
-    , filterDeletionState = FilterDeletionModal.initClosed
+    , filterDeletionState = FilterDeletionModal.init
     , tooltipStates = Tooltip.initialStates
     , generatedOn = DateTime.date DateTime.epoch
     , baseUrl = baseUrl
@@ -246,7 +246,7 @@ askForBuyFilterDeletionConfirmation oldModel newModel =
 
         newFilterDeletionState =
             if List.isEmpty removedFilters then
-                FilterDeletionModal.initClosed
+                FilterDeletionModal.init
             else
                 FilterDeletionModal.askForConfirmation
                     (FilterDeletionModal.BuyingConfigChange

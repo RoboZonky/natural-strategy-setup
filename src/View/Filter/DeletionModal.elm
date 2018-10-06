@@ -4,7 +4,7 @@ module View.Filter.DeletionModal
         , Model
         , UserDecision(..)
         , askForConfirmation
-        , initClosed
+        , init
         , update
         , view
         )
@@ -13,12 +13,11 @@ import Bootstrap.Button as Button
 import Bootstrap.Modal as Modal
 import Data.Filter as Filter exposing (BuyingConfiguration, MarketplaceFilter)
 import Html exposing (Html, text)
-import Html.Events exposing (onClick)
 import Types exposing (DeletionModalMsg(..))
 
 
-initClosed : Model
-initClosed =
+init : Model
+init =
     { changeToConfirm = NoChange
     , openCloseState = Modal.hidden
     }
@@ -43,7 +42,7 @@ update msg model =
         ConfirmDeletion ->
             ( { model | openCloseState = Modal.hidden }, Just OkToDelete )
 
-        DeletionModalStateMsg state ->
+        CancelDeletion ->
             let
                 userChoice =
                     case model.changeToConfirm of
@@ -53,7 +52,7 @@ update msg model =
                         NoChange ->
                             OkToDelete
             in
-            ( { model | openCloseState = state }, Just userChoice )
+            ( { model | openCloseState = Modal.hidden }, Just userChoice )
 
 
 type ChangeToConfirm
@@ -62,25 +61,25 @@ type ChangeToConfirm
 
 
 type UserDecision
-    = OkToDelete
-    | RestorePreviousBuying BuyingConfiguration
+    = RestorePreviousBuying BuyingConfiguration
+    | OkToDelete
 
 
 view : Model -> Html DeletionModalMsg
 view { changeToConfirm, openCloseState } =
-    Modal.config (DeletionModalStateMsg Modal.hidden)
+    Modal.config CancelDeletion
         |> Modal.large
         |> Modal.h5 [] [ text "Potvrďte odstranění filtrů" ]
         |> Modal.body [] [ modalBody changeToConfirm ]
         |> Modal.footer []
             [ Button.button
                 [ Button.danger
-                , Button.attrs [ onClick ConfirmDeletion ]
+                , Button.onClick ConfirmDeletion
                 ]
                 [ text "Ano, odstranit" ]
             , Button.button
                 [ Button.success
-                , Button.attrs [ onClick (DeletionModalStateMsg Modal.hidden) ]
+                , Button.onClick CancelDeletion
                 ]
                 [ text "Zrušit změnu" ]
             ]
