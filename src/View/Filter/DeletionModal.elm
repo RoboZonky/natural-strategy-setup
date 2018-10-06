@@ -11,7 +11,7 @@ module View.Filter.DeletionModal
 
 import Bootstrap.Button as Button
 import Bootstrap.Modal as Modal
-import Data.Filter as Filter exposing (BuyingConfiguration, MarketplaceFilter, SellingConfiguration)
+import Data.Filter as Filter exposing (BuyingConfiguration, MarketplaceFilter)
 import Html exposing (Html, text)
 import Html.Events exposing (onClick)
 import Types exposing (DeletionModalMsg(..))
@@ -50,9 +50,6 @@ update msg model =
                         BuyingConfigChange previous _ ->
                             RestorePreviousBuying previous
 
-                        SellingConfigChange previous _ ->
-                            RestorePreviousSelling previous
-
                         NoChange ->
                             OkToDelete
             in
@@ -61,14 +58,12 @@ update msg model =
 
 type ChangeToConfirm
     = BuyingConfigChange BuyingConfiguration BuyingConfiguration
-    | SellingConfigChange SellingConfiguration SellingConfiguration
     | NoChange
 
 
 type UserDecision
     = OkToDelete
     | RestorePreviousBuying BuyingConfiguration
-    | RestorePreviousSelling SellingConfiguration
 
 
 view : Model -> Html DeletionModalMsg
@@ -99,9 +94,6 @@ modalBody change =
             case change of
                 BuyingConfigChange from to ->
                     ( Filter.getFiltersRemovedByBuyingConfigurationChange from to, "nákupu" )
-
-                SellingConfigChange from to ->
-                    ( Filter.getFiltersRemovedBySellingConfigurationChange from to, "prodeje" )
 
                 NoChange ->
                     ( [], "" )

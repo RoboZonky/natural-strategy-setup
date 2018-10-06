@@ -4,31 +4,27 @@ module Data.Filter
         , FilteredItem(..)
         , MarketplaceEnablement
         , MarketplaceFilter
-        , SellConf(..)
         , SellingConfiguration(..)
+        , addSellFilter
         , decodeBuyingConfiguration
         , decodeSellingConfiguration
         , emptyFilter
         , encodeBuyingConfiguration
         , encodeSellingConfiguration
         , filterTextView
-        , fromSellConfEnum
         , getFiltersRemovedByBuyingConfigurationChange
-        , getFiltersRemovedBySellingConfigurationChange
         , isValid
         , itemToPluralString
         , marketplaceFilterValidationErrors
+        , removeSellFilterAt
         , renderBuyingConfiguration
         , renderSellingConfiguration
-        , sellConfRadioLabel
         , setFilteredItem
-        , toSellConfEnum
         , togglePrimaryEnablement
         , toggleSecondaryEnablement
         , updateBuyFilters
         , updateNegativeConditions
         , updatePositiveConditions
-        , updateSellFilters
         , validateSellingConfiguration
         )
 
@@ -37,6 +33,7 @@ import Data.Filter.Conditions as Conditions exposing (Condition, Conditions)
 import Html exposing (Html, span, text)
 import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as Encode exposing (Value)
+import List.Extra
 import Util
 
 
@@ -59,14 +56,29 @@ updateBuyFilters updater buyingConfiguration =
             other
 
 
-updateSellFilters : (List MarketplaceFilter -> List MarketplaceFilter) -> SellingConfiguration -> SellingConfiguration
-updateSellFilters updater sellingConfiguration =
+addSellFilter : MarketplaceFilter -> SellingConfiguration -> SellingConfiguration
+addSellFilter newFilter sellingConfiguration =
+    case sellingConfiguration of
+        SellNothing ->
+            SellSomething [ newFilter ]
+
+        SellSomething filters ->
+            SellSomething <| filters ++ [ newFilter ]
+
+
+removeSellFilterAt : Int -> SellingConfiguration -> SellingConfiguration
+removeSellFilterAt index sellingConfiguration =
     case sellingConfiguration of
         SellNothing ->
             SellNothing
 
         SellSomething filters ->
-            SellSomething <| updater filters
+            case List.Extra.removeAt index filters of
+                [] ->
+                    SellNothing
+
+                nonEmptyFilterList ->
+                    SellSomething nonEmptyFilterList
 
 
 togglePrimaryEnablement : Bool -> BuyingConfiguration -> BuyingConfiguration
@@ -166,16 +178,6 @@ getFiltersRemovedByBuyingConfigurationChange old new =
                 oldFilters
 
 
-getFiltersRemovedBySellingConfigurationChange : SellingConfiguration -> SellingConfiguration -> List MarketplaceFilter
-getFiltersRemovedBySellingConfigurationChange old new =
-    case ( old, new ) of
-        ( SellSomething oldFilters, SellNothing ) ->
-            oldFilters
-
-        _ ->
-            []
-
-
 removeDisabledFilters : MarketplaceEnablement -> List MarketplaceFilter -> List MarketplaceFilter
 removeDisabledFilters enablement =
     List.filter (enablementAllowsFilter enablement)
@@ -217,45 +219,6 @@ validateSellingConfiguration sellingConfiguration =
 
         SellNothing ->
             []
-
-
-
--- TODO This is enum for comparison in radios - any idea how to make it without it?
-
-
-type SellConf
-    = SNothing
-    | SSomething
-
-
-toSellConfEnum : SellingConfiguration -> SellConf
-toSellConfEnum sellingConfiguration =
-    case sellingConfiguration of
-        SellNothing ->
-            SNothing
-
-        SellSomething _ ->
-            SSomething
-
-
-fromSellConfEnum : SellConf -> SellingConfiguration
-fromSellConfEnum sellConf =
-    case sellConf of
-        SNothing ->
-            SellNothing
-
-        SSomething ->
-            SellSomething []
-
-
-sellConfRadioLabel : SellConf -> String
-sellConfRadioLabel sellConf =
-    case sellConf of
-        SSomething ->
-            "Prodávat vybrané."
-
-        SNothing ->
-            "Neprodávat žádné participace."
 
 
 renderSellingConfiguration : SellingConfiguration -> String

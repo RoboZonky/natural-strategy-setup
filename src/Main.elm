@@ -205,13 +205,6 @@ updateHelper msg model =
             in
             askForBuyFilterDeletionConfirmation model newModel
 
-        SetSellingConfiguration sellingConfiguration ->
-            let
-                newModel =
-                    updateStrategy (Strategy.setSellConf sellingConfiguration) model
-            in
-            askForSellFilterDeletionConfirmation model newModel
-
         DismisAlert ->
             { model | alert = NoAlert }
 
@@ -226,9 +219,6 @@ userDecisionToFilterUpdater userDecision =
     case userDecision of
         FilterDeletionModal.RestorePreviousBuying previousBuyingConfig ->
             Strategy.setBuyingConfiguration previousBuyingConfig
-
-        FilterDeletionModal.RestorePreviousSelling previousSellingConfig ->
-            Strategy.setSellingConfiguration previousSellingConfig
 
         FilterDeletionModal.OkToDelete ->
             identity
@@ -262,27 +252,6 @@ askForBuyFilterDeletionConfirmation oldModel newModel =
                     (FilterDeletionModal.BuyingConfigChange
                         oldModel.strategyConfig.buyingConfig
                         newModel.strategyConfig.buyingConfig
-                    )
-    in
-    { newModel | filterDeletionState = newFilterDeletionState }
-
-
-askForSellFilterDeletionConfirmation : Model -> Model -> Model
-askForSellFilterDeletionConfirmation oldModel newModel =
-    let
-        removedFilters =
-            Filters.getFiltersRemovedBySellingConfigurationChange
-                oldModel.strategyConfig.sellingConfig
-                newModel.strategyConfig.sellingConfig
-
-        newFilterDeletionState =
-            if List.isEmpty removedFilters then
-                FilterDeletionModal.initClosed
-            else
-                FilterDeletionModal.askForConfirmation
-                    (FilterDeletionModal.SellingConfigChange
-                        oldModel.strategyConfig.sellingConfig
-                        newModel.strategyConfig.sellingConfig
                     )
     in
     { newModel | filterDeletionState = newFilterDeletionState }

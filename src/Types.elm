@@ -11,7 +11,7 @@ import Bootstrap.Accordion as Accordion
 import Bootstrap.Modal as Modal
 import Bootstrap.Popover as Popover
 import Data.ExitConfig as ExitConfig
-import Data.Filter as Filter exposing (FilteredItem)
+import Data.Filter exposing (FilteredItem)
 import Data.Filter.Conditions.Rating as Rating exposing (Rating)
 import Data.Portfolio exposing (Portfolio)
 import Data.Tooltip exposing (TipId)
@@ -34,7 +34,6 @@ type Msg
     | RemoveSellFilter Int
     | TogglePrimaryMarket Bool
     | ToggleSecondaryMarket Bool
-    | SetSellingConfiguration Filter.SellConf
     | AccordionMsg Accordion.State
     | CreationModalMsg CreationModalMsg
     | DeletionModalMsg DeletionModalMsg

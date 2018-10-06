@@ -16,7 +16,6 @@ module Data.Strategy
         , setInvestment
         , setPortfolio
         , setPortfolioShareRange
-        , setSellConf
         , setSellingConfiguration
         , setTargetBalance
         , setTargetPortfolioSize
@@ -188,7 +187,7 @@ removeBuyFilter index config =
 
 removeSellFilter : Int -> StrategyConfiguration -> StrategyConfiguration
 removeSellFilter index config =
-    { config | sellingConfig = Filters.updateSellFilters (List.Extra.removeAt index) config.sellingConfig }
+    { config | sellingConfig = Filters.removeSellFilterAt index config.sellingConfig }
 
 
 setBuyingConfiguration : Filters.BuyingConfiguration -> StrategyConfiguration -> StrategyConfiguration
@@ -199,11 +198,6 @@ setBuyingConfiguration buyingConfiguration strategy =
 setSellingConfiguration : Filters.SellingConfiguration -> StrategyConfiguration -> StrategyConfiguration
 setSellingConfiguration sellingConfiguration strategy =
     { strategy | sellingConfig = sellingConfiguration }
-
-
-setSellConf : Filters.SellConf -> StrategyConfiguration -> StrategyConfiguration
-setSellConf sellConf =
-    setSellingConfiguration (Filters.fromSellConfEnum sellConf)
 
 
 togglePrimaryMarket : Bool -> StrategyConfiguration -> StrategyConfiguration
@@ -223,7 +217,7 @@ addBuyFilter newFilter config =
 
 addSellFilter : MarketplaceFilter -> StrategyConfiguration -> StrategyConfiguration
 addSellFilter newFilter config =
-    { config | sellingConfig = Filters.updateSellFilters (\fs -> fs ++ [ newFilter ]) config.sellingConfig }
+    { config | sellingConfig = Filters.addSellFilter newFilter config.sellingConfig }
 
 
 renderStrategyConfiguration : BaseUrl -> Date -> StrategyConfiguration -> String
