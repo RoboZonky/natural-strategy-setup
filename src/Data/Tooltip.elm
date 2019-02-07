@@ -1,20 +1,19 @@
-module Data.Tooltip
-    exposing
-        ( States
-        , TipId
-        , buyFilterCreationTip
-        , buyFilterListTip
-        , exitDateTip
-        , getState
-        , getTooltipText
-        , initialStates
-        , portfolioStructureTip
-        , sellFilterCreationTip
-        , sellFilterListTip
-        , sellofDateTip
-        , update
-        , zonkoidTip
-        )
+module Data.Tooltip exposing
+    ( States
+    , TipId
+    , buyFilterCreationTip
+    , buyFilterListTip
+    , exitDateTip
+    , getState
+    , getTooltipText
+    , initialStates
+    , portfolioStructureTip
+    , sellFilterCreationTip
+    , sellFilterListTip
+    , sellofDateTip
+    , update
+    , zonkoidTip
+    )
 
 import Bootstrap.Popover as Popover
 import Dict exposing (Dict)

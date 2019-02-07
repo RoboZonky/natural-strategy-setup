@@ -1,11 +1,9 @@
-module Data.PortfolioStructure.PredefinedShares
-    exposing
-        ( balanced
-        , conservative
-        , progressive
-        )
+module Data.PortfolioStructure.PredefinedShares exposing
+    ( balanced
+    , conservative
+    , progressive
+    )
 
-import AllDict
 import Data.Filter.Conditions.Rating as Rating exposing (Rating(..))
 import Data.PortfolioStructure exposing (PortfolioShares)
 
@@ -55,4 +53,4 @@ progressive =
 initShares : List ( Rating, Int ) -> PortfolioShares
 initShares =
     List.map (\( rtg, x ) -> ( rtg, Data.PortfolioStructure.percentageShare x x ))
-        >> AllDict.fromList Rating.hash
+        >> Rating.initRatingDict

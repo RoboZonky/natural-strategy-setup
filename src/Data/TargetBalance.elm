@@ -1,11 +1,10 @@
-module Data.TargetBalance
-    exposing
-        ( TargetBalance(..)
-        , decoder
-        , encode
-        , render
-        , validate
-        )
+module Data.TargetBalance exposing
+    ( TargetBalance(..)
+    , decoder
+    , encode
+    , render
+    , validate
+    )
 
 import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as Encode exposing (Value)
@@ -21,7 +20,7 @@ render : TargetBalance -> String
 render targetBalance =
     case targetBalance of
         TargetBalance balance ->
-            "Investovat pouze pokud disponibilní zůstatek přesáhne " ++ toString balance ++ " Kč."
+            "Investovat pouze pokud disponibilní zůstatek přesáhne " ++ String.fromInt balance ++ " Kč."
 
         NotSpecified ->
             ""
@@ -45,10 +44,10 @@ encode : TargetBalance -> Value
 encode tb =
     case tb of
         NotSpecified ->
-            Encode.list [ Encode.int 1 ]
+            Encode.list Encode.int [ 1 ]
 
         TargetBalance pct ->
-            Encode.list [ Encode.int 2, Encode.int pct ]
+            Encode.list Encode.int [ 2, pct ]
 
 
 decoder : Decoder TargetBalance
@@ -64,5 +63,5 @@ decoder =
                         Decode.succeed <| TargetBalance pct
 
                     _ ->
-                        Decode.fail <| "Unable to decode TargetBalance from " ++ toString ints
+                        Decode.fail <| "Unable to decode TargetBalance from " ++ Util.intListToString ints
             )

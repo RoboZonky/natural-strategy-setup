@@ -4,7 +4,7 @@ import Bootstrap.Grid as Grid
 import Bootstrap.Grid.Col as Col
 import Bootstrap.Grid.Row as Row
 import Data.Filter exposing (FilteredItem(..))
-import Data.Filter.Complexity exposing (FilterComplexity(Complex))
+import Data.Filter.Complexity exposing (FilterComplexity(..))
 import Data.Filter.Conditions as C exposing (Condition(..), ConditionType(..), Conditions)
 import Data.Filter.Conditions.Amount as Amount exposing (Amount(..), AmountCondition(..), AmountMsg)
 import Data.Filter.Conditions.ElapsedTermMonths as ElapsedTermMonths exposing (ElapsedTermMonths(..), ElapsedTermMonthsCondition(..), ElapsedTermMonthsMsg)
@@ -23,6 +23,7 @@ import Html exposing (Html, div, span, text)
 import Html.Attributes exposing (class)
 import Html.Events exposing (onClick)
 import View.EnumSelect as Select
+
 
 
 -- MODEL
@@ -45,6 +46,7 @@ form filterComplexity filteredItem conditions =
         dropdownWhenFilterComplexOrConditionsEmpty =
             if {- Simple rules can only have one condition -} filterComplexity == Complex || List.isEmpty enabledConditions then
                 conditionEnablementDropdown filteredItem conditions
+
             else
                 text ""
     in
@@ -90,14 +92,17 @@ conditionEnablementDropdown filteredItem conditions =
 
         createConditionEnablingMessage conditionType =
             AddCondition <| C.getDefaultCondition conditionType
-
-        enumToString =
-            getVisibleLabel filteredItem
     in
     if List.isEmpty conditionsThatCanBeEnabled then
         text ""
+
     else
-        Select.from conditionsThatCanBeEnabled createConditionEnablingMessage NoOp "-- Přidat podmínku --" enumToString
+        Select.from
+            { enumValues = conditionsThatCanBeEnabled
+            , valuePickedMessage = createConditionEnablingMessage
+            , showVisibleLabel = getVisibleLabel filteredItem
+            , dummyOption = "-- Přidat podmínku --"
+            }
 
 
 termConditionLabel : FilteredItem -> String -> String
@@ -166,11 +171,11 @@ getVisibleLabel filteredItem conditionType =
         Elapsed_Term_Months ->
             -- Note that this string contains &nbsp; entered by pasting escape sequence "\x00A0"
             -- (which is then transformed into corresponding unicode char by elm-format)
-            "Uhrazeno splátek (v měsících)"
+            "Uhrazeno splátek (v\u{00A0}měsících)"
 
         --
         Elapsed_Term_Percent ->
-            "Uhrazeno splátek (v %)"
+            "Uhrazeno splátek (v\u{00A0}%)"
 
         Income ->
             "Zdroj příjmů klienta"
@@ -197,10 +202,10 @@ getVisibleLabel filteredItem conditionType =
             "Příběh"
 
         Term_Months ->
-            termConditionLabel filteredItem "(v měsících)"
+            termConditionLabel filteredItem "(v\u{00A0}měsících)"
 
         Term_Percent ->
-            termConditionLabel filteredItem "(v %)"
+            termConditionLabel filteredItem "(v\u{00A0}%)"
 
 
 closeableWrapper : FilteredItem -> ConditionType -> Html Msg -> Html Msg
@@ -242,7 +247,6 @@ type
       -- Control enabling / disabling conditions
     | AddCondition Condition
     | RemoveCondition ConditionType
-    | NoOp
 
 
 update : Msg -> Model -> Model
@@ -292,6 +296,3 @@ update msg model =
 
         RemoveCondition ct ->
             C.removeCondition ct model
-
-        NoOp ->
-            model

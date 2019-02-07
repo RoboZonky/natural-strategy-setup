@@ -1,21 +1,20 @@
 module Test.RandomStrategy exposing (conditionsGen, strategyConfigurationGen)
 
-import AllDict
 import Data.Confirmation exposing (ConfirmationSettings)
 import Data.ExitConfig as ExitConfig
 import Data.Filter as Filter exposing (BuyingConfiguration, FilteredItem(..), MarketplaceEnablement, MarketplaceFilter, SellingConfiguration)
 import Data.Filter.Conditions exposing (Condition(..), Conditions, addCondition, emptyConditions)
-import Data.Filter.Conditions.Amount as Amount exposing (AmountCondition(AmountCondition))
+import Data.Filter.Conditions.Amount as Amount exposing (AmountCondition(..))
 import Data.Filter.Conditions.ElapsedTermMonths as ElapsedTermMonths exposing (ElapsedTermMonthsCondition(..))
 import Data.Filter.Conditions.ElapsedTermPercent as ElapsedTermPercent exposing (ElapsedTermPercentCondition(..))
 import Data.Filter.Conditions.Income as Income exposing (IncomeCondition(..))
 import Data.Filter.Conditions.Insurance exposing (Insurance(..), InsuranceCondition(..))
 import Data.Filter.Conditions.Interest as Interest exposing (InterestCondition(..))
-import Data.Filter.Conditions.Purpose as Purpose exposing (PurposeCondition(PurposeList))
-import Data.Filter.Conditions.Rating as Rating exposing (RatingCondition(RatingList))
-import Data.Filter.Conditions.Region as Region exposing (RegionCondition(RegionList))
-import Data.Filter.Conditions.RemainingAmount as RemainingAmount exposing (RemainingAmountCondition(RemainingAmountCondition))
-import Data.Filter.Conditions.Story exposing (Story(..), StoryCondition(StoryCondition))
+import Data.Filter.Conditions.Purpose as Purpose exposing (PurposeCondition(..))
+import Data.Filter.Conditions.Rating as Rating exposing (RatingCondition(..))
+import Data.Filter.Conditions.Region as Region exposing (RegionCondition(..))
+import Data.Filter.Conditions.RemainingAmount as RemainingAmount exposing (RemainingAmountCondition(..))
+import Data.Filter.Conditions.Story exposing (Story(..), StoryCondition(..))
 import Data.Filter.Conditions.TermMonths as TermMonths exposing (TermMonthsCondition(..))
 import Data.Filter.Conditions.TermPercent as TermPercent exposing (TermPercentCondition(..))
 import Data.Investment as Investment exposing (InvestmentsPerRating)
@@ -24,7 +23,7 @@ import Data.Portfolio exposing (Portfolio(..))
 import Data.PortfolioStructure as PortfolioStructure exposing (PortfolioShares)
 import Data.Strategy exposing (GeneralSettings, StrategyConfiguration)
 import Data.TargetBalance as TargetBalance exposing (TargetBalance(..))
-import Data.TargetPortfolioSize as TargetPortfoliSize exposing (TargetPortfolioSize(TargetPortfolioSize))
+import Data.TargetPortfolioSize as TargetPortfoliSize exposing (TargetPortfolioSize(..))
 import Random exposing (Generator)
 import Random.Extra as Random
 import Random.List
@@ -62,7 +61,7 @@ portfolioSharesGen =
         |> Random.map
             (\sharesList ->
                 List.map2 (\rtg ( from, to ) -> ( rtg, PortfolioStructure.percentageShare from to )) Rating.allRatings sharesList
-                    |> AllDict.fromList Rating.hash
+                    |> Rating.initRatingDict
             )
 
 
@@ -72,21 +71,20 @@ investmentsPerRatingGen =
         |> Random.map
             (\investmentSizes ->
                 List.map2 (\rtg sz -> ( rtg, sz )) Rating.allRatings investmentSizes
-                    |> AllDict.fromList Rating.hash
+                    |> Rating.initRatingDict
             )
 
 
 investment0to5kRange : Generator Investment.Size
 investment0to5kRange =
     randomRangeGen 0 25
-        |> Random.map (\( from, to ) -> Investment.size (200 * from) (200 * to))
+        |> Random.map (\( from, to ) -> Investment.mkSize (200 * from) (200 * to))
 
 
 buyingConfigGen : Generator BuyingConfiguration
 buyingConfigGen =
-    Random.frequency
-        [ ( 1, Random.constant Filter.InvestNothing )
-        , ( 2, Random.map2 Filter.InvestSomething marketplaceEnablementGen (Random.rangeLengthList 0 10 buyFilterGen) )
+    Random.frequency ( 1, Random.constant Filter.InvestNothing )
+        [ ( 2, Random.map2 Filter.InvestSomething marketplaceEnablementGen (Random.rangeLengthList 0 10 buyFilterGen) )
         , ( 1, Random.constant Filter.InvestEverything )
         ]
 
@@ -98,11 +96,9 @@ marketplaceEnablementGen =
 
 sellingConfigGen : Generator SellingConfiguration
 sellingConfigGen =
-    Random.frequency
-        [ ( 1, Random.constant Filter.SellNothing )
-
-        -- Generate nonempty filter list here, as empty filter list is invalid, prevented by form validation
-        , ( 3, Random.map Filter.SellSomething (Random.rangeLengthList 1 10 sellFilterGen) )
+    Random.frequency ( 1, Random.constant Filter.SellNothing )
+        [ -- Generate nonempty filter list here, as empty filter list is invalid, prevented by form validation
+          ( 3, Random.map Filter.SellSomething (Random.rangeLengthList 1 10 sellFilterGen) )
         ]
 
 
@@ -204,9 +200,8 @@ termMonthsConditionGen =
         maxTermMonths =
             84
     in
-    Random.choices
-        [ Random.map TermMonths.LessThan (Random.int (minTermMonths + 1 {- 0 is invalid, as parser subtract 1 -}) (maxTermMonths + 1))
-        , randomRangeGen minTermMonths maxTermMonths
+    Random.choices (Random.map TermMonths.LessThan (Random.int (minTermMonths + 1 {- 0 is invalid, as parser subtract 1 -}) (maxTermMonths + 1)))
+        [ randomRangeGen minTermMonths maxTermMonths
             |> Random.map (\( mi, mx ) -> TermMonths.Between mi mx)
         , Random.map TermMonths.MoreThan (Random.int minTermMonths (maxTermMonths - 1 {- max is invalid, as parser adds 1 -}))
         ]
@@ -222,9 +217,8 @@ termPercentConditionGen =
         maxTermPercent =
             100
     in
-    Random.choices
-        [ Random.map TermPercent.LessThan (Random.int (minTermPercent + 1 {- 0 is invalid, as parser subtract 1 -}) (maxTermPercent + 1))
-        , percentRangeGen |> Random.map (\( mi, mx ) -> TermPercent.Between mi mx)
+    Random.choices (Random.map TermPercent.LessThan (Random.int (minTermPercent + 1 {- 0 is invalid, as parser subtract 1 -}) (maxTermPercent + 1)))
+        [ percentRangeGen |> Random.map (\( mi, mx ) -> TermPercent.Between mi mx)
         , Random.map TermPercent.MoreThan (Random.int minTermPercent (maxTermPercent - 1 {- max is invalid, as parser adds 1 -}))
         ]
         |> Random.map (TermPercentCondition >> Condition_Term_Percent)
@@ -239,9 +233,8 @@ elapsedTermMonthsConditionGen =
         maxTermMonths =
             84
     in
-    Random.choices
-        [ Random.map ElapsedTermMonths.LessThan (Random.int (minTermMonths + 1 {- 0 is invalid, as parser subtract 1 -}) (maxTermMonths + 1))
-        , randomRangeGen minTermMonths maxTermMonths
+    Random.choices (Random.map ElapsedTermMonths.LessThan (Random.int (minTermMonths + 1 {- 0 is invalid, as parser subtract 1 -}) (maxTermMonths + 1)))
+        [ randomRangeGen minTermMonths maxTermMonths
             |> Random.map (\( mi, mx ) -> ElapsedTermMonths.Between mi mx)
         , Random.map ElapsedTermMonths.MoreThan (Random.int minTermMonths (maxTermMonths - 1 {- max is invalid, as parser adds 1 -}))
         ]
@@ -257,9 +250,8 @@ elapsedTermPercentConditionGen =
         maxTermPercent =
             100
     in
-    Random.choices
-        [ Random.map ElapsedTermPercent.LessThan (Random.int (minTermPercent + 1 {- 0 is invalid, as parser subtract 1 -}) (maxTermPercent + 1))
-        , percentRangeGen |> Random.map (\( mi, mx ) -> ElapsedTermPercent.Between mi mx)
+    Random.choices (Random.map ElapsedTermPercent.LessThan (Random.int (minTermPercent + 1 {- 0 is invalid, as parser subtract 1 -}) (maxTermPercent + 1)))
+        [ percentRangeGen |> Random.map (\( mi, mx ) -> ElapsedTermPercent.Between mi mx)
         , Random.map ElapsedTermPercent.MoreThan (Random.int minTermPercent (maxTermPercent - 1 {- max is invalid, as parser adds 1 -}))
         ]
         |> Random.map (ElapsedTermPercentCondition >> Condition_Elapsed_Term_Percent)
@@ -271,9 +263,8 @@ amountConditionGen =
         maxAmount =
             1000000
     in
-    Random.choices
-        [ Random.map Amount.LessThan (Random.int 0 maxAmount)
-        , randomRangeGen 0 maxAmount |> Random.map (\( mi, mx ) -> Amount.Between mi mx)
+    Random.choices (Random.map Amount.LessThan (Random.int 0 maxAmount))
+        [ randomRangeGen 0 maxAmount |> Random.map (\( mi, mx ) -> Amount.Between mi mx)
         , Random.map Amount.MoreThan (Random.int 0 maxAmount)
         ]
         |> Random.map (AmountCondition >> Condition_Amount)
@@ -285,9 +276,8 @@ remainingAmountConditionGen =
         maxRemainingAmount =
             1000000
     in
-    Random.choices
-        [ Random.map RemainingAmount.LessThan (Random.int 0 maxRemainingAmount)
-        , randomRangeGen 0 maxRemainingAmount |> Random.map (\( mi, mx ) -> RemainingAmount.Between mi mx)
+    Random.choices (Random.map RemainingAmount.LessThan (Random.int 0 maxRemainingAmount))
+        [ randomRangeGen 0 maxRemainingAmount |> Random.map (\( mi, mx ) -> RemainingAmount.Between mi mx)
         , Random.map RemainingAmount.MoreThan (Random.int 0 maxRemainingAmount)
         ]
         |> Random.map (RemainingAmountCondition >> Condition_Remaining_Amount)
@@ -295,9 +285,8 @@ remainingAmountConditionGen =
 
 interestConditionGen : Generator Condition
 interestConditionGen =
-    Random.choices
-        [ Random.map Interest.LessThan (float2dpGen 0 100)
-        , float2dpGen 0 100 |> Random.andThen (\mi -> float2dpGen mi 100 |> Random.map (\mx -> Interest.Between mi mx))
+    Random.choices (Random.map Interest.LessThan (float2dpGen 0 100))
+        [ float2dpGen 0 100 |> Random.andThen (\mi -> float2dpGen mi 100 |> Random.map (\mx -> Interest.Between mi mx))
         , Random.map Interest.MoreThan (float2dpGen 0 100)
         ]
         |> Random.map (InterestCondition >> Condition_Interest)
@@ -327,10 +316,8 @@ portfolioGen =
 
 targetPortfolioSizeGen : Generator TargetPortfolioSize
 targetPortfolioSizeGen =
-    Random.frequency
-        [ ( 1, Random.constant TargetPortfoliSize.NotSpecified )
-        , ( 2, Random.int 0 1000000 |> Random.map TargetPortfolioSize )
-        ]
+    Random.frequency ( 1, Random.constant TargetPortfoliSize.NotSpecified )
+        [ ( 2, Random.int 0 1000000 |> Random.map TargetPortfolioSize ) ]
 
 
 investmentSizeGen : Generator Investment.Size
@@ -340,18 +327,14 @@ investmentSizeGen =
 
 investmentShareGen : Generator InvestmentShare
 investmentShareGen =
-    Random.frequency
-        [ ( 1, Random.constant InvestmentShare.NotSpecified )
-        , ( 2, Random.map InvestmentShare.Percent <| Random.int 1 100 )
-        ]
+    Random.frequency ( 1, Random.constant InvestmentShare.NotSpecified )
+        [ ( 2, Random.map InvestmentShare.Percent <| Random.int 1 100 ) ]
 
 
 targetBalanceGen : Generator TargetBalance
 targetBalanceGen =
-    Random.frequency
-        [ ( 1, Random.constant TargetBalance.NotSpecified )
-        , ( 2, Random.int 200 100000 |> Random.map TargetBalance )
-        ]
+    Random.frequency ( 1, Random.constant TargetBalance.NotSpecified )
+        [ ( 2, Random.int 200 100000 |> Random.map TargetBalance ) ]
 
 
 confirmationSettingsGen : Generator ConfirmationSettings
@@ -366,21 +349,20 @@ exitConfigGen =
             {- Not really random, just bumping day by 1 to make sellof date 1 day earlier -}
             Random.map (\( d, m, y ) -> ExitConfig.ExitByWithSelloff (dateToString ( d + 1, m, y )) (dateToString ( d, m, y ))) dateGen
     in
-    Random.frequency
-        [ ( 1, Random.constant ExitConfig.DontExit )
-        , ( 2, Random.map (ExitConfig.ExitBy << dateToString) dateGen )
+    Random.frequency ( 1, Random.constant ExitConfig.DontExit )
+        [ ( 2, Random.map (ExitConfig.ExitBy << dateToString) dateGen )
         , ( 3, exitByWithSelloffGen )
         ]
 
 
 dateToString : ( Int, Int, Int ) -> String
 dateToString ( day, month, year ) =
-    String.join "." <| List.map toString [ day, month, year ]
+    String.join "." <| List.map String.fromInt [ day, month, year ]
 
 
 dateGen : Generator ( Int, Int, Int )
 dateGen =
-    Random.map3 (,,)
+    Random.map3 (\a b c -> ( a, b, c ))
         (Random.int 1 27)
         (Random.int 1 12)
         (Random.int 1970 2100)
@@ -402,11 +384,12 @@ subset minimumElements whatToSamleFrom =
         |> Random.andThen (\bools -> Random.List.shuffle bools)
         |> Random.map
             (\bools ->
-                List.map2 (,) bools whatToSamleFrom
+                List.map2 (\a b -> ( a, b )) bools whatToSamleFrom
                     |> List.filterMap
                         (\( flag, thing ) ->
                             if flag then
                                 Just thing
+
                             else
                                 Nothing
                         )

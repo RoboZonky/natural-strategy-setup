@@ -13,5 +13,6 @@ markOpenedAccordionCard cardId accordionState =
     Card.attrs <|
         if Accordion.isOpen cardId accordionState then
             [ class "card-open" ]
+
         else
             []

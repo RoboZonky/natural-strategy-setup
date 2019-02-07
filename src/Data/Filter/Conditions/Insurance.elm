@@ -1,15 +1,14 @@
-module Data.Filter.Conditions.Insurance
-    exposing
-        ( Insurance(Active, Inactive)
-        , InsuranceCondition(InsuranceCondition)
-        , InsuranceMsg
-        , conditionDecoder
-        , defaultCondition
-        , encodeCondition
-        , form
-        , renderCondition
-        , update
-        )
+module Data.Filter.Conditions.Insurance exposing
+    ( Insurance(..)
+    , InsuranceCondition(..)
+    , InsuranceMsg
+    , conditionDecoder
+    , defaultCondition
+    , encodeCondition
+    , form
+    , renderCondition
+    , update
+    )
 
 import Bootstrap.Form.Checkbox as Checkbox
 import Html exposing (Html)
@@ -57,18 +56,29 @@ update (SetInsurance i) _ =
 form : InsuranceCondition -> Html InsuranceMsg
 form (InsuranceCondition i) =
     Checkbox.checkbox
-        [ Checkbox.id ("insurance_" ++ toString i)
+        [ Checkbox.id (toDomId i)
         , Checkbox.inline
         , Checkbox.checked (i == Active)
         , Checkbox.onCheck
             (\checked ->
                 if checked then
                     SetInsurance Active
+
                 else
                     SetInsurance Inactive
             )
         ]
         "pojištění je aktivní"
+
+
+toDomId : Insurance -> String
+toDomId i =
+    case i of
+        Active ->
+            "insurance_active"
+
+        Inactive ->
+            "insurance_inactive"
 
 
 
@@ -97,6 +107,7 @@ insuranceDecoder =
             (\b ->
                 if b then
                     Active
+
                 else
                     Inactive
             )

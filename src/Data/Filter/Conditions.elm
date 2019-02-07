@@ -1,34 +1,33 @@
-module Data.Filter.Conditions
-    exposing
-        ( Condition(..)
-        , ConditionType(..)
-        , Conditions
-        , addCondition
-        , conditionsDecoder
-        , conditionsValidationErrors
-        , emptyConditions
-        , encodeConditions
-        , getDefaultCondition
-        , getDisabledConditionTypes
-        , getEnabledConditionTypes
-        , getEnabledConditions
-        , removeCondition
-        , removeConditions
-        , renderCondition
-        , updateAmount
-        , updateElapsedTermMonths
-        , updateElapsedTermPercent
-        , updateIncome
-        , updateInsurance
-        , updateInterest
-        , updatePurpose
-        , updateRating
-        , updateRegion
-        , updateRemainingAmount
-        , updateStory
-        , updateTermMonths
-        , updateTermPercent
-        )
+module Data.Filter.Conditions exposing
+    ( Condition(..)
+    , ConditionType(..)
+    , Conditions
+    , addCondition
+    , conditionsDecoder
+    , conditionsValidationErrors
+    , emptyConditions
+    , encodeConditions
+    , getDefaultCondition
+    , getDisabledConditionTypes
+    , getEnabledConditionTypes
+    , getEnabledConditions
+    , removeCondition
+    , removeConditions
+    , renderCondition
+    , updateAmount
+    , updateElapsedTermMonths
+    , updateElapsedTermPercent
+    , updateIncome
+    , updateInsurance
+    , updateInterest
+    , updatePurpose
+    , updateRating
+    , updateRegion
+    , updateRemainingAmount
+    , updateStory
+    , updateTermMonths
+    , updateTermPercent
+    )
 
 import Data.Filter.Conditions.Amount as Amount exposing (AmountCondition, AmountMsg)
 import Data.Filter.Conditions.ElapsedTermMonths as ElapsedTermMonths exposing (ElapsedTermMonthsCondition, ElapsedTermMonthsMsg)
@@ -44,7 +43,7 @@ import Data.Filter.Conditions.Story as Story exposing (StoryCondition, StoryMsg)
 import Data.Filter.Conditions.TermMonths as TermMonths exposing (TermMonthsCondition, TermMonthsMsg)
 import Data.Filter.Conditions.TermPercent as TermPercent exposing (TermPercentCondition, TermPercentMsg)
 import Json.Decode as Decode exposing (Decoder)
-import Json.Decode.Extra exposing ((|:), optionalField)
+import Json.Decode.Extra exposing (andMap, optionalField)
 import Json.Encode as Encode exposing (Value)
 import List
 
@@ -600,16 +599,16 @@ encodeCondition condition =
 conditionsDecoder : Decoder Conditions
 conditionsDecoder =
     Decode.succeed Conditions
-        |: optionalField "A" Region.conditionDecoder
-        |: optionalField "B" Rating.conditionDecoder
-        |: optionalField "C" Income.conditionDecoder
-        |: optionalField "D" Purpose.conditionDecoder
-        |: optionalField "E" Story.conditionDecoder
-        |: optionalField "F" TermMonths.conditionDecoder
-        |: optionalField "G" TermPercent.conditionDecoder
-        |: optionalField "H" ElapsedTermMonths.conditionDecoder
-        |: optionalField "I" ElapsedTermPercent.conditionDecoder
-        |: optionalField "J" Interest.conditionDecoder
-        |: optionalField "K" Amount.conditionDecoder
-        |: optionalField "L" Insurance.conditionDecoder
-        |: optionalField "M" RemainingAmount.conditionDecoder
+        |> andMap (optionalField "A" Region.conditionDecoder)
+        |> andMap (optionalField "B" Rating.conditionDecoder)
+        |> andMap (optionalField "C" Income.conditionDecoder)
+        |> andMap (optionalField "D" Purpose.conditionDecoder)
+        |> andMap (optionalField "E" Story.conditionDecoder)
+        |> andMap (optionalField "F" TermMonths.conditionDecoder)
+        |> andMap (optionalField "G" TermPercent.conditionDecoder)
+        |> andMap (optionalField "H" ElapsedTermMonths.conditionDecoder)
+        |> andMap (optionalField "I" ElapsedTermPercent.conditionDecoder)
+        |> andMap (optionalField "J" Interest.conditionDecoder)
+        |> andMap (optionalField "K" Amount.conditionDecoder)
+        |> andMap (optionalField "L" Insurance.conditionDecoder)
+        |> andMap (optionalField "M" RemainingAmount.conditionDecoder)

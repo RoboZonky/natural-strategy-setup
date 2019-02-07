@@ -1,16 +1,15 @@
-module Data.Filter.Conditions.Interest
-    exposing
-        ( Interest(..)
-        , InterestCondition(..)
-        , InterestMsg
-        , conditionDecoder
-        , defaultCondition
-        , encodeCondition
-        , form
-        , renderCondition
-        , update
-        , validationErrors
-        )
+module Data.Filter.Conditions.Interest exposing
+    ( Interest(..)
+    , InterestCondition(..)
+    , InterestMsg
+    , conditionDecoder
+    , defaultCondition
+    , encodeCondition
+    , form
+    , renderCondition
+    , update
+    , validationErrors
+    )
 
 import Bootstrap.Form as Form
 import Bootstrap.Form.Radio as Radio
@@ -19,7 +18,7 @@ import Html exposing (Html, text)
 import Html.Events exposing (onSubmit)
 import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as Encode exposing (Value)
-import Util exposing (emptyToZero, zeroToEmpty)
+import Util exposing (emptyToZero, zeroToEmptyFloat)
 import View.NumericInput
 
 
@@ -63,7 +62,7 @@ floatToString : Float -> String
 floatToString float =
     let
         strFloat =
-            Basics.toString float
+            String.fromFloat float
     in
     case String.split "." strFloat of
         [ beforeComma, afterComma ] ->
@@ -119,37 +118,49 @@ whichEnabled interest =
 
 
 update : InterestMsg -> InterestCondition -> InterestCondition
-update msg ic =
-    case msg of
-        SetLessThan hi ->
-            emptyToZero hi |> String.toFloat |> Result.map (InterestCondition << LessThan) |> Result.withDefault ic
+update msg (InterestCondition i) =
+    InterestCondition <|
+        Maybe.withDefault i <|
+            case msg of
+                SetLessThan hi ->
+                    Maybe.map LessThan (parseFloat hi)
 
-        SetBetween loStr hiStr ->
-            emptyToZero loStr
-                |> String.toFloat
-                |> Result.andThen (\lo -> emptyToZero hiStr |> String.toFloat |> Result.map (\hi -> InterestCondition <| Between lo hi))
-                |> Result.withDefault ic
+                SetBetween lo hi ->
+                    Maybe.map2 Between (parseFloat lo) (parseFloat hi)
 
-        SetMoreThan lo ->
-            emptyToZero lo |> String.toFloat |> Result.map (InterestCondition << MoreThan) |> Result.withDefault ic
+                SetMoreThan lo ->
+                    Maybe.map MoreThan (parseFloat lo)
 
-        InterestNoOp ->
-            ic
+                InterestNoOp ->
+                    Nothing
+
+
+parseFloat : String -> Maybe Float
+parseFloat =
+    String.toFloat << emptyToZero
+
+
+type alias InterestRadioValues =
+    { lessThan : String
+    , betweenMin : String
+    , betweenMax : String
+    , moreThan : String
+    }
 
 
 form : InterestCondition -> Html InterestMsg
 form (InterestCondition interest) =
     let
-        ( ltVal, btwMinVal, btwMaxVal, mtVal ) =
+        values =
             case interest of
                 LessThan x ->
-                    ( zeroToEmpty x, "", "", "" )
+                    InterestRadioValues (zeroToEmptyFloat x) "" "" ""
 
                 Between mi ma ->
-                    ( "", zeroToEmpty mi, zeroToEmpty ma, "" )
+                    InterestRadioValues "" (zeroToEmptyFloat mi) (zeroToEmptyFloat ma) ""
 
                 MoreThan x ->
-                    ( "", "", "", zeroToEmpty x )
+                    InterestRadioValues "" "" "" (zeroToEmptyFloat x)
 
         ( ltEnabled, btwEnabled, mtEnabled ) =
             whichEnabled interest
@@ -157,19 +168,19 @@ form (InterestCondition interest) =
     Html.div []
         [ Form.formInline [ onSubmit InterestNoOp ]
             [ interestRadio ltEnabled (SetLessThan "0") "nedosahuje" "interest1"
-            , numericInput SetLessThan ltEnabled ltVal
+            , numericInput SetLessThan ltEnabled values.lessThan
             , text "%"
             ]
         , Form.formInline [ onSubmit InterestNoOp ]
             [ interestRadio btwEnabled (SetBetween "0" "0") "je" "interest2"
-            , numericInput (\x -> SetBetween x btwMaxVal) btwEnabled btwMinVal
+            , numericInput (\x -> SetBetween x values.betweenMax) btwEnabled values.betweenMin
             , text "až"
-            , numericInput (\y -> SetBetween btwMinVal y) btwEnabled btwMaxVal
+            , numericInput (\y -> SetBetween values.betweenMin y) btwEnabled values.betweenMax
             , text "%"
             ]
         , Form.formInline [ onSubmit InterestNoOp ]
             [ interestRadio mtEnabled (SetMoreThan "0") "přesahuje" "interest3"
-            , numericInput SetMoreThan mtEnabled mtVal
+            , numericInput SetMoreThan mtEnabled values.moreThan
             , text "%"
             ]
         ]
@@ -233,7 +244,7 @@ interestDecoder =
                             (Decode.field "w" Decode.float)
 
                     _ ->
-                        Decode.fail <| "Invalid interest type " ++ Basics.toString typ
+                        Decode.fail <| "Invalid interest type " ++ String.fromInt typ
             )
 
 

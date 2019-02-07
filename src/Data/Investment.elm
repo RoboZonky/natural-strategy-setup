@@ -1,26 +1,25 @@
-module Data.Investment
-    exposing
-        ( InvestmentsPerRating
-        , Size
-        , anyInvestmentExceeds5k
-        , decoder
-        , defaultInvestmentSliderSubscription
-        , defaultInvestmentsPerRating
-        , defaultSize
-        , encode
-        , encodeSize
-        , investmentSizeEqual
-        , investmentSlidersSubscriptions
-        , investmentsPerRatingEqual
-        , renderInvestments
-        , renderSize
-        , size
-        , sizeDecoder
-        )
+module Data.Investment exposing
+    ( InvestmentsPerRating
+    , Size
+    , anyInvestmentExceeds5k
+    , decoder
+    , defaultInvestmentSliderSubscription
+    , defaultInvestmentsPerRating
+    , defaultSize
+    , encode
+    , encodeSize
+    , investmentSizeEqual
+    , investmentSlidersSubscriptions
+    , investmentsPerRatingEqual
+    , mkSize
+    , renderInvestments
+    , renderSize
+    , sizeDecoder
+    )
 
-import AllDict exposing (AllDict)
 import Data.Filter.Conditions.Rating as Rating exposing (Rating, ratingToString)
 import Data.SharedJsonStuff
+import Dict.Any exposing (AnyDict)
 import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as Encode exposing (Value)
 import RangeSlider exposing (RangeSlider, setDimensions, setExtents, setFormatter, setStepSize, setValues)
@@ -29,12 +28,12 @@ import Util
 
 
 type alias InvestmentsPerRating =
-    AllDict Rating Size Int
+    AnyDict Int Rating Size
 
 
 defaultInvestmentsPerRating : Size -> InvestmentsPerRating
-defaultInvestmentsPerRating defaultSize =
-    AllDict.fromList Rating.hash <| List.map (\r -> ( r, defaultSize )) Rating.allRatings
+defaultInvestmentsPerRating initialSize =
+    Rating.initRatingDict <| List.map (\r -> ( r, initialSize )) Rating.allRatings
 
 
 type alias Size =
@@ -52,13 +51,14 @@ renderInvestment ( rating, size ) =
 
 
 renderInvestments : Size -> InvestmentsPerRating -> String
-renderInvestments defaultSize investments =
-    if AllDict.isEmpty investments then
+renderInvestments defaultSize_ investments =
+    if Dict.Any.isEmpty investments then
         ""
+
     else
-        AllDict.toList investments
+        Dict.Any.toList investments
             --filter our sizes equal to default size
-            |> List.filter (\( _, invSize ) -> toIntRange invSize /= toIntRange defaultSize)
+            |> List.filter (\( _, invSize ) -> toIntRange invSize /= toIntRange defaultSize_)
             |> List.map renderInvestment
             |> Util.renderNonemptySection "\n- Výše investice"
 
@@ -70,18 +70,20 @@ investmentSizeToString size =
             toIntRange size
     in
     if mini == maxi then
-        " " ++ toString mini
+        " " ++ String.fromInt mini
+
     else if mini == 0 then
-        " až " ++ toString maxi
+        " až " ++ String.fromInt maxi
+
     else
-        " " ++ toString mini ++ " až " ++ toString maxi
+        " " ++ String.fromInt mini ++ " až " ++ String.fromInt maxi
 
 
-size : Int -> Int -> Size
-size from to =
+mkSize : Int -> Int -> Size
+mkSize from to =
     RangeSlider.init
         |> setStepSize (Just 200)
-        |> setFormatter (\value -> toString value ++ "Kč")
+        |> setFormatter (\value -> String.fromFloat value ++ "Kč")
         |> setDimensions 300 57
         |> setExtents 0 20000
         |> setValues (toFloat from) (toFloat to)
@@ -89,12 +91,12 @@ size from to =
 
 defaultSize : Size
 defaultSize =
-    size 200 200
+    mkSize 200 200
 
 
 investmentSlidersSubscriptions : InvestmentsPerRating -> Sub Types.Msg
 investmentSlidersSubscriptions iprSliderStates =
-    AllDict.toList iprSliderStates
+    Dict.Any.toList iprSliderStates
         |> List.map (\( rtg, sliderState ) -> Sub.map (Types.ChangeInvestment rtg) (RangeSlider.subscriptions sliderState))
         |> Sub.batch
 
@@ -111,7 +113,7 @@ toIntRange =
 
 anyInvestmentExceeds5k : Size -> InvestmentsPerRating -> Bool
 anyInvestmentExceeds5k default overrides =
-    AllDict.toList overrides
+    Dict.Any.toList overrides
         |> List.map (\( _, size ) -> toIntRange size |> Tuple.second)
         |> List.append [ toIntRange default |> Tuple.second ]
         |> List.filter (\x -> x > 5000)
@@ -126,10 +128,10 @@ investmentSizeEqual s1 s2 =
 investmentsPerRatingEqual : InvestmentsPerRating -> InvestmentsPerRating -> Bool
 investmentsPerRatingEqual ipr1 ipr2 =
     let
-        toVal =
-            AllDict.map (\_ slider -> RangeSlider.getValues slider)
+        getSliderValues =
+            Dict.Any.values >> List.map RangeSlider.getValues
     in
-    AllDict.eq (toVal ipr1) (toVal ipr2)
+    getSliderValues ipr1 == getSliderValues ipr2
 
 
 
@@ -148,7 +150,7 @@ decoder =
 
 encodeSize : Size -> Value
 encodeSize sz =
-    toIntRange sz |> (\( from, to ) -> Encode.list [ Encode.int from, Encode.int to ])
+    toIntRange sz |> (\( from, to ) -> Encode.list Encode.int [ from, to ])
 
 
 sizeDecoder : Decoder Size
@@ -158,7 +160,7 @@ sizeDecoder =
             (\xs ->
                 case xs of
                     from :: to :: [] ->
-                        size from to
+                        mkSize from to
 
                     _ ->
                         defaultSize

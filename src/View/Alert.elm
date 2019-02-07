@@ -4,8 +4,8 @@ import Bootstrap.Alert
 import Html exposing (Html, a, button, span, text)
 import Html.Attributes exposing (class, href, type_)
 import Html.Events exposing (onClick)
-import Http
-import Types exposing (AlertData(..), Msg(DismisAlert))
+import Types exposing (AlertData(..), Msg(..))
+import Url.Builder exposing (crossOrigin, string)
 
 
 view : AlertData -> Html Msg
@@ -30,7 +30,8 @@ view maybeAlert =
 
 openIssueUrl : String -> String
 openIssueUrl error =
-    "https://github.com/RoboZonky/natural-strategy-setup/issues/new?title="
-        ++ Http.encodeUri "Chyba při obnově strategie z URL"
-        ++ "&body="
-        ++ Http.encodeUri error
+    crossOrigin "https://github.com"
+        [ "RoboZonky", "natural-strategy-setup", "issues", "new" ]
+        [ string "title" "Chyba při obnově strategie z URL"
+        , string "body" error
+        ]

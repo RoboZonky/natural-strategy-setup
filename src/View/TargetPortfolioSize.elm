@@ -5,10 +5,10 @@ import Bootstrap.Form as Form
 import Bootstrap.Form.Fieldset as Fieldset
 import Bootstrap.Form.Radio as Radio
 import Bootstrap.Utilities.Spacing as Spacing
-import Data.TargetPortfolioSize as TargetPortfolioSize exposing (TargetPortfolioSize(NotSpecified, TargetPortfolioSize))
+import Data.TargetPortfolioSize as TargetPortfolioSize exposing (TargetPortfolioSize(..))
 import Html exposing (Html, text)
 import Html.Events exposing (onSubmit)
-import Types exposing (Msg(NoOp, TargetPortfolioSizeChanged))
+import Types exposing (Msg(..))
 import Util
 import View.NumericInput
 

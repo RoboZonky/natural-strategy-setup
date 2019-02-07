@@ -1,16 +1,15 @@
-module Data.Filter.Conditions.TermPercent
-    exposing
-        ( TermPercent(..)
-        , TermPercentCondition(..)
-        , TermPercentMsg
-        , conditionDecoder
-        , defaultCondition
-        , encodeCondition
-        , form
-        , renderCondition
-        , update
-        , validationErrors
-        )
+module Data.Filter.Conditions.TermPercent exposing
+    ( TermPercent(..)
+    , TermPercentCondition(..)
+    , TermPercentMsg
+    , conditionDecoder
+    , defaultCondition
+    , encodeCondition
+    , form
+    , renderCondition
+    , update
+    , validationErrors
+    )
 
 import Bootstrap.Form as Form
 import Bootstrap.Form.Radio as Radio
@@ -41,13 +40,13 @@ termPercentToString : TermPercent -> String
 termPercentToString termPercent =
     case termPercent of
         LessThan maxBound ->
-            "nedosahuje " ++ toString maxBound
+            "nedosahuje " ++ String.fromInt maxBound
 
         Between minBound maxBound ->
-            "je " ++ toString minBound ++ " až " ++ toString maxBound
+            "je " ++ String.fromInt minBound ++ " až " ++ String.fromInt maxBound
 
         MoreThan minBound ->
-            "přesahuje " ++ toString minBound
+            "přesahuje " ++ String.fromInt minBound
 
 
 renderCondition : TermPercentCondition -> String
@@ -72,9 +71,9 @@ validateInRange : Int -> Int -> Int -> List String
 validateInRange minValid maxValid x =
     Util.validate (x < minValid || maxValid < x) <|
         "Délka úvěru v procentech: musí být v rozmezí "
-            ++ toString minValid
+            ++ String.fromInt minValid
             ++ " až "
-            ++ toString maxValid
+            ++ String.fromInt maxValid
 
 
 validateMinNotGtMax : Int -> Int -> List String
@@ -104,37 +103,52 @@ whichEnabled termPercent =
 
 update : TermPercentMsg -> TermPercentCondition -> TermPercentCondition
 update msg (TermPercentCondition term) =
-    case msg of
-        SetLessThan hi ->
-            emptyToZero hi |> String.toInt |> Result.map LessThan |> Result.withDefault term |> TermPercentCondition
+    TermPercentCondition <|
+        Maybe.withDefault term <|
+            case msg of
+                SetLessThan hi ->
+                    Maybe.map LessThan (parseInt hi)
 
-        SetBetween loStr hiStr ->
-            emptyToZero loStr
-                |> String.toInt
-                |> Result.andThen (\lo -> emptyToZero hiStr |> String.toInt |> Result.map (\hi -> Between lo hi))
-                |> Result.withDefault term
-                |> TermPercentCondition
+                SetBetween lo hi ->
+                    Maybe.map2 Between (parseInt lo) (parseInt hi)
 
-        SetMoreThan lo ->
-            emptyToZero lo |> String.toInt |> Result.map MoreThan |> Result.withDefault term |> TermPercentCondition
+                SetMoreThan lo ->
+                    Maybe.map MoreThan (parseInt lo)
 
-        TermPercentNoOp ->
-            TermPercentCondition term
+                TermPercentNoOp ->
+                    Nothing
+
+
+parseInt : String -> Maybe Int
+parseInt =
+    String.toInt << emptyToZero
+
+
+
+-- Elm 0.19: using this instead of 4-tuple
+
+
+type alias TermPercentRadioValues =
+    { lessThan : String
+    , betweenMin : String
+    , betweenMax : String
+    , moreThan : String
+    }
 
 
 form : TermPercentCondition -> Html TermPercentMsg
 form (TermPercentCondition termPercent) =
     let
-        ( ltVal, btwMinVal, btwMaxVal, mtVal ) =
+        values =
             case termPercent of
                 LessThan x ->
-                    ( zeroToEmpty x, "", "", "" )
+                    TermPercentRadioValues (zeroToEmpty x) "" "" ""
 
                 Between mi ma ->
-                    ( "", zeroToEmpty mi, zeroToEmpty ma, "" )
+                    TermPercentRadioValues "" (zeroToEmpty mi) (zeroToEmpty ma) ""
 
                 MoreThan x ->
-                    ( "", "", "", zeroToEmpty x )
+                    TermPercentRadioValues "" "" "" (zeroToEmpty x)
 
         ( ltEnabled, btwEnabled, mtEnabled ) =
             whichEnabled termPercent
@@ -142,19 +156,19 @@ form (TermPercentCondition termPercent) =
     Html.div []
         [ Form.formInline [ onSubmit TermPercentNoOp ]
             [ termPercentRadio ltEnabled (SetLessThan "0") "nedosahuje"
-            , numericInput SetLessThan ltEnabled ltVal
+            , numericInput SetLessThan ltEnabled values.lessThan
             , text "% původní délky"
             ]
         , Form.formInline [ onSubmit TermPercentNoOp ]
             [ termPercentRadio btwEnabled (SetBetween "0" "0") "je"
-            , numericInput (\x -> SetBetween x btwMaxVal) btwEnabled btwMinVal
+            , numericInput (\x -> SetBetween x values.betweenMax) btwEnabled values.betweenMin
             , text "až"
-            , numericInput (\y -> SetBetween btwMinVal y) btwEnabled btwMaxVal
+            , numericInput (\y -> SetBetween values.betweenMin y) btwEnabled values.betweenMax
             , text "% původní délky"
             ]
         , Form.formInline [ onSubmit TermPercentNoOp ]
             [ termPercentRadio mtEnabled (SetMoreThan "0") "přesahuje"
-            , numericInput SetMoreThan mtEnabled mtVal
+            , numericInput SetMoreThan mtEnabled values.moreThan
             , text "% původní délky"
             ]
         ]
@@ -183,13 +197,13 @@ encodeTermPercent : TermPercent -> Value
 encodeTermPercent amt =
     case amt of
         LessThan x ->
-            Encode.list [ Encode.int 1, Encode.int x ]
+            Encode.list Encode.int [ 1, x ]
 
         Between x y ->
-            Encode.list [ Encode.int 2, Encode.int x, Encode.int y ]
+            Encode.list Encode.int [ 2, x, y ]
 
         MoreThan y ->
-            Encode.list [ Encode.int 3, Encode.int y ]
+            Encode.list Encode.int [ 3, y ]
 
 
 encodeCondition : TermPercentCondition -> Value
@@ -213,7 +227,7 @@ termPercentDecoder =
                         Decode.succeed <| MoreThan y
 
                     _ ->
-                        Decode.fail <| "Unable to decode TermPercent from " ++ toString ints
+                        Decode.fail <| "Unable to decode TermPercent from " ++ Util.intListToString ints
             )
 
 

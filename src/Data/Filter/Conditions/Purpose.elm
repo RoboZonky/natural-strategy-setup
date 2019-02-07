@@ -1,17 +1,16 @@
-module Data.Filter.Conditions.Purpose
-    exposing
-        ( Purpose(..)
-        , PurposeCondition(..)
-        , PurposeMsg
-        , allPurposes
-        , conditionDecoder
-        , defaultCondition
-        , encodeCondition
-        , form
-        , renderCondition
-        , update
-        , validationErrors
-        )
+module Data.Filter.Conditions.Purpose exposing
+    ( Purpose(..)
+    , PurposeCondition(..)
+    , PurposeMsg
+    , allPurposes
+    , conditionDecoder
+    , defaultCondition
+    , encodeCondition
+    , form
+    , renderCondition
+    , update
+    , validationErrors
+    )
 
 import Bootstrap.Form.Checkbox as Checkbox
 import Html exposing (Html, div)
@@ -34,7 +33,16 @@ type Purpose
 
 allPurposes : List Purpose
 allPurposes =
-    [ AUTO_MOTO, CESTOVANI, DOMACNOST, ELEKTRONIKA, REFINANCOVANI_PUJCEK, VLASTNI_PROJEKT, VZDELANI, ZDRAVI, JINE ]
+    [ AUTO_MOTO
+    , CESTOVANI
+    , DOMACNOST
+    , ELEKTRONIKA
+    , REFINANCOVANI_PUJCEK
+    , VLASTNI_PROJEKT
+    , VZDELANI
+    , ZDRAVI
+    , JINE
+    ]
 
 
 type PurposeCondition
@@ -110,18 +118,19 @@ update msg (PurposeList plist) =
 form : PurposeCondition -> Html PurposeMsg
 form (PurposeList plist) =
     allPurposes
-        |> List.map (\p -> purposeCheckbox p (List.member p plist))
+        |> List.indexedMap (\index purpose -> purposeCheckbox index purpose (List.member purpose plist))
         |> div []
 
 
-purposeCheckbox : Purpose -> Bool -> Html PurposeMsg
-purposeCheckbox purpose isEnabled =
+purposeCheckbox : Int -> Purpose -> Bool -> Html PurposeMsg
+purposeCheckbox index purpose isEnabled =
     Checkbox.checkbox
-        [ Checkbox.id ("purpose_" ++ toString purpose)
+        [ Checkbox.id ("purpose_" ++ String.fromInt index)
         , Checkbox.onCheck
             (\checked ->
                 if checked then
                     AddPurpose purpose
+
                 else
                     RemovePurpose purpose
             )
@@ -138,7 +147,7 @@ encodePurpose =
 
 encodeCondition : PurposeCondition -> Value
 encodeCondition (PurposeList lps) =
-    Encode.list <| List.map encodePurpose lps
+    Encode.list encodePurpose lps
 
 
 purposeDecoder : Decoder Purpose

@@ -1,15 +1,14 @@
-module Data.Filter.Conditions.Story
-    exposing
-        ( Story(..)
-        , StoryCondition(..)
-        , StoryMsg
-        , conditionDecoder
-        , defaultCondition
-        , encodeCondition
-        , form
-        , renderCondition
-        , update
-        )
+module Data.Filter.Conditions.Story exposing
+    ( Story(..)
+    , StoryCondition(..)
+    , StoryMsg
+    , conditionDecoder
+    , defaultCondition
+    , encodeCondition
+    , form
+    , renderCondition
+    , update
+    )
 
 import Bootstrap.Form.Radio as Radio
 import Html exposing (Html, div)
@@ -27,7 +26,11 @@ type Story
 
 allStories : List Story
 allStories =
-    [ SHORT, BELOW_AVERAGE, AVERAGE, ABOVE_AVERAGE ]
+    [ SHORT
+    , BELOW_AVERAGE
+    , AVERAGE
+    , ABOVE_AVERAGE
+    ]
 
 
 type StoryCondition
@@ -71,13 +74,15 @@ update (SetStory s) _ =
 
 form : StoryCondition -> Html StoryMsg
 form (StoryCondition currentStory) =
-    div [] <| List.map (storyRadio currentStory) allStories
+    allStories
+        |> List.indexedMap (\index story -> storyRadio index currentStory story)
+        |> div []
 
 
-storyRadio : Story -> Story -> Html StoryMsg
-storyRadio currentStory thisRadiosStory =
+storyRadio : Int -> Story -> Story -> Html StoryMsg
+storyRadio index currentStory thisRadiosStory =
     Radio.radio
-        [ Radio.id (toString thisRadiosStory)
+        [ Radio.id ("story_" ++ String.fromInt index)
         , Radio.name "story"
         , Radio.checked (currentStory == thisRadiosStory)
         , Radio.onClick (SetStory thisRadiosStory)

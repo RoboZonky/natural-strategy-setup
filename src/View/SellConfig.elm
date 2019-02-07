@@ -4,11 +4,11 @@ import Bootstrap.Accordion as Accordion
 import Bootstrap.Button as Button
 import Bootstrap.Card.Block as CardBlock
 import Bootstrap.Utilities.Spacing as Spacing
-import Data.Filter exposing (FilteredItem(Participation_To_Sell), SellingConfiguration(..))
-import Data.Filter.Complexity exposing (FilterComplexity(Complex, Simple), complexityButtonLabel)
+import Data.Filter exposing (FilteredItem(..), SellingConfiguration(..))
+import Data.Filter.Complexity exposing (FilterComplexity(..), complexityButtonLabel)
 import Data.Tooltip as Tooltip
 import Html exposing (Html, div, text)
-import Types exposing (CreationModalMsg(OpenCreationModal), Msg(CreationModalMsg, RemoveSellFilter))
+import Types exposing (CreationModalMsg(..), Msg(..))
 import Version exposing (filtersHowToLink)
 import View.CardHeightWorkaround exposing (markOpenedAccordionCard)
 import View.Filter exposing (filterListView)

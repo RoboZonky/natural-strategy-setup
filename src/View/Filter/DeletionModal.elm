@@ -1,13 +1,12 @@
-module View.Filter.DeletionModal
-    exposing
-        ( ChangeToConfirm(..)
-        , Model
-        , UserDecision(..)
-        , askForConfirmation
-        , init
-        , update
-        , view
-        )
+module View.Filter.DeletionModal exposing
+    ( ChangeToConfirm(..)
+    , Model
+    , UserDecision(..)
+    , askForConfirmation
+    , init
+    , update
+    , view
+    )
 
 import Bootstrap.Button as Button
 import Bootstrap.Modal as Modal

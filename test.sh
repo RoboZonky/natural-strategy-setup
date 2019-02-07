@@ -1,8 +1,8 @@
 #!/bin/bash
-set -e # Exit immediately when some command fails
+set -euxo pipefail
 
 # Run unit tests
-elm test
+elm-test
 
 # Run Integration tests
 TESTS_DIR=integration-tests
@@ -14,6 +14,6 @@ if [ ! -f "${TESTS_DIR}/chromedriver" ]; then
   unzip ${TESTS_DIR}/chromedriver_linux64.zip -d ${TESTS_DIR}
 fi
 
-elm make src/Test/TestApp.elm --yes --warn --output ${TESTS_DIR}/target/testApp.html
+elm make src/Test/TestApp.elm --optimize --output ${TESTS_DIR}/target/testApp.html
 cd ${TESTS_DIR}
 mvn test

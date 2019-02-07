@@ -1,14 +1,13 @@
-module Data.Confirmation
-    exposing
-        ( ConfirmationSettings
-        , confirmationsDisabled
-        , decoder
-        , encode
-        , equal
-        , render
-        )
+module Data.Confirmation exposing
+    ( ConfirmationSettings
+    , confirmationsDisabled
+    , decoder
+    , encode
+    , equal
+    , render
+    )
 
-import Data.Filter.Conditions.Rating as Rating exposing (RatingCondition(RatingList))
+import Data.Filter.Conditions.Rating as Rating exposing (RatingCondition(..))
 import Json.Decode exposing (Decoder)
 import Json.Encode exposing (Value)
 
@@ -26,6 +25,7 @@ render : ConfirmationSettings -> String
 render (RatingList enabledRatings) =
     if List.isEmpty enabledRatings then
         ""
+
     else
         "Potvrzovat mobilem investice do úvěrů, kde " ++ Rating.renderCondition (RatingList enabledRatings) ++ "."
 

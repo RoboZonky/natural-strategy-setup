@@ -7,12 +7,12 @@ import Bootstrap.Grid as Grid
 import Bootstrap.Grid.Col as Col
 import Data.Strategy as Strategy exposing (StrategyConfiguration)
 import Html exposing (text)
-import Html.Attributes exposing (downloadAs, href, readonly, style)
-import Time.Date exposing (Date)
+import Html.Attributes exposing (download, href, readonly, style)
+import Time exposing (Posix)
 import Types exposing (BaseUrl)
 
 
-view : BaseUrl -> Date -> StrategyConfiguration -> Grid.Column a
+view : BaseUrl -> Posix -> StrategyConfiguration -> Grid.Column a
 view baseUrl generatedOn strategyConfig =
     let
         strategyValidationErrors =
@@ -24,6 +24,7 @@ view baseUrl generatedOn strategyConfig =
         previewText =
             if isValidStrategy then
                 Strategy.renderStrategyConfiguration baseUrl generatedOn strategyConfig
+
             else
                 String.join "\n" <|
                     "Konfigurace nemůže být zobrazena, protože formulář obsahuje chyby:"
@@ -39,7 +40,7 @@ view baseUrl generatedOn strategyConfig =
                 [ Textarea.textarea
                     [ Textarea.rows <| previewTextRowCount + extraRowsForStrategyUrl
                     , Textarea.value previewText
-                    , Textarea.attrs [ readonly True, style [ ( "width", "100%" ) ] ]
+                    , Textarea.attrs [ readonly True, style "width" "100%" ]
                     ]
                 ]
             ]
@@ -50,7 +51,7 @@ view baseUrl generatedOn strategyConfig =
                     , Button.disabled <| not isValidStrategy
                     , Button.attrs
                         [ href <| "data:text/plain;charset=utf-8;base64," ++ Base64.encode previewText
-                        , downloadAs "robozonky-strategy.cfg"
+                        , download "robozonky-strategy.cfg"
                         ]
                     ]
                     [ text "Stáhni konfigurační soubor" ]

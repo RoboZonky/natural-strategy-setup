@@ -1,22 +1,21 @@
-module Data.Filter.Conditions.Rating
-    exposing
-        ( Rating(..)
-        , RatingCondition(..)
-        , RatingMsg
-        , allRatings
-        , conditionDecoder
-        , defaultCondition
-        , encodeCondition
-        , form
-        , hash
-        , ratingFromString
-        , ratingToString
-        , renderCondition
-        , update
-        , validationErrors
-        )
+module Data.Filter.Conditions.Rating exposing
+    ( Rating(..)
+    , RatingCondition(..)
+    , RatingMsg
+    , allRatings
+    , conditionDecoder
+    , defaultCondition
+    , encodeCondition
+    , form
+    , initRatingDict
+    , ratingToString
+    , renderCondition
+    , update
+    , validationErrors
+    )
 
 import Bootstrap.Form.Checkbox as Checkbox
+import Dict.Any exposing (AnyDict)
 import Html exposing (Html, div)
 import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as Encode exposing (Value)
@@ -37,7 +36,15 @@ type Rating
 
 allRatings : List Rating
 allRatings =
-    [ A_Double_Star, A_Star, A_Double_Plus, A_Plus, A, B, C, D ]
+    [ A_Double_Star
+    , A_Star
+    , A_Double_Plus
+    , A_Plus
+    , A
+    , B
+    , C
+    , D
+    ]
 
 
 ratingToString : Rating -> String
@@ -68,15 +75,9 @@ ratingToString r =
             "D"
 
 
-ratingFromString : String -> Maybe Rating
-ratingFromString s =
-    allRatings |> List.filter (\r -> toString r == s) |> List.head
-
-
-
--- TODO Elm 0.18 doesn't make it possible to use Union type values as keys in Dict
--- As a workaround using eeue56/elm-all-dict which makes that possible, but requires explicit key hashing function
--- Expecting this to be rectified in 0.19
+initRatingDict : List ( Rating, a ) -> AnyDict Int Rating a
+initRatingDict =
+    Dict.Any.fromList hash
 
 
 hash : Rating -> Int
@@ -105,6 +106,11 @@ hash rating =
 
         D ->
             8
+
+
+toDomId : String -> Rating -> String
+toDomId domIdPrefix rating =
+    domIdPrefix ++ String.fromInt (hash rating)
 
 
 type RatingCondition
@@ -169,8 +175,10 @@ simplify (RatingList rlist) =
     in
     if List.isPrefixOf sortedHashes allHashes && 0 < len && len < ratingCount then
         BetterThan <| Maybe.withDefault A_Double_Star <| List.head <| List.drop len allRatings
+
     else if List.isSuffixOf sortedHashes allHashes && 0 < len && len < ratingCount then
         WorseThan <| Maybe.withDefault D <| List.last <| List.take (ratingCount - len) allRatings
+
     else
         SimplifiedRatingList rlist
 
@@ -210,11 +218,12 @@ form domIdPrefix
 ratingCheckbox : String -> Rating -> Bool -> Html RatingMsg
 ratingCheckbox domIdPrefix rating isEnabled =
     Checkbox.checkbox
-        [ Checkbox.id (domIdPrefix ++ toString rating)
+        [ Checkbox.id (toDomId domIdPrefix rating)
         , Checkbox.onCheck
             (\checked ->
                 if checked then
                     AddRating rating
+
                 else
                     RemoveRating rating
             )
@@ -235,7 +244,7 @@ encodeRating =
 
 encodeCondition : RatingCondition -> Value
 encodeCondition (RatingList rs) =
-    Encode.list <| List.map encodeRating rs
+    Encode.list encodeRating rs
 
 
 ratingDecoder : Decoder Rating

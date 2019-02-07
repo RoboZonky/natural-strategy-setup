@@ -1,56 +1,81 @@
-module View.EnumSelect exposing (from)
+module View.EnumSelect exposing (EnumSelectConfig, from)
 
+import Dict
 import Html exposing (Html, option, text)
 import Html.Attributes exposing (class, selected, value)
-import Html.Events exposing (onInput)
+import Html.Events exposing (stopPropagationOn, targetValue)
 import Html.Keyed as Keyed
+import Json.Decode as Decode exposing (Decoder)
 
 
-{-| from xs valuePickedMsg noOpMsg infoText toLabel
+type alias EnumSelectConfig enum msg =
+    { -- List of enum values to pick from
+      enumValues : List enum
 
-xs = List of enum values to pick from
-valuePickedMsg = message to be fired when valid option picked
-noOpMsg = Message to be fired when invalid option picked
-infoText = Text for dummy option informing user to pick something (like "-- select fruit --")
-toLabel = Function to convert enum value to visible text of select's option
+    -- Message to be fired when valid option picked
+    , valuePickedMessage : enum -> msg
 
--}
-from : List a -> (a -> msg) -> msg -> String -> (a -> String) -> Html msg
-from xs valuePickedMsg noOpMsg infoText toLabel =
+    --| How to display the value in the dropdown
+    , showVisibleLabel : enum -> String
+
+    --| Text for dummy option informing user to pick something (like "-- select fruit --")
+    , dummyOption : String
+    }
+
+
+from : EnumSelectConfig enum msg -> Html msg
+from { enumValues, valuePickedMessage, showVisibleLabel, dummyOption } =
     let
-        toOption x =
-            ( -- Html.Keyed needs us to assign unique ID to each keyed node
-              toString x
+        toOption index enum =
+            let
+                -- Html.Keyed needs us to assign unique ID to each keyed node
+                key =
+                    String.fromInt index
+            in
+            ( key
             , option
-                [ value (toString x) ]
-                [ text (toLabel x) ]
+                [ value key ]
+                [ text (showVisibleLabel enum) ]
             )
 
-        stringToEnum : String -> Maybe a
+        stringToEnum : String -> Maybe enum
         stringToEnum =
-            makeStringToEnum xs
+            makeStringToEnum enumValues
 
-        stringToMessage : String -> msg
-        stringToMessage str =
-            case stringToEnum str of
-                Nothing ->
-                    noOpMsg
+        -- Html.Event.onInput modified to only emit event when enum value is successfully decoded from the targetValue string
+        enumDecoder : Decoder ( msg, Bool )
+        enumDecoder =
+            targetValue
+                |> Decode.andThen
+                    (\str ->
+                        case stringToEnum str of
+                            Just enumVal ->
+                                Decode.succeed ( valuePickedMessage enumVal, True )
 
-                Just val ->
-                    valuePickedMsg val
+                            Nothing ->
+                                Decode.fail <| "Failed to decode enum value from " ++ str
+                    )
 
         informativeOption =
             ( "dummyInformativeOption"
             , option
                 [ selected True ]
-                [ text infoText ]
+                [ text dummyOption ]
             )
     in
     Keyed.node "select"
-        [ onInput stringToMessage, class "form-control" ]
-        (informativeOption :: List.map toOption xs)
+        [ stopPropagationOn "input" enumDecoder
+        , class "form-control"
+        ]
+        (informativeOption :: List.indexedMap toOption enumValues)
 
 
-makeStringToEnum : List a -> (String -> Maybe a)
-makeStringToEnum xs str =
-    List.filter (\x -> toString x == str) xs |> List.head
+{-| Given list of enum values create a lookup function
+for converting from enum value's index back to enum's value
+-}
+makeStringToEnum : List enum -> (String -> Maybe enum)
+makeStringToEnum enumValues =
+    \str ->
+        List.indexedMap (\index val -> ( String.fromInt index, val )) enumValues
+            |> Dict.fromList
+            |> Dict.get str

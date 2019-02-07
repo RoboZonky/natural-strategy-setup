@@ -1,11 +1,10 @@
-module Types
-    exposing
-        ( AlertData(..)
-        , BaseUrl
-        , CreationModalMsg(..)
-        , DeletionModalMsg(..)
-        , Msg(..)
-        )
+module Types exposing
+    ( AlertData(..)
+    , BaseUrl
+    , CreationModalMsg(..)
+    , DeletionModalMsg(..)
+    , Msg(..)
+    )
 
 import Bootstrap.Accordion as Accordion
 import Bootstrap.Popover as Popover
@@ -16,7 +15,7 @@ import Data.Filter.Conditions.Rating as Rating exposing (Rating)
 import Data.Portfolio exposing (Portfolio)
 import Data.Tooltip exposing (TipId)
 import RangeSlider
-import Time exposing (Time)
+import Time exposing (Posix)
 import View.Filter.Conditions as Conditions
 
 
@@ -38,7 +37,7 @@ type Msg
     | CreationModalMsg CreationModalMsg
     | DeletionModalMsg DeletionModalMsg
     | TooltipMsg TipId Popover.State
-    | SetDateTime Time
+    | SetDateTime Posix
     | DismisAlert
     | NoOp
 

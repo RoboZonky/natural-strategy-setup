@@ -6,11 +6,11 @@ import Bootstrap.Card.Block as CardBlock
 import Bootstrap.Form.Checkbox as Checkbox
 import Bootstrap.Utilities.Spacing as Spacing
 import Data.Filter as Filter exposing (BuyingConfiguration, FilteredItem(..), MarketplaceEnablement)
-import Data.Filter.Complexity exposing (FilterComplexity(Complex, Simple), complexityButtonLabel)
+import Data.Filter.Complexity exposing (FilterComplexity(..), complexityButtonLabel)
 import Data.Tooltip as Tooltip
 import DomId exposing (DomId)
 import Html exposing (Html, div, text)
-import Types exposing (CreationModalMsg(OpenCreationModal), Msg(CreationModalMsg, RemoveBuyFilter, TogglePrimaryMarket, ToggleSecondaryMarket))
+import Types exposing (CreationModalMsg(..), Msg(..))
 import Version exposing (filtersHowToLink)
 import View.CardHeightWorkaround exposing (markOpenedAccordionCard)
 import View.Filter exposing (filterListView)

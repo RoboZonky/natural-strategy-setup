@@ -6,8 +6,8 @@ import Bootstrap.Grid.Col as Col
 import Data.Strategy exposing (GeneralSettings, StrategyConfiguration)
 import Data.Tooltip as Tooltip
 import Html exposing (Html, text)
-import Time.Date exposing (Date)
-import Types exposing (Msg(AccordionMsg, CreationModalMsg, DeletionModalMsg))
+import Time exposing (Posix)
+import Types exposing (Msg(..))
 import View.BuyingConfig as BuyingConfig
 import View.CardHeightWorkaround exposing (markOpenedAccordionCard)
 import View.Confirmation as Confirmation
@@ -22,7 +22,7 @@ import View.TargetBalance as TargetBalance
 import View.TargetPortfolioSize as TargetPortfolioSize
 
 
-form : StrategyConfiguration -> Accordion.State -> FilterCreationModal.Model -> FilterDeletionModal.Model -> Tooltip.States -> Date -> Grid.Column Msg
+form : StrategyConfiguration -> Accordion.State -> FilterCreationModal.Model -> FilterDeletionModal.Model -> Tooltip.States -> Posix -> Grid.Column Msg
 form config accordionState filterCreationState filterDeletionState tooltipStates generatedOn =
     Grid.col
         [ Col.xs6 ]
@@ -32,7 +32,7 @@ form config accordionState filterCreationState filterDeletionState tooltipStates
         ]
 
 
-strategyForm : StrategyConfiguration -> Accordion.State -> Tooltip.States -> Date -> Html Msg
+strategyForm : StrategyConfiguration -> Accordion.State -> Tooltip.States -> Posix -> Html Msg
 strategyForm { generalSettings, portfolioShares, investmentSizeOverrides, buyingConfig, sellingConfig } accordionState tooltipStates generatedOn =
     Accordion.config AccordionMsg
         |> Accordion.onlyOneOpen
@@ -46,7 +46,7 @@ strategyForm { generalSettings, portfolioShares, investmentSizeOverrides, buying
         |> Accordion.view accordionState
 
 
-generalSettingsCard : GeneralSettings -> Accordion.State -> Tooltip.States -> Date -> Accordion.Card Msg
+generalSettingsCard : GeneralSettings -> Accordion.State -> Tooltip.States -> Posix -> Accordion.Card Msg
 generalSettingsCard settings accordionState tooltipStates generatedOn =
     let
         cardId =

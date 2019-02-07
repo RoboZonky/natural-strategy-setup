@@ -1,12 +1,14 @@
 module Test.TestApp exposing (main)
 
+import Browser
 import Data.Strategy as Strategy exposing (StrategyConfiguration)
 import Html exposing (Html, button, div, input, span, text, textarea)
 import Html.Attributes exposing (cols, id, readonly, rows, type_, value)
 import Html.Events exposing (onClick, onInput)
 import Random
 import Test.RandomStrategy as RandomStrategy
-import Time.DateTime as DateTime
+import Time exposing (Posix)
+import Util
 
 
 type Msg
@@ -19,9 +21,13 @@ type alias Model =
     Int
 
 
-main : Program Never Model Msg
+main : Program () Model Msg
 main =
-    Html.beginnerProgram { model = 1, view = view, update = update }
+    Browser.sandbox
+        { init = 1
+        , view = view
+        , update = update
+        }
 
 
 update : Msg -> Model -> Model
@@ -34,14 +40,14 @@ update msg curSeed =
             curSeed + 1
 
         SetSeed newSeed ->
-            String.toInt newSeed |> Result.withDefault 0
+            String.toInt newSeed |> Maybe.withDefault 0
 
 
 view : Model -> Html Msg
 view seed =
     let
         dummyGeneratedOn =
-            DateTime.date DateTime.epoch
+            Time.millisToPosix 0
 
         ( randomStrategyConfig, _ ) =
             Random.step RandomStrategy.strategyConfigurationGen (Random.initialSeed seed)
@@ -60,12 +66,12 @@ view seed =
             []
         , div []
             [ button [ onClick PrevSeed ] [ text "Previous Seed" ]
-            , input [ onInput SetSeed, type_ "text", value (toString seed), id "seed" ] []
+            , input [ onInput SetSeed, type_ "text", value (String.fromInt seed), id "seed" ] []
             , button [ onClick NextSeed, id "nextSeedButton" ] [ text "Next Seed" ]
             ]
         , div []
             [ text <| "Strategy validation errors: "
-            , span [ id "validationErrors" ] [ text <| toString <| Strategy.validateStrategyConfiguration randomStrategyConfig ]
+            , span [ id "validationErrors" ] [ text <| Util.stringListToString <| Strategy.validateStrategyConfiguration randomStrategyConfig ]
             ]
         , div []
             [ text "JSON encode / decode roundtrip: "
@@ -80,13 +86,14 @@ testEncodeDecodeDoesntChangeStrategy original =
         Ok decoded ->
             if Strategy.strategyEqual original decoded then
                 "Ok"
+
             else
                 String.join "\n"
                     [ "Decoded strategy is different from original"
                     , "---------- ORIGINAL ----------"
-                    , toString original
+                    , showStrategy original
                     , "---------- DECODED ----------"
-                    , toString decoded
+                    , showStrategy decoded
                     ]
 
         Err e ->
@@ -96,3 +103,13 @@ testEncodeDecodeDoesntChangeStrategy original =
 encodeDecodeStrategy : StrategyConfiguration -> Result String StrategyConfiguration
 encodeDecodeStrategy =
     Strategy.strategyToUrlHash >> Strategy.strategyFromUrlHash
+
+
+epoch : Posix
+epoch =
+    Time.millisToPosix 0
+
+
+showStrategy : StrategyConfiguration -> String
+showStrategy =
+    Strategy.renderStrategyConfiguration "DUMMY_URL" epoch

@@ -1,17 +1,16 @@
-module Data.Filter.Conditions.Income
-    exposing
-        ( Income(..)
-        , IncomeCondition(..)
-        , IncomeMsg
-        , allIncomes
-        , conditionDecoder
-        , defaultCondition
-        , encodeCondition
-        , form
-        , renderCondition
-        , update
-        , validationErrors
-        )
+module Data.Filter.Conditions.Income exposing
+    ( Income(..)
+    , IncomeCondition(..)
+    , IncomeMsg
+    , allIncomes
+    , conditionDecoder
+    , defaultCondition
+    , encodeCondition
+    , form
+    , renderCondition
+    , update
+    , validationErrors
+    )
 
 import Bootstrap.Form.Checkbox as Checkbox
 import Html exposing (Html, div)
@@ -30,6 +29,20 @@ type Income
     | STUDENT
     | UNEMPLOYED
     | OTHER
+
+
+allIncomes : List Income
+allIncomes =
+    [ EMPLOYMENT
+    , ENTREPRENEUR
+    , LIBERAL_PROFESSION
+    , MATERNITY_LEAVE
+    , PENSION
+    , SELF_EMPLOYMENT
+    , STUDENT
+    , UNEMPLOYED
+    , OTHER
+    ]
 
 
 type IncomeCondition
@@ -72,11 +85,6 @@ incomeToString income =
             "jiné"
 
 
-allIncomes : List Income
-allIncomes =
-    [ EMPLOYMENT, ENTREPRENEUR, LIBERAL_PROFESSION, MATERNITY_LEAVE, PENSION, SELF_EMPLOYMENT, STUDENT, UNEMPLOYED, OTHER ]
-
-
 renderCondition : IncomeCondition -> String
 renderCondition (IncomeList list) =
     "klient je " ++ Util.orList incomeToString list
@@ -103,20 +111,21 @@ update msg (IncomeList ilist) =
 
 
 form : IncomeCondition -> Html IncomeMsg
-form (IncomeList plist) =
+form (IncomeList ilist) =
     allIncomes
-        |> List.map (\p -> incomeCheckbox p (List.member p plist))
+        |> List.indexedMap (\index income -> incomeCheckbox index income (List.member income ilist))
         |> div []
 
 
-incomeCheckbox : Income -> Bool -> Html IncomeMsg
-incomeCheckbox income isEnabled =
+incomeCheckbox : Int -> Income -> Bool -> Html IncomeMsg
+incomeCheckbox index income isEnabled =
     Checkbox.checkbox
-        [ Checkbox.id ("income_" ++ toString income)
+        [ Checkbox.id ("income_" ++ String.fromInt index)
         , Checkbox.onCheck
             (\checked ->
                 if checked then
                     AddIncome income
+
                 else
                     RemoveIncome income
             )
@@ -137,7 +146,7 @@ encodeIncome =
 
 encodeCondition : IncomeCondition -> Value
 encodeCondition (IncomeList mis) =
-    Encode.list <| List.map encodeIncome mis
+    Encode.list encodeIncome mis
 
 
 incomeDecoder : Decoder Income

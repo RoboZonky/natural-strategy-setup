@@ -11,13 +11,15 @@ import Data.Tooltip as Tooltip
 import Html exposing (Html, div, text)
 import Html.Attributes exposing (size)
 import Html.Events exposing (onSubmit)
-import Time.Date as Date exposing (Date)
-import Types exposing (Msg(ExitConfigChanged, NoOp))
+import Time exposing (Posix)
+import Time.Extra as TE
+import Types exposing (Msg(..))
 import Util
+import Version
 import View.Tooltip as Tooltip
 
 
-form : ExitConfig -> Date -> Tooltip.States -> CardBlock.Item Msg
+form : ExitConfig -> Posix -> Tooltip.States -> CardBlock.Item Msg
 form exitConfig generatedOn tooltipStates =
     let
         validationErrors =
@@ -64,6 +66,7 @@ form exitConfig generatedOn tooltipStates =
                 ]
             , if exitEnum /= Dont then
                 leaveConfigSubform exitEnum exitDate selloffDate tooltipStates
+
               else
                 text ""
             , validationErrors
@@ -74,17 +77,15 @@ form exitConfig generatedOn tooltipStates =
 
 {-| Generate last day of next year relative to current date
 -}
-lastDayOfNextYear : Date -> Date
+lastDayOfNextYear : Posix -> Posix
 lastDayOfNextYear generatedOn =
-    generatedOn
-        |> Date.setDay 31
-        |> Date.setMonth 12
-        |> Date.setYear (Date.year generatedOn + 1)
+    TE.ceiling TE.Year Time.utc generatedOn
+        |> TE.add TE.Year 1 Time.utc
 
 
-dateToString : Date -> String
+dateToString : Posix -> String
 dateToString =
-    Date.toTuple >> (\( year, month, day ) -> toString day ++ "." ++ toString month ++ "." ++ toString year)
+    Version.formatDate
 
 
 leaveConfigSubform : ExitConfigEnum -> String -> String -> Tooltip.States -> Html Msg
@@ -123,6 +124,7 @@ parenthesizeNonempty : String -> String
 parenthesizeNonempty s =
     if String.isEmpty s then
         ""
+
     else
         "(" ++ s ++ ")"
 
@@ -130,7 +132,7 @@ parenthesizeNonempty s =
 threeMonthsBeforeExitDate : String -> String
 threeMonthsBeforeExitDate exitDateStr =
     ExitConfig.parseDateString exitDateStr
-        |> Result.map (Date.addMonths -3 >> dateToString)
+        |> Result.map (TE.add TE.Month -3 Time.utc >> dateToString)
         |> Result.withDefault ""
 
 

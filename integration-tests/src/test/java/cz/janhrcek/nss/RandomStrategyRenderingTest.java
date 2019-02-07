@@ -46,11 +46,13 @@ public class RandomStrategyRenderingTest {
             progressBar.update(i, numberOfStategiesToGenerate);
         }
 
-        OptionalDouble averageLengthOfUrlEncodedStrategy = encodedStrategyLengths.stream().mapToInt(Integer::intValue).average();
+        OptionalDouble averageLengthOfUrlEncodedStrategy = encodedStrategyLengths.stream()
+                .mapToInt(Integer::intValue)
+                .average();
         assertThat(averageLengthOfUrlEncodedStrategy)
                 .as("Average length of strategy encoded in URL should be around 2100 characters")
                 .isNotEmpty()
-                .hasValueCloseTo(2100.0, Offset.offset(50.0));
+                .hasValueCloseTo(2100.0, Offset.offset(100.0));
 
         List<LogEntry> errorsAndWarnings = testApp.getBrowserConsoleLogs().filter(Level.WARNING);
         assertThat(errorsAndWarnings)
@@ -62,7 +64,8 @@ public class RandomStrategyRenderingTest {
         try {
             GeneratedStrategyVerifier.parseWithAntlr(strategy);
         } catch (Exception exception) {
-            Assertions.fail("---------- Strategy with seed " + testApp.getStrategySeed() + " could not be parsed by robozonky  ----------\n" + strategy,
+            Assertions.fail("---------- Strategy with seed " + testApp.getStrategySeed()
+                                    + " could not be parsed by robozonky  ----------\n" + strategy,
                             exception
             );
         }

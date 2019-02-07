@@ -5,16 +5,17 @@ import Bootstrap.Utilities.Spacing as Spacing
 import Data.Tooltip as Tooltip exposing (TipId)
 import Html exposing (Html, div, i, text)
 import Html.Attributes exposing (class, style)
-import Html.Events exposing (defaultOptions, onWithOptions)
+import Html.Events exposing (stopPropagationOn)
 import Json.Decode
-import Types exposing (CreationModalMsg(ModalNoOp, ModalTooltipMsg), Msg(NoOp, TooltipMsg))
+import Types exposing (CreationModalMsg(..), Msg(..))
 
 
 icon : Html a
 icon =
     i
         [ class "fa fa-question-circle"
-        , style [ ( "font-size", "18px" ), ( "color", "gray" ) ]
+        , style "font-size" "18px"
+        , style "color" "gray"
         , Spacing.ml1
         ]
         []
@@ -47,10 +48,9 @@ popover tipMsg noOpMsg elementToHoverOn tipId tooltipStates =
         |> Popover.view popoverState
 
 
-
-{- Prevent clicks on tooltip icon from being propagated to the background. This was causing problems when tooltip icon was in the accordion header -}
-
-
+{-| Prevent clicks on tooltip icon from being propagated to the background.
+This was causing problems when tooltip icon was in the accordion header
+-}
 onClickNoOp : msg -> Html.Attribute msg
 onClickNoOp noOpMsg =
-    onWithOptions "click" { defaultOptions | stopPropagation = True } (Json.Decode.succeed noOpMsg)
+    stopPropagationOn "click" <| Json.Decode.succeed ( noOpMsg, True )

@@ -1,16 +1,15 @@
-module Data.Filter.Conditions.ElapsedTermPercent
-    exposing
-        ( ElapsedTermPercent(..)
-        , ElapsedTermPercentCondition(..)
-        , ElapsedTermPercentMsg
-        , conditionDecoder
-        , defaultCondition
-        , encodeCondition
-        , form
-        , renderCondition
-        , update
-        , validationErrors
-        )
+module Data.Filter.Conditions.ElapsedTermPercent exposing
+    ( ElapsedTermPercent(..)
+    , ElapsedTermPercentCondition(..)
+    , ElapsedTermPercentMsg
+    , conditionDecoder
+    , defaultCondition
+    , encodeCondition
+    , form
+    , renderCondition
+    , update
+    , validationErrors
+    )
 
 import Bootstrap.Form as Form
 import Bootstrap.Form.Radio as Radio
@@ -42,13 +41,13 @@ elapsedTermPercentToString : ElapsedTermPercent -> String
 elapsedTermPercentToString elapsedTermPercent =
     case elapsedTermPercent of
         LessThan maxBound ->
-            "méně než " ++ toString maxBound
+            "méně než " ++ String.fromInt maxBound
 
         Between minBound maxBound ->
-            "je " ++ toString minBound ++ " až " ++ toString maxBound
+            "je " ++ String.fromInt minBound ++ " až " ++ String.fromInt maxBound
 
         MoreThan minBound ->
-            "více než " ++ toString minBound
+            "více než " ++ String.fromInt minBound
 
 
 renderCondition : ElapsedTermPercentCondition -> String
@@ -73,9 +72,9 @@ validateInRange : Int -> Int -> Int -> List String
 validateInRange minValid maxValid x =
     Util.validate (x < minValid || maxValid < x) <|
         "Počet uhrazených splátek v procentech musí být v rozmezí "
-            ++ toString minValid
+            ++ String.fromInt minValid
             ++ " až "
-            ++ toString maxValid
+            ++ String.fromInt maxValid
 
 
 validateMinNotGtMax : Int -> Int -> List String
@@ -105,37 +104,48 @@ whichEnabled elapsedTermPercent =
 
 update : ElapsedTermPercentMsg -> ElapsedTermPercentCondition -> ElapsedTermPercentCondition
 update msg (ElapsedTermPercentCondition term) =
-    case msg of
-        SetLessThan hi ->
-            emptyToZero hi |> String.toInt |> Result.map LessThan |> Result.withDefault term |> ElapsedTermPercentCondition
+    ElapsedTermPercentCondition <|
+        Maybe.withDefault term <|
+            case msg of
+                SetLessThan hi ->
+                    Maybe.map LessThan (parseInt hi)
 
-        SetBetween loStr hiStr ->
-            emptyToZero loStr
-                |> String.toInt
-                |> Result.andThen (\lo -> emptyToZero hiStr |> String.toInt |> Result.map (\hi -> Between lo hi))
-                |> Result.withDefault term
-                |> ElapsedTermPercentCondition
+                SetBetween lo hi ->
+                    Maybe.map2 Between (parseInt lo) (parseInt hi)
 
-        SetMoreThan lo ->
-            emptyToZero lo |> String.toInt |> Result.map MoreThan |> Result.withDefault term |> ElapsedTermPercentCondition
+                SetMoreThan lo ->
+                    Maybe.map MoreThan (parseInt lo)
 
-        ElapsedTermPercentNoOp ->
-            ElapsedTermPercentCondition term
+                ElapsedTermPercentNoOp ->
+                    Nothing
+
+
+parseInt : String -> Maybe Int
+parseInt =
+    String.toInt << emptyToZero
+
+
+type alias ElapsedTermPercentRadioValues =
+    { lessThan : String
+    , betweenMin : String
+    , betweenMax : String
+    , moreThan : String
+    }
 
 
 form : ElapsedTermPercentCondition -> Html ElapsedTermPercentMsg
 form (ElapsedTermPercentCondition elapsedTermPercent) =
     let
-        ( ltVal, btwMinVal, btwMaxVal, mtVal ) =
+        values =
             case elapsedTermPercent of
                 LessThan x ->
-                    ( zeroToEmpty x, "", "", "" )
+                    ElapsedTermPercentRadioValues (zeroToEmpty x) "" "" ""
 
                 Between mi ma ->
-                    ( "", zeroToEmpty mi, zeroToEmpty ma, "" )
+                    ElapsedTermPercentRadioValues "" (zeroToEmpty mi) (zeroToEmpty ma) ""
 
                 MoreThan x ->
-                    ( "", "", "", zeroToEmpty x )
+                    ElapsedTermPercentRadioValues "" "" "" (zeroToEmpty x)
 
         ( ltEnabled, btwEnabled, mtEnabled ) =
             whichEnabled elapsedTermPercent
@@ -143,19 +153,19 @@ form (ElapsedTermPercentCondition elapsedTermPercent) =
     Html.div []
         [ Form.formInline [ onSubmit ElapsedTermPercentNoOp ]
             [ elapsedTermPercentRadio ltEnabled (SetLessThan "0") "méně než" "etp1"
-            , numericInput SetLessThan ltEnabled ltVal
+            , numericInput SetLessThan ltEnabled values.lessThan
             , text "% splátek"
             ]
         , Form.formInline [ onSubmit ElapsedTermPercentNoOp ]
             [ elapsedTermPercentRadio btwEnabled (SetBetween "0" "0") "je" "etp2"
-            , numericInput (\x -> SetBetween x btwMaxVal) btwEnabled btwMinVal
+            , numericInput (\x -> SetBetween x values.betweenMax) btwEnabled values.betweenMin
             , text "až"
-            , numericInput (\y -> SetBetween btwMinVal y) btwEnabled btwMaxVal
+            , numericInput (\y -> SetBetween values.betweenMin y) btwEnabled values.betweenMax
             , text "% splátek"
             ]
         , Form.formInline [ onSubmit ElapsedTermPercentNoOp ]
             [ elapsedTermPercentRadio mtEnabled (SetMoreThan "0") "více než" "etp3"
-            , numericInput SetMoreThan mtEnabled mtVal
+            , numericInput SetMoreThan mtEnabled values.moreThan
             , text "% splátek"
             ]
         ]
@@ -185,13 +195,13 @@ encodeElapsedTermPercent : ElapsedTermPercent -> Value
 encodeElapsedTermPercent amt =
     case amt of
         LessThan x ->
-            Encode.list [ Encode.int 1, Encode.int x ]
+            Encode.list Encode.int [ 1, x ]
 
         Between x y ->
-            Encode.list [ Encode.int 2, Encode.int x, Encode.int y ]
+            Encode.list Encode.int [ 2, x, y ]
 
         MoreThan y ->
-            Encode.list [ Encode.int 3, Encode.int y ]
+            Encode.list Encode.int [ 3, y ]
 
 
 encodeCondition : ElapsedTermPercentCondition -> Value
@@ -215,7 +225,7 @@ elapsedTermPercentDecoder =
                         Decode.succeed <| MoreThan y
 
                     _ ->
-                        Decode.fail <| "Unable to decode ElapsedTermPercent from " ++ toString ints
+                        Decode.fail <| "Unable to decode ElapsedTermPercent from " ++ Util.intListToString ints
             )
 
 

@@ -1,16 +1,15 @@
-module Data.Filter.Conditions.TermMonths
-    exposing
-        ( TermMonths(..)
-        , TermMonthsCondition(..)
-        , TermMonthsMsg
-        , conditionDecoder
-        , defaultCondition
-        , encodeCondition
-        , form
-        , renderCondition
-        , update
-        , validationErrors
-        )
+module Data.Filter.Conditions.TermMonths exposing
+    ( TermMonths(..)
+    , TermMonthsCondition(..)
+    , TermMonthsMsg
+    , conditionDecoder
+    , defaultCondition
+    , encodeCondition
+    , form
+    , renderCondition
+    , update
+    , validationErrors
+    )
 
 import Bootstrap.Form as Form
 import Bootstrap.Form.Radio as Radio
@@ -42,13 +41,13 @@ termMonthsToString : TermMonths -> String
 termMonthsToString termMonths =
     case termMonths of
         LessThan maxBound ->
-            "nedosahuje " ++ toString maxBound
+            "nedosahuje " ++ String.fromInt maxBound
 
         Between minBound maxBound ->
-            "je " ++ toString minBound ++ " až " ++ toString maxBound
+            "je " ++ String.fromInt minBound ++ " až " ++ String.fromInt maxBound
 
         MoreThan minBound ->
-            "přesahuje " ++ toString minBound
+            "přesahuje " ++ String.fromInt minBound
 
 
 renderCondition : TermMonthsCondition -> String
@@ -71,12 +70,17 @@ validationErrors (TermMonthsCondition t) =
 
 validateInRange : Int -> Int -> Int -> List String
 validateInRange minValid maxValid x =
-    Util.validate (x < minValid || maxValid < x) <| "Délka úvěru v měsících: musí být v rozmezí " ++ toString minValid ++ " až " ++ toString maxValid
+    Util.validate (x < minValid || maxValid < x) <|
+        "Délka úvěru v měsících: musí být v rozmezí "
+            ++ String.fromInt minValid
+            ++ " až "
+            ++ String.fromInt maxValid
 
 
 validateMinNotGtMax : Int -> Int -> List String
 validateMinNotGtMax minBound maxBound =
-    Util.validate (minBound > maxBound) "Délka úvěru v měsících: minimum nesmí být větší než maximum"
+    Util.validate (minBound > maxBound)
+        "Délka úvěru v měsících: minimum nesmí být větší než maximum"
 
 
 type TermMonthsMsg
@@ -101,37 +105,48 @@ whichEnabled termMonths =
 
 update : TermMonthsMsg -> TermMonthsCondition -> TermMonthsCondition
 update msg (TermMonthsCondition term) =
-    case msg of
-        SetLessThan hi ->
-            emptyToZero hi |> String.toInt |> Result.map LessThan |> Result.withDefault term |> TermMonthsCondition
+    TermMonthsCondition <|
+        Maybe.withDefault term <|
+            case msg of
+                SetLessThan hi ->
+                    Maybe.map LessThan (parseInt hi)
 
-        SetBetween loStr hiStr ->
-            emptyToZero loStr
-                |> String.toInt
-                |> Result.andThen (\lo -> emptyToZero hiStr |> String.toInt |> Result.map (\hi -> Between lo hi))
-                |> Result.withDefault term
-                |> TermMonthsCondition
+                SetBetween lo hi ->
+                    Maybe.map2 Between (parseInt lo) (parseInt hi)
 
-        SetMoreThan lo ->
-            emptyToZero lo |> String.toInt |> Result.map MoreThan |> Result.withDefault term |> TermMonthsCondition
+                SetMoreThan lo ->
+                    Maybe.map MoreThan (parseInt lo)
 
-        TermMonthsNoOp ->
-            TermMonthsCondition term
+                TermMonthsNoOp ->
+                    Nothing
+
+
+parseInt : String -> Maybe Int
+parseInt =
+    String.toInt << emptyToZero
+
+
+type alias TermMonthsRadioValues =
+    { lessThan : String
+    , betweenMin : String
+    , betweenMax : String
+    , moreThan : String
+    }
 
 
 form : TermMonthsCondition -> Html TermMonthsMsg
 form (TermMonthsCondition termMonths) =
     let
-        ( ltVal, btwMinVal, btwMaxVal, mtVal ) =
+        values =
             case termMonths of
                 LessThan x ->
-                    ( zeroToEmpty x, "", "", "" )
+                    TermMonthsRadioValues (zeroToEmpty x) "" "" ""
 
                 Between mi ma ->
-                    ( "", zeroToEmpty mi, zeroToEmpty ma, "" )
+                    TermMonthsRadioValues "" (zeroToEmpty mi) (zeroToEmpty ma) ""
 
                 MoreThan x ->
-                    ( "", "", "", zeroToEmpty x )
+                    TermMonthsRadioValues "" "" "" (zeroToEmpty x)
 
         ( ltEnabled, btwEnabled, mtEnabled ) =
             whichEnabled termMonths
@@ -139,19 +154,19 @@ form (TermMonthsCondition termMonths) =
     Html.div []
         [ Form.formInline [ onSubmit TermMonthsNoOp ]
             [ termMonthsRadio ltEnabled (SetLessThan "0") "nedosahuje" "tm1"
-            , numericInput SetLessThan ltEnabled ltVal
+            , numericInput SetLessThan ltEnabled values.lessThan
             , text "měsíců"
             ]
         , Form.formInline [ onSubmit TermMonthsNoOp ]
             [ termMonthsRadio btwEnabled (SetBetween "0" "0") "je" "tm2"
-            , numericInput (\x -> SetBetween x btwMaxVal) btwEnabled btwMinVal
+            , numericInput (\x -> SetBetween x values.betweenMax) btwEnabled values.betweenMin
             , text "až"
-            , numericInput (\y -> SetBetween btwMinVal y) btwEnabled btwMaxVal
+            , numericInput (\y -> SetBetween values.betweenMin y) btwEnabled values.betweenMax
             , text "měsíců"
             ]
         , Form.formInline [ onSubmit TermMonthsNoOp ]
             [ termMonthsRadio mtEnabled (SetMoreThan "0") "přesahuje" "tm3"
-            , numericInput SetMoreThan mtEnabled mtVal
+            , numericInput SetMoreThan mtEnabled values.moreThan
             , text "měsíců"
             ]
         ]
@@ -181,13 +196,13 @@ encodeTermMonths : TermMonths -> Value
 encodeTermMonths amt =
     case amt of
         LessThan x ->
-            Encode.list [ Encode.int 1, Encode.int x ]
+            Encode.list Encode.int [ 1, x ]
 
         Between x y ->
-            Encode.list [ Encode.int 2, Encode.int x, Encode.int y ]
+            Encode.list Encode.int [ 2, x, y ]
 
         MoreThan y ->
-            Encode.list [ Encode.int 3, Encode.int y ]
+            Encode.list Encode.int [ 3, y ]
 
 
 encodeCondition : TermMonthsCondition -> Value
@@ -211,7 +226,7 @@ termMonthsDecoder =
                         Decode.succeed <| MoreThan y
 
                     _ ->
-                        Decode.fail <| "Unable to decode TermMonths from " ++ toString ints
+                        Decode.fail <| "Unable to decode TermMonths from " ++ Util.intListToString ints
             )
 
 

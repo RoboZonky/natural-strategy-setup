@@ -1,16 +1,18 @@
-module Util
-    exposing
-        ( and
-        , emptyToZero
-        , enumDecoder
-        , enumEncoder
-        , joinNonemptyLines
-        , orList
-        , renderNonemptySection
-        , validate
-        , viewErrors
-        , zeroToEmpty
-        )
+module Util exposing
+    ( and
+    , emptyToZero
+    , enumDecoder
+    , enumEncoder
+    , intListToString
+    , joinNonemptyLines
+    , orList
+    , renderNonemptySection
+    , stringListToString
+    , validate
+    , viewErrors
+    , zeroToEmpty
+    , zeroToEmptyFloat
+    )
 
 import Html exposing (Html, div, text)
 import Html.Attributes exposing (style)
@@ -55,18 +57,29 @@ renderNonemptySection sectionTitle list =
 -- and conversely we want to treat "" input value to be parsed as 0
 
 
-zeroToEmpty : number -> String
+zeroToEmpty : Int -> String
 zeroToEmpty x =
     if x == 0 then
         ""
+
     else
-        toString x
+        String.fromInt x
+
+
+zeroToEmptyFloat : Float -> String
+zeroToEmptyFloat x =
+    if x == 0 then
+        ""
+
+    else
+        String.fromFloat x
 
 
 emptyToZero : String -> String
 emptyToZero s =
     if String.isEmpty s then
         "0"
+
     else
         s
 
@@ -75,6 +88,7 @@ validate : Bool -> String -> List String
 validate errorCondition error =
     if errorCondition then
         [ error ]
+
     else
         []
 
@@ -88,8 +102,19 @@ viewErrors : List String -> Html a
 viewErrors errors =
     if List.isEmpty errors then
         text ""
+
     else
-        div [ style [ ( "color", "red" ) ] ] [ text <| String.join ";" errors ]
+        div [ style "color" "red" ] [ text <| String.join ";" errors ]
+
+
+intListToString : List Int -> String
+intListToString =
+    stringListToString << List.map String.fromInt
+
+
+stringListToString : List String -> String
+stringListToString xs =
+    "[" ++ String.join "," xs ++ "]"
 
 
 
@@ -105,11 +130,9 @@ enumEncoder allValues val =
                         Encode.int index
 
                     Nothing ->
-                        Debug.crash <|
-                            "Impossible happended - value "
-                                ++ toString val
-                                ++ " was not in the list of all values "
-                                ++ toString allValues
+                        -- Prior to elm 0.19 this used to be crash.
+                        -- But I still need some way to be able to detect failure condition
+                        Encode.int -1
            )
 
 
@@ -126,7 +149,7 @@ enumDecoder nameOfDecodedThing allValues =
                             Nothing ->
                                 Decode.fail <|
                                     "Invalid index "
-                                        ++ toString index
+                                        ++ String.fromInt index
                                         ++ " when trying to decode "
                                         ++ nameOfDecodedThing
                    )

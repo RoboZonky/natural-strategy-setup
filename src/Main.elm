@@ -2,23 +2,23 @@ module Main exposing (main)
 
 import Bootstrap.Accordion as Accordion
 import Bootstrap.Grid as Grid
+import Browser
+import Browser.Navigation exposing (Key)
 import Data.Filter as Filters exposing (FilteredItem(..))
 import Data.Investment as Investment
 import Data.InvestmentShare as InvestmentShare
 import Data.Portfolio
 import Data.PortfolioStructure as PortfolioStructure
 import Data.Strategy as Strategy exposing (StrategyConfiguration)
-import Data.TargetBalance as TargetBalance exposing (TargetBalance(TargetBalance))
-import Data.TargetPortfolioSize as TargetPortfolioSize exposing (TargetPortfolioSize(TargetPortfolioSize))
+import Data.TargetBalance as TargetBalance exposing (TargetBalance(..))
+import Data.TargetPortfolioSize as TargetPortfolioSize exposing (TargetPortfolioSize(..))
 import Data.Tooltip as Tooltip
 import Html exposing (Html, a, footer, h1, text)
 import Html.Attributes exposing (class, href, style)
-import Navigation
 import Task
-import Time
-import Time.Date exposing (Date)
-import Time.DateTime as DateTime
-import Types exposing (AlertData(..), BaseUrl, CreationModalMsg(ModalTooltipMsg), Msg(..))
+import Time exposing (Posix)
+import Types exposing (AlertData(..), BaseUrl, CreationModalMsg(..), Msg(..))
+import Url exposing (Url)
 import Util
 import Version
 import View.Alert as Alert
@@ -34,52 +34,51 @@ type alias Model =
     , filterCreationState : FilterCreationModal.Model
     , filterDeletionState : FilterDeletionModal.Model
     , tooltipStates : Tooltip.States
-    , generatedOn : Date
+    , generatedOn : Posix
     , baseUrl : BaseUrl
     , alert : AlertData
     }
 
 
-initialModel : BaseUrl -> StrategyConfiguration -> AlertData -> Model
-initialModel baseUrl strategyConfig initialAlert =
+initialModel : Url -> StrategyConfiguration -> AlertData -> Model
+initialModel url strategyConfig initialAlert =
     { strategyConfig = strategyConfig
     , accordionState = Accordion.initialState
     , filterCreationState = FilterCreationModal.init
     , filterDeletionState = FilterDeletionModal.init
     , tooltipStates = Tooltip.initialStates
-    , generatedOn = DateTime.date DateTime.epoch
-    , baseUrl = baseUrl
+    , generatedOn = Time.millisToPosix 0
+    , baseUrl = Url.toString url
     , alert = initialAlert
     }
 
 
-main : Program Never Model Msg
+main : Program () Model Msg
 main =
-    Navigation.program (always NoOp)
+    Browser.application
         { init = init
         , update = update
-        , view = view
+        , view = viewDocument
         , subscriptions = subscriptions
+        , onUrlChange = always NoOp
+        , onUrlRequest = always NoOp
         }
 
 
-init : Navigation.Location -> ( Model, Cmd Msg )
-init location =
+init : () -> Url -> Key -> ( Model, Cmd Msg )
+init () url key =
     let
         ( initialStrategy, initialAlert ) =
-            loadStrategyFromUrl location
+            loadStrategyFromUrl url
 
         baseUrl =
-            String.split "#" location.href
-                |> List.head
-                |> Maybe.withDefault "Impossible, as the split will always have 1+ elements"
+            {- clear the fragmentfrom URL -}
+            { url | fragment = Nothing }
     in
     ( initialModel baseUrl initialStrategy initialAlert
     , Cmd.batch
         [ Task.perform SetDateTime Time.now
-
-        {- clear the hash from URL -}
-        , Navigation.newUrl baseUrl
+        , Browser.Navigation.replaceUrl key (Url.toString baseUrl)
         ]
     )
 
@@ -138,9 +137,8 @@ updateHelper msg model =
 
         ChangePortfolioSharePercentage rating sliderMsg ->
             updateStrategy
-                (-- Any change from defaults automatically selects "user defined" portfolio
-                 Strategy.setPortfolio Data.Portfolio.Empty << Strategy.setPortfolioShareRange rating sliderMsg
-                )
+                -- Any change from defaults automatically selects "user defined" portfolio
+                (Strategy.setPortfolio Data.Portfolio.Empty << Strategy.setPortfolioShareRange rating sliderMsg)
                 model
 
         ChangeInvestment rating sliderMsg ->
@@ -188,8 +186,8 @@ updateHelper msg model =
             in
             updateStrategy maybeRestoreFilters { model | filterDeletionState = newFilterDeletionState }
 
-        SetDateTime timestamp ->
-            { model | generatedOn = DateTime.date <| DateTime.fromTimestamp timestamp }
+        SetDateTime posix ->
+            { model | generatedOn = posix }
 
         TogglePrimaryMarket enable ->
             let
@@ -247,6 +245,7 @@ askForBuyFilterDeletionConfirmation oldModel newModel =
         newFilterDeletionState =
             if List.isEmpty removedFilters then
                 FilterDeletionModal.init
+
             else
                 FilterDeletionModal.askForConfirmation
                     (FilterDeletionModal.BuyingConfigChange
@@ -259,7 +258,14 @@ askForBuyFilterDeletionConfirmation oldModel newModel =
 
 wrapIntOrEmpty : (Int -> a) -> a -> String -> a
 wrapIntOrEmpty intWrapper emptyVal str =
-    Util.emptyToZero str |> String.toInt |> Result.map intWrapper |> Result.withDefault emptyVal
+    Util.emptyToZero str |> String.toInt |> Maybe.map intWrapper |> Maybe.withDefault emptyVal
+
+
+viewDocument : Model -> Browser.Document Msg
+viewDocument model =
+    { title = "Robozonky :: Konfigurace Strategie"
+    , body = [ view model ]
+    }
 
 
 view : Model -> Html Msg
@@ -277,7 +283,7 @@ view { strategyConfig, accordionState, filterCreationState, filterDeletionState,
 
 infoFooter : Html Msg
 infoFooter =
-    footer [ class "text-center mt-2", style [ ( "color", "gray" ) ] ]
+    footer [ class "text-center mt-2", style "color" "gray" ]
         [ text "Autor "
         , a [ href "http://janhrcek.cz" ] [ text "Jan Hrček" ]
         , text ". Běžící verze "
@@ -287,16 +293,18 @@ infoFooter =
         ]
 
 
-loadStrategyFromUrl : Navigation.Location -> ( StrategyConfiguration, AlertData )
-loadStrategyFromUrl location =
-    if String.isEmpty location.hash then
-        ( Strategy.defaultStrategyConfiguration, NoAlert )
-    else
-        case Strategy.strategyFromUrlHash (String.dropLeft 1 {- drop '#' -} location.hash) of
-            Ok strategy ->
-                ( strategy, SuccessAlert "Strategie byla úspěšně načtena z URL" )
+loadStrategyFromUrl : Url -> ( StrategyConfiguration, AlertData )
+loadStrategyFromUrl url =
+    case url.fragment of
+        Nothing ->
+            ( Strategy.defaultStrategyConfiguration, NoAlert )
 
-            Err e ->
-                ( Strategy.defaultStrategyConfiguration
-                , ErrorAlert ("Při pokusu obnovit strategii z URL " ++ location.href ++ "\n\n došlo k chybě: " ++ e)
-                )
+        Just hash ->
+            case Strategy.strategyFromUrlHash hash of
+                Ok strategy ->
+                    ( strategy, SuccessAlert "Strategie byla úspěšně načtena z URL" )
+
+                Err e ->
+                    ( Strategy.defaultStrategyConfiguration
+                    , ErrorAlert ("Při pokusu obnovit strategii z URL " ++ Url.toString url ++ "\n\n došlo k chybě: " ++ e)
+                    )

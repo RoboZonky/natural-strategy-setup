@@ -1,17 +1,16 @@
-module Data.Filter.Conditions.Region
-    exposing
-        ( Region(..)
-        , RegionCondition(..)
-        , RegionMsg
-        , allRegions
-        , conditionDecoder
-        , defaultCondition
-        , encodeCondition
-        , form
-        , renderCondition
-        , update
-        , validationErrors
-        )
+module Data.Filter.Conditions.Region exposing
+    ( Region(..)
+    , RegionCondition(..)
+    , RegionMsg
+    , allRegions
+    , conditionDecoder
+    , defaultCondition
+    , encodeCondition
+    , form
+    , renderCondition
+    , update
+    , validationErrors
+    )
 
 import Bootstrap.Form.Checkbox as Checkbox
 import Html exposing (Html, div)
@@ -144,18 +143,19 @@ update msg (RegionList rlist) =
 form : RegionCondition -> Html RegionMsg
 form (RegionList rlist) =
     allRegions
-        |> List.map (\p -> regionCheckbox p (List.member p rlist))
+        |> List.indexedMap (\index region -> regionCheckbox index region (List.member region rlist))
         |> div []
 
 
-regionCheckbox : Region -> Bool -> Html RegionMsg
-regionCheckbox region isEnabled =
+regionCheckbox : Int -> Region -> Bool -> Html RegionMsg
+regionCheckbox index region isEnabled =
     Checkbox.checkbox
-        [ Checkbox.id ("region_" ++ toString region)
+        [ Checkbox.id ("region_" ++ String.fromInt index)
         , Checkbox.onCheck
             (\checked ->
                 if checked then
                     AddRegion region
+
                 else
                     RemoveRegion region
             )
@@ -176,7 +176,7 @@ encodeRegion =
 
 encodeCondition : RegionCondition -> Value
 encodeCondition (RegionList rs) =
-    Encode.list <| List.map encodeRegion rs
+    Encode.list encodeRegion rs
 
 
 regionDecoder : Decoder Region

@@ -1,34 +1,32 @@
-module Data.Strategy
-    exposing
-        ( GeneralSettings
-        , StrategyConfiguration
-        , UrlHash
-        , addBuyFilter
-        , addSellFilter
-        , defaultStrategyConfiguration
-        , removeBuyFilter
-        , removeSellFilter
-        , renderStrategyConfiguration
-        , setBuyingConfiguration
-        , setDefaultInvestment
-        , setDefaultInvestmentShare
-        , setExitConfig
-        , setInvestment
-        , setPortfolio
-        , setPortfolioShareRange
-        , setSellingConfiguration
-        , setTargetBalance
-        , setTargetPortfolioSize
-        , strategyEqual
-        , strategyFromUrlHash
-        , strategyToUrlHash
-        , togglePrimaryMarket
-        , toggleSecondaryMarket
-        , updateNotificationSettings
-        , validateStrategyConfiguration
-        )
+module Data.Strategy exposing
+    ( GeneralSettings
+    , StrategyConfiguration
+    , UrlHash
+    , addBuyFilter
+    , addSellFilter
+    , defaultStrategyConfiguration
+    , removeBuyFilter
+    , removeSellFilter
+    , renderStrategyConfiguration
+    , setBuyingConfiguration
+    , setDefaultInvestment
+    , setDefaultInvestmentShare
+    , setExitConfig
+    , setInvestment
+    , setPortfolio
+    , setPortfolioShareRange
+    , setSellingConfiguration
+    , setTargetBalance
+    , setTargetPortfolioSize
+    , strategyEqual
+    , strategyFromUrlHash
+    , strategyToUrlHash
+    , togglePrimaryMarket
+    , toggleSecondaryMarket
+    , updateNotificationSettings
+    , validateStrategyConfiguration
+    )
 
-import AllDict
 import Base64
 import Data.Confirmation as Confirmation exposing (ConfirmationSettings)
 import Data.ExitConfig as ExitConfig exposing (ExitConfig)
@@ -41,11 +39,12 @@ import Data.PortfolioStructure as PortfolioStructure exposing (PortfolioShares)
 import Data.PortfolioStructure.PredefinedShares as PredefinedShares
 import Data.TargetBalance as TargetBalance exposing (TargetBalance)
 import Data.TargetPortfolioSize as TargetPortfolioSize exposing (TargetPortfolioSize)
+import Dict.Any
 import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as Encode exposing (Value)
 import List.Extra
 import RangeSlider
-import Time.Date exposing (Date)
+import Time exposing (Posix)
 import Types exposing (BaseUrl)
 import Util
 import Version
@@ -142,7 +141,7 @@ setPortfolioShareRange rtg msg config =
     let
         sharesUpdater : PortfolioShares -> PortfolioShares
         sharesUpdater =
-            AllDict.update rtg (Maybe.map (RangeSlider.update msg))
+            Dict.Any.update rtg (Maybe.map (RangeSlider.update msg))
     in
     { config | portfolioShares = sharesUpdater config.portfolioShares }
 
@@ -152,7 +151,7 @@ setInvestment rtg msg config =
     let
         investmentUpdater : InvestmentsPerRating -> InvestmentsPerRating
         investmentUpdater =
-            AllDict.update rtg (Maybe.map (RangeSlider.update msg))
+            Dict.Any.update rtg (Maybe.map (RangeSlider.update msg))
     in
     { config | investmentSizeOverrides = investmentUpdater config.investmentSizeOverrides }
 
@@ -220,7 +219,7 @@ addSellFilter newFilter config =
     { config | sellingConfig = Filters.addSellFilter newFilter config.sellingConfig }
 
 
-renderStrategyConfiguration : BaseUrl -> Date -> StrategyConfiguration -> String
+renderStrategyConfiguration : BaseUrl -> Posix -> StrategyConfiguration -> String
 renderStrategyConfiguration baseUrl generatedOn ({ generalSettings, portfolioShares, investmentSizeOverrides, buyingConfig, sellingConfig } as strategyConfig) =
     Util.joinNonemptyLines
         [ Version.strategyComment generatedOn
@@ -366,11 +365,15 @@ strategyFromUrlHash hash =
                             case pieces of
                                 [ versionStr, strategyJson ] ->
                                     case String.toInt versionStr of
-                                        Ok version ->
+                                        Just version ->
                                             pickStrategyDecoder version
-                                                |> Result.andThen (\decoder -> Decode.decodeString decoder strategyJson)
+                                                |> Result.andThen
+                                                    (\decoder ->
+                                                        Decode.decodeString decoder strategyJson
+                                                            |> Result.mapError Decode.errorToString
+                                                    )
 
-                                        Err _ ->
+                                        Nothing ->
                                             Err ("Failed to read strategy version from " ++ versionStr)
 
                                 _ ->
@@ -386,7 +389,7 @@ pickStrategyDecoder version =
             Ok strategyDecoder
 
         uspupportedVersion ->
-            Err ("Unsupported strategy version " ++ toString uspupportedVersion)
+            Err ("Unsupported strategy version " ++ String.fromInt uspupportedVersion)
 
 
 shareableUrlComment : BaseUrl -> StrategyConfiguration -> String

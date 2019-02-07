@@ -1,21 +1,20 @@
-module Data.PortfolioStructure
-    exposing
-        ( PortfolioShare
-        , PortfolioShares
-        , decoder
-        , encode
-        , percentageShare
-        , portfolioSharesEqual
-        , portfolioSlidersSubscription
-        , renderPortfolioShares
-        , toIntRange
-        , validate
-        )
+module Data.PortfolioStructure exposing
+    ( PortfolioShare
+    , PortfolioShares
+    , decoder
+    , encode
+    , percentageShare
+    , portfolioSharesEqual
+    , portfolioSlidersSubscription
+    , renderPortfolioShares
+    , toIntRange
+    , validate
+    )
 
-import AllDict exposing (AllDict)
 import Data.Filter.Conditions.Rating as Rating exposing (Rating(..))
-import Data.Portfolio exposing (Portfolio(Empty))
+import Data.Portfolio exposing (Portfolio(..))
 import Data.SharedJsonStuff
+import Dict.Any exposing (AnyDict)
 import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as Encode exposing (Value)
 import RangeSlider exposing (RangeSlider, setDimensions, setExtents, setFormatter, setStepSize, setValues)
@@ -24,7 +23,7 @@ import Util
 
 
 type alias PortfolioShares =
-    AllDict Rating Share Int
+    AnyDict Int Rating Share
 
 
 type alias PortfolioShare =
@@ -47,9 +46,10 @@ renderShare share =
             toIntRange share
     in
     if minPercent == maxPercent then
-        toString minPercent
+        String.fromInt minPercent
+
     else
-        toString minPercent ++ " až " ++ toString maxPercent
+        String.fromInt minPercent ++ " až " ++ String.fromInt maxPercent
 
 
 renderPortfolioShares : Portfolio -> PortfolioShares -> String
@@ -57,7 +57,7 @@ renderPortfolioShares portfolio shares =
     case portfolio of
         -- Only render this section when user "overrides" predefined DefaultPortfolios
         Empty ->
-            AllDict.toList shares
+            Dict.Any.toList shares
                 -- Only render share in the config when maximum > 0
                 |> List.filter (\( _, share ) -> Tuple.second (toIntRange share) > 0)
                 |> List.map renderPortfolioShare
@@ -76,7 +76,7 @@ percentageShare : Int -> Int -> Share
 percentageShare from to =
     RangeSlider.init
         |> setStepSize (Just 1.0)
-        |> setFormatter (\value -> toString value ++ "%")
+        |> setFormatter (\value -> String.fromFloat value ++ "%")
         |> setDimensions 300 57
         |> setExtents 0 100
         |> setValues (toFloat from) (toFloat to)
@@ -84,7 +84,7 @@ percentageShare from to =
 
 portfolioSlidersSubscription : PortfolioShares -> Sub Types.Msg
 portfolioSlidersSubscription shares =
-    AllDict.toList shares
+    Dict.Any.toList shares
         |> List.map (\( rtg, sliderState ) -> Sub.map (Types.ChangePortfolioSharePercentage rtg) (RangeSlider.subscriptions sliderState))
         |> Sub.batch
 
@@ -93,18 +93,26 @@ validate : PortfolioShares -> List String
 validate portfolioShares =
     let
         sumOfShareMinimums =
-            AllDict.foldr (\_ sliderState sumAcc -> sumAcc + round (Tuple.first <| RangeSlider.getValues sliderState)) 0 portfolioShares
+            Dict.Any.foldr (\_ sliderState sumAcc -> sumAcc + getSliderMinimum sliderState) 0 portfolioShares
     in
-    Util.validate (sumOfShareMinimums /= 100) <| "Součet minim musí být přesně 100% (teď je " ++ toString sumOfShareMinimums ++ "%)"
+    Util.validate (sumOfShareMinimums /= 100) <|
+        "Součet minim musí být přesně 100% (teď je "
+            ++ String.fromInt sumOfShareMinimums
+            ++ "%)"
+
+
+getSliderMinimum : RangeSlider -> Int
+getSliderMinimum =
+    round << Tuple.first << RangeSlider.getValues
 
 
 portfolioSharesEqual : PortfolioShares -> PortfolioShares -> Bool
 portfolioSharesEqual ps1 ps2 =
     let
-        toVal =
-            AllDict.map (\_ slider -> RangeSlider.getValues slider)
+        getSliderValues =
+            Dict.Any.values >> List.map RangeSlider.getValues
     in
-    AllDict.eq (toVal ps1) (toVal ps2)
+    getSliderValues ps1 == getSliderValues ps2
 
 
 
@@ -123,7 +131,7 @@ decoder =
 
 encodeShare : Share -> Value
 encodeShare sz =
-    toIntRange sz |> (\( from, to ) -> Encode.list [ Encode.int from, Encode.int to ])
+    toIntRange sz |> (\( from, to ) -> Encode.list Encode.int [ from, to ])
 
 
 shareDecoder : Decoder Share

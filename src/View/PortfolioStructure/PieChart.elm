@@ -1,14 +1,15 @@
 module View.PortfolioStructure.PieChart exposing (viewChart)
 
-import AllDict
 import Array exposing (Array)
 import Data.Filter.Conditions.Rating as Rating
 import Data.PortfolioStructure exposing (PortfolioShares)
+import Dict.Any
 import Html exposing (Html)
+import Path
 import RangeSlider
-import Svg exposing (Svg, circle, g, path, svg, text, text_)
-import Svg.Attributes exposing (cx, cy, d, dominantBaseline, fill, height, r, stroke, transform, width, x, y)
-import Visualization.Shape as Shape exposing (defaultPieConfig)
+import Shape exposing (defaultPieConfig)
+import Svg exposing (Svg, circle, g, svg, text, text_)
+import Svg.Attributes exposing (cx, cy, dominantBaseline, fill, height, r, stroke, transform, width, x, y)
 
 
 colors : Array String
@@ -31,7 +32,7 @@ extractMinimumShares : PortfolioShares -> List ( String, Float )
 extractMinimumShares shares =
     let
         rtgLabelToMinPercentage =
-            AllDict.toList shares
+            Dict.Any.toList shares
                 |> List.map
                     (\( rtg, range ) ->
                         ( Rating.ratingToString rtg
@@ -75,17 +76,15 @@ viewChart shares =
 makeLegend : Int -> ( String, Float, String ) -> Svg a
 makeLegend index ( ratingStr, value, color ) =
     g []
-        [ circle [ r "0.4em", cx "0", cy (toString index ++ "em"), fill color ] []
-        , text_ [ x "1em", y (toString index ++ "em"), dominantBaseline "central" ]
-            [ text <| ratingStr ++ "(" ++ toString (round value) ++ "%)" ]
+        [ circle [ r "0.4em", cx "0", cy (String.fromInt index ++ "em"), fill color ] []
+        , text_ [ x "1em", y (String.fromInt index ++ "em"), dominantBaseline "central" ]
+            [ text <| ratingStr ++ "(" ++ String.fromInt (round value) ++ "%)" ]
         ]
 
 
 makeSlice : Int -> Shape.Arc -> Svg a
-makeSlice index datum =
-    path
-        [ d <| Shape.arc datum
-        , fill <| Maybe.withDefault "#000" <| Array.get index colors
+makeSlice index arc =
+    Path.element (Shape.arc arc)
+        [ fill <| Maybe.withDefault "#000" <| Array.get index colors
         , stroke "#fff"
         ]
-        []

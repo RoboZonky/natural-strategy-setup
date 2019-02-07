@@ -1,15 +1,16 @@
-module Version
-    exposing
-        ( commitHash
-        , filtersHowToLink
-        , githubCommitLink
-        , robozonkyVersionStatement
-        , strategyComment
-        )
+module Version exposing
+    ( commitHash
+    , filtersHowToLink
+    , formatDate
+    , githubCommitLink
+    , robozonkyVersionStatement
+    , strategyComment
+    )
 
+import DateFormat as DF exposing (dayOfMonthNumber, monthNumber, yearNumber)
 import Html exposing (Html, a, text)
 import Html.Attributes exposing (href)
-import Time.Date as Date exposing (Date)
+import Time exposing (Posix)
 
 
 {-| Link to the document describing how filters should be configured.
@@ -25,9 +26,12 @@ githubCommitLink =
     "https://github.com/RoboZonky/natural-strategy-setup/commit/" ++ commitHash
 
 
-strategyComment : Date -> String
+strategyComment : Posix -> String
 strategyComment today =
-    "# Konfigurace strategie vytvořená " ++ formatDate today ++ " nástrojem natural-strategy-setup verze " ++ commitHash
+    "# Konfigurace strategie vytvořená "
+        ++ formatDate today
+        ++ " nástrojem natural-strategy-setup verze "
+        ++ commitHash
 
 
 robozonkyVersionStatement : String
@@ -35,13 +39,11 @@ robozonkyVersionStatement =
     "Tato strategie vyžaduje RoboZonky ve verzi 4.5.0 nebo pozdější."
 
 
-formatDate : Date -> String
-formatDate date =
-    let
-        ( year, month, day ) =
-            Date.toTuple date
-    in
-    toString day ++ "." ++ toString month ++ "." ++ toString year
+formatDate : Posix -> String
+formatDate =
+    DF.format
+        [ dayOfMonthNumber, DF.text ".", monthNumber, DF.text ".", yearNumber ]
+        Time.utc
 
 
 commitHash : String

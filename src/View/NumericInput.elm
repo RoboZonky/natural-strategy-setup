@@ -14,8 +14,8 @@ numericInput minValue maxValue toMessage enabled value =
         , Input.disabled <| not enabled
         , Input.value value
         , Input.attrs
-            [ Attr.min <| toString minValue
-            , Attr.max <| toString maxValue
+            [ Attr.min <| String.fromInt minValue
+            , Attr.max <| String.fromInt maxValue
             , Spacing.mx1
             ]
         ]

@@ -85,6 +85,7 @@ updateHelp msg model =
             in
             if List.isEmpty conditionsToBeRemoved && List.isEmpty conditionsToBeRemovedFromException then
                 { model | editedFilter = setFilteredItem filteredItem model.editedFilter }
+
             else
                 { model | confirmRemoval = Just ( filteredItem, conditionsToBeRemoved, conditionsToBeRemovedFromException ) }
 
@@ -209,6 +210,7 @@ exceptionButtonWhenFilterComplex filterComplexity editingPositiveSubform =
         exceptionButtonText =
             if editingPositiveSubform then
                 "Přidat Výjimku >>"
+
             else
                 "<< Zpět"
     in
@@ -233,13 +235,15 @@ marketplaceFilterEditor mf filterComplexity editingPositiveSubform allowedFilter
         previewOrValidationErrors =
             if List.isEmpty validationErrors then
                 Filter.filterTextView mf
+
             else
-                ul [ style [ ( "color", "red" ) ] ] <|
+                ul [ style "color" "red" ] <|
                     List.map (\e -> li [] [ text e ]) validationErrors
 
         conditionsSubform =
             if editingPositiveSubform then
                 Html.map PositiveConditionsChange <| Conditions.form filterComplexity mf.whatToFilter mf.ignoreWhen
+
             else
                 Html.map NegativeConditionsChange <| Conditions.form filterComplexity mf.whatToFilter mf.butNotWhen
     in
@@ -282,9 +286,9 @@ filteredItemRadios allowedFilteredItems currentFilteredItem =
 
 
 filteredItemRadio : FilteredItem -> Int -> FilteredItem -> Html CreationModalMsg
-filteredItemRadio currentFilteredItem idx filteredItem =
+filteredItemRadio currentFilteredItem index filteredItem =
     Radio.radio
-        [ Radio.id <| "filteredItem" ++ toString idx
+        [ Radio.id <| "filteredItem" ++ String.fromInt index
         , Radio.checked (currentFilteredItem == filteredItem)
         , Radio.name "filteredItem"
         , Radio.onClick <| SetFilteredItem filteredItem
@@ -298,8 +302,9 @@ conditionsOrExceptionTitle editingPositiveSubform =
     text <|
         if editingPositiveSubform then
             ""
+
         else
-            "Podmínky výjimky"
+            " - podmínky výjimky"
 
 
 {-| Calculate which ConditionType-s need to be removed when changing to new FilteredItem

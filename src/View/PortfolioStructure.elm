@@ -1,6 +1,5 @@
 module View.PortfolioStructure exposing (form)
 
-import AllDict as Dict
 import Bootstrap.Accordion as Accordion
 import Bootstrap.Card.Block as CardBlock
 import Bootstrap.Form as Form
@@ -9,14 +8,15 @@ import Bootstrap.Grid as Grid
 import Bootstrap.Grid.Col as Col
 import Bootstrap.Utilities.Spacing as Spacing
 import Data.Filter.Conditions.Rating exposing (ratingToString)
-import Data.Portfolio as Portfolio exposing (Portfolio(..))
+import Data.Portfolio as Portfolio exposing (Portfolio(..), allPortfolios)
 import Data.PortfolioStructure as PortfolioStructure exposing (PortfolioShares)
 import Data.Tooltip as Tooltip
+import Dict.Any
 import Html exposing (Html, div, text)
 import Html.Attributes exposing (selected, style, value)
 import Html.Events exposing (onSubmit)
 import RangeSlider
-import Types exposing (Msg(ChangePortfolioSharePercentage, NoOp, PortfolioChanged))
+import Types exposing (Msg(..))
 import Util
 import View.CardHeightWorkaround exposing (markOpenedAccordionCard)
 import View.PortfolioStructure.PieChart exposing (viewChart)
@@ -68,10 +68,10 @@ defaultPortfolioSelect currentPortfolio =
             List.map
                 (\portfolio ->
                     Select.item
-                        [ value (toString portfolio), selected (portfolio == currentPortfolio) ]
+                        [ value (Portfolio.toString portfolio), selected (portfolio == currentPortfolio) ]
                         [ text (Portfolio.toUiLabel portfolio) ]
                 )
-                [ Conservative, Balanced, Progressive, Empty ]
+                allPortfolios
     in
     Select.select
         [ Select.small
@@ -96,8 +96,8 @@ portfolioSharesSliders shares =
     let
         ratingSlider ( rating, sliderState ) =
             Form.formInline [ onSubmit NoOp ]
-                [ div [ style [ ( "width", "50px" ) ] ] [ text <| ratingToString rating ]
+                [ div [ style "width" "50px" ] [ text <| ratingToString rating ]
                 , Html.map (ChangePortfolioSharePercentage rating) <| RangeSlider.view sliderState
                 ]
     in
-    div [] <| List.map ratingSlider <| Dict.toList shares
+    div [] <| List.map ratingSlider <| Dict.Any.toList shares

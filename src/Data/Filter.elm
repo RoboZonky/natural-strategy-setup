@@ -1,35 +1,34 @@
-module Data.Filter
-    exposing
-        ( BuyingConfiguration(..)
-        , FilteredItem(..)
-        , MarketplaceEnablement
-        , MarketplaceFilter
-        , SellingConfiguration(..)
-        , addSellFilter
-        , decodeBuyingConfiguration
-        , decodeSellingConfiguration
-        , emptyFilter
-        , encodeBuyingConfiguration
-        , encodeSellingConfiguration
-        , filterTextView
-        , getAllowedFilterItems
-        , getFiltersRemovedByBuyingConfigurationChange
-        , getMarketplaceEnablement
-        , isValid
-        , itemToPluralString
-        , itemToPluralStringGenitive
-        , marketplaceFilterValidationErrors
-        , removeSellFilterAt
-        , renderBuyingConfiguration
-        , renderSellingConfiguration
-        , setFilteredItem
-        , togglePrimaryEnablement
-        , toggleSecondaryEnablement
-        , updateBuyFilters
-        , updateNegativeConditions
-        , updatePositiveConditions
-        , validateSellingConfiguration
-        )
+module Data.Filter exposing
+    ( BuyingConfiguration(..)
+    , FilteredItem(..)
+    , MarketplaceEnablement
+    , MarketplaceFilter
+    , SellingConfiguration(..)
+    , addSellFilter
+    , decodeBuyingConfiguration
+    , decodeSellingConfiguration
+    , emptyFilter
+    , encodeBuyingConfiguration
+    , encodeSellingConfiguration
+    , filterTextView
+    , getAllowedFilterItems
+    , getFiltersRemovedByBuyingConfigurationChange
+    , getMarketplaceEnablement
+    , isValid
+    , itemToPluralString
+    , itemToPluralStringGenitive
+    , marketplaceFilterValidationErrors
+    , removeSellFilterAt
+    , renderBuyingConfiguration
+    , renderSellingConfiguration
+    , setFilteredItem
+    , togglePrimaryEnablement
+    , toggleSecondaryEnablement
+    , updateBuyFilters
+    , updateNegativeConditions
+    , updatePositiveConditions
+    , validateSellingConfiguration
+    )
 
 import Bootstrap.Badge as Badge
 import Data.Filter.Conditions as Conditions exposing (Condition, Conditions)
@@ -103,6 +102,7 @@ togglePrimaryEnablement enablePrimary buyingConfiguration =
         InvestEverything ->
             if enablePrimary then
                 InvestEverything
+
             else
                 InvestSomething { primaryEnabled = False, secondaryEnabled = True } []
 
@@ -115,6 +115,7 @@ togglePrimaryEnablement enablePrimary buyingConfiguration =
                 ( True, True ) ->
                     if List.isEmpty filters then
                         InvestEverything
+
                     else
                         InvestSomething newEna filters
 
@@ -130,6 +131,7 @@ togglePrimaryEnablement enablePrimary buyingConfiguration =
         InvestNothing ->
             if enablePrimary then
                 InvestSomething { primaryEnabled = True, secondaryEnabled = False } []
+
             else
                 InvestNothing
 
@@ -140,6 +142,7 @@ toggleSecondaryEnablement enableSecondary buyingConfiguration =
         InvestEverything ->
             if enableSecondary then
                 InvestEverything
+
             else
                 InvestSomething { primaryEnabled = True, secondaryEnabled = False } []
 
@@ -152,6 +155,7 @@ toggleSecondaryEnablement enableSecondary buyingConfiguration =
                 ( True, True ) ->
                     if List.isEmpty filters then
                         InvestEverything
+
                     else
                         InvestSomething newEna filters
 
@@ -167,6 +171,7 @@ toggleSecondaryEnablement enableSecondary buyingConfiguration =
         InvestNothing ->
             if enableSecondary then
                 InvestSomething { primaryEnabled = False, secondaryEnabled = True } []
+
             else
                 InvestNothing
 
@@ -318,12 +323,14 @@ renderFilters heading { primaryEnabled, secondaryEnabled } filterRenderer filter
         primaryEnablement =
             if primaryEmpty then
                 renderPrimaryEnablement primaryEnabled
+
             else
                 ""
 
         secondaryEnablement =
             if secondaryEmpty then
                 renderSecondaryEnablement secondaryEnabled
+
             else
                 ""
     in
@@ -334,6 +341,7 @@ renderPrimaryEnablement : Bool -> String
 renderPrimaryEnablement isEnabled =
     if isEnabled then
         "Investovat do všech půjček."
+
     else
         "Ignorovat všechny půjčky."
 
@@ -342,6 +350,7 @@ renderSecondaryEnablement : Bool -> String
 renderSecondaryEnablement isEnabled =
     if isEnabled then
         "Investovat do všech participací."
+
     else
         "Ignorovat všechny participace."
 
@@ -364,7 +373,6 @@ marketplaceFilterValidationErrors mf =
 
 setFilteredItem : FilteredItem -> MarketplaceFilter -> MarketplaceFilter
 setFilteredItem newItem mf =
-    -- TODO this needs to remove incompatible conditions from what's enabled, ideally and ideally ask user for confirmation
     { mf | whatToFilter = newItem }
 
 
@@ -467,6 +475,7 @@ addDotIfNotEmptyString s =
     s
         ++ (if String.isEmpty s then
                 ""
+
             else
                 "."
            )
@@ -477,6 +486,7 @@ addDotIfNotEmptyList xs =
     xs
         ++ (if List.isEmpty xs then
                 []
+
             else
                 [ Html.text "." ]
            )
@@ -541,7 +551,7 @@ encodeSellingConfiguration sellingConfiguratin =
         SellSomething filters ->
             Encode.object
                 [ ( "m", Encode.int 1 )
-                , ( "n", Encode.list <| List.map encodeMarketplaceFilter filters )
+                , ( "n", Encode.list encodeMarketplaceFilter filters )
                 ]
 
 
@@ -559,7 +569,7 @@ decodeSellingConfiguration =
                             (Decode.field "n" (Decode.list marketplaceFilterDecoder))
 
                     _ ->
-                        Decode.fail <| "Unable to decode SellingConfiguration from " ++ toString x
+                        Decode.fail <| "Unable to decode SellingConfiguration from " ++ String.fromInt x
             )
 
 
@@ -576,7 +586,7 @@ encodeBuyingConfiguration buyingConfiguration =
                 [ ( "o", Encode.int 1 )
                 , ( "p", Encode.bool enablement.primaryEnabled )
                 , ( "q", Encode.bool enablement.secondaryEnabled )
-                , ( "r", Encode.list <| List.map encodeMarketplaceFilter filters )
+                , ( "r", Encode.list encodeMarketplaceFilter filters )
                 ]
 
         InvestNothing ->
@@ -606,7 +616,7 @@ decodeBuyingConfiguration =
                         Decode.succeed InvestNothing
 
                     _ ->
-                        Decode.fail <| "Unable to decode BuyingConfiguration from " ++ toString x
+                        Decode.fail <| "Unable to decode BuyingConfiguration from " ++ String.fromInt x
             )
 
 

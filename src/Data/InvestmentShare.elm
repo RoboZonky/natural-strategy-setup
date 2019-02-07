@@ -1,11 +1,10 @@
-module Data.InvestmentShare
-    exposing
-        ( InvestmentShare(..)
-        , decoder
-        , encode
-        , render
-        , validate
-        )
+module Data.InvestmentShare exposing
+    ( InvestmentShare(..)
+    , decoder
+    , encode
+    , render
+    , validate
+    )
 
 import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as Encode exposing (Value)
@@ -21,7 +20,7 @@ render : InvestmentShare -> String
 render investmentShare =
     case investmentShare of
         Percent share ->
-            "Investovat maximálně " ++ toString share ++ " % výše úvěru."
+            "Investovat maximálně " ++ String.fromInt share ++ " % výše úvěru."
 
         NotSpecified ->
             ""
@@ -45,10 +44,10 @@ encode : InvestmentShare -> Value
 encode is =
     case is of
         Percent pct ->
-            Encode.list [ Encode.int 1, Encode.int pct ]
+            Encode.list Encode.int [ 1, pct ]
 
         NotSpecified ->
-            Encode.list [ Encode.int 2 ]
+            Encode.list Encode.int [ 2 ]
 
 
 decoder : Decoder InvestmentShare
@@ -64,5 +63,5 @@ decoder =
                         Decode.succeed NotSpecified
 
                     _ ->
-                        Decode.fail <| "Unable to decode InvestmentShare from " ++ toString ints
+                        Decode.fail <| "Unable to decode InvestmentShare from " ++ Util.intListToString ints
             )

@@ -1,16 +1,15 @@
-module Data.Filter.Conditions.RemainingAmount
-    exposing
-        ( RemainingAmount(Between, LessThan, MoreThan)
-        , RemainingAmountCondition(RemainingAmountCondition)
-        , RemainingAmountMsg
-        , conditionDecoder
-        , defaultCondition
-        , encodeCondition
-        , form
-        , renderCondition
-        , update
-        , validationErrors
-        )
+module Data.Filter.Conditions.RemainingAmount exposing
+    ( RemainingAmount(..)
+    , RemainingAmountCondition(..)
+    , RemainingAmountMsg
+    , conditionDecoder
+    , defaultCondition
+    , encodeCondition
+    , form
+    , renderCondition
+    , update
+    , validationErrors
+    )
 
 import Bootstrap.Form as Form
 import Bootstrap.Form.Radio as Radio
@@ -47,13 +46,13 @@ remainingAmountToString : RemainingAmount -> String
 remainingAmountToString remainingAmount =
     case remainingAmount of
         Between from to ->
-            "je " ++ toString from ++ " až " ++ toString to
+            "je " ++ String.fromInt from ++ " až " ++ String.fromInt to
 
         MoreThan lowerBound ->
-            "přesahuje " ++ toString lowerBound
+            "přesahuje " ++ String.fromInt lowerBound
 
         LessThan upperBound ->
-            "nedosahuje " ++ toString upperBound
+            "nedosahuje " ++ String.fromInt upperBound
 
 
 validationErrors : RemainingAmountCondition -> List String
@@ -100,37 +99,49 @@ whichEnabled amt =
 
 
 update : RemainingAmountMsg -> RemainingAmountCondition -> RemainingAmountCondition
-update msg ac =
-    case msg of
-        SetLessThan hi ->
-            emptyToZero hi |> String.toInt |> Result.map (RemainingAmountCondition << LessThan) |> Result.withDefault ac
+update msg (RemainingAmountCondition ra) =
+    RemainingAmountCondition <|
+        Maybe.withDefault ra <|
+            case msg of
+                SetLessThan hi ->
+                    Maybe.map LessThan (parseInt hi)
 
-        SetBetween loStr hiStr ->
-            emptyToZero loStr
-                |> String.toInt
-                |> Result.andThen (\lo -> emptyToZero hiStr |> String.toInt |> Result.map (\hi -> RemainingAmountCondition <| Between lo hi))
-                |> Result.withDefault ac
+                SetBetween lo hi ->
+                    Maybe.map2 Between (parseInt lo) (parseInt hi)
 
-        SetMoreThan lo ->
-            emptyToZero lo |> String.toInt |> Result.map (RemainingAmountCondition << MoreThan) |> Result.withDefault ac
+                SetMoreThan lo ->
+                    Maybe.map MoreThan (parseInt lo)
 
-        RemainingAmountNoOp ->
-            ac
+                RemainingAmountNoOp ->
+                    Nothing
+
+
+parseInt : String -> Maybe Int
+parseInt =
+    String.toInt << emptyToZero
+
+
+type alias RemainingAmountRadioValues =
+    { lessThan : String
+    , betweenMin : String
+    , betweenMax : String
+    , moreThan : String
+    }
 
 
 form : RemainingAmountCondition -> Html RemainingAmountMsg
 form (RemainingAmountCondition ramt) =
     let
-        ( ltVal, btwMinVal, btwMaxVal, mtVal ) =
+        values =
             case ramt of
                 LessThan x ->
-                    ( zeroToEmpty x, "", "", "" )
+                    RemainingAmountRadioValues (zeroToEmpty x) "" "" ""
 
                 Between mi ma ->
-                    ( "", zeroToEmpty mi, zeroToEmpty ma, "" )
+                    RemainingAmountRadioValues "" (zeroToEmpty mi) (zeroToEmpty ma) ""
 
                 MoreThan x ->
-                    ( "", "", "", zeroToEmpty x )
+                    RemainingAmountRadioValues "" "" "" (zeroToEmpty x)
 
         ( ltEnabled, btwEnabled, mtEnabled ) =
             whichEnabled ramt
@@ -138,19 +149,19 @@ form (RemainingAmountCondition ramt) =
     Html.div []
         [ Form.formInline [ onSubmit RemainingAmountNoOp ]
             [ remainingAmountRadio ltEnabled (SetLessThan "0") "nedosahuje" "ramount1"
-            , numericInput SetLessThan ltEnabled ltVal
+            , numericInput SetLessThan ltEnabled values.lessThan
             , text "Kč"
             ]
         , Form.formInline [ onSubmit RemainingAmountNoOp ]
             [ remainingAmountRadio btwEnabled (SetBetween "0" "0") "je" "ramount2"
-            , numericInput (\x -> SetBetween x btwMaxVal) btwEnabled btwMinVal
+            , numericInput (\x -> SetBetween x values.betweenMax) btwEnabled values.betweenMin
             , text "až"
-            , numericInput (\y -> SetBetween btwMinVal y) btwEnabled btwMaxVal
+            , numericInput (\y -> SetBetween values.betweenMin y) btwEnabled values.betweenMax
             , text "Kč"
             ]
         , Form.formInline [ onSubmit RemainingAmountNoOp ]
             [ remainingAmountRadio mtEnabled (SetMoreThan "0") "přesahuje" "ramount3"
-            , numericInput SetMoreThan mtEnabled mtVal
+            , numericInput SetMoreThan mtEnabled values.moreThan
             , text "Kč"
             ]
         ]
@@ -180,13 +191,13 @@ encodeAmount : RemainingAmount -> Value
 encodeAmount amt =
     case amt of
         LessThan x ->
-            Encode.list [ Encode.int 1, Encode.int x ]
+            Encode.list Encode.int [ 1, x ]
 
         Between x y ->
-            Encode.list [ Encode.int 2, Encode.int x, Encode.int y ]
+            Encode.list Encode.int [ 2, x, y ]
 
         MoreThan y ->
-            Encode.list [ Encode.int 3, Encode.int y ]
+            Encode.list Encode.int [ 3, y ]
 
 
 encodeCondition : RemainingAmountCondition -> Value
@@ -210,7 +221,7 @@ remainingAmountDecoder =
                         Decode.succeed <| MoreThan y
 
                     _ ->
-                        Decode.fail <| "Unable to decode RemainingAmount from " ++ toString ints
+                        Decode.fail <| "Unable to decode RemainingAmount from " ++ Util.intListToString ints
             )
 
 

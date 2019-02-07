@@ -1,6 +1,6 @@
 /* Make text in range slider labels non-selectable */
 
-.rangeSliderValue {
+.range-slider-value {
   user-select: none !important;
   -moz-user-select: none !important;
 }
@@ -9,6 +9,12 @@
 
 .card-open [id$=Card] {
   height: 100% !important;
+}
+
+/* After migration to Elm 0.19 rundis/elm-bootstrap 4.1.0 -> 5.1.0 renders accordion toggles with too small font and too large padding */
+.card-header > button {
+  font-size: 24px;
+  padding: 0px;
 }
 
 .condition-subform-container {

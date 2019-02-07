@@ -7,7 +7,7 @@ import Bootstrap.Form.Radio as Radio
 import Data.InvestmentShare as InvestmentShare exposing (InvestmentShare)
 import Html exposing (Html, text)
 import Html.Events exposing (onSubmit)
-import Types exposing (Msg(NoOp, TargetPortfolioShareChanged))
+import Types exposing (Msg(..))
 import Util
 import View.NumericInput
 

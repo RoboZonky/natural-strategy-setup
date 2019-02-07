@@ -6,7 +6,7 @@ import Data.Confirmation exposing (ConfirmationSettings)
 import Data.Filter.Conditions.Rating as Rating
 import Data.Tooltip as Tooltip
 import Html
-import Types exposing (Msg(ConfirmationFormMsg))
+import Types exposing (Msg(..))
 import View.Tooltip as Tooltip
 
 

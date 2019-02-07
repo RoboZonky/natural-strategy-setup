@@ -4,10 +4,10 @@ import Bootstrap.Card.Block as CardBlock
 import Bootstrap.Form as Form
 import Bootstrap.Form.Fieldset as Fieldset
 import Bootstrap.Form.Radio as Radio
-import Data.TargetBalance as TargetBalance exposing (TargetBalance(NotSpecified, TargetBalance))
+import Data.TargetBalance as TargetBalance exposing (TargetBalance(..))
 import Html exposing (Html, text)
 import Html.Events exposing (onSubmit)
-import Types exposing (Msg(NoOp, TargetBalanceChanged))
+import Types exposing (Msg(..))
 import Util
 import View.NumericInput
 

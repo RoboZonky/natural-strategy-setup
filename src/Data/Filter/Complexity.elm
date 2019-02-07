@@ -1,8 +1,7 @@
-module Data.Filter.Complexity
-    exposing
-        ( FilterComplexity(Complex, Simple)
-        , complexityButtonLabel
-        )
+module Data.Filter.Complexity exposing
+    ( FilterComplexity(..)
+    , complexityButtonLabel
+    )
 
 {-| To prevent issues with people not understanding propositional logic we distinguish two ways of creating filters:
 

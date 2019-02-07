@@ -1,6 +1,5 @@
 module View.Investment exposing (form)
 
-import AllDict
 import Bootstrap.Accordion as Accordion
 import Bootstrap.Alert as Alert
 import Bootstrap.Card.Block as CardBlock
@@ -10,11 +9,12 @@ import Bootstrap.Grid.Col as Col
 import Bootstrap.Utilities.Spacing as Spacing
 import Data.Filter.Conditions.Rating exposing (Rating, ratingToString)
 import Data.Investment as Investment exposing (InvestmentsPerRating)
+import Dict.Any
 import Html exposing (Html, a, div, span, strong, text)
 import Html.Attributes exposing (href, style)
 import Html.Events exposing (onSubmit)
 import RangeSlider
-import Types exposing (Msg(ChangeDefaultInvestment, ChangeInvestment, NoOp))
+import Types exposing (Msg(..))
 
 
 form : Investment.Size -> InvestmentsPerRating -> Accordion.Card Msg
@@ -62,13 +62,14 @@ warningWhenSizeExceeds5K invDefault invOverrides =
             , a [ href "https://zonky.cz/downloads/Zonky_Parametry_castek_pro_investovani.pdf" ] [ text " následujícími pravidly" ]
             , text ". Nastavíte-li částku vyšší, robot bude investovat pouze maximální povolenou částku."
             ]
+
     else
         text ""
 
 
 investmentOverridesSliders : InvestmentsPerRating -> Html Msg
 investmentOverridesSliders invOverrides =
-    AllDict.toList invOverrides
+    Dict.Any.toList invOverrides
         |> List.map (\( rating, sliderState ) -> investmentSlider rating sliderState)
         |> div []
 
@@ -76,6 +77,6 @@ investmentOverridesSliders invOverrides =
 investmentSlider : Rating -> Investment.Size -> Html Msg
 investmentSlider rating sliderState =
     Form.formInline [ onSubmit NoOp ]
-        [ div [ style [ ( "width", "50px" ) ] ] [ text <| ratingToString rating ]
+        [ div [ style "width" "50px" ] [ text <| ratingToString rating ]
         , Html.map (ChangeInvestment rating) <| RangeSlider.view sliderState
         ]

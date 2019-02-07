@@ -1,13 +1,14 @@
-module StrategyEncodingDecoding exposing (..)
+module StrategyEncodingDecoding exposing (amountCondition, amountConditionFuzzer, conditions, encodeAndDecode, hundredRandomConditions, interestCondition, interestConditionFuzzer, investmentsPerRating, makeIprComparable, portfolio)
 
-import AllDict
-import Data.Filter exposing (FilteredItem(Loan))
+import Data.Filter exposing (FilteredItem(..))
 import Data.Filter.Conditions as Conditions exposing (Conditions)
-import Data.Filter.Conditions.Amount as Amount exposing (AmountCondition(AmountCondition))
-import Data.Filter.Conditions.Interest as Interest exposing (InterestCondition(InterestCondition))
+import Data.Filter.Conditions.Amount as Amount exposing (AmountCondition(..))
+import Data.Filter.Conditions.Interest as Interest exposing (InterestCondition(..))
+import Data.Filter.Conditions.Rating exposing (ratingToString)
 import Data.Investment as Investment
 import Data.Portfolio as Portfolio
 import Dict exposing (Dict)
+import Dict.Any
 import Expect
 import Fuzz exposing (Fuzzer)
 import Json.Decode as Decode exposing (Decoder)
@@ -16,6 +17,7 @@ import Random
 import RangeSlider
 import Test exposing (..)
 import Test.RandomStrategy as RS
+
 
 
 -- AmountCondition
@@ -91,7 +93,7 @@ conditions =
     describe "Conditions: decode . encode == id" <|
         List.indexedMap
             (\i cond ->
-                test (toString i) <|
+                test (String.fromInt i) <|
                     \() ->
                         cond
                             |> encodeAndDecode Conditions.encodeConditions Conditions.conditionsDecoder
@@ -138,7 +140,9 @@ investmentsPerRating =
 -}
 makeIprComparable : Investment.InvestmentsPerRating -> Dict String ( Float, Float )
 makeIprComparable ipr =
-    AllDict.toList ipr |> List.map (\( rtg, slider ) -> ( toString rtg, RangeSlider.getValues slider )) |> Dict.fromList
+    Dict.Any.toList ipr
+        |> List.map (\( rtg, slider ) -> ( ratingToString rtg, RangeSlider.getValues slider ))
+        |> Dict.fromList
 
 
 
@@ -147,4 +151,4 @@ makeIprComparable ipr =
 
 encodeAndDecode : (a -> Value) -> Decoder a -> a -> Result String a
 encodeAndDecode encode decoder x =
-    encode x |> Encode.encode 0 |> Decode.decodeString decoder
+    encode x |> Encode.encode 0 |> Decode.decodeString decoder |> Result.mapError Decode.errorToString
