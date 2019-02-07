@@ -6,6 +6,7 @@ module Util exposing
     , intListToString
     , joinNonemptyLines
     , orList
+    , parseInt
     , renderNonemptySection
     , stringListToString
     , validate
@@ -82,6 +83,11 @@ emptyToZero s =
 
     else
         s
+
+
+parseInt : String -> Maybe Int
+parseInt =
+    String.toInt << emptyToZero
 
 
 validate : Bool -> String -> List String

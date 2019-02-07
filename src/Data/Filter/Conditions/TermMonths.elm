@@ -18,7 +18,7 @@ import Html exposing (Html, text)
 import Html.Events exposing (onSubmit)
 import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as Encode exposing (Value)
-import Util exposing (emptyToZero, zeroToEmpty)
+import Util exposing (parseInt, zeroToEmpty)
 import View.NumericInput
 
 
@@ -119,11 +119,6 @@ update msg (TermMonthsCondition term) =
 
                 TermMonthsNoOp ->
                     Nothing
-
-
-parseInt : String -> Maybe Int
-parseInt =
-    String.toInt << emptyToZero
 
 
 type alias TermMonthsRadioValues =
