@@ -102,8 +102,8 @@ setPortfolio portfolio strategy =
                 Progressive ->
                     PredefinedShares.progressive
 
-                Empty ->
-                    {- switch to empty leaves the current slider configuration untouched -}
+                UserDefined ->
+                    {- switch to UserDefined leaves the current slider configuration untouched -}
                     strategy.portfolioShares
     in
     case strategy of

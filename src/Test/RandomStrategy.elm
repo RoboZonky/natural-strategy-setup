@@ -310,7 +310,7 @@ filteredItemGen =
 
 portfolioGen : Generator Portfolio
 portfolioGen =
-    Random.sample [ Conservative, Balanced, Progressive, Empty ]
+    Random.sample [ Conservative, Balanced, Progressive, UserDefined ]
         |> Random.map (Maybe.withDefault Conservative)
 
 

@@ -7,7 +7,7 @@ Web configuration of investment strategy for [RoboZonky](https://robozonky.githu
 Use [elm-live](https://github.com/wking-io/elm-live) to start the development server and open the running app in the browser.
 
 ```bash
-elm-live --dir dist --start-page dist/index.html --open -- src/Main.elm --output dist/js/elm.js
+elm-live --dir dist --open -- src/Main.elm --output dist/js/elm.js
 ```
 
 ## Running tests

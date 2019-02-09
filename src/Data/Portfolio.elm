@@ -18,7 +18,7 @@ type Portfolio
     = Conservative
     | Balanced
     | Progressive
-    | Empty
+    | UserDefined
 
 
 allPortfolios : List Portfolio
@@ -26,7 +26,7 @@ allPortfolios =
     [ Conservative
     , Balanced
     , Progressive
-    , Empty
+    , UserDefined
     ]
 
 
@@ -42,12 +42,12 @@ toStrategyString pt =
         Progressive ->
             "progresivní"
 
-        Empty ->
-            "prázdné"
+        UserDefined ->
+            "uživatelem definované"
 
 
-{-| Unlike toString (used to render strategy config) this uses more
-"user friendly" name for Empty portfolio.
+{-| Unlike toStrategyString (used for strategy config rendering) this uses more
+user friendly name for UserDefined portfolio.
 -}
 toUiLabel : Portfolio -> String
 toUiLabel pt =
@@ -61,7 +61,7 @@ toUiLabel pt =
         Progressive ->
             "progresivní"
 
-        Empty ->
+        UserDefined ->
             "mnou definované"
 
 
@@ -80,8 +80,8 @@ toString portfolio =
         Progressive ->
             "Progressive"
 
-        Empty ->
-            "Empty"
+        UserDefined ->
+            "UserDefined"
 
 
 fromString : String -> Portfolio
@@ -97,7 +97,7 @@ fromString str =
             Progressive
 
         _ ->
-            Empty
+            UserDefined
 
 
 render : Portfolio -> String

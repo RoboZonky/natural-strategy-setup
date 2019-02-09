@@ -55,8 +55,7 @@ renderShare share =
 renderPortfolioShares : Portfolio -> PortfolioShares -> String
 renderPortfolioShares portfolio shares =
     case portfolio of
-        -- Only render this section when user "overrides" predefined DefaultPortfolios
-        Empty ->
+        UserDefined ->
             Dict.Any.toList shares
                 -- Only render share in the config when maximum > 0
                 |> List.filter (\( _, share ) -> Tuple.second (toIntRange share) > 0)
