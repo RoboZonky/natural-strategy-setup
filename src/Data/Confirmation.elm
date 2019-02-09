@@ -56,7 +56,7 @@ render settings =
             ""
 
         Confirm interestCondition ->
-            "Potvrzovat mobilem investice do úvěrů, kde " ++ Interest.renderCondition interestCondition ++ "."
+            "Potvrzovat mobilem investice do úvěrů, kde " ++ Interest.renderCondition interestCondition
 
 
 validate : ConfirmationSettings -> List String

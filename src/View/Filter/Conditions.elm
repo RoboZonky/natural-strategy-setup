@@ -102,6 +102,7 @@ conditionEnablementDropdown filteredItem conditions =
             , valuePickedMessage = addCondition
             , showVisibleLabel = getVisibleLabel filteredItem
             , defaultOption = DummyOption "-- Přidat podmínku --"
+            , enabled = True
             }
 
 

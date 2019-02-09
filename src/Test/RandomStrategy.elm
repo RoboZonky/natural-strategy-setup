@@ -1,5 +1,6 @@
 module Test.RandomStrategy exposing (conditionsGen, strategyConfigurationGen)
 
+import Array
 import Data.Confirmation as Confirmation exposing (ConfirmationSettings)
 import Data.ExitConfig as ExitConfig
 import Data.Filter as Filter exposing (BuyingConfiguration, FilteredItem(..), MarketplaceEnablement, MarketplaceFilter, SellingConfiguration)
@@ -11,7 +12,7 @@ import Data.Filter.Conditions.Income as Income exposing (IncomeCondition(..))
 import Data.Filter.Conditions.Insurance exposing (Insurance(..), InsuranceCondition(..))
 import Data.Filter.Conditions.Interest as Interest exposing (InterestCondition(..))
 import Data.Filter.Conditions.Purpose as Purpose exposing (PurposeCondition(..))
-import Data.Filter.Conditions.Rating as Rating exposing (RatingCondition(..))
+import Data.Filter.Conditions.Rating as Rating exposing (Rating, RatingCondition(..))
 import Data.Filter.Conditions.Region as Region exposing (RegionCondition(..))
 import Data.Filter.Conditions.RemainingAmount as RemainingAmount exposing (RemainingAmountCondition(..))
 import Data.Filter.Conditions.Story exposing (Story(..), StoryCondition(..))
@@ -279,20 +280,32 @@ remainingAmountConditionGen =
 
 interestConditionGen : Generator InterestCondition
 interestConditionGen =
-    Random.choices (Random.map Interest.LessThan (float2dpGen 0 100))
-        [ float2dpGen 0 100 |> Random.andThen (\mi -> float2dpGen mi 100 |> Random.map (\mx -> Interest.Between mi mx))
-        , Random.map Interest.MoreThan (float2dpGen 0 100)
+    Random.choices (Random.map Interest.LessThan ratingGen)
+        [ Random.map (\( r1, r2 ) -> Interest.Between r1 r2) ratingRangeGen
+        , Random.map Interest.MoreThan ratingGen
         ]
         |> Random.map InterestCondition
 
 
+ratingGen : Generator Rating
+ratingGen =
+    Random.sample Rating.allRatings |> Random.map (Maybe.withDefault Rating.D)
 
-{- | random float rounded to 2 decimal places -}
 
-
-float2dpGen : Float -> Float -> Generator Float
-float2dpGen from to =
-    Random.map (\f -> toFloat (round (f * 100)) / 100) (Random.float from to)
+{-| pair of ratings of which the 1st is better than the 2nd
+-}
+ratingRangeGen : Generator ( Rating, Rating )
+ratingRangeGen =
+    let
+        rtgs =
+            Array.fromList Rating.allRatings
+    in
+    randomRangeGen 0 (List.length Rating.allRatings)
+        |> Random.map
+            (\( i, j ) ->
+                Maybe.map2 Tuple.pair (Array.get i rtgs) (Array.get j rtgs)
+                    |> Maybe.withDefault ( Rating.D, Rating.D )
+            )
 
 
 filteredItemGen : Generator FilteredItem

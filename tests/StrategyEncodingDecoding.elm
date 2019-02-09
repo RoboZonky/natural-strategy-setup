@@ -4,7 +4,7 @@ import Data.Filter exposing (FilteredItem(..))
 import Data.Filter.Conditions as Conditions exposing (Conditions)
 import Data.Filter.Conditions.Amount as Amount exposing (AmountCondition(..))
 import Data.Filter.Conditions.Interest as Interest exposing (InterestCondition(..))
-import Data.Filter.Conditions.Rating as Rating
+import Data.Filter.Conditions.Rating as Rating exposing (Rating)
 import Data.Investment as Investment
 import Data.Portfolio as Portfolio
 import Dict exposing (Dict)
@@ -69,11 +69,17 @@ interestCondition =
 
 interestConditionFuzzer : Fuzzer InterestCondition
 interestConditionFuzzer =
-    Fuzz.oneOf
-        [ Fuzz.map (InterestCondition << Interest.LessThan) Fuzz.float
-        , Fuzz.map2 (\x y -> InterestCondition <| Interest.Between x y) Fuzz.float Fuzz.float
-        , Fuzz.map (InterestCondition << Interest.MoreThan) Fuzz.float
-        ]
+    Fuzz.map InterestCondition <|
+        Fuzz.oneOf
+            [ Fuzz.map Interest.LessThan ratingFuzzer
+            , Fuzz.map2 (\x y -> Interest.Between x y) ratingFuzzer ratingFuzzer
+            , Fuzz.map Interest.MoreThan ratingFuzzer
+            ]
+
+
+ratingFuzzer : Fuzzer Rating
+ratingFuzzer =
+    Fuzz.oneOf <| List.map Fuzz.constant Rating.allRatings
 
 
 

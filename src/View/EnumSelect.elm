@@ -6,7 +6,7 @@ module View.EnumSelect exposing
 
 import Dict
 import Html exposing (Html, option, text)
-import Html.Attributes exposing (class, selected, value)
+import Html.Attributes exposing (class, disabled, selected, value)
 import Html.Events exposing (stopPropagationOn, targetValue)
 import Html.Keyed as Keyed
 import Json.Decode as Decode exposing (Decoder)
@@ -22,6 +22,7 @@ type alias EnumSelectConfig enum msg =
     --| How to display the value in the dropdown
     , showVisibleLabel : enum -> String
     , defaultOption : DefaultOptionConfig enum
+    , enabled : Bool
     }
 
 
@@ -31,18 +32,29 @@ type DefaultOptionConfig enum
 
 
 from : EnumSelectConfig enum msg -> Html msg
-from { enumValues, valuePickedMessage, showVisibleLabel, defaultOption } =
+from { enumValues, valuePickedMessage, showVisibleLabel, defaultOption, enabled } =
     let
         toOption : Int -> enum -> ( String, Html msg )
         toOption index enum =
             let
-                -- Html.Keyed needs us to assign unique ID to each keyed node
                 key =
                     String.fromInt index
             in
             ( key
             , option
                 [ value key ]
+                [ text (showVisibleLabel enum) ]
+            )
+
+        toOptionWithDefault : enum -> Int -> enum -> ( String, Html msg )
+        toOptionWithDefault defaultVal index enum =
+            let
+                key =
+                    String.fromInt index
+            in
+            ( key
+            , option
+                [ value key, selected (enum == defaultVal) ]
                 [ text (showVisibleLabel enum) ]
             )
 
@@ -71,11 +83,12 @@ from { enumValues, valuePickedMessage, showVisibleLabel, defaultOption } =
                     dummyOption info :: List.indexedMap toOption enumValues
 
                 DefaultOption defaultVal ->
-                    List.indexedMap toOption <| defaultVal :: List.filter (\e -> e /= defaultVal) enumValues
+                    List.indexedMap (toOptionWithDefault defaultVal) enumValues
     in
     Keyed.node "select"
         [ stopPropagationOn "input" enumDecoder
         , class "form-control"
+        , disabled (not enabled)
         ]
         options
 

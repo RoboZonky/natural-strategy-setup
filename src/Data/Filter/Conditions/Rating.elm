@@ -4,7 +4,10 @@ module Data.Filter.Conditions.Rating exposing
     , allRatings
     , conditionDecoder
     , encodeCondition
+    , fromHash
+    , hash
     , initRatingDict
+    , showInterest
     , showInterestPercent
     , toInterestPercent
     )
@@ -86,9 +89,14 @@ toInterestPercent r =
             19.99
 
 
+showInterest : Rating -> String
+showInterest =
+    formatPercentage << toInterestPercent
+
+
 showInterestPercent : Rating -> String
 showInterestPercent r =
-    formatPercentage (toInterestPercent r) ++ " % p.a."
+    showInterest r ++ " % p.a."
 
 
 initRatingDict : List ( Rating, a ) -> AnyDict Int Rating a
@@ -122,6 +130,37 @@ hash rating =
 
         D ->
             8
+
+
+fromHash : Int -> Maybe Rating
+fromHash h =
+    case h of
+        1 ->
+            Just A_Double_Star
+
+        2 ->
+            Just A_Star
+
+        3 ->
+            Just A_Double_Plus
+
+        4 ->
+            Just A_Plus
+
+        5 ->
+            Just A
+
+        6 ->
+            Just B
+
+        7 ->
+            Just C
+
+        8 ->
+            Just D
+
+        _ ->
+            Nothing
 
 
 type RatingCondition

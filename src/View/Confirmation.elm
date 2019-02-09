@@ -52,7 +52,7 @@ form confirmationSettings tooltipStates =
                 , radioName
                 , Radio.onClick (ConfirmationFormMsg EnableConfirmation)
                 ]
-                "Potvrzovat mobilem investice do úvěrů na základě úroku:"
+                "Potvrzovat mobilem investice do úvěrů kde úrok"
             , subform
             , validationErrors
             ]
