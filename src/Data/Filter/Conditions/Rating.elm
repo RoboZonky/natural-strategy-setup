@@ -1,25 +1,19 @@
 module Data.Filter.Conditions.Rating exposing
     ( Rating(..)
     , RatingCondition(..)
-    , RatingMsg
     , allRatings
     , conditionDecoder
-    , defaultCondition
     , encodeCondition
-    , form
     , initRatingDict
-    , ratingToString
-    , renderCondition
-    , update
-    , validationErrors
+    , showInterestPercent
+    , toInterestPercent
     )
 
-import Bootstrap.Form.Checkbox as Checkbox
 import Dict.Any exposing (AnyDict)
-import Html exposing (Html, div)
+import FormatNumber
+import FormatNumber.Locales exposing (Locale)
 import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as Encode exposing (Value)
-import List.Extra as List
 import Util
 
 
@@ -47,32 +41,54 @@ allRatings =
     ]
 
 
-ratingToString : Rating -> String
-ratingToString r =
+formatPercentage : Float -> String
+formatPercentage =
+    FormatNumber.format czechLocale
+
+
+czechLocale : Locale
+czechLocale =
+    { decimals = 2
+    , thousandSeparator = ""
+    , decimalSeparator = ","
+    , negativePrefix = "−"
+    , negativeSuffix = ""
+    , positivePrefix = ""
+    , positiveSuffix = ""
+    }
+
+
+toInterestPercent : Rating -> Float
+toInterestPercent r =
     case r of
         A_Double_Star ->
-            "A**"
+            3.99
 
         A_Star ->
-            "A*"
+            4.99
 
         A_Double_Plus ->
-            "A++"
+            5.99
 
         A_Plus ->
-            "A+"
+            8.49
 
         A ->
-            "A"
+            10.99
 
         B ->
-            "B"
+            13.49
 
         C ->
-            "C"
+            15.49
 
         D ->
-            "D"
+            19.99
+
+
+showInterestPercent : Rating -> String
+showInterestPercent r =
+    formatPercentage (toInterestPercent r) ++ " % p.a."
 
 
 initRatingDict : List ( Rating, a ) -> AnyDict Int Rating a
@@ -108,129 +124,8 @@ hash rating =
             8
 
 
-toDomId : String -> Rating -> String
-toDomId domIdPrefix rating =
-    domIdPrefix ++ String.fromInt (hash rating)
-
-
 type RatingCondition
     = RatingList (List Rating)
-
-
-defaultCondition : RatingCondition
-defaultCondition =
-    RatingList []
-
-
-{-| For the purposes of conditionRendering we're simplifying list to "better than" or "worse than" if the values
-in the list form continuous range from beginning / from end of enumerated Rating values
--}
-type SimplifiedRatingCondition
-    = SimplifiedRatingList (List Rating)
-    | BetterThan Rating
-    | WorseThan Rating
-
-
-validationErrors : RatingCondition -> List String
-validationErrors (RatingList rlist) =
-    Util.validate (List.isEmpty rlist) "Rating: zvolte aspoň jeden"
-
-
-renderCondition : RatingCondition -> String
-renderCondition ratingCondition =
-    let
-        subExpr =
-            case simplify ratingCondition of
-                SimplifiedRatingList rs ->
-                    renderRatingList rs
-
-                BetterThan r ->
-                    "lepší než " ++ ratingToString r
-
-                WorseThan r ->
-                    "horší než " ++ ratingToString r
-    in
-    "rating je " ++ subExpr
-
-
-renderRatingList : List Rating -> String
-renderRatingList =
-    Util.orList ratingToString
-
-
-simplify : RatingCondition -> SimplifiedRatingCondition
-simplify (RatingList rlist) =
-    let
-        sortedHashes =
-            List.sort <| List.map hash rlist
-
-        len =
-            List.length rlist
-
-        ratingCount =
-            List.length allRatings
-
-        allHashes =
-            List.range 1 ratingCount
-    in
-    if List.isPrefixOf sortedHashes allHashes && 0 < len && len < ratingCount then
-        BetterThan <| Maybe.withDefault A_Double_Star <| List.head <| List.drop len allRatings
-
-    else if List.isSuffixOf sortedHashes allHashes && 0 < len && len < ratingCount then
-        WorseThan <| Maybe.withDefault D <| List.last <| List.take (ratingCount - len) allRatings
-
-    else
-        SimplifiedRatingList rlist
-
-
-ratingSatisfiesCondition : RatingCondition -> Rating -> Bool
-ratingSatisfiesCondition (RatingList rlist) rating =
-    List.member rating rlist
-
-
-type RatingMsg
-    = AddRating Rating
-    | RemoveRating Rating
-
-
-update : RatingMsg -> RatingCondition -> RatingCondition
-update msg (RatingList rlist) =
-    case msg of
-        AddRating r ->
-            RatingList <| r :: rlist
-
-        RemoveRating r ->
-            RatingList <| List.filter (\rr -> rr /= r) rlist
-
-
-form : String -> RatingCondition -> Html RatingMsg
-form domIdPrefix
-    {- domIdPrefix to generate unique id for checkboxes in
-       1) confirmation settings 2) in rating conditions
-    -}
-    condition
-    =
-    allRatings
-        |> List.map (\r -> ratingCheckbox domIdPrefix r (ratingSatisfiesCondition condition r))
-        |> div []
-
-
-ratingCheckbox : String -> Rating -> Bool -> Html RatingMsg
-ratingCheckbox domIdPrefix rating isEnabled =
-    Checkbox.checkbox
-        [ Checkbox.id (toDomId domIdPrefix rating)
-        , Checkbox.onCheck
-            (\checked ->
-                if checked then
-                    AddRating rating
-
-                else
-                    RemoveRating rating
-            )
-        , Checkbox.checked isEnabled
-        , Checkbox.inline
-        ]
-        (ratingToString rating)
 
 
 

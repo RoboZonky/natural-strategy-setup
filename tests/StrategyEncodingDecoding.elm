@@ -4,7 +4,7 @@ import Data.Filter exposing (FilteredItem(..))
 import Data.Filter.Conditions as Conditions exposing (Conditions)
 import Data.Filter.Conditions.Amount as Amount exposing (AmountCondition(..))
 import Data.Filter.Conditions.Interest as Interest exposing (InterestCondition(..))
-import Data.Filter.Conditions.Rating exposing (ratingToString)
+import Data.Filter.Conditions.Rating as Rating
 import Data.Investment as Investment
 import Data.Portfolio as Portfolio
 import Dict exposing (Dict)
@@ -138,10 +138,10 @@ investmentsPerRating =
 
 {-| IPR Contains RangeSlider.model which contains functions, which can't be compared for equality
 -}
-makeIprComparable : Investment.InvestmentsPerRating -> Dict String ( Float, Float )
+makeIprComparable : Investment.InvestmentsPerRating -> Dict Float ( Float, Float )
 makeIprComparable ipr =
     Dict.Any.toList ipr
-        |> List.map (\( rtg, slider ) -> ( ratingToString rtg, RangeSlider.getValues slider ))
+        |> List.map (\( rtg, slider ) -> ( Rating.toInterestPercent rtg, RangeSlider.getValues slider ))
         |> Dict.fromList
 
 

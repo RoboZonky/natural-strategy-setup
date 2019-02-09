@@ -21,7 +21,6 @@ module Data.Filter.Conditions exposing
     , updateInsurance
     , updateInterest
     , updatePurpose
-    , updateRating
     , updateRegion
     , updateRemainingAmount
     , updateStory
@@ -36,7 +35,6 @@ import Data.Filter.Conditions.Income as Income exposing (IncomeCondition, Income
 import Data.Filter.Conditions.Insurance as Insurance exposing (InsuranceCondition, InsuranceMsg)
 import Data.Filter.Conditions.Interest as Interest exposing (InterestCondition, InterestMsg)
 import Data.Filter.Conditions.Purpose as Purpose exposing (PurposeCondition, PurposeMsg)
-import Data.Filter.Conditions.Rating as Rating exposing (RatingCondition, RatingMsg)
 import Data.Filter.Conditions.Region as Region exposing (RegionCondition, RegionMsg)
 import Data.Filter.Conditions.RemainingAmount as RemainingAmount exposing (RemainingAmountCondition, RemainingAmountMsg)
 import Data.Filter.Conditions.Story as Story exposing (StoryCondition, StoryMsg)
@@ -50,7 +48,6 @@ import List
 
 type alias Conditions =
     { region : Maybe RegionCondition
-    , rating : Maybe RatingCondition
     , income : Maybe IncomeCondition
     , purpose : Maybe PurposeCondition
     , story : Maybe StoryCondition
@@ -73,7 +70,6 @@ type Condition
     | Condition_Insurance InsuranceCondition
     | Condition_Interest InterestCondition
     | Condition_Purpose PurposeCondition
-    | Condition_Rating RatingCondition
     | Condition_Remaining_Amount RemainingAmountCondition
     | Condition_Region RegionCondition
     | Condition_Story StoryCondition
@@ -89,7 +85,6 @@ type ConditionType
     | Insurance
     | Interest
     | Purpose
-    | Rating
     | Remaining_Amount
     | Region
     | Story
@@ -100,7 +95,6 @@ type ConditionType
 emptyConditions : Conditions
 emptyConditions =
     { region = Nothing
-    , rating = Nothing
     , income = Nothing
     , purpose = Nothing
     , story = Nothing
@@ -138,9 +132,6 @@ renderCondition condition =
 
         Condition_Purpose c ->
             Purpose.renderCondition c
-
-        Condition_Rating c ->
-            Rating.renderCondition c
 
         Condition_Region c ->
             Region.renderCondition c
@@ -187,9 +178,6 @@ conditionValidationError condition =
         Condition_Purpose c ->
             Purpose.validationErrors c
 
-        Condition_Rating c ->
-            Rating.validationErrors c
-
         Condition_Region c ->
             Region.validationErrors c
 
@@ -221,7 +209,6 @@ getDisabledConditionTypes cs =
         , addIfNothing .insurance Insurance
         , addIfNothing .interest Interest
         , addIfNothing .purpose Purpose
-        , addIfNothing .rating Rating
         , addIfNothing .remainingAmount Remaining_Amount
         , addIfNothing .region Region
         , addIfNothing .story Story
@@ -245,7 +232,6 @@ getEnabledConditionTypes cs =
         , addIfJust .insurance Insurance
         , addIfJust .interest Interest
         , addIfJust .purpose Purpose
-        , addIfJust .rating Rating
         , addIfJust .region Region
         , addIfJust .remainingAmount Remaining_Amount
         , addIfJust .story Story
@@ -269,7 +255,6 @@ getEnabledConditions cs =
         , addIfJust .insurance Condition_Insurance
         , addIfJust .interest Condition_Interest
         , addIfJust .purpose Condition_Purpose
-        , addIfJust .rating Condition_Rating
         , addIfJust .region Condition_Region
         , addIfJust .remainingAmount Condition_Remaining_Amount
         , addIfJust .story Condition_Story
@@ -302,9 +287,6 @@ addCondition condition cs =
         Condition_Purpose c ->
             setPurposeCondition c cs
 
-        Condition_Rating c ->
-            setRatingCondition c cs
-
         Condition_Remaining_Amount c ->
             setRemainingAmountCondition c cs
 
@@ -324,11 +306,6 @@ addCondition condition cs =
 setRegionCondition : RegionCondition -> Conditions -> Conditions
 setRegionCondition c cs =
     { cs | region = Just c }
-
-
-setRatingCondition : RatingCondition -> Conditions -> Conditions
-setRatingCondition c cs =
-    { cs | rating = Just c }
 
 
 setIncomeCondition : IncomeCondition -> Conditions -> Conditions
@@ -436,11 +413,6 @@ updateIncome msg conditions =
     { conditions | income = Maybe.map (Income.update msg) conditions.income }
 
 
-updateRating : RatingMsg -> Conditions -> Conditions
-updateRating msg conditions =
-    { conditions | rating = Maybe.map (Rating.update msg) conditions.rating }
-
-
 updateRegion : RegionMsg -> Conditions -> Conditions
 updateRegion msg conditions =
     { conditions | region = Maybe.map (Region.update msg) conditions.region }
@@ -474,9 +446,6 @@ removeCondition conditionType cs =
 
         Purpose ->
             { cs | purpose = Nothing }
-
-        Rating ->
-            { cs | rating = Nothing }
 
         Region ->
             { cs | region = Nothing }
@@ -523,9 +492,6 @@ getDefaultCondition conditionType =
         Purpose ->
             Condition_Purpose Purpose.defaultCondition
 
-        Rating ->
-            Condition_Rating Rating.defaultCondition
-
         Region ->
             Condition_Region Region.defaultCondition
 
@@ -559,9 +525,8 @@ encodeCondition condition =
         Condition_Region c ->
             ( "A", Region.encodeCondition c )
 
-        Condition_Rating c ->
-            ( "B", Rating.encodeCondition c )
-
+        -- Condition_Rating c ->
+        --     ( "B", Rating.encodeCondition c )
         Condition_Income c ->
             ( "C", Income.encodeCondition c )
 
@@ -600,7 +565,8 @@ conditionsDecoder : Decoder Conditions
 conditionsDecoder =
     Decode.succeed Conditions
         |> andMap (optionalField "A" Region.conditionDecoder)
-        |> andMap (optionalField "B" Rating.conditionDecoder)
+        -- TODO should validate presence of field "B" and throw a warning
+        -- |> andMap (optionalField "B" Rating.conditionDecoder)
         |> andMap (optionalField "C" Income.conditionDecoder)
         |> andMap (optionalField "D" Purpose.conditionDecoder)
         |> andMap (optionalField "E" Story.conditionDecoder)

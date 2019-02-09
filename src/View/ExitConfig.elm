@@ -90,7 +90,7 @@ dateToString =
 
 leaveConfigSubform : ExitConfigEnum -> String -> String -> Tooltip.States -> Html Msg
 leaveConfigSubform exitEnum exitDate selloffDate tooltipStates =
-    div [ Spacing.mx4 ]
+    div [ Spacing.mx5 ]
         [ Form.formInline [ onSubmit NoOp ]
             [ Radio.radio
                 [ Radio.id "ex3"

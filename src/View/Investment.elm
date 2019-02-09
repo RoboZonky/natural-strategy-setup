@@ -7,7 +7,7 @@ import Bootstrap.Form as Form
 import Bootstrap.Grid as Grid
 import Bootstrap.Grid.Col as Col
 import Bootstrap.Utilities.Spacing as Spacing
-import Data.Filter.Conditions.Rating exposing (Rating, ratingToString)
+import Data.Filter.Conditions.Rating as Rating exposing (Rating)
 import Data.Investment as Investment exposing (InvestmentsPerRating)
 import Dict.Any
 import Html exposing (Html, a, div, span, strong, text)
@@ -45,7 +45,7 @@ investmentOverridesForm : Investment.Size -> InvestmentsPerRating -> CardBlock.I
 investmentOverridesForm invDefault invOverrides =
     CardBlock.custom <|
         div []
-            [ text "Pokud si přejete, aby se výše investice do půjček jednotlivých ratingů lišily od běžné výše, upravte je pomocí posuvníků"
+            [ text "Pokud si přejete, aby se výše investice do půjček lišily od běžné výše na základě rizikových kategorií, upravte je pomocí posuvníků"
             , Grid.row []
                 [ Grid.col [ Col.xs6 ] [ investmentOverridesSliders invOverrides ]
                 , Grid.col [ Col.xs6 ] [ warningWhenSizeExceeds5K invDefault invOverrides ]
@@ -77,6 +77,6 @@ investmentOverridesSliders invOverrides =
 investmentSlider : Rating -> Investment.Size -> Html Msg
 investmentSlider rating sliderState =
     Form.formInline [ onSubmit NoOp ]
-        [ div [ style "width" "50px" ] [ text <| ratingToString rating ]
+        [ div [ style "width" "100px" ] [ text <| Rating.showInterestPercent rating ]
         , Html.map (ChangeInvestment rating) <| RangeSlider.view sliderState
         ]

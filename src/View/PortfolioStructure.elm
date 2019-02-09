@@ -7,7 +7,7 @@ import Bootstrap.Form.Select as Select
 import Bootstrap.Grid as Grid
 import Bootstrap.Grid.Col as Col
 import Bootstrap.Utilities.Spacing as Spacing
-import Data.Filter.Conditions.Rating exposing (ratingToString)
+import Data.Filter.Conditions.Rating as Rating
 import Data.Portfolio as Portfolio exposing (Portfolio(..), allPortfolios)
 import Data.PortfolioStructure as PortfolioStructure exposing (PortfolioShares)
 import Data.Tooltip as Tooltip
@@ -40,7 +40,7 @@ form portfolio shares accordionState tooltipStates =
                 [ CardBlock.custom <|
                     div []
                         [ defaultPortfolioForm portfolio
-                        , text "Nastavte požadovaný procentuální podíl aktuální zůstatkové částky investovaný do půjček v daném ratingu"
+                        , text "Požadovaný podíl investovaný do půjček podle rizikových kategorií můžete upravit pomocí posuvníků"
                         , Grid.row []
                             [ Grid.col [ Col.xs6 ]
                                 [ portfolioSharesSliders shares ]
@@ -96,7 +96,7 @@ portfolioSharesSliders shares =
     let
         ratingSlider ( rating, sliderState ) =
             Form.formInline [ onSubmit NoOp ]
-                [ div [ style "width" "50px" ] [ text <| ratingToString rating ]
+                [ div [ style "width" "100px" ] [ text <| Rating.showInterestPercent rating ]
                 , Html.map (ChangePortfolioSharePercentage rating) <| RangeSlider.view sliderState
                 ]
     in

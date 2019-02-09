@@ -17,7 +17,7 @@ module Data.Investment exposing
     , sizeDecoder
     )
 
-import Data.Filter.Conditions.Rating as Rating exposing (Rating, ratingToString)
+import Data.Filter.Conditions.Rating as Rating exposing (Rating)
 import Data.SharedJsonStuff
 import Dict.Any exposing (AnyDict)
 import Json.Decode as Decode exposing (Decoder)
@@ -47,7 +47,7 @@ renderSize size =
 
 renderInvestment : ( Rating, Size ) -> String
 renderInvestment ( rating, size ) =
-    "Do úvěrů v ratingu " ++ ratingToString rating ++ " investovat" ++ investmentSizeToString size ++ " Kč."
+    "S úročením " ++ Rating.showInterestPercent rating ++ " jednotlivě investovat" ++ investmentSizeToString size ++ " Kč."
 
 
 renderInvestments : Size -> InvestmentsPerRating -> String

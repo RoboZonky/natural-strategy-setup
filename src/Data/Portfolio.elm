@@ -46,8 +46,7 @@ toStrategyString pt =
             "uživatelem definované"
 
 
-{-| Unlike toStrategyString (used for strategy config rendering) this uses more
-user friendly name for UserDefined portfolio.
+{-| Unlike toStrategyString this uses more user friendly name for UserDefined portfolio.
 -}
 toUiLabel : Portfolio -> String
 toUiLabel pt =

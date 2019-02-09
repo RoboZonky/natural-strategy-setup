@@ -13,7 +13,7 @@ import Data.Filter.Conditions.Income as Income exposing (Income(..), IncomeCondi
 import Data.Filter.Conditions.Insurance as Insurance exposing (Insurance(..), InsuranceCondition(..), InsuranceMsg)
 import Data.Filter.Conditions.Interest as Interest exposing (Interest(..), InterestCondition(..), InterestMsg)
 import Data.Filter.Conditions.Purpose as Purpose exposing (Purpose(..), PurposeCondition(..), PurposeMsg)
-import Data.Filter.Conditions.Rating as Rating exposing (Rating(..), RatingCondition(..), RatingMsg)
+import Data.Filter.Conditions.Rating exposing (Rating(..), RatingCondition(..))
 import Data.Filter.Conditions.Region as Region exposing (Region(..), RegionCondition(..), RegionMsg)
 import Data.Filter.Conditions.RemainingAmount as RemainingAmount exposing (RemainingAmount(..), RemainingAmountCondition(..), RemainingAmountMsg)
 import Data.Filter.Conditions.Story as Story exposing (Story(..), StoryCondition(..), StoryMsg)
@@ -22,7 +22,7 @@ import Data.Filter.Conditions.TermPercent as TermPercent exposing (TermPercent(.
 import Html exposing (Html, div, span, text)
 import Html.Attributes exposing (class)
 import Html.Events exposing (onClick)
-import View.EnumSelect as Select
+import View.EnumSelect as Select exposing (DefaultOptionConfig(..))
 
 
 
@@ -60,7 +60,7 @@ conditionTypesThatApplyTo : FilteredItem -> List ConditionType
 conditionTypesThatApplyTo filteredItem =
     let
         commonForAll =
-            [ Rating, Interest, Purpose, Income, Story, Region, Term_Months, Insurance ]
+            [ Interest, Purpose, Income, Story, Region, Term_Months, Insurance ]
 
         commonForParticipations =
             [ Term_Percent, Elapsed_Term_Months, Elapsed_Term_Percent, Remaining_Amount ]
@@ -90,7 +90,7 @@ conditionEnablementDropdown filteredItem conditions =
         conditionsThatCanBeEnabled =
             List.filter (\c -> List.member c validConditions) <| C.getDisabledConditionTypes conditions
 
-        createConditionEnablingMessage conditionType =
+        addCondition conditionType =
             AddCondition <| C.getDefaultCondition conditionType
     in
     if List.isEmpty conditionsThatCanBeEnabled then
@@ -99,9 +99,9 @@ conditionEnablementDropdown filteredItem conditions =
     else
         Select.from
             { enumValues = conditionsThatCanBeEnabled
-            , valuePickedMessage = createConditionEnablingMessage
+            , valuePickedMessage = addCondition
             , showVisibleLabel = getVisibleLabel filteredItem
-            , dummyOption = "-- Přidat podmínku --"
+            , defaultOption = DummyOption "-- Přidat podmínku --"
             }
 
 
@@ -142,9 +142,6 @@ conditionSubform item condition =
 
         Condition_Purpose c ->
             wrap Purpose (Html.map PurposeMsg <| Purpose.form c)
-
-        Condition_Rating c ->
-            wrap Rating (Html.map RatingMsg <| Rating.form "rating_" c)
 
         Condition_Region c ->
             wrap Region (Html.map RegionMsg <| Region.form c)
@@ -188,9 +185,6 @@ getVisibleLabel filteredItem conditionType =
 
         Purpose ->
             "Účel úvěru"
-
-        Rating ->
-            "Rating"
 
         Region ->
             "Kraj klienta"
@@ -238,7 +232,6 @@ type
     | InterestMsg InterestMsg
     | IncomeMsg IncomeMsg
     | PurposeMsg PurposeMsg
-    | RatingMsg RatingMsg
     | RegionMsg RegionMsg
     | RemainingAmountMsg RemainingAmountMsg
     | StoryMsg StoryMsg
@@ -272,9 +265,6 @@ update msg model =
 
         PurposeMsg m ->
             C.updatePurpose m model
-
-        RatingMsg m ->
-            C.updateRating m model
 
         RegionMsg m ->
             C.updateRegion m model

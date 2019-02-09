@@ -1,6 +1,6 @@
 module Test.RandomStrategy exposing (conditionsGen, strategyConfigurationGen)
 
-import Data.Confirmation exposing (ConfirmationSettings)
+import Data.Confirmation as Confirmation exposing (ConfirmationSettings)
 import Data.ExitConfig as ExitConfig
 import Data.Filter as Filter exposing (BuyingConfiguration, FilteredItem(..), MarketplaceEnablement, MarketplaceFilter, SellingConfiguration)
 import Data.Filter.Conditions exposing (Condition(..), Conditions, addCondition, emptyConditions)
@@ -148,50 +148,44 @@ conditionSubsetGen minimumConditions conditionsToPick =
 
 conditionsSharedByAllFilteredItems : List (Generator Condition)
 conditionsSharedByAllFilteredItems =
-    [ regionConditionGen
-    , ratingConditionGen
-    , incomeConditionGen
-    , purposeConditionGen
-    , storyConditionGen
-    , termMonthsConditionGen
-    , interestConditionGen
-    , insuranceConditionGen
+    [ Random.map Condition_Region regionConditionGen
+    , Random.map Condition_Income incomeConditionGen
+    , Random.map Condition_Purpose purposeConditionGen
+    , Random.map Condition_Story storyConditionGen
+    , Random.map Condition_Term_Months termMonthsConditionGen
+    , Random.map Condition_Interest interestConditionGen
+    , Random.map Condition_Insurance insuranceConditionGen
     ]
 
 
-regionConditionGen : Generator Condition
+regionConditionGen : Generator RegionCondition
 regionConditionGen =
-    nonemptySubset Region.allRegions |> Random.map (RegionList >> Condition_Region)
+    nonemptySubset Region.allRegions |> Random.map RegionList
 
 
-ratingConditionGen : Generator Condition
-ratingConditionGen =
-    nonemptySubset Rating.allRatings |> Random.map (RatingList >> Condition_Rating)
-
-
-incomeConditionGen : Generator Condition
+incomeConditionGen : Generator IncomeCondition
 incomeConditionGen =
-    nonemptySubset Income.allIncomes |> Random.map (IncomeList >> Condition_Income)
+    nonemptySubset Income.allIncomes |> Random.map IncomeList
 
 
-purposeConditionGen : Generator Condition
+purposeConditionGen : Generator PurposeCondition
 purposeConditionGen =
-    nonemptySubset Purpose.allPurposes |> Random.map (PurposeList >> Condition_Purpose)
+    nonemptySubset Purpose.allPurposes |> Random.map PurposeList
 
 
-storyConditionGen : Generator Condition
+storyConditionGen : Generator StoryCondition
 storyConditionGen =
     Random.sample [ SHORT, BELOW_AVERAGE, AVERAGE, ABOVE_AVERAGE ]
-        |> Random.map (Maybe.withDefault SHORT >> StoryCondition >> Condition_Story)
+        |> Random.map (Maybe.withDefault SHORT >> StoryCondition)
 
 
-insuranceConditionGen : Generator Condition
+insuranceConditionGen : Generator InsuranceCondition
 insuranceConditionGen =
     Random.sample [ Active, Inactive ]
-        |> Random.map (Maybe.withDefault Active >> InsuranceCondition >> Condition_Insurance)
+        |> Random.map (Maybe.withDefault Active >> InsuranceCondition)
 
 
-termMonthsConditionGen : Generator Condition
+termMonthsConditionGen : Generator TermMonthsCondition
 termMonthsConditionGen =
     let
         minTermMonths =
@@ -205,7 +199,7 @@ termMonthsConditionGen =
             |> Random.map (\( mi, mx ) -> TermMonths.Between mi mx)
         , Random.map TermMonths.MoreThan (Random.int minTermMonths (maxTermMonths - 1 {- max is invalid, as parser adds 1 -}))
         ]
-        |> Random.map (TermMonthsCondition >> Condition_Term_Months)
+        |> Random.map TermMonthsCondition
 
 
 termPercentConditionGen : Generator Condition
@@ -283,13 +277,13 @@ remainingAmountConditionGen =
         |> Random.map (RemainingAmountCondition >> Condition_Remaining_Amount)
 
 
-interestConditionGen : Generator Condition
+interestConditionGen : Generator InterestCondition
 interestConditionGen =
     Random.choices (Random.map Interest.LessThan (float2dpGen 0 100))
         [ float2dpGen 0 100 |> Random.andThen (\mi -> float2dpGen mi 100 |> Random.map (\mx -> Interest.Between mi mx))
         , Random.map Interest.MoreThan (float2dpGen 0 100)
         ]
-        |> Random.map (InterestCondition >> Condition_Interest)
+        |> Random.map InterestCondition
 
 
 
@@ -339,7 +333,8 @@ targetBalanceGen =
 
 confirmationSettingsGen : Generator ConfirmationSettings
 confirmationSettingsGen =
-    nonemptySubset Rating.allRatings |> Random.map RatingList
+    Random.frequency ( 1, Random.constant Confirmation.NoConfirmation )
+        [ ( 1, Random.map Confirmation.Confirm interestConditionGen ) ]
 
 
 exitConfigGen : Generator ExitConfig.ExitConfig

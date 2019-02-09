@@ -36,7 +36,11 @@ type alias Share =
 
 renderPortfolioShare : PortfolioShare -> String
 renderPortfolioShare ( rating, share ) =
-    "Prostředky v ratingu " ++ Rating.ratingToString rating ++ " tvoří " ++ renderShare share ++ " % aktuální zůstatkové částky."
+    "Prostředky úročené "
+        ++ Rating.showInterestPercent rating
+        ++ " mají tvořit "
+        ++ renderShare share
+        ++ " % aktuální zůstatkové částky."
 
 
 renderShare : Share -> String

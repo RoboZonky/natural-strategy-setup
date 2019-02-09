@@ -28,10 +28,10 @@ module Data.Strategy exposing
     )
 
 import Base64
-import Data.Confirmation as Confirmation exposing (ConfirmationSettings)
+import Data.Confirmation as Confirmation exposing (ConfirmationFormMsg, ConfirmationSettings)
 import Data.ExitConfig as ExitConfig exposing (ExitConfig)
 import Data.Filter as Filters exposing (BuyingConfiguration, MarketplaceFilter, SellingConfiguration)
-import Data.Filter.Conditions.Rating as Rating exposing (Rating(..), RatingMsg)
+import Data.Filter.Conditions.Rating exposing (Rating(..))
 import Data.Investment as Investment exposing (InvestmentsPerRating)
 import Data.InvestmentShare as InvestmentShare exposing (InvestmentShare)
 import Data.Portfolio as Portfolio exposing (Portfolio(..))
@@ -129,10 +129,10 @@ setDefaultInvestmentShare share ({ generalSettings } as config) =
     { config | generalSettings = { generalSettings | defaultInvestmentShare = share } }
 
 
-updateNotificationSettings : RatingMsg -> StrategyConfiguration -> StrategyConfiguration
+updateNotificationSettings : ConfirmationFormMsg -> StrategyConfiguration -> StrategyConfiguration
 updateNotificationSettings msg ({ generalSettings } as config) =
     { config
-        | generalSettings = { generalSettings | confirmationSettings = Rating.update msg generalSettings.confirmationSettings }
+        | generalSettings = { generalSettings | confirmationSettings = Confirmation.update msg generalSettings.confirmationSettings }
     }
 
 
@@ -260,6 +260,7 @@ validateGeneralSettings : GeneralSettings -> List String
 validateGeneralSettings generalSettings =
     List.concat
         [ ExitConfig.validate generalSettings.exitConfig
+        , Confirmation.validate generalSettings.confirmationSettings
         , TargetPortfolioSize.validate generalSettings.targetPortfolioSize
         , InvestmentShare.validate generalSettings.defaultInvestmentShare
         , TargetBalance.validate generalSettings.defaultTargetBalance

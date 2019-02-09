@@ -35,7 +35,7 @@ extractMinimumShares shares =
             Dict.Any.toList shares
                 |> List.map
                     (\( rtg, range ) ->
-                        ( Rating.ratingToString rtg
+                        ( Rating.showInterestPercent rtg
                         , Tuple.first <| RangeSlider.getValues range
                         )
                     )

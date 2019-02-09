@@ -1,4 +1,8 @@
-module View.EnumSelect exposing (EnumSelectConfig, from)
+module View.EnumSelect exposing
+    ( DefaultOptionConfig(..)
+    , EnumSelectConfig
+    , from
+    )
 
 import Dict
 import Html exposing (Html, option, text)
@@ -17,15 +21,19 @@ type alias EnumSelectConfig enum msg =
 
     --| How to display the value in the dropdown
     , showVisibleLabel : enum -> String
-
-    --| Text for dummy option informing user to pick something (like "-- select fruit --")
-    , dummyOption : String
+    , defaultOption : DefaultOptionConfig enum
     }
 
 
+type DefaultOptionConfig enum
+    = DummyOption String --| Text for dummy option informing user to pick something (like "-- select fruit --")
+    | DefaultOption enum
+
+
 from : EnumSelectConfig enum msg -> Html msg
-from { enumValues, valuePickedMessage, showVisibleLabel, dummyOption } =
+from { enumValues, valuePickedMessage, showVisibleLabel, defaultOption } =
     let
+        toOption : Int -> enum -> ( String, Html msg )
         toOption index enum =
             let
                 -- Html.Keyed needs us to assign unique ID to each keyed node
@@ -56,18 +64,29 @@ from { enumValues, valuePickedMessage, showVisibleLabel, dummyOption } =
                                 Decode.fail <| "Failed to decode enum value from " ++ str
                     )
 
-        informativeOption =
-            ( "dummyInformativeOption"
-            , option
-                [ selected True ]
-                [ text dummyOption ]
-            )
+        options : List ( String, Html msg )
+        options =
+            case defaultOption of
+                DummyOption info ->
+                    dummyOption info :: List.indexedMap toOption enumValues
+
+                DefaultOption defaultVal ->
+                    List.indexedMap toOption <| defaultVal :: List.filter (\e -> e /= defaultVal) enumValues
     in
     Keyed.node "select"
         [ stopPropagationOn "input" enumDecoder
         , class "form-control"
         ]
-        (informativeOption :: List.indexedMap toOption enumValues)
+        options
+
+
+dummyOption : String -> ( String, Html msg )
+dummyOption info =
+    ( "dummyInformativeOption"
+    , option
+        [ selected True ]
+        [ text info ]
+    )
 
 
 {-| Given list of enum values create a lookup function

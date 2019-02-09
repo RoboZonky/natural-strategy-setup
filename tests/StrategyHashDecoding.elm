@@ -1,4 +1,4 @@
-module StrategyHashDecoding exposing (..)
+module StrategyHashDecoding exposing (invalidHashData, strategyFromHashTest, testData, validHashData)
 
 import Base64
 import Data.Strategy as Strategy
@@ -36,8 +36,10 @@ validHashData =
     describe "Strategy.strategyFromUrlHash - valid inputs" <|
         [ test "default strategy" <|
             \() ->
-                Strategy.strategyFromUrlHash "MTt7ImgiOnsiYSI6MCwiYiI6WyIwIl0sImMiOlsxXSwiZCI6WzIwMCwyMDBdLCJlIjpbMl0sImYiOlsxXSwiZyI6W119LCJpIjpbWzMsM10sWzYsNl0sWzE2LDE2XSxbMjUsMjVdLFsyMCwyMF0sWzE1LDE1XSxbMTUsMTVdLFswLDBdXSwiaiI6W1syMDAsMjAwXSxbMjAwLDIwMF0sWzIwMCwyMDBdLFsyMDAsMjAwXSxbMjAwLDIwMF0sWzIwMCwyMDBdLFsyMDAsMjAwXSxbMjAwLDIwMF1dLCJrIjp7Im8iOjB9LCJsIjp7Im0iOjB9fQ=="
-                    |> Result.map (Strategy.strategyEqual Strategy.defaultStrategyConfiguration)
-                    |> Result.withDefault False
-                    |> Expect.true "Should decode to default strategy configuration"
+                case Strategy.strategyFromUrlHash "MTt7ImgiOnsiYSI6MCwiYiI6WyIwIl0sImMiOlsxXSwiZCI6WzIwMCwyMDBdLCJlIjpbMl0sImYiOlsxXSwiZyI6eyJhIjowfX0sImkiOltbMywzXSxbNiw2XSxbMTYsMTZdLFsyNSwyNV0sWzIwLDIwXSxbMTUsMTVdLFsxNSwxNV0sWzAsMF1dLCJqIjpbWzIwMCwyMDBdLFsyMDAsMjAwXSxbMjAwLDIwMF0sWzIwMCwyMDBdLFsyMDAsMjAwXSxbMjAwLDIwMF0sWzIwMCwyMDBdLFsyMDAsMjAwXV0sImsiOnsibyI6MH0sImwiOnsibSI6MH19" of
+                    Ok decodedStrategy ->
+                        Strategy.strategyEqual Strategy.defaultStrategyConfiguration decodedStrategy |> Expect.true "Should decode to default strategy configuration"
+
+                    Err e ->
+                        Expect.fail <| "Failed to decode strategy: " ++ e
         ]

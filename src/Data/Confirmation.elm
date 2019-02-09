@@ -1,42 +1,77 @@
 module Data.Confirmation exposing
-    ( ConfirmationSettings
+    ( ConfirmationFormMsg(..)
+    , ConfirmationSettings(..)
     , confirmationsDisabled
     , decoder
     , encode
     , equal
     , render
+    , update
+    , validate
     )
 
-import Data.Filter.Conditions.Rating as Rating exposing (RatingCondition(..))
-import Json.Decode exposing (Decoder)
-import Json.Encode exposing (Value)
+import Data.Filter.Conditions.Interest as Interest exposing (InterestCondition(..))
+import Json.Decode as Decode exposing (Decoder)
+import Json.Encode as Encode exposing (Value)
 
 
-type alias ConfirmationSettings =
-    RatingCondition
+type ConfirmationFormMsg
+    = DisableConfirmation
+    | EnableConfirmation
+    | UpdateConfirmation Interest.InterestMsg
+
+
+type ConfirmationSettings
+    = NoConfirmation
+    | Confirm InterestCondition
 
 
 confirmationsDisabled : ConfirmationSettings
 confirmationsDisabled =
-    RatingList []
+    NoConfirmation
+
+
+update : ConfirmationFormMsg -> ConfirmationSettings -> ConfirmationSettings
+update msg settings =
+    case msg of
+        DisableConfirmation ->
+            NoConfirmation
+
+        EnableConfirmation ->
+            Confirm Interest.defaultCondition
+
+        UpdateConfirmation interestMsg ->
+            case settings of
+                Confirm interestCondition ->
+                    Confirm (Interest.update interestMsg interestCondition)
+
+                NoConfirmation ->
+                    Confirm (Interest.update interestMsg Interest.defaultCondition)
 
 
 render : ConfirmationSettings -> String
-render (RatingList enabledRatings) =
-    if List.isEmpty enabledRatings then
-        ""
+render settings =
+    case settings of
+        NoConfirmation ->
+            ""
 
-    else
-        "Potvrzovat mobilem investice do úvěrů, kde " ++ Rating.renderCondition (RatingList enabledRatings) ++ "."
+        Confirm interestCondition ->
+            "Potvrzovat mobilem investice do úvěrů, kde " ++ Interest.renderCondition interestCondition ++ "."
+
+
+validate : ConfirmationSettings -> List String
+validate settings =
+    case settings of
+        NoConfirmation ->
+            []
+
+        Confirm interestCondition ->
+            List.map (\err -> "Potvrzení investic mobilem: " ++ err) <| Interest.validationErrors interestCondition
 
 
 equal : ConfirmationSettings -> ConfirmationSettings -> Bool
-equal (RatingList cs1) (RatingList cs2) =
-    let
-        makeComparable =
-            List.sort << List.map Rating.ratingToString
-    in
-    makeComparable cs1 == makeComparable cs2
+equal cs1 cs2 =
+    cs1 == cs2
 
 
 
@@ -44,10 +79,31 @@ equal (RatingList cs1) (RatingList cs2) =
 
 
 encode : ConfirmationSettings -> Value
-encode =
-    Rating.encodeCondition
+encode cs =
+    case cs of
+        NoConfirmation ->
+            Encode.object
+                [ ( "a", Encode.int 0 ) ]
+
+        Confirm interestCondition ->
+            Encode.object
+                [ ( "a", Encode.int 1 )
+                , ( "b", Interest.encodeCondition interestCondition )
+                ]
 
 
 decoder : Decoder ConfirmationSettings
 decoder =
-    Rating.conditionDecoder
+    Decode.field "a" Decode.int
+        |> Decode.andThen
+            (\x ->
+                case x of
+                    0 ->
+                        Decode.succeed NoConfirmation
+
+                    1 ->
+                        Decode.map Confirm <| Decode.field "b" Interest.conditionDecoder
+
+                    other ->
+                        Decode.fail <| "Failed to decode ConfirmationSettings. Was expecting 0 or 1, but got " ++ String.fromInt other
+            )
