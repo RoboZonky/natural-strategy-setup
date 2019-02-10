@@ -6,11 +6,13 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.logging.LogEntries;
 
 import java.io.BufferedReader;
+import java.io.Closeable;
 import java.io.StringReader;
-import java.nio.file.Path;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.file.Paths;
 
-class TestApp {
+class TestApp implements Closeable {
 
     private final WebDriver driver;
 
@@ -18,10 +20,8 @@ class TestApp {
         this.driver = driver;
     }
 
-    void open() {
-        String testProjectDir = System.getProperty("user.dir");
-        Path testAppPath = Paths.get(testProjectDir, "target/testApp.html");
-        driver.get(testAppPath.toUri().toString());
+    void open(Deployment d) {
+        driver.get(d.getUri().toString());
     }
 
     String nextStrategy() {
@@ -69,5 +69,24 @@ class TestApp {
 
     public void close() {
         driver.close();
+    }
+
+    enum Deployment {
+        CURRENT(Paths.get(System.getProperty("user.dir"), "target/testApp.html").toUri().toString()),
+        V1("https://janhrcek.cz/nss-strategy-compat/v1/");
+
+        private final URI uri;
+
+        Deployment(String uriStr) {
+            try {
+                this.uri = new URI(uriStr);
+            } catch (URISyntaxException use) {
+                throw new IllegalArgumentException("Invalid URI", use);
+            }
+        }
+
+        public URI getUri() {
+            return uri;
+        }
     }
 }

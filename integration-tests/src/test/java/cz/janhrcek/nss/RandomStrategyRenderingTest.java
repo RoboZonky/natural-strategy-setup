@@ -1,29 +1,31 @@
 package cz.janhrcek.nss;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.OptionalDouble;
-import java.util.logging.Level;
-
 import com.github.robozonky.strategy.natural.GeneratedStrategyVerifier;
 import org.assertj.core.api.Assertions;
 import org.assertj.core.data.Offset;
 import org.junit.After;
 import org.junit.Test;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.chrome.ChromeDriver;
-import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.logging.LogEntry;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.OptionalDouble;
+import java.util.logging.Level;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class RandomStrategyRenderingTest {
+public class RandomStrategyRenderingTest  {
 
-    private final TestApp testApp = new TestApp(initWebDriver());
+    final TestApp testApp = new TestApp(WebDriverFactory.createWebDriver(true));
+
+    @After
+    public void closeApp() {
+        testApp.close();
+    }
 
     @Test
     public void randomStrategiesCanBeParsed() {
-        testApp.open();
+        testApp.open(TestApp.Deployment.CURRENT);
 
         List<Integer> encodedStrategyLengths = new ArrayList<>();
         ProgressBar progressBar = new ProgressBar();
@@ -65,20 +67,9 @@ public class RandomStrategyRenderingTest {
             GeneratedStrategyVerifier.parseWithAntlr(strategy);
         } catch (Exception exception) {
             Assertions.fail("---------- Strategy with seed " + testApp.getStrategySeed()
-                                    + " could not be parsed by robozonky  ----------\n" + strategy,
-                            exception
+                            + " could not be parsed by robozonky  ----------\n" + strategy,
+                    exception
             );
         }
-    }
-
-    @After
-    public void closeDriver() {
-        testApp.close();
-    }
-
-    private WebDriver initWebDriver() {
-        ChromeOptions options = new ChromeOptions();
-        options.setHeadless(true);
-        return new ChromeDriver(options);
     }
 }

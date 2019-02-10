@@ -10,10 +10,15 @@ TESTS_DIR=integration-tests
 if [ ! -f "${TESTS_DIR}/chromedriver" ]; then
   echo "Downloading latest chromedriver binary"
   VERSION=$(curl http://chromedriver.storage.googleapis.com/LATEST_RELEASE)
-  wget --quiet --directory-prefix ${TESTS_DIR} http://chromedriver.storage.googleapis.com/$VERSION/chromedriver_linux64.zip
+  wget --quiet --directory-prefix ${TESTS_DIR} "http://chromedriver.storage.googleapis.com/$VERSION/chromedriver_linux64.zip"
   unzip ${TESTS_DIR}/chromedriver_linux64.zip -d ${TESTS_DIR}
 fi
 
+./build.sh
+# Start web server (stack install sws) running NSS app
+sws --dev-mode dist/ &
+SWS_PID=$!
 elm make src/Test/TestApp.elm --optimize --output ${TESTS_DIR}/target/testApp.html
 cd ${TESTS_DIR}
-mvn test
+mvn test || true
+kill $SWS_PID
