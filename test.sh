@@ -15,7 +15,7 @@ if [ ! -f "${TESTS_DIR}/chromedriver" ]; then
 fi
 
 ./build.sh
-# Start web server (stack install sws) running NSS app
+# Run NSS app in web server
 sws --dev-mode dist/ &
 SWS_PID=$!
 elm make src/Test/TestApp.elm --optimize --output ${TESTS_DIR}/target/testApp.html

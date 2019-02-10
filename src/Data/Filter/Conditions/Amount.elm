@@ -145,21 +145,26 @@ form (AmountCondition amt) =
         [ Form.formInline [ onSubmit AmountNoOp ]
             [ amountRadio ltEnabled (SetLessThan "0") "nedosahuje" "amount1"
             , numericInput SetLessThan ltEnabled values.lessThan
-            , text "Kč"
+            , unit
             ]
         , Form.formInline [ onSubmit AmountNoOp ]
             [ amountRadio btwEnabled (SetBetween "0" "0") "je" "amount2"
             , numericInput (\x -> SetBetween x values.betweenMax) btwEnabled values.betweenMin
             , text "až"
             , numericInput (\y -> SetBetween values.betweenMin y) btwEnabled values.betweenMax
-            , text "Kč"
+            , unit
             ]
         , Form.formInline [ onSubmit AmountNoOp ]
             [ amountRadio mtEnabled (SetMoreThan "0") "přesahuje" "amount3"
             , numericInput SetMoreThan mtEnabled values.moreThan
-            , text "Kč"
+            , unit
             ]
         ]
+
+
+unit : Html msg
+unit =
+    text "Kč"
 
 
 numericInput : (String -> AmountMsg) -> Bool -> String -> Html AmountMsg

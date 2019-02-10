@@ -11,6 +11,7 @@ module Data.Filter exposing
     , encodeBuyingConfiguration
     , encodeSellingConfiguration
     , filterTextView
+    , filteredItemDecoder
     , getAllowedFilterItems
     , getFiltersRemovedByBuyingConfigurationChange
     , getMarketplaceEnablement

@@ -152,21 +152,26 @@ form (TermPercentCondition termPercent) =
         [ Form.formInline [ onSubmit TermPercentNoOp ]
             [ termPercentRadio ltEnabled (SetLessThan "0") "nedosahuje"
             , numericInput SetLessThan ltEnabled values.lessThan
-            , text "% původní délky"
+            , unit
             ]
         , Form.formInline [ onSubmit TermPercentNoOp ]
             [ termPercentRadio btwEnabled (SetBetween "0" "0") "je"
             , numericInput (\x -> SetBetween x values.betweenMax) btwEnabled values.betweenMin
             , text "až"
             , numericInput (\y -> SetBetween values.betweenMin y) btwEnabled values.betweenMax
-            , text "% původní délky"
+            , unit
             ]
         , Form.formInline [ onSubmit TermPercentNoOp ]
             [ termPercentRadio mtEnabled (SetMoreThan "0") "přesahuje"
             , numericInput SetMoreThan mtEnabled values.moreThan
-            , text "% původní délky"
+            , unit
             ]
         ]
+
+
+unit : Html msg
+unit =
+    text "% původní délky"
 
 
 numericInput : (String -> TermPercentMsg) -> Bool -> String -> Html TermPercentMsg

@@ -13,15 +13,16 @@ import Data.Strategy as Strategy exposing (StrategyConfiguration)
 import Data.TargetBalance as TargetBalance exposing (TargetBalance(..))
 import Data.TargetPortfolioSize as TargetPortfolioSize exposing (TargetPortfolioSize(..))
 import Data.Tooltip as Tooltip
+import Data.VersionedStrategy as VersionedStrategy
 import Html exposing (Html, a, footer, h1, text)
 import Html.Attributes exposing (class, href, style)
 import Task
 import Time exposing (Posix)
-import Types exposing (AlertData(..), BaseUrl, CreationModalMsg(..), Msg(..))
+import Types exposing (BaseUrl, CreationModalMsg(..), Msg(..))
 import Url exposing (Url)
 import Util
 import Version
-import View.Alert as Alert
+import View.Alert as Alert exposing (AlertData(..))
 import View.ConfigPreview as ConfigPreview
 import View.Filter.CreationModal as FilterCreationModal
 import View.Filter.DeletionModal as FilterDeletionModal
@@ -300,9 +301,13 @@ loadStrategyFromUrl url =
             ( Strategy.defaultStrategyConfiguration, NoAlert )
 
         Just hash ->
-            case Strategy.strategyFromUrlHash hash of
-                Ok strategy ->
-                    ( strategy, SuccessAlert "Strategie byla úspěšně načtena z URL" )
+            case VersionedStrategy.loadStrategy hash of
+                Ok ( strategy, migrationWarnings ) ->
+                    if List.isEmpty migrationWarnings then
+                        ( strategy, SuccessAlert "Strategie byla úspěšně načtena z URL" )
+
+                    else
+                        ( strategy, WarningAlert migrationWarnings )
 
                 Err e ->
                     ( Strategy.defaultStrategyConfiguration

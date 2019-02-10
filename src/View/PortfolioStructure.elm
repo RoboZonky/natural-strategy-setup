@@ -12,8 +12,8 @@ import Data.Portfolio as Portfolio exposing (Portfolio(..), allPortfolios)
 import Data.PortfolioStructure as PortfolioStructure exposing (PortfolioShares)
 import Data.Tooltip as Tooltip
 import Dict.Any
-import Html exposing (Html, div, text)
-import Html.Attributes exposing (selected, style, value)
+import Html exposing (Html, b, div, text)
+import Html.Attributes exposing (selected, value)
 import Html.Events exposing (onSubmit)
 import RangeSlider
 import Types exposing (Msg(..))
@@ -96,7 +96,7 @@ portfolioSharesSliders shares =
     let
         ratingSlider ( rating, sliderState ) =
             Form.formInline [ onSubmit NoOp ]
-                [ div [ style "width" "100px" ] [ text <| Rating.showInterestPercent rating ]
+                [ b [] [ text <| Rating.showInterestPercent rating ]
                 , Html.map (ChangePortfolioSharePercentage rating) <| RangeSlider.view sliderState
                 ]
     in

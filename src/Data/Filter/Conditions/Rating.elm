@@ -3,6 +3,7 @@ module Data.Filter.Conditions.Rating exposing
     , RatingCondition(..)
     , allRatings
     , conditionDecoder
+    , defaultCondition
     , encodeCondition
     , fromHash
     , hash
@@ -190,3 +191,12 @@ conditionDecoder : Decoder RatingCondition
 conditionDecoder =
     Decode.map RatingList <|
         Decode.list ratingDecoder
+
+
+
+-- The stuff below is kept just to implement migration from URL-persisted V1 strategies
+
+
+defaultCondition : RatingCondition
+defaultCondition =
+    RatingList []

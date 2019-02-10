@@ -14,9 +14,9 @@ import java.util.logging.Level;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class RandomStrategyRenderingTest  {
+public class RandomStrategyRenderingTest {
 
-    final TestApp testApp = new TestApp(WebDriverFactory.createWebDriver(true));
+    private final TestApp testApp = new TestApp(WebDriverFactory.createWebDriver(true));
 
     @After
     public void closeApp() {
@@ -29,8 +29,8 @@ public class RandomStrategyRenderingTest  {
 
         List<Integer> encodedStrategyLengths = new ArrayList<>();
         ProgressBar progressBar = new ProgressBar();
-        final int numberOfStategiesToGenerate = 1000;
-        for (int i = 1; i <= numberOfStategiesToGenerate; i++) {
+        final int numberOfStrategiesToGenerate = 1000;
+        for (int i = 1; i <= numberOfStrategiesToGenerate; i++) {
             String renderedStrategy = testApp.nextStrategy();
 
             encodedStrategyLengths.add(testApp.getStrategyHash().length());
@@ -45,7 +45,7 @@ public class RandomStrategyRenderingTest  {
                     .as("After JSON Encode/Decode roundtrip the strategy must be the same")
                     .isEqualTo("Ok");
 
-            progressBar.update(i, numberOfStategiesToGenerate);
+            progressBar.update(i, numberOfStrategiesToGenerate);
         }
 
         OptionalDouble averageLengthOfUrlEncodedStrategy = encodedStrategyLengths.stream()

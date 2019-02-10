@@ -1,9 +1,9 @@
 module Types exposing
-    ( AlertData(..)
-    , BaseUrl
+    ( BaseUrl
     , CreationModalMsg(..)
     , DeletionModalMsg(..)
     , Msg(..)
+    , UrlHash
     )
 
 import Bootstrap.Accordion as Accordion
@@ -66,7 +66,5 @@ type alias BaseUrl =
     String
 
 
-type AlertData
-    = SuccessAlert String
-    | ErrorAlert String
-    | NoAlert
+type alias UrlHash =
+    String

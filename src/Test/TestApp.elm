@@ -2,6 +2,7 @@ module Test.TestApp exposing (main)
 
 import Browser
 import Data.Strategy as Strategy exposing (StrategyConfiguration)
+import Data.VersionedStrategy as VersioinedStrategy
 import Html exposing (Html, button, div, input, span, text, textarea)
 import Html.Attributes exposing (cols, id, readonly, rows, type_, value)
 import Html.Events exposing (onClick, onInput)
@@ -101,8 +102,10 @@ testEncodeDecodeDoesntChangeStrategy original =
 
 
 encodeDecodeStrategy : StrategyConfiguration -> Result String StrategyConfiguration
-encodeDecodeStrategy =
-    Strategy.strategyToUrlHash >> Strategy.strategyFromUrlHash
+encodeDecodeStrategy strategy =
+    Strategy.strategyToUrlHash strategy
+        |> VersioinedStrategy.loadStrategy
+        |> Result.map Tuple.first
 
 
 epoch : Posix

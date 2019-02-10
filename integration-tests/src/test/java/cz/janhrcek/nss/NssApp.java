@@ -8,7 +8,7 @@ import java.io.Closeable;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-public class NssApp implements Closeable {
+class NssApp implements Closeable {
 
     private final WebDriver driver;
 
@@ -21,7 +21,8 @@ public class NssApp implements Closeable {
     }
 
     public void open(String strategyHash) {
-        driver.get(getBaseUri() + "#" + strategyHash);
+        driver.get("about:blank"); // Open blank page, because strategy hash is only parsed on initialization
+        driver.navigate().to(getBaseUri() + "#" + strategyHash);
     }
 
     private String getBaseUri() {
@@ -35,6 +36,11 @@ public class NssApp implements Closeable {
     public String getStrategyRestoredNotification() {
         return driver.findElement(By.cssSelector("[role=alert]")).getText();
     }
+
+    public String getRenderedStrategy() {
+        return driver.findElement(By.tagName("textarea")).getAttribute("value");
+    }
+
 
     public URL getErrorReportingUrl() {
         String urlStr = driver.findElement(By.cssSelector("[role=alert] a")).getAttribute("href");

@@ -45,7 +45,11 @@ toString interest =
             "nedosahuje " ++ showInterestPercent maxBound
 
         Between minBound maxBound ->
-            "je " ++ showInterest minBound ++ " až " ++ showInterestPercent maxBound
+            if minBound == maxBound then
+                "je " ++ showInterestPercent minBound
+
+            else
+                "je " ++ showInterest minBound ++ " až " ++ showInterestPercent maxBound
 
         MoreThan minBound ->
             "přesahuje " ++ showInterestPercent minBound

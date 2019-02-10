@@ -1,7 +1,6 @@
 module Data.Strategy exposing
     ( GeneralSettings
     , StrategyConfiguration
-    , UrlHash
     , addBuyFilter
     , addSellFilter
     , defaultStrategyConfiguration
@@ -18,8 +17,8 @@ module Data.Strategy exposing
     , setSellingConfiguration
     , setTargetBalance
     , setTargetPortfolioSize
+    , strategyDecoder
     , strategyEqual
-    , strategyFromUrlHash
     , strategyToUrlHash
     , togglePrimaryMarket
     , toggleSecondaryMarket
@@ -45,7 +44,7 @@ import Json.Encode as Encode exposing (Value)
 import List.Extra
 import RangeSlider
 import Time exposing (Posix)
-import Types exposing (BaseUrl)
+import Types exposing (BaseUrl, UrlHash)
 import Util
 import Version
 
@@ -343,54 +342,12 @@ strategyDecoder =
         (Decode.field "l" Filters.decodeSellingConfiguration)
 
 
-type alias UrlHash =
-    String
-
-
 strategyToUrlHash : StrategyConfiguration -> UrlHash
 strategyToUrlHash strategyConfiguration =
     encodeStrategy strategyConfiguration
         |> Encode.encode 0
-        |> (\strategyJson -> "1;" ++ strategyJson)
+        |> (\strategyJson -> "2;" ++ strategyJson)
         |> Base64.encode
-
-
-strategyFromUrlHash : UrlHash -> Result String StrategyConfiguration
-strategyFromUrlHash hash =
-    Base64.decode hash
-        |> Result.andThen
-            (\versionSemicolonStrategyJson ->
-                versionSemicolonStrategyJson
-                    |> String.split ";"
-                    |> (\pieces ->
-                            case pieces of
-                                [ versionStr, strategyJson ] ->
-                                    case String.toInt versionStr of
-                                        Just version ->
-                                            pickStrategyDecoder version
-                                                |> Result.andThen
-                                                    (\decoder ->
-                                                        Decode.decodeString decoder strategyJson
-                                                            |> Result.mapError Decode.errorToString
-                                                    )
-
-                                        Nothing ->
-                                            Err ("Failed to read strategy version from " ++ versionStr)
-
-                                _ ->
-                                    Err ("Unexpected number of semicolon separated things in " ++ versionSemicolonStrategyJson)
-                       )
-            )
-
-
-pickStrategyDecoder : Int -> Result String (Decoder StrategyConfiguration)
-pickStrategyDecoder version =
-    case version of
-        1 ->
-            Ok strategyDecoder
-
-        uspupportedVersion ->
-            Err ("Unsupported strategy version " ++ String.fromInt uspupportedVersion)
 
 
 shareableUrlComment : BaseUrl -> StrategyConfiguration -> String

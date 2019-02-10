@@ -149,21 +149,26 @@ form (ElapsedTermPercentCondition elapsedTermPercent) =
         [ Form.formInline [ onSubmit ElapsedTermPercentNoOp ]
             [ elapsedTermPercentRadio ltEnabled (SetLessThan "0") "méně než" "etp1"
             , numericInput SetLessThan ltEnabled values.lessThan
-            , text "% splátek"
+            , unit
             ]
         , Form.formInline [ onSubmit ElapsedTermPercentNoOp ]
             [ elapsedTermPercentRadio btwEnabled (SetBetween "0" "0") "je" "etp2"
             , numericInput (\x -> SetBetween x values.betweenMax) btwEnabled values.betweenMin
             , text "až"
             , numericInput (\y -> SetBetween values.betweenMin y) btwEnabled values.betweenMax
-            , text "% splátek"
+            , unit
             ]
         , Form.formInline [ onSubmit ElapsedTermPercentNoOp ]
             [ elapsedTermPercentRadio mtEnabled (SetMoreThan "0") "více než" "etp3"
             , numericInput SetMoreThan mtEnabled values.moreThan
-            , text "% splátek"
+            , unit
             ]
         ]
+
+
+unit : Html msg
+unit =
+    text "% splátek"
 
 
 numericInput : (String -> ElapsedTermPercentMsg) -> Bool -> String -> Html ElapsedTermPercentMsg

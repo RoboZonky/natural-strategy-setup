@@ -150,21 +150,26 @@ form (TermMonthsCondition termMonths) =
         [ Form.formInline [ onSubmit TermMonthsNoOp ]
             [ termMonthsRadio ltEnabled (SetLessThan "0") "nedosahuje" "tm1"
             , numericInput SetLessThan ltEnabled values.lessThan
-            , text "měsíců"
+            , unit
             ]
         , Form.formInline [ onSubmit TermMonthsNoOp ]
             [ termMonthsRadio btwEnabled (SetBetween "0" "0") "je" "tm2"
             , numericInput (\x -> SetBetween x values.betweenMax) btwEnabled values.betweenMin
             , text "až"
             , numericInput (\y -> SetBetween values.betweenMin y) btwEnabled values.betweenMax
-            , text "měsíců"
+            , unit
             ]
         , Form.formInline [ onSubmit TermMonthsNoOp ]
             [ termMonthsRadio mtEnabled (SetMoreThan "0") "přesahuje" "tm3"
             , numericInput SetMoreThan mtEnabled values.moreThan
-            , text "měsíců"
+            , unit
             ]
         ]
+
+
+unit : Html msg
+unit =
+    text "měsíců"
 
 
 numericInput : (String -> TermMonthsMsg) -> Bool -> String -> Html TermMonthsMsg

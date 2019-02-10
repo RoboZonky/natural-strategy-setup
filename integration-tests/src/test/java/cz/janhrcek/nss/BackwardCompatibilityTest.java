@@ -1,6 +1,7 @@
 package cz.janhrcek.nss;
 
 
+import com.github.robozonky.strategy.natural.GeneratedStrategyVerifier;
 import org.assertj.core.api.Assertions;
 import org.assertj.core.util.Strings;
 import org.junit.After;
@@ -20,8 +21,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class BackwardCompatibilityTest {
 
 
-    final TestApp testApp = new TestApp(WebDriverFactory.createWebDriver(false));
-    final NssApp nssApp = new NssApp(WebDriverFactory.createWebDriver(false));
+    private final TestApp testApp = new TestApp(WebDriverFactory.createWebDriver(false));
+    private final NssApp nssApp = new NssApp(WebDriverFactory.createWebDriver(false));
+
 
     @After
     public void closeApps() {
@@ -33,11 +35,13 @@ public class BackwardCompatibilityTest {
     public void canRestoreV1Stategies() {
         testApp.open(TestApp.Deployment.V1);
 
-        for (int i = 0; i < 100; i++) {
+        ProgressBar progressBar = new ProgressBar();
+        final int numberOfstrategies = 200;
+        for (int i = 0; i < numberOfstrategies; i++) {
             String strategyHash = testApp.getStrategyHash();
             nssApp.open(strategyHash);
             String notification = nssApp.getStrategyRestoredNotification();
-            // assertThat(notification).isEqualTo("Strategie byla úspěšně načtena z URL");
+            //assertThat(notification).startsWith("Strategie byla úspěšně načtena z URL");
 
             if (notification.startsWith("Pokus o načtení strategie z URL se nezdařil")) {
                 URL errorReportingUrl = nssApp.getErrorReportingUrl();
@@ -58,6 +62,18 @@ public class BackwardCompatibilityTest {
                 System.out.println(gitHubIssueBody);
                 Assertions.fail("Restoring strategy failed.");
             }
+
+            String restoredStrategy = nssApp.getRenderedStrategy();
+            try {
+                GeneratedStrategyVerifier.parseWithAntlr(restoredStrategy);
+            } catch (Exception exception) {
+                Assertions.fail(
+                        "---------- Strategy restored from URL can no longer be parsed by Robozonky: " + restoredStrategy,
+                        exception
+                );
+            }
+
+            progressBar.update(i, numberOfstrategies);
             testApp.nextStrategy();
         }
 
@@ -72,7 +88,7 @@ public class BackwardCompatibilityTest {
         }
     }
 
-    public Map<String, List<String>> splitQuery(URL url) {
+    private Map<String, List<String>> splitQuery(URL url) {
         if (Strings.isNullOrEmpty(url.getQuery())) {
             return Collections.emptyMap();
         }

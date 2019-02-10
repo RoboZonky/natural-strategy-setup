@@ -145,21 +145,26 @@ form (RemainingAmountCondition ramt) =
         [ Form.formInline [ onSubmit RemainingAmountNoOp ]
             [ remainingAmountRadio ltEnabled (SetLessThan "0") "nedosahuje" "ramount1"
             , numericInput SetLessThan ltEnabled values.lessThan
-            , text "Kč"
+            , unit
             ]
         , Form.formInline [ onSubmit RemainingAmountNoOp ]
             [ remainingAmountRadio btwEnabled (SetBetween "0" "0") "je" "ramount2"
             , numericInput (\x -> SetBetween x values.betweenMax) btwEnabled values.betweenMin
             , text "až"
             , numericInput (\y -> SetBetween values.betweenMin y) btwEnabled values.betweenMax
-            , text "Kč"
+            , unit
             ]
         , Form.formInline [ onSubmit RemainingAmountNoOp ]
             [ remainingAmountRadio mtEnabled (SetMoreThan "0") "přesahuje" "ramount3"
             , numericInput SetMoreThan mtEnabled values.moreThan
-            , text "Kč"
+            , unit
             ]
         ]
+
+
+unit : Html msg
+unit =
+    text "Kč"
 
 
 numericInput : (String -> RemainingAmountMsg) -> Bool -> String -> Html RemainingAmountMsg

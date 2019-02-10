@@ -85,7 +85,7 @@ class TestApp implements Closeable {
             }
         }
 
-        public URI getUri() {
+        URI getUri() {
             return uri;
         }
     }
