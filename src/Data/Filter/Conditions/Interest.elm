@@ -19,6 +19,7 @@ import Html exposing (Html, text)
 import Html.Events exposing (onSubmit)
 import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as Encode exposing (Value)
+import List.Extra
 import Util
 import View.EnumSelect as EnumSelect exposing (DefaultOptionConfig(..))
 
@@ -27,6 +28,14 @@ type Interest
     = LessThan Rating
     | Between Rating Rating
     | MoreThan Rating
+    | Exactly Rating
+
+
+type InterestEnum
+    = LT
+    | BTW
+    | MT
+    | EX
 
 
 type InterestCondition
@@ -35,7 +44,7 @@ type InterestCondition
 
 defaultCondition : InterestCondition
 defaultCondition =
-    InterestCondition (LessThan Rating.D)
+    InterestCondition (MoreThan Rating.A)
 
 
 toString : Interest -> String
@@ -45,14 +54,13 @@ toString interest =
             "nedosahuje " ++ showInterestPercent maxBound
 
         Between minBound maxBound ->
-            if minBound == maxBound then
-                "je " ++ showInterestPercent minBound
-
-            else
-                "je " ++ showInterest minBound ++ " až " ++ showInterestPercent maxBound
+            "je " ++ showInterest minBound ++ " až " ++ showInterestPercent maxBound
 
         MoreThan minBound ->
             "přesahuje " ++ showInterestPercent minBound
+
+        Exactly val ->
+            "je " ++ showInterestPercent val
 
 
 renderCondition : InterestCondition -> String
@@ -64,7 +72,7 @@ validationErrors : InterestCondition -> List String
 validationErrors (InterestCondition ic) =
     case ic of
         Between minBound maxBound ->
-            validateMinNotGtMax minBound maxBound
+            validateMinLtMax minBound maxBound
 
         LessThan _ ->
             []
@@ -72,31 +80,38 @@ validationErrors (InterestCondition ic) =
         MoreThan _ ->
             []
 
+        Exactly _ ->
+            []
 
-validateMinNotGtMax : Rating -> Rating -> List String
-validateMinNotGtMax minBound maxBound =
-    Util.validate (Rating.toInterestPercent minBound > Rating.toInterestPercent maxBound)
-        "Úrok: minimum nesmí být větší než maximum"
+
+validateMinLtMax : Rating -> Rating -> List String
+validateMinLtMax minBound maxBound =
+    Util.validate (Rating.toInterestPercent minBound >= Rating.toInterestPercent maxBound)
+        "Úrok: minimum musí být menší než maximum"
 
 
 type InterestMsg
     = SetLessThan Rating
     | SetBetween Rating Rating
     | SetMoreThan Rating
+    | SetExactly Rating
     | InterestNoOp
 
 
-whichEnabled : Interest -> ( Bool, Bool, Bool )
-whichEnabled interest =
+toEnum : Interest -> InterestEnum
+toEnum interest =
     case interest of
+        Exactly _ ->
+            EX
+
         LessThan _ ->
-            ( True, False, False )
+            LT
 
         Between _ _ ->
-            ( False, True, False )
+            BTW
 
         MoreThan _ ->
-            ( False, False, True )
+            MT
 
 
 update : InterestMsg -> InterestCondition -> InterestCondition
@@ -112,58 +127,71 @@ update msg (InterestCondition i) =
             SetMoreThan lo ->
                 MoreThan lo
 
+            SetExactly val ->
+                Exactly val
+
             InterestNoOp ->
                 i
 
 
 type alias InterestDropdowns =
-    { lessThan : Html InterestMsg
-    , betweenMin : Html InterestMsg
-    , betweenMax : Html InterestMsg
+    { extactly : Html InterestMsg
+    , lessThan : Html InterestMsg
+    , between : ( Html InterestMsg, Html InterestMsg )
     , moreThan : Html InterestMsg
     }
 
 
 defaultDropdowns : InterestDropdowns
 defaultDropdowns =
-    InterestDropdowns disabledDropdown disabledDropdown disabledDropdown disabledDropdown
+    InterestDropdowns disabledDropdown disabledDropdown ( disabledDropdown, disabledDropdown ) disabledDropdown
 
 
 form : InterestCondition -> Html InterestMsg
 form (InterestCondition interest) =
     let
+        interestEnum =
+            toEnum interest
+
         dropdowns =
             case interest of
+                Exactly x ->
+                    { defaultDropdowns | extactly = ratingDropdown True (DefaultOption x) SetExactly }
+
                 LessThan x ->
-                    { defaultDropdowns | lessThan = ratingDropdown True (DefaultOption x) SetLessThan }
+                    { defaultDropdowns | lessThan = ratingDropdownWithValues allRatingsExceptSmallest True (DefaultOption x) SetLessThan }
 
                 Between mi ma ->
                     { defaultDropdowns
-                        | betweenMin = ratingDropdown True (DefaultOption mi) (\mi1 -> SetBetween mi1 ma)
-                        , betweenMax = ratingDropdown True (DefaultOption ma) (\ma1 -> SetBetween mi ma1)
+                        | between =
+                            ( ratingDropdown True (DefaultOption mi) (\mi1 -> SetBetween mi1 ma)
+                            , ratingDropdown True (DefaultOption ma) (\ma1 -> SetBetween mi ma1)
+                            )
                     }
 
                 MoreThan x ->
-                    { defaultDropdowns | moreThan = ratingDropdown True (DefaultOption x) SetMoreThan }
-
-        ( ltEnabled, btwEnabled, mtEnabled ) =
-            whichEnabled interest
+                    { defaultDropdowns | moreThan = ratingDropdownWithValues allRatingsExceptLargest True (DefaultOption x) SetMoreThan }
     in
     Html.div []
         [ Form.formInline [ onSubmit InterestNoOp ]
-            [ interestRadio ltEnabled (SetLessThan Rating.D) "nedosahuje\u{00A0}" "interest1"
+            [ interestRadio (interestEnum == EX) (SetExactly Rating.D) "je přesně\u{00A0}" "interest0"
+            , dropdowns.extactly
+            , unit
+            ]
+        , Form.formInline [ onSubmit InterestNoOp ]
+            [ interestRadio (interestEnum == LT) (SetLessThan Rating.D) "nedosahuje\u{00A0}" "interest1"
             , dropdowns.lessThan
             , unit
             ]
         , Form.formInline [ onSubmit InterestNoOp ]
-            [ interestRadio btwEnabled (SetBetween Rating.A_Double_Star Rating.D) "je\u{00A0}" "interest2"
-            , dropdowns.betweenMin
+            [ interestRadio (interestEnum == BTW) (SetBetween Rating.A_Double_Star Rating.D) "je\u{00A0}" "interest2"
+            , Tuple.first dropdowns.between
             , text "\u{00A0}až\u{00A0}"
-            , dropdowns.betweenMax
+            , Tuple.second dropdowns.between
             , unit
             ]
         , Form.formInline [ onSubmit InterestNoOp ]
-            [ interestRadio mtEnabled (SetMoreThan Rating.A_Double_Star) "přesahuje\u{00A0}" "interest3"
+            [ interestRadio (interestEnum == MT) (SetMoreThan Rating.A_Double_Star) "přesahuje\u{00A0}" "interest3"
             , dropdowns.moreThan
             , unit
             ]
@@ -176,14 +204,33 @@ unit =
 
 
 ratingDropdown : Bool -> DefaultOptionConfig Rating -> (Rating -> InterestMsg) -> Html InterestMsg
-ratingDropdown enabled def toMsg =
+ratingDropdown =
+    ratingDropdownWithValues Rating.allRatings
+
+
+ratingDropdownWithValues : List Rating -> Bool -> DefaultOptionConfig Rating -> (Rating -> InterestMsg) -> Html InterestMsg
+ratingDropdownWithValues ratings enabled defaultOption toMsg =
     EnumSelect.from
-        { enumValues = Rating.allRatings
+        { enumValues = ratings
         , valuePickedMessage = toMsg
         , showVisibleLabel = Rating.showInterest
-        , defaultOption = def
+        , defaultOption = defaultOption
         , enabled = enabled
         }
+
+
+allRatingsExceptLargest : List Rating
+allRatingsExceptLargest =
+    List.Extra.init Rating.allRatings
+        -- won't happen, as allRatings is fixed non-empty list of ratings
+        |> Maybe.withDefault []
+
+
+allRatingsExceptSmallest : List Rating
+allRatingsExceptSmallest =
+    List.tail Rating.allRatings
+        -- won't happen, as allRatings is fixed non-empty list of ratings
+        |> Maybe.withDefault []
 
 
 disabledDropdown : Html InterestMsg
@@ -218,6 +265,9 @@ encodeInterest i =
         MoreThan y ->
             Encode.object [ ( "v", Encode.int 3 ), ( "w", encodeRating y ) ]
 
+        Exactly x ->
+            Encode.object [ ( "v", Encode.int 4 ), ( "w", encodeRating x ) ]
+
 
 encodeRating : Rating -> Value
 encodeRating =
@@ -246,6 +296,10 @@ interestDecoder =
 
                     3 ->
                         Decode.map MoreThan
+                            (Decode.field "w" Decode.int |> Decode.andThen ratingDecoder)
+
+                    4 ->
+                        Decode.map Exactly
                             (Decode.field "w" Decode.int |> Decode.andThen ratingDecoder)
 
                     _ ->

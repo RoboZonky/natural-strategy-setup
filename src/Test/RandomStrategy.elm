@@ -283,6 +283,7 @@ interestConditionGen =
     Random.choices (Random.map Interest.LessThan ratingGen)
         [ Random.map (\( r1, r2 ) -> Interest.Between r1 r2) ratingRangeGen
         , Random.map Interest.MoreThan ratingGen
+        , Random.map Interest.Exactly ratingGen
         ]
         |> Random.map InterestCondition
 
@@ -300,7 +301,7 @@ ratingRangeGen =
         rtgs =
             Array.fromList Rating.allRatings
     in
-    randomRangeGen 0 (List.length Rating.allRatings)
+    randomRangeGtGen 0 (List.length Rating.allRatings - 1)
         |> Random.map
             (\( i, j ) ->
                 Maybe.map2 Tuple.pair (Array.get i rtgs) (Array.get j rtgs)
@@ -424,6 +425,19 @@ randomRangeGen mi ma =
         |> Random.andThen
             (\generatedMin ->
                 Random.int generatedMin ma
+                    |> Random.map (\generatedMax -> ( generatedMin, generatedMax ))
+            )
+
+
+{-| Generate pair (x, y) such that mi <= x < y <= ma
+I.e. unlike randomRangeGen the 2nd number will always be greater than the first
+-}
+randomRangeGtGen : Int -> Int -> Generator ( Int, Int )
+randomRangeGtGen mi ma =
+    Random.int mi (ma - 1)
+        |> Random.andThen
+            (\generatedMin ->
+                Random.int (generatedMin + 1) ma
                     |> Random.map (\generatedMax -> ( generatedMin, generatedMax ))
             )
 

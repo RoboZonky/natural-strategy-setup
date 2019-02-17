@@ -38,7 +38,7 @@ public class RandomStrategyRenderingTest {
             strategyIsParsableByRobozonky(renderedStrategy);
 
             assertThat(testApp.getValidationErrors())
-                    .as("Strategy must not have validation errors")
+                    .as("Strategy must not have validation errors: " + renderedStrategy)
                     .isEqualTo("[]");
 
             assertThat(testApp.getJsonEncodeDecodeResult())
