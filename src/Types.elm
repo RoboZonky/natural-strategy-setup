@@ -14,6 +14,7 @@ import Data.Filter exposing (FilteredItem)
 import Data.Filter.Complexity exposing (FilterComplexity)
 import Data.Filter.Conditions.Rating exposing (Rating)
 import Data.Portfolio exposing (Portfolio)
+import Data.ReservationSetting exposing (ReservationSetting)
 import Data.Tooltip exposing (TipId)
 import RangeSlider
 import Time exposing (Posix)
@@ -29,6 +30,7 @@ type Msg
     | ConfirmationFormMsg Confirmation.ConfirmationFormMsg
     | ChangeInvestment Rating RangeSlider.Msg
     | ChangeDefaultInvestment RangeSlider.Msg
+    | SetReservationSetting ReservationSetting
     | TargetBalanceChanged String
     | RemoveBuyFilter Int
     | RemoveSellFilter Int

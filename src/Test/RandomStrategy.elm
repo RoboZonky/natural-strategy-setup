@@ -22,6 +22,7 @@ import Data.Investment as Investment exposing (InvestmentsPerRating)
 import Data.InvestmentShare as InvestmentShare exposing (InvestmentShare)
 import Data.Portfolio exposing (Portfolio(..))
 import Data.PortfolioStructure as PortfolioStructure exposing (PortfolioShares)
+import Data.ReservationSetting exposing (ReservationSetting(..))
 import Data.Strategy exposing (GeneralSettings, StrategyConfiguration)
 import Data.TargetBalance as TargetBalance exposing (TargetBalance(..))
 import Data.TargetPortfolioSize as TargetPortfoliSize exposing (TargetPortfolioSize(..))
@@ -49,6 +50,15 @@ generalSettingsGen =
         |> Random.andMap investmentShareGen
         |> Random.andMap targetBalanceGen
         |> Random.andMap confirmationSettingsGen
+        |> Random.andMap reservationSettingGen
+
+
+reservationSettingGen : Generator ReservationSetting
+reservationSettingGen =
+    Random.choices (Random.constant AcceptMatching)
+        [ Random.constant FullOwnership
+        , Random.constant Ignore
+        ]
 
 
 portfolioSharesGen : Generator PortfolioShares

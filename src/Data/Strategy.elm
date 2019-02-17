@@ -14,6 +14,7 @@ module Data.Strategy exposing
     , setInvestment
     , setPortfolio
     , setPortfolioShareRange
+    , setReservationSetting
     , setSellingConfiguration
     , setTargetBalance
     , setTargetPortfolioSize
@@ -36,6 +37,7 @@ import Data.InvestmentShare as InvestmentShare exposing (InvestmentShare)
 import Data.Portfolio as Portfolio exposing (Portfolio(..))
 import Data.PortfolioStructure as PortfolioStructure exposing (PortfolioShares)
 import Data.PortfolioStructure.PredefinedShares as PredefinedShares
+import Data.ReservationSetting as ReservationSetting exposing (ReservationSetting)
 import Data.TargetBalance as TargetBalance exposing (TargetBalance)
 import Data.TargetPortfolioSize as TargetPortfolioSize exposing (TargetPortfolioSize)
 import Dict.Any
@@ -66,6 +68,7 @@ type alias GeneralSettings =
     , defaultInvestmentShare : InvestmentShare
     , defaultTargetBalance : TargetBalance
     , confirmationSettings : ConfirmationSettings
+    , reservationSetting : ReservationSetting
     }
 
 
@@ -79,6 +82,7 @@ defaultStrategyConfiguration =
         , defaultInvestmentShare = InvestmentShare.NotSpecified
         , defaultTargetBalance = TargetBalance.NotSpecified
         , confirmationSettings = Confirmation.confirmationsDisabled
+        , reservationSetting = ReservationSetting.Ignore
         }
     , portfolioShares = PredefinedShares.conservative
     , investmentSizeOverrides = Investment.defaultInvestmentsPerRating Investment.defaultSize
@@ -178,6 +182,13 @@ setTargetBalance newBalance ({ generalSettings } as config) =
     }
 
 
+setReservationSetting : ReservationSetting -> StrategyConfiguration -> StrategyConfiguration
+setReservationSetting reservationSetting ({ generalSettings } as config) =
+    { config
+        | generalSettings = { generalSettings | reservationSetting = reservationSetting }
+    }
+
+
 removeBuyFilter : Int -> StrategyConfiguration -> StrategyConfiguration
 removeBuyFilter index config =
     { config | buyingConfig = Filters.updateBuyFilters (List.Extra.removeAt index) config.buyingConfig }
@@ -237,6 +248,7 @@ renderGeneralSettings generalSettings =
     Util.joinNonemptyLines
         [ "- Obecná nastavení"
         , Portfolio.render generalSettings.portfolio
+        , ReservationSetting.render generalSettings.reservationSetting
         , ExitConfig.render generalSettings.exitConfig
         , TargetPortfolioSize.render generalSettings.targetPortfolioSize
         , Investment.renderSize generalSettings.defaultInvestmentSize
@@ -297,7 +309,7 @@ generalSettingsEqual gs1 gs2 =
 
 
 encodeGeneralSettings : GeneralSettings -> Value
-encodeGeneralSettings { portfolio, exitConfig, targetPortfolioSize, defaultInvestmentSize, defaultInvestmentShare, defaultTargetBalance, confirmationSettings } =
+encodeGeneralSettings { portfolio, exitConfig, targetPortfolioSize, defaultInvestmentSize, defaultInvestmentShare, defaultTargetBalance, confirmationSettings, reservationSetting } =
     Encode.object
         [ ( "a", Portfolio.encode portfolio )
         , ( "b", ExitConfig.encode exitConfig )
@@ -306,12 +318,13 @@ encodeGeneralSettings { portfolio, exitConfig, targetPortfolioSize, defaultInves
         , ( "e", InvestmentShare.encode defaultInvestmentShare )
         , ( "f", TargetBalance.encode defaultTargetBalance )
         , ( "g", Confirmation.encode confirmationSettings )
+        , ( "g1", ReservationSetting.encode reservationSetting )
         ]
 
 
 generalSettingsDecoder : Decoder GeneralSettings
 generalSettingsDecoder =
-    Decode.map7 GeneralSettings
+    Decode.map8 GeneralSettings
         (Decode.field "a" Portfolio.decoder)
         (Decode.field "b" ExitConfig.decoder)
         (Decode.field "c" TargetPortfolioSize.decoder)
@@ -319,6 +332,7 @@ generalSettingsDecoder =
         (Decode.field "e" InvestmentShare.decoder)
         (Decode.field "f" TargetBalance.decoder)
         (Decode.field "g" Confirmation.decoder)
+        (Decode.field "g1" ReservationSetting.decoder)
 
 
 encodeStrategy : StrategyConfiguration -> Value

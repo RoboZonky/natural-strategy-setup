@@ -190,6 +190,9 @@ updateHelper msg model =
         SetDateTime posix ->
             { model | generatedOn = posix }
 
+        SetReservationSetting reservationSetting ->
+            updateStrategy (Strategy.setReservationSetting reservationSetting) model
+
         TogglePrimaryMarket enable ->
             let
                 newModel =

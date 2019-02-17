@@ -21,8 +21,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class BackwardCompatibilityTest {
 
 
-    private final TestApp testApp = new TestApp(WebDriverFactory.createWebDriver(false));
-    private final NssApp nssApp = new NssApp(WebDriverFactory.createWebDriver(false));
+    private final TestApp testApp = new TestApp(WebDriverFactory.createHeadlessWebDriver());
+    private final NssApp nssApp = new NssApp(WebDriverFactory.createHeadlessWebDriver());
 
 
     @After
@@ -36,8 +36,8 @@ public class BackwardCompatibilityTest {
         testApp.open(TestApp.Deployment.V1);
 
         ProgressBar progressBar = new ProgressBar();
-        final int numberOfstrategies = 200;
-        for (int i = 0; i < numberOfstrategies; i++) {
+        final int numberOfStrategies = 200;
+        for (int i = 1; i <= numberOfStrategies; i++) {
             String strategyHash = testApp.getStrategyHash();
             nssApp.open(strategyHash);
             String notification = nssApp.getStrategyRestoredNotification();
@@ -73,7 +73,7 @@ public class BackwardCompatibilityTest {
                 );
             }
 
-            progressBar.update(i, numberOfstrategies);
+            progressBar.update(i, numberOfStrategies);
             testApp.nextStrategy();
         }
 

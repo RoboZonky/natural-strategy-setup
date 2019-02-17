@@ -16,7 +16,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class RandomStrategyRenderingTest {
 
-    private final TestApp testApp = new TestApp(WebDriverFactory.createWebDriver(true));
+    private final TestApp testApp = new TestApp(WebDriverFactory.createHeadlessWebDriver());
 
     @After
     public void closeApp() {

@@ -10,4 +10,8 @@ class WebDriverFactory {
         options.setHeadless(headless);
         return new ChromeDriver(options);
     }
+
+    public static WebDriver createHeadlessWebDriver() {
+        return createWebDriver(true);
+    }
 }

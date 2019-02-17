@@ -5,6 +5,7 @@ import Data.Confirmation as Confirmation
 import Data.Filter exposing (SellingConfiguration(..))
 import Data.Filter.Conditions.Rating as Rating
 import Data.Migration.StrategyV1 as V1
+import Data.ReservationSetting as ReservationSetting
 import Data.Strategy as V2
 import Json.Decode as Decode
 import Types exposing (UrlHash)
@@ -67,13 +68,13 @@ pluralizeRules : Int -> String
 pluralizeRules x =
     String.fromInt x
         ++ (if x == 1 then
-                "pravidlo"
+                " pravidlo"
 
             else if 2 <= x && x <= 4 then
-                "pravidla"
+                " pravidla"
 
             else
-                "pravidel"
+                " pravidel"
            )
 
 
@@ -89,6 +90,7 @@ removeLegacyConfirmation old =
             , defaultInvestmentShare = gs.defaultInvestmentShare
             , defaultTargetBalance = gs.defaultTargetBalance
             , confirmationSettings = Confirmation.NoConfirmation
+            , reservationSetting = ReservationSetting.Ignore
             }
     in
     { generalSettings = removeLegacyConfirmation_ old.generalSettings
