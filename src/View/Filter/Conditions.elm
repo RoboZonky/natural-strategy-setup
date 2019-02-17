@@ -60,14 +60,14 @@ conditionTypesThatApplyTo : FilteredItem -> List ConditionType
 conditionTypesThatApplyTo filteredItem =
     let
         commonForAll =
-            [ Interest, Purpose, Income, Story, Region, Term_Months, Insurance ]
+            [ Amount, Interest, Purpose, Income, Story, Region, Term_Months, Insurance ]
 
         commonForParticipations =
             [ Term_Percent, Elapsed_Term_Months, Elapsed_Term_Percent, Remaining_Amount ]
     in
     case filteredItem of
         Loan ->
-            Amount :: commonForAll
+            commonForAll
 
         Participation ->
             commonForParticipations ++ commonForAll

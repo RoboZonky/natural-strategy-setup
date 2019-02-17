@@ -565,8 +565,7 @@ conditionsDecoder : Decoder Conditions
 conditionsDecoder =
     Decode.succeed Conditions
         |> andMap (optionalField "A" Region.conditionDecoder)
-        -- TODO should validate presence of field "B" and throw a warning
-        -- |> andMap (optionalField "B" Rating.conditionDecoder)
+        -- "B" used to be rating condition, which was removed in strategy v2
         |> andMap (optionalField "C" Income.conditionDecoder)
         |> andMap (optionalField "D" Purpose.conditionDecoder)
         |> andMap (optionalField "E" Story.conditionDecoder)

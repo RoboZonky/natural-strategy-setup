@@ -136,16 +136,16 @@ conditionsGen minConditions filteredItem =
     let
         extraConditions =
             case filteredItem of
-                Loan ->
-                    [ amountConditionGen ]
-
                 Participation ->
-                    [ termPercentConditionGen, elapsedTermMonthsConditionGen, elapsedTermPercentConditionGen, remainingAmountConditionGen ]
+                    participationSpecificConditions
 
                 Participation_To_Sell ->
-                    [ termPercentConditionGen, elapsedTermMonthsConditionGen, elapsedTermPercentConditionGen, remainingAmountConditionGen ]
+                    participationSpecificConditions
 
                 Loan_And_Participation ->
+                    []
+
+                Loan ->
                     []
     in
     conditionSubsetGen minConditions (conditionsSharedByAllFilteredItems ++ extraConditions)
@@ -159,13 +159,23 @@ conditionSubsetGen minimumConditions conditionsToPick =
 
 conditionsSharedByAllFilteredItems : List (Generator Condition)
 conditionsSharedByAllFilteredItems =
-    [ Random.map Condition_Region regionConditionGen
+    [ Random.map Condition_Amount amountConditionGen
+    , Random.map Condition_Region regionConditionGen
     , Random.map Condition_Income incomeConditionGen
     , Random.map Condition_Purpose purposeConditionGen
     , Random.map Condition_Story storyConditionGen
     , Random.map Condition_Term_Months termMonthsConditionGen
     , Random.map Condition_Interest interestConditionGen
     , Random.map Condition_Insurance insuranceConditionGen
+    ]
+
+
+participationSpecificConditions : List (Generator Condition)
+participationSpecificConditions =
+    [ Random.map Condition_Term_Percent termPercentConditionGen
+    , Random.map Condition_Elapsed_Term_Months elapsedTermMonthsConditionGen
+    , Random.map Condition_Elapsed_Term_Percent elapsedTermPercentConditionGen
+    , Random.map Condition_Remaining_Amount remainingAmountConditionGen
     ]
 
 
@@ -213,7 +223,7 @@ termMonthsConditionGen =
         |> Random.map TermMonthsCondition
 
 
-termPercentConditionGen : Generator Condition
+termPercentConditionGen : Generator TermPercentCondition
 termPercentConditionGen =
     let
         minTermPercent =
@@ -226,10 +236,10 @@ termPercentConditionGen =
         [ percentRangeGen |> Random.map (\( mi, mx ) -> TermPercent.Between mi mx)
         , Random.map TermPercent.MoreThan (Random.int minTermPercent (maxTermPercent - 1 {- max is invalid, as parser adds 1 -}))
         ]
-        |> Random.map (TermPercentCondition >> Condition_Term_Percent)
+        |> Random.map TermPercentCondition
 
 
-elapsedTermMonthsConditionGen : Generator Condition
+elapsedTermMonthsConditionGen : Generator ElapsedTermMonthsCondition
 elapsedTermMonthsConditionGen =
     let
         minTermMonths =
@@ -243,10 +253,10 @@ elapsedTermMonthsConditionGen =
             |> Random.map (\( mi, mx ) -> ElapsedTermMonths.Between mi mx)
         , Random.map ElapsedTermMonths.MoreThan (Random.int minTermMonths (maxTermMonths - 1 {- max is invalid, as parser adds 1 -}))
         ]
-        |> Random.map (ElapsedTermMonthsCondition >> Condition_Elapsed_Term_Months)
+        |> Random.map ElapsedTermMonthsCondition
 
 
-elapsedTermPercentConditionGen : Generator Condition
+elapsedTermPercentConditionGen : Generator ElapsedTermPercentCondition
 elapsedTermPercentConditionGen =
     let
         minTermPercent =
@@ -259,10 +269,10 @@ elapsedTermPercentConditionGen =
         [ percentRangeGen |> Random.map (\( mi, mx ) -> ElapsedTermPercent.Between mi mx)
         , Random.map ElapsedTermPercent.MoreThan (Random.int minTermPercent (maxTermPercent - 1 {- max is invalid, as parser adds 1 -}))
         ]
-        |> Random.map (ElapsedTermPercentCondition >> Condition_Elapsed_Term_Percent)
+        |> Random.map ElapsedTermPercentCondition
 
 
-amountConditionGen : Generator Condition
+amountConditionGen : Generator AmountCondition
 amountConditionGen =
     let
         maxAmount =
@@ -272,10 +282,10 @@ amountConditionGen =
         [ randomRangeGen 0 maxAmount |> Random.map (\( mi, mx ) -> Amount.Between mi mx)
         , Random.map Amount.MoreThan (Random.int 0 maxAmount)
         ]
-        |> Random.map (AmountCondition >> Condition_Amount)
+        |> Random.map AmountCondition
 
 
-remainingAmountConditionGen : Generator Condition
+remainingAmountConditionGen : Generator RemainingAmountCondition
 remainingAmountConditionGen =
     let
         maxRemainingAmount =
@@ -285,7 +295,7 @@ remainingAmountConditionGen =
         [ randomRangeGen 0 maxRemainingAmount |> Random.map (\( mi, mx ) -> RemainingAmount.Between mi mx)
         , Random.map RemainingAmount.MoreThan (Random.int 0 maxRemainingAmount)
         ]
-        |> Random.map (RemainingAmountCondition >> Condition_Remaining_Amount)
+        |> Random.map RemainingAmountCondition
 
 
 interestConditionGen : Generator InterestCondition
