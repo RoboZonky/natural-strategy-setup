@@ -20,9 +20,11 @@ module Data.Filter.Conditions exposing
     , updateIncome
     , updateInsurance
     , updateInterest
+    , updateLoanAnnuity
     , updatePurpose
     , updateRegion
     , updateRemainingAmount
+    , updateRevenueRate
     , updateStory
     , updateTermMonths
     , updateTermPercent
@@ -34,9 +36,11 @@ import Data.Filter.Conditions.ElapsedTermPercent as ElapsedTermPercent exposing 
 import Data.Filter.Conditions.Income as Income exposing (IncomeCondition, IncomeMsg)
 import Data.Filter.Conditions.Insurance as Insurance exposing (InsuranceCondition, InsuranceMsg)
 import Data.Filter.Conditions.Interest as Interest exposing (InterestCondition, InterestMsg)
+import Data.Filter.Conditions.LoanAnnuity as LoanAnnuity exposing (LoanAnnuityCondition, LoanAnnuityMsg)
 import Data.Filter.Conditions.Purpose as Purpose exposing (PurposeCondition, PurposeMsg)
 import Data.Filter.Conditions.Region as Region exposing (RegionCondition, RegionMsg)
 import Data.Filter.Conditions.RemainingAmount as RemainingAmount exposing (RemainingAmountCondition, RemainingAmountMsg)
+import Data.Filter.Conditions.RevenueRate as RevenueRate exposing (RevenueRateCondition, RevenueRateMsg)
 import Data.Filter.Conditions.Story as Story exposing (StoryCondition, StoryMsg)
 import Data.Filter.Conditions.TermMonths as TermMonths exposing (TermMonthsCondition, TermMonthsMsg)
 import Data.Filter.Conditions.TermPercent as TermPercent exposing (TermPercentCondition, TermPercentMsg)
@@ -59,6 +63,8 @@ type alias Conditions =
     , amount : Maybe AmountCondition
     , insurance : Maybe InsuranceCondition
     , remainingAmount : Maybe RemainingAmountCondition
+    , loanAnnuity : Maybe LoanAnnuityCondition
+    , revenueRate : Maybe RevenueRateCondition
     }
 
 
@@ -69,9 +75,11 @@ type Condition
     | Condition_Income IncomeCondition
     | Condition_Insurance InsuranceCondition
     | Condition_Interest InterestCondition
+    | Condition_Loan_Annuity LoanAnnuityCondition
     | Condition_Purpose PurposeCondition
     | Condition_Remaining_Amount RemainingAmountCondition
     | Condition_Region RegionCondition
+    | Condition_Revenue_Rate RevenueRateCondition
     | Condition_Story StoryCondition
     | Condition_Term_Months TermMonthsCondition
     | Condition_Term_Percent TermPercentCondition
@@ -84,9 +92,11 @@ type ConditionType
     | Income
     | Insurance
     | Interest
+    | Loan_Annuity
     | Purpose
     | Remaining_Amount
     | Region
+    | Revenue_Rate
     | Story
     | Term_Months
     | Term_Percent
@@ -106,6 +116,8 @@ emptyConditions =
     , amount = Nothing
     , insurance = Nothing
     , remainingAmount = Nothing
+    , loanAnnuity = Nothing
+    , revenueRate = Nothing
     }
 
 
@@ -130,6 +142,9 @@ renderCondition condition =
         Condition_Interest c ->
             Interest.renderCondition c
 
+        Condition_Loan_Annuity c ->
+            LoanAnnuity.renderCondition c
+
         Condition_Purpose c ->
             Purpose.renderCondition c
 
@@ -138,6 +153,9 @@ renderCondition condition =
 
         Condition_Remaining_Amount c ->
             RemainingAmount.renderCondition c
+
+        Condition_Revenue_Rate c ->
+            RevenueRate.renderCondition c
 
         Condition_Story c ->
             Story.renderCondition c
@@ -175,6 +193,9 @@ conditionValidationError condition =
         Condition_Interest c ->
             Interest.validationErrors c
 
+        Condition_Loan_Annuity c ->
+            LoanAnnuity.validationErrors c
+
         Condition_Purpose c ->
             Purpose.validationErrors c
 
@@ -183,6 +204,9 @@ conditionValidationError condition =
 
         Condition_Remaining_Amount c ->
             RemainingAmount.validationErrors c
+
+        Condition_Revenue_Rate c ->
+            RevenueRate.validationErrors c
 
         Condition_Story _ ->
             [{- Story condition can't be invalid -> valid. errors list always empty -}]
@@ -208,9 +232,11 @@ getDisabledConditionTypes cs =
         , addIfNothing .income Income
         , addIfNothing .insurance Insurance
         , addIfNothing .interest Interest
+        , addIfNothing .loanAnnuity Loan_Annuity
         , addIfNothing .purpose Purpose
-        , addIfNothing .remainingAmount Remaining_Amount
         , addIfNothing .region Region
+        , addIfNothing .remainingAmount Remaining_Amount
+        , addIfNothing .revenueRate Revenue_Rate
         , addIfNothing .story Story
         , addIfNothing .termMonths Term_Months
         , addIfNothing .termPercent Term_Percent
@@ -231,9 +257,11 @@ getEnabledConditionTypes cs =
         , addIfJust .income Income
         , addIfJust .insurance Insurance
         , addIfJust .interest Interest
+        , addIfJust .loanAnnuity Loan_Annuity
         , addIfJust .purpose Purpose
         , addIfJust .region Region
         , addIfJust .remainingAmount Remaining_Amount
+        , addIfJust .revenueRate Revenue_Rate
         , addIfJust .story Story
         , addIfJust .termMonths Term_Months
         , addIfJust .termPercent Term_Percent
@@ -254,9 +282,11 @@ getEnabledConditions cs =
         , addIfJust .income Condition_Income
         , addIfJust .insurance Condition_Insurance
         , addIfJust .interest Condition_Interest
+        , addIfJust .loanAnnuity Condition_Loan_Annuity
         , addIfJust .purpose Condition_Purpose
         , addIfJust .region Condition_Region
         , addIfJust .remainingAmount Condition_Remaining_Amount
+        , addIfJust .revenueRate Condition_Revenue_Rate
         , addIfJust .story Condition_Story
         , addIfJust .termMonths Condition_Term_Months
         , addIfJust .termPercent Condition_Term_Percent
@@ -267,100 +297,46 @@ addCondition : Condition -> Conditions -> Conditions
 addCondition condition cs =
     case condition of
         Condition_Amount c ->
-            setAmountCondition c cs
+            { cs | amount = Just c }
 
         Condition_Elapsed_Term_Months c ->
-            setElapsedTermMonthsCondition c cs
+            { cs | elapsedTermMonths = Just c }
 
         Condition_Elapsed_Term_Percent c ->
-            setElapsedTermPercentCondition c cs
+            { cs | elapsedTermPercent = Just c }
 
         Condition_Income c ->
-            setIncomeCondition c cs
+            { cs | income = Just c }
 
         Condition_Insurance c ->
-            setInsuranceCondition c cs
+            { cs | insurance = Just c }
 
         Condition_Interest c ->
-            setInterestCondition c cs
+            { cs | interest = Just c }
+
+        Condition_Loan_Annuity c ->
+            { cs | loanAnnuity = Just c }
 
         Condition_Purpose c ->
-            setPurposeCondition c cs
+            { cs | purpose = Just c }
 
         Condition_Remaining_Amount c ->
-            setRemainingAmountCondition c cs
+            { cs | remainingAmount = Just c }
 
         Condition_Region c ->
-            setRegionCondition c cs
+            { cs | region = Just c }
+
+        Condition_Revenue_Rate c ->
+            { cs | revenueRate = Just c }
 
         Condition_Story c ->
-            setStoryCondition c cs
+            { cs | story = Just c }
 
         Condition_Term_Months c ->
-            setTermMonthsCondition c cs
+            { cs | termMonths = Just c }
 
         Condition_Term_Percent c ->
-            setTermPercentCondition c cs
-
-
-setRegionCondition : RegionCondition -> Conditions -> Conditions
-setRegionCondition c cs =
-    { cs | region = Just c }
-
-
-setIncomeCondition : IncomeCondition -> Conditions -> Conditions
-setIncomeCondition c cs =
-    { cs | income = Just c }
-
-
-setPurposeCondition : PurposeCondition -> Conditions -> Conditions
-setPurposeCondition c cs =
-    { cs | purpose = Just c }
-
-
-setStoryCondition : StoryCondition -> Conditions -> Conditions
-setStoryCondition c cs =
-    { cs | story = Just c }
-
-
-setTermMonthsCondition : TermMonthsCondition -> Conditions -> Conditions
-setTermMonthsCondition c cs =
-    { cs | termMonths = Just c }
-
-
-setTermPercentCondition : TermPercentCondition -> Conditions -> Conditions
-setTermPercentCondition c cs =
-    { cs | termPercent = Just c }
-
-
-setElapsedTermMonthsCondition : ElapsedTermMonthsCondition -> Conditions -> Conditions
-setElapsedTermMonthsCondition c cs =
-    { cs | elapsedTermMonths = Just c }
-
-
-setElapsedTermPercentCondition : ElapsedTermPercentCondition -> Conditions -> Conditions
-setElapsedTermPercentCondition c cs =
-    { cs | elapsedTermPercent = Just c }
-
-
-setInterestCondition : InterestCondition -> Conditions -> Conditions
-setInterestCondition c cs =
-    { cs | interest = Just c }
-
-
-setAmountCondition : AmountCondition -> Conditions -> Conditions
-setAmountCondition c cs =
-    { cs | amount = Just c }
-
-
-setInsuranceCondition : InsuranceCondition -> Conditions -> Conditions
-setInsuranceCondition c cs =
-    { cs | insurance = Just c }
-
-
-setRemainingAmountCondition : RemainingAmountCondition -> Conditions -> Conditions
-setRemainingAmountCondition c cs =
-    { cs | remainingAmount = Just c }
+            { cs | termPercent = Just c }
 
 
 updateInterest : InterestMsg -> Conditions -> Conditions
@@ -376,6 +352,11 @@ updateAmount msg conditions =
 updateRemainingAmount : RemainingAmountMsg -> Conditions -> Conditions
 updateRemainingAmount msg conditions =
     { conditions | remainingAmount = Maybe.map (RemainingAmount.update msg) conditions.remainingAmount }
+
+
+updateRevenueRate : RevenueRateMsg -> Conditions -> Conditions
+updateRevenueRate msg conditions =
+    { conditions | revenueRate = Maybe.map (RevenueRate.update msg) conditions.revenueRate }
 
 
 updateStory : StoryMsg -> Conditions -> Conditions
@@ -423,6 +404,11 @@ updateInsurance msg conditions =
     { conditions | insurance = Maybe.map (Insurance.update msg) conditions.insurance }
 
 
+updateLoanAnnuity : LoanAnnuityMsg -> Conditions -> Conditions
+updateLoanAnnuity msg conditions =
+    { conditions | loanAnnuity = Maybe.map (LoanAnnuity.update msg) conditions.loanAnnuity }
+
+
 removeCondition : ConditionType -> Conditions -> Conditions
 removeCondition conditionType cs =
     case conditionType of
@@ -444,6 +430,9 @@ removeCondition conditionType cs =
         Interest ->
             { cs | interest = Nothing }
 
+        Loan_Annuity ->
+            { cs | loanAnnuity = Nothing }
+
         Purpose ->
             { cs | purpose = Nothing }
 
@@ -452,6 +441,9 @@ removeCondition conditionType cs =
 
         Remaining_Amount ->
             { cs | remainingAmount = Nothing }
+
+        Revenue_Rate ->
+            { cs | revenueRate = Nothing }
 
         Story ->
             { cs | story = Nothing }
@@ -489,6 +481,9 @@ getDefaultCondition conditionType =
         Interest ->
             Condition_Interest Interest.defaultCondition
 
+        Loan_Annuity ->
+            Condition_Loan_Annuity LoanAnnuity.defaultCondition
+
         Purpose ->
             Condition_Purpose Purpose.defaultCondition
 
@@ -497,6 +492,9 @@ getDefaultCondition conditionType =
 
         Remaining_Amount ->
             Condition_Remaining_Amount RemainingAmount.defaultCondition
+
+        Revenue_Rate ->
+            Condition_Revenue_Rate RevenueRate.defaultCondition
 
         Story ->
             Condition_Story Story.defaultCondition
@@ -560,6 +558,12 @@ encodeCondition condition =
         Condition_Remaining_Amount c ->
             ( "M", RemainingAmount.encodeCondition c )
 
+        Condition_Loan_Annuity c ->
+            ( "N", LoanAnnuity.encodeCondition c )
+
+        Condition_Revenue_Rate c ->
+            ( "O", RevenueRate.encodeCondition c )
+
 
 conditionsDecoder : Decoder Conditions
 conditionsDecoder =
@@ -577,3 +581,5 @@ conditionsDecoder =
         |> andMap (optionalField "K" Amount.conditionDecoder)
         |> andMap (optionalField "L" Insurance.conditionDecoder)
         |> andMap (optionalField "M" RemainingAmount.conditionDecoder)
+        |> andMap (optionalField "N" LoanAnnuity.conditionDecoder)
+        |> andMap (optionalField "O" RevenueRate.conditionDecoder)

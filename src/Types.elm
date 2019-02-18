@@ -8,6 +8,7 @@ module Types exposing
 
 import Bootstrap.Accordion as Accordion
 import Bootstrap.Popover as Popover
+import Browser
 import Data.Confirmation as Confirmation
 import Data.ExitConfig as ExitConfig
 import Data.Filter exposing (FilteredItem)
@@ -42,6 +43,7 @@ type Msg
     | TooltipMsg TipId Popover.State
     | SetDateTime Posix
     | DismisAlert
+    | LoadUrl Browser.UrlRequest
     | NoOp
 
 

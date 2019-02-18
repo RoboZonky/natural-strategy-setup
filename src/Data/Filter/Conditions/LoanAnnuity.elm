@@ -1,7 +1,7 @@
-module Data.Filter.Conditions.Amount exposing
-    ( Amount(..)
-    , AmountCondition(..)
-    , AmountMsg
+module Data.Filter.Conditions.LoanAnnuity exposing
+    ( LoanAnnuity(..)
+    , LoanAnnuityCondition(..)
+    , LoanAnnuityMsg
     , conditionDecoder
     , defaultCondition
     , encodeCondition
@@ -23,29 +23,29 @@ import Util exposing (parseInt, zeroToEmpty)
 import View.NumericInput
 
 
-type Amount
+type LoanAnnuity
     = LessThan Int
     | Between Int Int
     | MoreThan Int
 
 
-type AmountCondition
-    = AmountCondition Amount
+type LoanAnnuityCondition
+    = LoanAnnuityCondition LoanAnnuity
 
 
-defaultCondition : AmountCondition
+defaultCondition : LoanAnnuityCondition
 defaultCondition =
-    AmountCondition (LessThan 0)
+    LoanAnnuityCondition (MoreThan 0)
 
 
-renderCondition : AmountCondition -> String
-renderCondition (AmountCondition amount) =
-    "výše " ++ amountToString amount ++ " Kč"
+renderCondition : LoanAnnuityCondition -> String
+renderCondition (LoanAnnuityCondition loanAnnuity) =
+    "měsíční splátka  " ++ loanAnnuityToString loanAnnuity ++ " Kč"
 
 
-amountToString : Amount -> String
-amountToString amount =
-    case amount of
+loanAnnuityToString : LoanAnnuity -> String
+loanAnnuityToString revenueRate =
+    case revenueRate of
         Between from to ->
             "je " ++ String.fromInt from ++ " až " ++ String.fromInt to
 
@@ -56,8 +56,8 @@ amountToString amount =
             "nedosahuje " ++ String.fromInt upperBound
 
 
-validationErrors : AmountCondition -> List String
-validationErrors (AmountCondition a) =
+validationErrors : LoanAnnuityCondition -> List String
+validationErrors (LoanAnnuityCondition a) =
     case a of
         LessThan x ->
             positive x
@@ -71,22 +71,112 @@ validationErrors (AmountCondition a) =
 
 positive : Int -> List String
 positive =
-    Validate.positive "Výše úvěru"
+    Validate.positive "Měsíční splátka"
 
 
 minNotGtMax : Int -> Int -> List String
 minNotGtMax =
-    Validate.minNotGtMax "Výše úvěru"
+    Validate.minNotGtMax "Měsíční splátka"
 
 
-type AmountMsg
+type LoanAnnuityMsg
     = SetLessThan String
     | SetBetween String String
     | SetMoreThan String
-    | AmountNoOp
+    | LoanAnnuityNoOp
 
 
-whichEnabled : Amount -> ( Bool, Bool, Bool )
+msgToModel : LoanAnnuityMsg -> Maybe LoanAnnuity
+msgToModel msg =
+    case msg of
+        SetLessThan hi ->
+            Maybe.map LessThan (parseInt hi)
+
+        SetBetween lo hi ->
+            Maybe.map2 Between (parseInt lo) (parseInt hi)
+
+        SetMoreThan lo ->
+            Maybe.map MoreThan (parseInt lo)
+
+        LoanAnnuityNoOp ->
+            Nothing
+
+
+update : LoanAnnuityMsg -> LoanAnnuityCondition -> LoanAnnuityCondition
+update msg (LoanAnnuityCondition la) =
+    msgToModel msg
+        |> Maybe.withDefault la
+        |> LoanAnnuityCondition
+
+
+type alias LoanAnnuityRadioValues =
+    { lessThan : String
+    , betweenMin : String
+    , betweenMax : String
+    , moreThan : String
+    }
+
+
+form : LoanAnnuityCondition -> Html LoanAnnuityMsg
+form (LoanAnnuityCondition la) =
+    let
+        values =
+            case la of
+                LessThan x ->
+                    LoanAnnuityRadioValues (zeroToEmpty x) "" "" ""
+
+                Between mi ma ->
+                    LoanAnnuityRadioValues "" (zeroToEmpty mi) (zeroToEmpty ma) ""
+
+                MoreThan x ->
+                    LoanAnnuityRadioValues "" "" "" (zeroToEmpty x)
+
+        ( ltEnabled, btwEnabled, mtEnabled ) =
+            whichEnabled la
+    in
+    Html.div []
+        [ Form.formInline [ onSubmit LoanAnnuityNoOp ]
+            [ loanAnnuityRadio ltEnabled (SetLessThan "0") "nedosahuje" "annuity1"
+            , numericInput SetLessThan ltEnabled values.lessThan
+            , unit
+            ]
+        , Form.formInline [ onSubmit LoanAnnuityNoOp ]
+            [ loanAnnuityRadio btwEnabled (SetBetween "0" "0") "je" "annuity2"
+            , numericInput (\x -> SetBetween x values.betweenMax) btwEnabled values.betweenMin
+            , text "až"
+            , numericInput (\y -> SetBetween values.betweenMin y) btwEnabled values.betweenMax
+            , unit
+            ]
+        , Form.formInline [ onSubmit LoanAnnuityNoOp ]
+            [ loanAnnuityRadio mtEnabled (SetMoreThan "0") "přesahuje" "annuity3"
+            , numericInput SetMoreThan mtEnabled values.moreThan
+            , unit
+            ]
+        ]
+
+
+numericInput : (String -> LoanAnnuityMsg) -> Bool -> String -> Html LoanAnnuityMsg
+numericInput =
+    View.NumericInput.numericInput 0 1000000
+
+
+unit : Html msg
+unit =
+    text "Kč"
+
+
+loanAnnuityRadio : Bool -> LoanAnnuityMsg -> String -> DomId -> Html LoanAnnuityMsg
+loanAnnuityRadio checked msg label domId =
+    Radio.radio
+        [ Radio.id domId
+        , Radio.name "loanAnnuity"
+        , Radio.checked checked
+        , Radio.onClick msg
+        ]
+        label
+
+
+whichEnabled : LoanAnnuity -> ( Bool, Bool, Bool )
 whichEnabled amt =
     case amt of
         LessThan _ ->
@@ -99,103 +189,13 @@ whichEnabled amt =
             ( False, False, True )
 
 
-msgToModel : AmountMsg -> Maybe Amount
-msgToModel msg =
-    case msg of
-        SetLessThan hi ->
-            Maybe.map LessThan (parseInt hi)
-
-        SetBetween lo hi ->
-            Maybe.map2 Between (parseInt lo) (parseInt hi)
-
-        SetMoreThan lo ->
-            Maybe.map MoreThan (parseInt lo)
-
-        AmountNoOp ->
-            Nothing
-
-
-update : AmountMsg -> AmountCondition -> AmountCondition
-update msg (AmountCondition amt) =
-    msgToModel msg
-        |> Maybe.withDefault amt
-        |> AmountCondition
-
-
-type alias AmountRadioValues =
-    { lessThan : String
-    , betweenMin : String
-    , betweenMax : String
-    , moreThan : String
-    }
-
-
-form : AmountCondition -> Html AmountMsg
-form (AmountCondition amt) =
-    let
-        values =
-            case amt of
-                LessThan x ->
-                    AmountRadioValues (zeroToEmpty x) "" "" ""
-
-                Between mi ma ->
-                    AmountRadioValues "" (zeroToEmpty mi) (zeroToEmpty ma) ""
-
-                MoreThan x ->
-                    AmountRadioValues "" "" "" (zeroToEmpty x)
-
-        ( ltEnabled, btwEnabled, mtEnabled ) =
-            whichEnabled amt
-    in
-    Html.div []
-        [ Form.formInline [ onSubmit AmountNoOp ]
-            [ amountRadio ltEnabled (SetLessThan "0") "nedosahuje" "amount1"
-            , numericInput SetLessThan ltEnabled values.lessThan
-            , unit
-            ]
-        , Form.formInline [ onSubmit AmountNoOp ]
-            [ amountRadio btwEnabled (SetBetween "0" "0") "je" "amount2"
-            , numericInput (\x -> SetBetween x values.betweenMax) btwEnabled values.betweenMin
-            , text "až"
-            , numericInput (\y -> SetBetween values.betweenMin y) btwEnabled values.betweenMax
-            , unit
-            ]
-        , Form.formInline [ onSubmit AmountNoOp ]
-            [ amountRadio mtEnabled (SetMoreThan "0") "přesahuje" "amount3"
-            , numericInput SetMoreThan mtEnabled values.moreThan
-            , unit
-            ]
-        ]
-
-
-unit : Html msg
-unit =
-    text "Kč"
-
-
-numericInput : (String -> AmountMsg) -> Bool -> String -> Html AmountMsg
-numericInput =
-    View.NumericInput.numericInput 0 10000000
-
-
-amountRadio : Bool -> AmountMsg -> String -> DomId -> Html AmountMsg
-amountRadio checked msg label domId =
-    Radio.radio
-        [ Radio.id domId
-        , Radio.name "amount"
-        , Radio.checked checked
-        , Radio.onClick msg
-        ]
-        label
-
-
 
 -- JSON
 
 
-encodeAmount : Amount -> Value
-encodeAmount amt =
-    case amt of
+ancodeLoanAnnuity : LoanAnnuity -> Value
+ancodeLoanAnnuity la =
+    case la of
         LessThan x ->
             Encode.list Encode.int [ 1, x ]
 
@@ -206,13 +206,13 @@ encodeAmount amt =
             Encode.list Encode.int [ 3, y ]
 
 
-encodeCondition : AmountCondition -> Value
-encodeCondition (AmountCondition c) =
-    encodeAmount c
+encodeCondition : LoanAnnuityCondition -> Value
+encodeCondition (LoanAnnuityCondition c) =
+    ancodeLoanAnnuity c
 
 
-amountDecoder : Decoder Amount
-amountDecoder =
+loanAnnuityDecoder : Decoder LoanAnnuity
+loanAnnuityDecoder =
     Decode.list Decode.int
         |> Decode.andThen
             (\ints ->
@@ -227,10 +227,10 @@ amountDecoder =
                         Decode.succeed <| MoreThan y
 
                     _ ->
-                        Decode.fail <| "Unable to decode Amount from " ++ Util.intListToString ints
+                        Decode.fail <| "Unable to decode LoanAnuity from " ++ Util.intListToString ints
             )
 
 
-conditionDecoder : Decoder AmountCondition
+conditionDecoder : Decoder LoanAnnuityCondition
 conditionDecoder =
-    Decode.map AmountCondition amountDecoder
+    Decode.map LoanAnnuityCondition loanAnnuityDecoder

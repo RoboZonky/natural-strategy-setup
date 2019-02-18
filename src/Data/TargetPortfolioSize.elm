@@ -6,6 +6,7 @@ module Data.TargetPortfolioSize exposing
     , validate
     )
 
+import Data.Validate as Validate
 import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as Encode exposing (Value)
 import Util
@@ -33,7 +34,7 @@ validate tb =
             []
 
         TargetPortfolioSize val ->
-            Util.validate (val < 0) "Cílová zůstatková částka nesmí být záporná."
+            Validate.validate (val < 0) "Cílová zůstatková částka nesmí být záporná."
 
 
 

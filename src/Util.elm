@@ -3,18 +3,21 @@ module Util exposing
     , emptyToZero
     , enumDecoder
     , enumEncoder
+    , formatPercentage
     , intListToString
     , joinNonemptyLines
     , orList
+    , parseFloat
     , parseInt
     , renderNonemptySection
     , stringListToString
-    , validate
     , viewErrors
     , zeroToEmpty
     , zeroToEmptyFloat
     )
 
+import FormatNumber
+import FormatNumber.Locales exposing (Locale)
 import Html exposing (Html, div, text)
 import Html.Attributes exposing (style)
 import Json.Decode as Decode exposing (Decoder)
@@ -90,13 +93,9 @@ parseInt =
     String.toInt << emptyToZero
 
 
-validate : Bool -> String -> List String
-validate errorCondition error =
-    if errorCondition then
-        [ error ]
-
-    else
-        []
+parseFloat : String -> Maybe Float
+parseFloat =
+    String.toFloat << emptyToZero
 
 
 and : List Bool -> Bool
@@ -121,6 +120,23 @@ intListToString =
 stringListToString : List String -> String
 stringListToString xs =
     "[" ++ String.join "," xs ++ "]"
+
+
+formatPercentage : Float -> String
+formatPercentage =
+    FormatNumber.format czechLocale
+
+
+czechLocale : Locale
+czechLocale =
+    { decimals = 2
+    , thousandSeparator = ""
+    , decimalSeparator = ","
+    , negativePrefix = "−"
+    , negativeSuffix = ""
+    , positivePrefix = ""
+    , positiveSuffix = ""
+    }
 
 
 

@@ -12,10 +12,12 @@ import Data.Filter.Conditions.ElapsedTermPercent as ElapsedTermPercent exposing 
 import Data.Filter.Conditions.Income as Income exposing (Income(..), IncomeCondition(..), IncomeMsg)
 import Data.Filter.Conditions.Insurance as Insurance exposing (Insurance(..), InsuranceCondition(..), InsuranceMsg)
 import Data.Filter.Conditions.Interest as Interest exposing (Interest(..), InterestCondition(..), InterestMsg)
+import Data.Filter.Conditions.LoanAnnuity as LoanAnnuity exposing (LoanAnnuity(..), LoanAnnuityCondition(..), LoanAnnuityMsg)
 import Data.Filter.Conditions.Purpose as Purpose exposing (Purpose(..), PurposeCondition(..), PurposeMsg)
 import Data.Filter.Conditions.Rating exposing (Rating(..), RatingCondition(..))
 import Data.Filter.Conditions.Region as Region exposing (Region(..), RegionCondition(..), RegionMsg)
 import Data.Filter.Conditions.RemainingAmount as RemainingAmount exposing (RemainingAmount(..), RemainingAmountCondition(..), RemainingAmountMsg)
+import Data.Filter.Conditions.RevenueRate as RevenueRate exposing (RevenueRate(..), RevenueRateCondition(..), RevenueRateMsg)
 import Data.Filter.Conditions.Story as Story exposing (Story(..), StoryCondition(..), StoryMsg)
 import Data.Filter.Conditions.TermMonths as TermMonths exposing (TermMonths(..), TermMonthsCondition(..), TermMonthsMsg)
 import Data.Filter.Conditions.TermPercent as TermPercent exposing (TermPercent(..), TermPercentCondition(..), TermPercentMsg)
@@ -60,7 +62,7 @@ conditionTypesThatApplyTo : FilteredItem -> List ConditionType
 conditionTypesThatApplyTo filteredItem =
     let
         commonForAll =
-            [ Amount, Interest, Purpose, Income, Story, Region, Term_Months, Insurance ]
+            [ Amount, Interest, Purpose, Income, Story, Region, Term_Months, Insurance, Loan_Annuity, Revenue_Rate ]
 
         commonForParticipations =
             [ Term_Percent, Elapsed_Term_Months, Elapsed_Term_Percent, Remaining_Amount ]
@@ -124,40 +126,46 @@ conditionSubform item condition =
     in
     case condition of
         Condition_Amount c ->
-            wrap Amount (Html.map AmountMsg <| Amount.form c)
+            wrap Amount <| Html.map AmountMsg <| Amount.form c
 
         Condition_Elapsed_Term_Months c ->
-            wrap Elapsed_Term_Months (Html.map ElapsedTermMonthsMsg <| ElapsedTermMonths.form c)
+            wrap Elapsed_Term_Months <| Html.map ElapsedTermMonthsMsg <| ElapsedTermMonths.form c
 
         Condition_Elapsed_Term_Percent c ->
-            wrap Elapsed_Term_Percent (Html.map ElapsedTermPercentMsg <| ElapsedTermPercent.form c)
+            wrap Elapsed_Term_Percent <| Html.map ElapsedTermPercentMsg <| ElapsedTermPercent.form c
 
         Condition_Income c ->
-            wrap Income (Html.map IncomeMsg <| Income.form c)
+            wrap Income <| Html.map IncomeMsg <| Income.form c
 
         Condition_Insurance c ->
-            wrap Insurance (Html.map InsuranceMsg <| Insurance.form c)
+            wrap Insurance <| Html.map InsuranceMsg <| Insurance.form c
 
         Condition_Interest c ->
-            wrap Interest (Html.map InterestMsg <| Interest.form c)
+            wrap Interest <| Html.map InterestMsg <| Interest.form c
+
+        Condition_Loan_Annuity c ->
+            wrap Loan_Annuity <| Html.map LoanAnnuityMsg <| LoanAnnuity.form c
 
         Condition_Purpose c ->
-            wrap Purpose (Html.map PurposeMsg <| Purpose.form c)
+            wrap Purpose <| Html.map PurposeMsg <| Purpose.form c
 
         Condition_Region c ->
-            wrap Region (Html.map RegionMsg <| Region.form c)
+            wrap Region <| Html.map RegionMsg <| Region.form c
 
         Condition_Remaining_Amount c ->
-            wrap Remaining_Amount (Html.map RemainingAmountMsg <| RemainingAmount.form c)
+            wrap Remaining_Amount <| Html.map RemainingAmountMsg <| RemainingAmount.form c
+
+        Condition_Revenue_Rate c ->
+            wrap Revenue_Rate <| Html.map RevenueRateMsg <| RevenueRate.form c
 
         Condition_Story c ->
-            wrap Story (Html.map StoryMsg <| Story.form c)
+            wrap Story <| Html.map StoryMsg <| Story.form c
 
         Condition_Term_Months c ->
-            wrap Term_Months (Html.map TermMonthsMsg <| TermMonths.form c)
+            wrap Term_Months <| Html.map TermMonthsMsg <| TermMonths.form c
 
         Condition_Term_Percent c ->
-            wrap Term_Percent (Html.map TermPercentMsg <| TermPercent.form c)
+            wrap Term_Percent <| Html.map TermPercentMsg <| TermPercent.form c
 
 
 getVisibleLabel : FilteredItem -> ConditionType -> String
@@ -184,6 +192,9 @@ getVisibleLabel filteredItem conditionType =
         Interest ->
             "Úrok"
 
+        Loan_Annuity ->
+            "Měsíční splátka"
+
         Purpose ->
             "Účel úvěru"
 
@@ -192,6 +203,9 @@ getVisibleLabel filteredItem conditionType =
 
         Remaining_Amount ->
             "Zbývající jistina"
+
+        Revenue_Rate ->
+            "Optimální výnos"
 
         Story ->
             "Příběh"
@@ -232,9 +246,11 @@ type
     | InsuranceMsg InsuranceMsg
     | InterestMsg InterestMsg
     | IncomeMsg IncomeMsg
+    | LoanAnnuityMsg LoanAnnuityMsg
     | PurposeMsg PurposeMsg
     | RegionMsg RegionMsg
     | RemainingAmountMsg RemainingAmountMsg
+    | RevenueRateMsg RevenueRateMsg
     | StoryMsg StoryMsg
     | TermMonthsMsg TermMonthsMsg
     | TermPercentMsg TermPercentMsg
@@ -264,6 +280,9 @@ update msg model =
         InterestMsg m ->
             C.updateInterest m model
 
+        LoanAnnuityMsg m ->
+            C.updateLoanAnnuity m model
+
         PurposeMsg m ->
             C.updatePurpose m model
 
@@ -272,6 +291,9 @@ update msg model =
 
         RemainingAmountMsg m ->
             C.updateRemainingAmount m model
+
+        RevenueRateMsg m ->
+            C.updateRevenueRate m model
 
         StoryMsg m ->
             C.updateStory m model

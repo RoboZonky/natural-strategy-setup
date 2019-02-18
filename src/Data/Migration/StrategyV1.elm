@@ -230,5 +230,9 @@ conditionsDecoder =
                         |> andMap (optionalField "K" Amount.conditionDecoder)
                         |> andMap (optionalField "L" Insurance.conditionDecoder)
                         |> andMap (optionalField "M" RemainingAmount.conditionDecoder)
+                        -- Loan Annuity condition was added in V2
+                        |> andMap (Decode.succeed Nothing)
+                        -- Revenue Rate condition was added in V2
+                        |> andMap (Decode.succeed Nothing)
                         |> Decode.map Just
             )

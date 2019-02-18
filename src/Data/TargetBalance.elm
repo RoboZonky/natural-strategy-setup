@@ -6,6 +6,7 @@ module Data.TargetBalance exposing
     , validate
     )
 
+import Data.Validate as Validate
 import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as Encode exposing (Value)
 import Util
@@ -33,7 +34,7 @@ validate tb =
             []
 
         TargetBalance val ->
-            Util.validate (val < 200) "Minimální výše investice na Zonky.cz je 200 Kč. Nastovavat nižší hodnotu nemá smysl."
+            Validate.validate (val < 200) "Minimální výše investice na Zonky.cz je 200 Kč. Nastovavat nižší hodnotu nemá smysl."
 
 
 

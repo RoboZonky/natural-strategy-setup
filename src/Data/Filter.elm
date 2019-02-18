@@ -33,6 +33,7 @@ module Data.Filter exposing
 
 import Bootstrap.Badge as Badge
 import Data.Filter.Conditions as Conditions exposing (Condition, Conditions)
+import Data.Validate as Validate
 import Html exposing (Html, span, text)
 import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as Encode exposing (Value)
@@ -252,7 +253,7 @@ validateSellingConfiguration : SellingConfiguration -> List String
 validateSellingConfiguration sellingConfiguration =
     case sellingConfiguration of
         SellSomething filterList ->
-            Util.validate (List.isEmpty filterList)
+            Validate.validate (List.isEmpty filterList)
                 "Seznam pravidel nesmí být prázdný. Přidejte alespoň jedno pravidlo nebo zakažte prodej participací"
 
         SellNothing ->
@@ -365,7 +366,8 @@ marketplaceFilterValidationErrors : MarketplaceFilter -> List String
 marketplaceFilterValidationErrors mf =
     let
         atLeastOnePositiveCondition =
-            Util.validate (List.isEmpty <| Conditions.getEnabledConditions mf.ignoreWhen) "Pravidlo musí obsahovat aspoň jednu podmínku"
+            Validate.validate (List.isEmpty <| Conditions.getEnabledConditions mf.ignoreWhen)
+                "Pravidlo musí obsahovat aspoň jednu podmínku"
     in
     atLeastOnePositiveCondition
         ++ Conditions.conditionsValidationErrors "" mf.ignoreWhen

@@ -2,7 +2,7 @@ module Main exposing (main)
 
 import Bootstrap.Accordion as Accordion
 import Bootstrap.Grid as Grid
-import Browser
+import Browser exposing (UrlRequest(..))
 import Browser.Navigation exposing (Key)
 import Data.Filter as Filters exposing (FilteredItem(..))
 import Data.Investment as Investment
@@ -62,7 +62,7 @@ main =
         , view = viewDocument
         , subscriptions = subscriptions
         , onUrlChange = always NoOp
-        , onUrlRequest = always NoOp
+        , onUrlRequest = LoadUrl
         }
 
 
@@ -100,7 +100,24 @@ updateStrategy strategyUpdater model =
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    ( updateHelper msg model, Cmd.none )
+    case msg of
+        LoadUrl urlRequest ->
+            -- The only message with nontrivial command.
+            -- Needed to enable navigation to external Help pages etc.
+            ( model, loadExternalUrl urlRequest )
+
+        _ ->
+            ( updateHelper msg model, Cmd.none )
+
+
+loadExternalUrl : UrlRequest -> Cmd a
+loadExternalUrl urlRequest =
+    case urlRequest of
+        External externalUrl ->
+            Browser.Navigation.load externalUrl
+
+        Internal _ ->
+            Cmd.none
 
 
 updateHelper : Msg -> Model -> Model
@@ -209,6 +226,10 @@ updateHelper msg model =
 
         DismisAlert ->
             { model | alert = NoAlert }
+
+        LoadUrl _ ->
+            -- already handled in update
+            model
 
         NoOp ->
             model

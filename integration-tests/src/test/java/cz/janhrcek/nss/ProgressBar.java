@@ -9,6 +9,6 @@ class ProgressBar {
             bar.append('=');
         }
 
-        System.out.printf("\r%3d%% (%4d/%4d) [%-50s]", percent, done, total, bar);
+        System.out.printf("\r%d/%d (%d%%) [%-50s]", done, total, percent, bar);
     }
 }

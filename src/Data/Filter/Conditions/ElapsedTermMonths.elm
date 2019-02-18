@@ -13,6 +13,7 @@ module Data.Filter.Conditions.ElapsedTermMonths exposing
 
 import Bootstrap.Form as Form
 import Bootstrap.Form.Radio as Radio
+import Data.Validate as Validate
 import DomId exposing (DomId)
 import Html exposing (Html, text)
 import Html.Events exposing (onSubmit)
@@ -62,24 +63,20 @@ validationErrors (ElapsedTermMonthsCondition t) =
             validateInRange 1 85 x
 
         Between x y ->
-            validateInRange 0 84 x ++ validateInRange 0 84 y ++ validateMinNotGtMax x y
+            validateInRange 0 84 x ++ validateInRange 0 84 y ++ minNotGtMax x y
 
         MoreThan x ->
             validateInRange 0 83 x
 
 
 validateInRange : Int -> Int -> Int -> List String
-validateInRange minValid maxValid x =
-    Util.validate (x < minValid || maxValid < x) <|
-        "Počet uhrazených splátek v měsících musí být v rozmezí "
-            ++ String.fromInt minValid
-            ++ " až "
-            ++ String.fromInt maxValid
+validateInRange =
+    Validate.intInRange "Počet uhrazených splátek v měsících"
 
 
-validateMinNotGtMax : Int -> Int -> List String
-validateMinNotGtMax minBound maxBound =
-    Util.validate (minBound > maxBound) "Počet uhrazených splátek: minimum nesmí být větší než maximum"
+minNotGtMax : Int -> Int -> List String
+minNotGtMax =
+    Validate.minNotGtMax "Počet uhrazených splátek"
 
 
 type ElapsedTermMonthsMsg
@@ -102,22 +99,27 @@ whichEnabled elapsedTermMonths =
             ( False, False, True )
 
 
+msgToModel : ElapsedTermMonthsMsg -> Maybe ElapsedTermMonths
+msgToModel msg =
+    case msg of
+        SetLessThan hi ->
+            Maybe.map LessThan (parseInt hi)
+
+        SetBetween lo hi ->
+            Maybe.map2 Between (parseInt lo) (parseInt hi)
+
+        SetMoreThan lo ->
+            Maybe.map MoreThan (parseInt lo)
+
+        ElapsedTermMonthsNoOp ->
+            Nothing
+
+
 update : ElapsedTermMonthsMsg -> ElapsedTermMonthsCondition -> ElapsedTermMonthsCondition
 update msg (ElapsedTermMonthsCondition term) =
-    ElapsedTermMonthsCondition <|
-        Maybe.withDefault term <|
-            case msg of
-                SetLessThan hi ->
-                    Maybe.map LessThan (parseInt hi)
-
-                SetBetween lo hi ->
-                    Maybe.map2 Between (parseInt lo) (parseInt hi)
-
-                SetMoreThan lo ->
-                    Maybe.map MoreThan (parseInt lo)
-
-                ElapsedTermMonthsNoOp ->
-                    Nothing
+    msgToModel msg
+        |> Maybe.withDefault term
+        |> ElapsedTermMonthsCondition
 
 
 type alias ElapsedTermMonthsRadioValues =

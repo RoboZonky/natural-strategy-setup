@@ -6,6 +6,7 @@ module Data.InvestmentShare exposing
     , validate
     )
 
+import Data.Validate as Validate
 import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as Encode exposing (Value)
 import Util
@@ -30,7 +31,7 @@ validate : InvestmentShare -> List String
 validate s =
     case s of
         Percent pct ->
-            Util.validate (pct < 1 || 100 < pct) "Podíl výše úvěru musí být mezi 1 a 100 %"
+            Validate.intInRange "Podíl výše úvěru v procentech" 1 100 pct
 
         NotSpecified ->
             []

@@ -10,7 +10,7 @@ import Bootstrap.Utilities.Spacing as Spacing
 import Data.Filter.Conditions.Rating as Rating exposing (Rating)
 import Data.Investment as Investment exposing (InvestmentsPerRating)
 import Dict.Any
-import Html exposing (Html, a, div, span, strong, text)
+import Html exposing (Html, a, b, div, span, strong, text)
 import Html.Attributes exposing (href, style)
 import Html.Events exposing (onSubmit)
 import RangeSlider
@@ -77,6 +77,6 @@ investmentOverridesSliders invOverrides =
 investmentSlider : Rating -> Investment.Size -> Html Msg
 investmentSlider rating sliderState =
     Form.formInline [ onSubmit NoOp ]
-        [ div [ style "width" "100px" ] [ text <| Rating.showInterestPercent rating ]
+        [ b [ style "width" "100px" ] [ text <| Rating.showInterestPercent rating ]
         , Html.map (ChangeInvestment rating) <| RangeSlider.view sliderState
         ]

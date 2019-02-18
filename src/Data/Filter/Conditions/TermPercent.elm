@@ -13,6 +13,7 @@ module Data.Filter.Conditions.TermPercent exposing
 
 import Bootstrap.Form as Form
 import Bootstrap.Form.Radio as Radio
+import Data.Validate as Validate
 import Html exposing (Html, text)
 import Html.Events exposing (onSubmit)
 import Json.Decode as Decode exposing (Decoder)
@@ -61,24 +62,20 @@ validationErrors (TermPercentCondition t) =
             validateInRange 1 100 x
 
         Between x y ->
-            validateInRange 0 99 x ++ validateInRange 1 100 y ++ validateMinNotGtMax x y
+            validateInRange 0 99 x ++ validateInRange 1 100 y ++ minNotGtMax x y
 
         MoreThan x ->
             validateInRange 0 99 x
 
 
 validateInRange : Int -> Int -> Int -> List String
-validateInRange minValid maxValid x =
-    Util.validate (x < minValid || maxValid < x) <|
-        "Délka úvěru v procentech: musí být v rozmezí "
-            ++ String.fromInt minValid
-            ++ " až "
-            ++ String.fromInt maxValid
+validateInRange =
+    Validate.intInRange "Délka úvěru v procentech"
 
 
-validateMinNotGtMax : Int -> Int -> List String
-validateMinNotGtMax minBound maxBound =
-    Util.validate (minBound > maxBound) "Délka úvěru v procentech: minimum nesmí být větší než maximum"
+minNotGtMax : Int -> Int -> List String
+minNotGtMax =
+    Validate.minNotGtMax "Délka úvěru v procentech"
 
 
 type TermPercentMsg
@@ -101,22 +98,27 @@ whichEnabled termPercent =
             ( False, False, True )
 
 
+msgToModel : TermPercentMsg -> Maybe TermPercent
+msgToModel msg =
+    case msg of
+        SetLessThan hi ->
+            Maybe.map LessThan (parseInt hi)
+
+        SetBetween lo hi ->
+            Maybe.map2 Between (parseInt lo) (parseInt hi)
+
+        SetMoreThan lo ->
+            Maybe.map MoreThan (parseInt lo)
+
+        TermPercentNoOp ->
+            Nothing
+
+
 update : TermPercentMsg -> TermPercentCondition -> TermPercentCondition
 update msg (TermPercentCondition term) =
-    TermPercentCondition <|
-        Maybe.withDefault term <|
-            case msg of
-                SetLessThan hi ->
-                    Maybe.map LessThan (parseInt hi)
-
-                SetBetween lo hi ->
-                    Maybe.map2 Between (parseInt lo) (parseInt hi)
-
-                SetMoreThan lo ->
-                    Maybe.map MoreThan (parseInt lo)
-
-                TermPercentNoOp ->
-                    Nothing
+    msgToModel msg
+        |> Maybe.withDefault term
+        |> TermPercentCondition
 
 
 

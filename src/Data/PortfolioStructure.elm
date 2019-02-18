@@ -14,6 +14,7 @@ module Data.PortfolioStructure exposing
 import Data.Filter.Conditions.Rating as Rating exposing (Rating(..))
 import Data.Portfolio exposing (Portfolio(..))
 import Data.SharedJsonStuff
+import Data.Validate as Validate
 import Dict.Any exposing (AnyDict)
 import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as Encode exposing (Value)
@@ -98,7 +99,7 @@ validate portfolioShares =
         sumOfShareMinimums =
             Dict.Any.foldr (\_ sliderState sumAcc -> sumAcc + getSliderMinimum sliderState) 0 portfolioShares
     in
-    Util.validate (sumOfShareMinimums /= 100) <|
+    Validate.validate (sumOfShareMinimums /= 100) <|
         "Součet minim musí být přesně 100% (teď je "
             ++ String.fromInt sumOfShareMinimums
             ++ "%)"

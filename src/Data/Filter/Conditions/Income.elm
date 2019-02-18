@@ -13,6 +13,7 @@ module Data.Filter.Conditions.Income exposing
     )
 
 import Bootstrap.Form.Checkbox as Checkbox
+import Data.Validate as Validate
 import Html exposing (Html, div)
 import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as Encode exposing (Value)
@@ -92,7 +93,7 @@ renderCondition (IncomeList list) =
 
 validationErrors : IncomeCondition -> List String
 validationErrors (IncomeList rlist) =
-    Util.validate (List.isEmpty rlist) "Zdroj příjmů klienta: zvolte aspoň jeden"
+    Validate.isNotEmpty "Zdroj příjmů klienta" rlist
 
 
 type IncomeMsg

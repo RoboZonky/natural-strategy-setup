@@ -13,6 +13,7 @@ module Data.Filter.Conditions.TermMonths exposing
 
 import Bootstrap.Form as Form
 import Bootstrap.Form.Radio as Radio
+import Data.Validate as Validate
 import DomId exposing (DomId)
 import Html exposing (Html, text)
 import Html.Events exposing (onSubmit)
@@ -62,25 +63,20 @@ validationErrors (TermMonthsCondition t) =
             validateInRange 1 85 x
 
         Between x y ->
-            validateInRange 0 84 x ++ validateInRange 0 84 y ++ validateMinNotGtMax x y
+            validateInRange 0 84 x ++ validateInRange 0 84 y ++ minNotGtMax x y
 
         MoreThan x ->
             validateInRange 0 83 x
 
 
 validateInRange : Int -> Int -> Int -> List String
-validateInRange minValid maxValid x =
-    Util.validate (x < minValid || maxValid < x) <|
-        "Délka úvěru v měsících: musí být v rozmezí "
-            ++ String.fromInt minValid
-            ++ " až "
-            ++ String.fromInt maxValid
+validateInRange =
+    Validate.intInRange "Délka úvěru v měsících"
 
 
-validateMinNotGtMax : Int -> Int -> List String
-validateMinNotGtMax minBound maxBound =
-    Util.validate (minBound > maxBound)
-        "Délka úvěru v měsících: minimum nesmí být větší než maximum"
+minNotGtMax : Int -> Int -> List String
+minNotGtMax =
+    Validate.minNotGtMax "Délka úvěru v měsících"
 
 
 type TermMonthsMsg
@@ -103,22 +99,27 @@ whichEnabled termMonths =
             ( False, False, True )
 
 
+msgToModel : TermMonthsMsg -> Maybe TermMonths
+msgToModel msg =
+    case msg of
+        SetLessThan hi ->
+            Maybe.map LessThan (parseInt hi)
+
+        SetBetween lo hi ->
+            Maybe.map2 Between (parseInt lo) (parseInt hi)
+
+        SetMoreThan lo ->
+            Maybe.map MoreThan (parseInt lo)
+
+        TermMonthsNoOp ->
+            Nothing
+
+
 update : TermMonthsMsg -> TermMonthsCondition -> TermMonthsCondition
 update msg (TermMonthsCondition term) =
-    TermMonthsCondition <|
-        Maybe.withDefault term <|
-            case msg of
-                SetLessThan hi ->
-                    Maybe.map LessThan (parseInt hi)
-
-                SetBetween lo hi ->
-                    Maybe.map2 Between (parseInt lo) (parseInt hi)
-
-                SetMoreThan lo ->
-                    Maybe.map MoreThan (parseInt lo)
-
-                TermMonthsNoOp ->
-                    Nothing
+    msgToModel msg
+        |> Maybe.withDefault term
+        |> TermMonthsCondition
 
 
 type alias TermMonthsRadioValues =

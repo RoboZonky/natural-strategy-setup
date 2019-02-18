@@ -13,6 +13,7 @@ module Data.Filter.Conditions.Purpose exposing
     )
 
 import Bootstrap.Form.Checkbox as Checkbox
+import Data.Validate as Validate
 import Html exposing (Html, div)
 import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as Encode exposing (Value)
@@ -97,7 +98,7 @@ renderPurposeList =
 
 validationErrors : PurposeCondition -> List String
 validationErrors (PurposeList rlist) =
-    Util.validate (List.isEmpty rlist) "Účel úvěru: zvolte aspoň jeden"
+    Validate.isNotEmpty "Účel úvěru" rlist
 
 
 type PurposeMsg

@@ -13,6 +13,7 @@ module Data.Filter.Conditions.RemainingAmount exposing
 
 import Bootstrap.Form as Form
 import Bootstrap.Form.Radio as Radio
+import Data.Validate as Validate
 import DomId exposing (DomId)
 import Html exposing (Html, text)
 import Html.Events exposing (onSubmit)
@@ -59,23 +60,23 @@ validationErrors : RemainingAmountCondition -> List String
 validationErrors (RemainingAmountCondition a) =
     case a of
         LessThan x ->
-            validateInt x
+            positive x
 
         Between x y ->
-            validateInt x ++ validateInt y ++ validateMinNotGtMax x y
+            positive x ++ positive y ++ minNotGtMax x y
 
         MoreThan x ->
-            validateInt x
+            positive x
 
 
-validateInt : Int -> List String
-validateInt x =
-    Util.validate (x < 0) "Zbývající jistina: musí být kladné číslo"
+positive : Int -> List String
+positive =
+    Validate.positive "Zbývající jistina"
 
 
-validateMinNotGtMax : Int -> Int -> List String
-validateMinNotGtMax minBound maxBound =
-    Util.validate (minBound > maxBound) "Zbývající jistina: minimum nesmí být větší než maximum"
+minNotGtMax : Int -> Int -> List String
+minNotGtMax =
+    Validate.minNotGtMax "Zbývající jistina"
 
 
 type RemainingAmountMsg
@@ -98,22 +99,27 @@ whichEnabled amt =
             ( False, False, True )
 
 
+msgToModel : RemainingAmountMsg -> Maybe RemainingAmount
+msgToModel msg =
+    case msg of
+        SetLessThan hi ->
+            Maybe.map LessThan (parseInt hi)
+
+        SetBetween lo hi ->
+            Maybe.map2 Between (parseInt lo) (parseInt hi)
+
+        SetMoreThan lo ->
+            Maybe.map MoreThan (parseInt lo)
+
+        RemainingAmountNoOp ->
+            Nothing
+
+
 update : RemainingAmountMsg -> RemainingAmountCondition -> RemainingAmountCondition
 update msg (RemainingAmountCondition ra) =
-    RemainingAmountCondition <|
-        Maybe.withDefault ra <|
-            case msg of
-                SetLessThan hi ->
-                    Maybe.map LessThan (parseInt hi)
-
-                SetBetween lo hi ->
-                    Maybe.map2 Between (parseInt lo) (parseInt hi)
-
-                SetMoreThan lo ->
-                    Maybe.map MoreThan (parseInt lo)
-
-                RemainingAmountNoOp ->
-                    Nothing
+    msgToModel msg
+        |> Maybe.withDefault ra
+        |> RemainingAmountCondition
 
 
 type alias RemainingAmountRadioValues =

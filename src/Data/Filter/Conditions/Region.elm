@@ -13,6 +13,7 @@ module Data.Filter.Conditions.Region exposing
     )
 
 import Bootstrap.Form.Checkbox as Checkbox
+import Data.Validate as Validate
 import Html exposing (Html, div)
 import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as Encode exposing (Value)
@@ -122,7 +123,7 @@ renderRegionList =
 
 validationErrors : RegionCondition -> List String
 validationErrors (RegionList rlist) =
-    Util.validate (List.isEmpty rlist) "Kraj klienta: zvolte aspoň jeden"
+    Validate.isNotEmpty "Kraj klienta" rlist
 
 
 type RegionMsg

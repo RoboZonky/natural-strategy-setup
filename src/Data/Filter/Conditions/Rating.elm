@@ -14,8 +14,6 @@ module Data.Filter.Conditions.Rating exposing
     )
 
 import Dict.Any exposing (AnyDict)
-import FormatNumber
-import FormatNumber.Locales exposing (Locale)
 import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as Encode exposing (Value)
 import Util
@@ -43,23 +41,6 @@ allRatings =
     , C
     , D
     ]
-
-
-formatPercentage : Float -> String
-formatPercentage =
-    FormatNumber.format czechLocale
-
-
-czechLocale : Locale
-czechLocale =
-    { decimals = 2
-    , thousandSeparator = ""
-    , decimalSeparator = ","
-    , negativePrefix = "−"
-    , negativeSuffix = ""
-    , positivePrefix = ""
-    , positiveSuffix = ""
-    }
 
 
 toInterestPercent : Rating -> Float
@@ -92,7 +73,7 @@ toInterestPercent r =
 
 showInterest : Rating -> String
 showInterest =
-    formatPercentage << toInterestPercent
+    Util.formatPercentage << toInterestPercent
 
 
 showInterestPercent : Rating -> String

@@ -14,13 +14,13 @@ module Data.Filter.Conditions.Interest exposing
 import Bootstrap.Form as Form
 import Bootstrap.Form.Radio as Radio
 import Data.Filter.Conditions.Rating as Rating exposing (Rating, showInterest, showInterestPercent)
+import Data.Validate as Validate
 import DomId exposing (DomId)
 import Html exposing (Html, text)
 import Html.Events exposing (onSubmit)
 import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as Encode exposing (Value)
 import List.Extra
-import Util
 import View.EnumSelect as EnumSelect exposing (DefaultOptionConfig(..))
 
 
@@ -86,7 +86,7 @@ validationErrors (InterestCondition ic) =
 
 validateMinLtMax : Rating -> Rating -> List String
 validateMinLtMax minBound maxBound =
-    Util.validate (Rating.toInterestPercent minBound >= Rating.toInterestPercent maxBound)
+    Validate.validate (Rating.toInterestPercent minBound >= Rating.toInterestPercent maxBound)
         "Úrok: minimum musí být menší než maximum"
 
 

@@ -11,10 +11,12 @@ import Data.Filter.Conditions.ElapsedTermPercent as ElapsedTermPercent exposing 
 import Data.Filter.Conditions.Income as Income exposing (IncomeCondition(..))
 import Data.Filter.Conditions.Insurance exposing (Insurance(..), InsuranceCondition(..))
 import Data.Filter.Conditions.Interest as Interest exposing (InterestCondition(..))
+import Data.Filter.Conditions.LoanAnnuity as LoanAnnuity exposing (LoanAnnuityCondition(..))
 import Data.Filter.Conditions.Purpose as Purpose exposing (PurposeCondition(..))
 import Data.Filter.Conditions.Rating as Rating exposing (Rating, RatingCondition(..))
 import Data.Filter.Conditions.Region as Region exposing (RegionCondition(..))
 import Data.Filter.Conditions.RemainingAmount as RemainingAmount exposing (RemainingAmountCondition(..))
+import Data.Filter.Conditions.RevenueRate as RevenueRate exposing (RevenueRateCondition(..))
 import Data.Filter.Conditions.Story exposing (Story(..), StoryCondition(..))
 import Data.Filter.Conditions.TermMonths as TermMonths exposing (TermMonthsCondition(..))
 import Data.Filter.Conditions.TermPercent as TermPercent exposing (TermPercentCondition(..))
@@ -167,6 +169,8 @@ conditionsSharedByAllFilteredItems =
     , Random.map Condition_Term_Months termMonthsConditionGen
     , Random.map Condition_Interest interestConditionGen
     , Random.map Condition_Insurance insuranceConditionGen
+    , Random.map Condition_Loan_Annuity loanAnnuityConditionGen
+    , Random.map Condition_Revenue_Rate revenueRateConditionGen
     ]
 
 
@@ -221,6 +225,32 @@ termMonthsConditionGen =
         , Random.map TermMonths.MoreThan (Random.int minTermMonths (maxTermMonths - 1 {- max is invalid, as parser adds 1 -}))
         ]
         |> Random.map TermMonthsCondition
+
+
+loanAnnuityConditionGen : Generator LoanAnnuityCondition
+loanAnnuityConditionGen =
+    let
+        maxAmount =
+            1000000
+    in
+    Random.choices (Random.map LoanAnnuity.LessThan (Random.int 0 maxAmount))
+        [ randomRangeGen 0 maxAmount |> Random.map (\( mi, mx ) -> LoanAnnuity.Between mi mx)
+        , Random.map LoanAnnuity.MoreThan (Random.int 0 maxAmount)
+        ]
+        |> Random.map LoanAnnuityCondition
+
+
+revenueRateConditionGen : Generator RevenueRateCondition
+revenueRateConditionGen =
+    let
+        maxAmount =
+            200
+    in
+    Random.choices (Random.map RevenueRate.LessThan (Random.float 0 maxAmount))
+        [ randomFloatRangeGen 0 maxAmount |> Random.map (\( mi, mx ) -> RevenueRate.Between mi mx)
+        , Random.map RevenueRate.MoreThan (Random.float 0 maxAmount)
+        ]
+        |> Random.map RevenueRateCondition
 
 
 termPercentConditionGen : Generator TermPercentCondition
@@ -445,6 +475,16 @@ randomRangeGen mi ma =
         |> Random.andThen
             (\generatedMin ->
                 Random.int generatedMin ma
+                    |> Random.map (\generatedMax -> ( generatedMin, generatedMax ))
+            )
+
+
+randomFloatRangeGen : Float -> Float -> Generator ( Float, Float )
+randomFloatRangeGen mi ma =
+    Random.float mi ma
+        |> Random.andThen
+            (\generatedMin ->
+                Random.float generatedMin ma
                     |> Random.map (\generatedMax -> ( generatedMin, generatedMax ))
             )
 
