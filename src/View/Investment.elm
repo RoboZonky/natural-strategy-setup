@@ -11,7 +11,7 @@ import Data.Filter.Conditions.Rating as Rating exposing (Rating)
 import Data.Investment as Investment exposing (InvestmentsPerRating)
 import Dict.Any
 import Html exposing (Html, a, b, div, span, strong, text)
-import Html.Attributes exposing (href, style)
+import Html.Attributes exposing (class, href, style)
 import Html.Events exposing (onSubmit)
 import RangeSlider
 import Types exposing (Msg(..))
@@ -24,7 +24,7 @@ form invDefault invOverrides =
         , options = []
         , header = Accordion.headerH4 [] <| Accordion.toggle [] [ text "Výše investice" ]
         , blocks =
-            [ Accordion.block []
+            [ Accordion.block [ CardBlock.attrs [ class "tab-with-sliders" ] ]
                 [ defaultInvestmentForm invDefault
                 , investmentOverridesForm invDefault invOverrides
                 ]
@@ -77,6 +77,6 @@ investmentOverridesSliders invOverrides =
 investmentSlider : Rating -> Investment.Size -> Html Msg
 investmentSlider rating sliderState =
     Form.formInline [ onSubmit NoOp ]
-        [ b [ style "width" "100px" ] [ text <| Rating.showInterestPercent rating ]
+        [ b [ style "width" "105px" ] [ text <| Rating.showInterestPercent rating ]
         , Html.map (ChangeInvestment rating) <| RangeSlider.view sliderState
         ]

@@ -13,13 +13,13 @@ import Data.PortfolioStructure as PortfolioStructure exposing (PortfolioShares)
 import Data.Tooltip as Tooltip
 import Dict.Any
 import Html exposing (Html, b, div, text)
-import Html.Attributes exposing (selected, value)
+import Html.Attributes exposing (class, selected, style, value)
 import Html.Events exposing (onSubmit)
 import RangeSlider
 import Types exposing (Msg(..))
 import Util
 import View.CardHeightWorkaround exposing (markOpenedAccordionCard)
-import View.PortfolioStructure.PieChart exposing (viewChart)
+import View.PortfolioStructure.BarChart as BarChart exposing (view)
 import View.Tooltip as Tooltip
 
 
@@ -38,14 +38,14 @@ form portfolio shares accordionState tooltipStates =
         , blocks =
             [ Accordion.block []
                 [ CardBlock.custom <|
-                    div []
+                    div [ class "tab-with-sliders" ]
                         [ defaultPortfolioForm portfolio
                         , text "Požadovaný podíl investovaný do půjček podle rizikových kategorií můžete upravit pomocí posuvníků"
                         , Grid.row []
                             [ Grid.col [ Col.xs6 ]
                                 [ portfolioSharesSliders shares ]
                             , Grid.col [ Col.xs6 ]
-                                [ viewChart shares
+                                [ BarChart.view shares
                                 , validationErrors shares
                                 ]
                             ]
@@ -96,7 +96,7 @@ portfolioSharesSliders shares =
     let
         ratingSlider ( rating, sliderState ) =
             Form.formInline [ onSubmit NoOp ]
-                [ b [] [ text <| Rating.showInterestPercent rating ]
+                [ b [ style "width" "105px" ] [ text <| Rating.showInterestPercent rating ]
                 , Html.map (ChangePortfolioSharePercentage rating) <| RangeSlider.view sliderState
                 ]
     in
