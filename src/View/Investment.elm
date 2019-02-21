@@ -77,6 +77,6 @@ investmentOverridesSliders invOverrides =
 investmentSlider : Rating -> Investment.Size -> Html Msg
 investmentSlider rating sliderState =
     Form.formInline [ onSubmit NoOp ]
-        [ b [ style "width" "100px" ] [ text <| Rating.showInterestPercent rating ]
+        [ b [ style "width" "105px" ] [ text <| Rating.showInterestPercent rating ]
         , Html.map (ChangeInvestment rating) <| RangeSlider.view sliderState
         ]
