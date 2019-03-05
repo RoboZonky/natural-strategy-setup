@@ -13,7 +13,7 @@ import Data.PortfolioStructure as PortfolioStructure exposing (PortfolioShares)
 import Data.Tooltip as Tooltip
 import Dict.Any
 import Html exposing (Html, b, div, text)
-import Html.Attributes exposing (selected, style, value)
+import Html.Attributes exposing (class, selected, style, value)
 import Html.Events exposing (onSubmit)
 import RangeSlider
 import Types exposing (Msg(..))
@@ -38,7 +38,7 @@ form portfolio shares accordionState tooltipStates =
         , blocks =
             [ Accordion.block []
                 [ CardBlock.custom <|
-                    div []
+                    div [ class "tab-with-sliders" ]
                         [ defaultPortfolioForm portfolio
                         , text "Požadovaný podíl investovaný do půjček podle rizikových kategorií můžete upravit pomocí posuvníků"
                         , Grid.row []

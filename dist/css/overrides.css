@@ -1,6 +1,6 @@
-/* Make text in range slider labels non-selectable */
+/* Make text in tabs with rangle sliders non-selectable to prevent drag and drop issues */
 
-.range-slider-value {
+.tab-with-sliders {
   user-select: none !important;
   -moz-user-select: none !important;
 }
