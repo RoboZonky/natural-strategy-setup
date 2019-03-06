@@ -108,16 +108,6 @@ conditionEnablementDropdown filteredItem conditions =
             }
 
 
-termConditionLabel : FilteredItem -> String -> String
-termConditionLabel filteredItem unitStr =
-    case filteredItem of
-        Loan ->
-            "Délka úvěru " ++ unitStr
-
-        _ ->
-            "Zbývající délka úvěru " ++ unitStr
-
-
 conditionSubform : FilteredItem -> Condition -> Html Msg
 conditionSubform item condition =
     let
@@ -172,7 +162,7 @@ getVisibleLabel : FilteredItem -> ConditionType -> String
 getVisibleLabel filteredItem conditionType =
     case conditionType of
         Amount ->
-            "Výše úvěru"
+            amountConditionLabel filteredItem
 
         Elapsed_Term_Months ->
             -- Note that this string contains &nbsp; entered by pasting escape sequence "\x00A0"
@@ -215,6 +205,26 @@ getVisibleLabel filteredItem conditionType =
 
         Term_Percent ->
             termConditionLabel filteredItem "(v\u{00A0}%)"
+
+
+termConditionLabel : FilteredItem -> String -> String
+termConditionLabel filteredItem unitStr =
+    case filteredItem of
+        Loan ->
+            "Délka úvěru " ++ unitStr
+
+        _ ->
+            "Zbývající délka úvěru " ++ unitStr
+
+
+amountConditionLabel : FilteredItem -> String
+amountConditionLabel filteredItem =
+    case filteredItem of
+        Loan ->
+            "Výše úvěru"
+
+        _ ->
+            "Původní výše úvěru"
 
 
 closeableWrapper : FilteredItem -> ConditionType -> Html Msg -> Html Msg
