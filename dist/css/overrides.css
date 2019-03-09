@@ -42,3 +42,7 @@
   margin-bottom: -10px;
   margin-left: -20px;
 }
+
+.fieldset-legend-help {
+  font-size: 16px;
+}

@@ -51,7 +51,7 @@ validHashData =
     describe "Strategy.strategyFromUrlHash - valid inputs" <|
         [ test "default strategy" <|
             \() ->
-                case VersionedStrategy.loadStrategy "Mjt7ImgiOnsiYSI6MCwiYiI6WyIwIl0sImMiOlsxXSwiZCI6WzIwMCwyMDBdLCJlIjpbMl0sImYiOlsxXSwiZyI6eyJhIjowfSwiZzEiOjJ9LCJpIjpbWzMsM10sWzYsNl0sWzE2LDE2XSxbMjUsMjVdLFsyMCwyMF0sWzE1LDE1XSxbMTUsMTVdLFswLDBdXSwiaiI6W1syMDAsMjAwXSxbMjAwLDIwMF0sWzIwMCwyMDBdLFsyMDAsMjAwXSxbMjAwLDIwMF0sWzIwMCwyMDBdLFsyMDAsMjAwXSxbMjAwLDIwMF1dLCJrIjp7Im8iOjB9LCJsIjp7Im0iOjB9fQ==" of
+                case VersionedStrategy.loadStrategy "Mjt7ImgiOnsiYSI6MCwiYiI6WyIwIl0sImMiOlsxXSwiZCI6WzIwMCwyMDBdLCJlIjpbMl0sImYiOlsxXSwiZyI6eyJhIjowfSwiZzEiOjF9LCJpIjpbWzMsM10sWzYsNl0sWzE2LDE2XSxbMjUsMjVdLFsyMCwyMF0sWzE1LDE1XSxbMTUsMTVdLFswLDBdXSwiaiI6W1syMDAsMjAwXSxbMjAwLDIwMF0sWzIwMCwyMDBdLFsyMDAsMjAwXSxbMjAwLDIwMF0sWzIwMCwyMDBdLFsyMDAsMjAwXSxbMjAwLDIwMF1dLCJrIjp7Im8iOjB9LCJsIjp7Im0iOjB9fQ==" of
                     Ok ( decodedStrategy, warnings ) ->
                         Strategy.strategyEqual Strategy.defaultStrategyConfiguration decodedStrategy |> Expect.true "Should decode to default strategy configuration"
 

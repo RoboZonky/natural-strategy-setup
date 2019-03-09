@@ -12,15 +12,17 @@ import Util
 
 
 type ReservationSetting
-    = AcceptMatching
-    | FullOwnership
+    = -- Not showing this in the UI as this is experimental and could swarm
+      -- the reservation system with robots taking over the system, rendering it useles for people.
+      -- FullOwnership
+      AcceptMatching
     | Ignore
 
 
 allSettings : List ReservationSetting
 allSettings =
-    [ AcceptMatching
-    , FullOwnership
+    [ --, FullOwnership
+      AcceptMatching
     , Ignore
     ]
 
@@ -28,11 +30,10 @@ allSettings =
 render : ReservationSetting -> String
 render rss =
     case rss of
+        -- FullOwnership ->
+        --     "Robot má převzít kontrolu nad rezervačním systémem a přijímat rezervace půjček odpovídajících této strategii."
         AcceptMatching ->
             "Robot má pravidelně kontrolovat rezervační systém a přijímat rezervace půjček odpovídajících této strategii."
-
-        FullOwnership ->
-            "Robot má převzít kontrolu nad rezervačním systémem a přijímat rezervace půjček odpovídajících této strategii."
 
         Ignore ->
             "Robot má zcela ignorovat rezervační systém."

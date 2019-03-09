@@ -58,8 +58,8 @@ generalSettingsGen =
 reservationSettingGen : Generator ReservationSetting
 reservationSettingGen =
     Random.choices (Random.constant AcceptMatching)
-        [ Random.constant FullOwnership
-        , Random.constant Ignore
+        [ -- Random.constant FullOwnership
+          Random.constant Ignore
         ]
 
 
