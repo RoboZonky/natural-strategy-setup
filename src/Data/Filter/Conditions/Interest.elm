@@ -184,14 +184,14 @@ form (InterestCondition interest) =
             , unit
             ]
         , Form.formInline [ onSubmit InterestNoOp ]
-            [ interestRadio (interestEnum == BTW) (SetBetween Rating.A_Double_Star Rating.D) "je\u{00A0}" "interest2"
+            [ interestRadio (interestEnum == BTW) (SetBetween Rating.AAAAA Rating.D) "je\u{00A0}" "interest2"
             , Tuple.first dropdowns.between
             , text "\u{00A0}až\u{00A0}"
             , Tuple.second dropdowns.between
             , unit
             ]
         , Form.formInline [ onSubmit InterestNoOp ]
-            [ interestRadio (interestEnum == MT) (SetMoreThan Rating.A_Double_Star) "přesahuje\u{00A0}" "interest3"
+            [ interestRadio (interestEnum == MT) (SetMoreThan Rating.AAAAA) "přesahuje\u{00A0}" "interest3"
             , dropdowns.moreThan
             , unit
             ]

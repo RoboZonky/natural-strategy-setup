@@ -20,10 +20,10 @@ import Util
 
 
 type Rating
-    = A_Double_Star
-    | A_Star
-    | A_Double_Plus
-    | A_Plus
+    = AAAAA
+    | AAAA
+    | AAA
+    | AA
     | A
     | B
     | C
@@ -32,10 +32,10 @@ type Rating
 
 allRatings : List Rating
 allRatings =
-    [ A_Double_Star
-    , A_Star
-    , A_Double_Plus
-    , A_Plus
+    [ AAAAA
+    , AAAA
+    , AAA
+    , AA
     , A
     , B
     , C
@@ -46,16 +46,16 @@ allRatings =
 toInterestPercent : Rating -> Float
 toInterestPercent r =
     case r of
-        A_Double_Star ->
+        AAAAA ->
             3.99
 
-        A_Star ->
+        AAAA ->
             4.99
 
-        A_Double_Plus ->
+        AAA ->
             5.99
 
-        A_Plus ->
+        AA ->
             8.49
 
         A ->
@@ -89,16 +89,16 @@ initRatingDict =
 hash : Rating -> Int
 hash rating =
     case rating of
-        A_Double_Star ->
+        AAAAA ->
             1
 
-        A_Star ->
+        AAAA ->
             2
 
-        A_Double_Plus ->
+        AAA ->
             3
 
-        A_Plus ->
+        AA ->
             4
 
         A ->
@@ -118,16 +118,16 @@ fromHash : Int -> Maybe Rating
 fromHash h =
     case h of
         1 ->
-            Just A_Double_Star
+            Just AAAAA
 
         2 ->
-            Just A_Star
+            Just AAAA
 
         3 ->
-            Just A_Double_Plus
+            Just AAA
 
         4 ->
-            Just A_Plus
+            Just AA
 
         5 ->
             Just A
