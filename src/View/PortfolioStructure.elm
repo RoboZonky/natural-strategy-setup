@@ -7,11 +7,10 @@ import Bootstrap.Form.Select as Select
 import Bootstrap.Grid as Grid
 import Bootstrap.Grid.Col as Col
 import Bootstrap.Utilities.Spacing as Spacing
-import Data.Filter.Conditions.Rating as Rating
+import Data.Filter.Conditions.Rating as Rating exposing (ratingDictToList)
 import Data.Portfolio as Portfolio exposing (Portfolio(..), allPortfolios)
 import Data.PortfolioStructure as PortfolioStructure exposing (PortfolioShares)
 import Data.Tooltip as Tooltip
-import Dict.Any
 import Html exposing (Html, b, div, text)
 import Html.Attributes exposing (class, selected, style, value)
 import Html.Events exposing (onSubmit)
@@ -100,4 +99,6 @@ portfolioSharesSliders shares =
                 , Html.map (ChangePortfolioSharePercentage rating) <| RangeSlider.view sliderState
                 ]
     in
-    div [] <| List.map ratingSlider <| Dict.Any.toList shares
+    ratingDictToList shares
+        |> List.map ratingSlider
+        |> div []

@@ -1,7 +1,7 @@
 module View.PortfolioStructure.BarChart exposing (view)
 
 import Array exposing (Array)
-import Data.Filter.Conditions.Rating as Rating exposing (Rating)
+import Data.Filter.Conditions.Rating as Rating exposing (Rating, ratingDictToList)
 import Data.PortfolioStructure exposing (PortfolioShares)
 import Dict.Any
 import Html exposing (Html)
@@ -30,7 +30,7 @@ view portfolioShares =
     in
     svg
         [ width "400px"
-        , height "330px"
+        , height "365px"
         ]
         bars
 
@@ -116,7 +116,7 @@ getBarData shares =
             , color = color
             }
         )
-        (Dict.Any.toList shares)
+        (ratingDictToList shares)
         (Array.toList colors)
 
 
@@ -158,12 +158,14 @@ colors : Array Color
 colors =
     -- Pie slice colors taken from zonky dashboard
     Array.fromList
-        [ "#8b59be"
-        , "#596abe"
-        , "#599ebe"
-        , "#67cd75"
-        , "#cebe5a"
-        , "#d7954b"
-        , "#e75637"
-        , "#d12f2f"
+        [ "#8b59be" -- AAAAA
+        , "#596abe" -- AAAA
+        , "#599ebe" -- AAA
+        , "#5ABFA9" -- AAE
+        , "#67cd75" -- AA
+        , "#91C95A" -- AE
+        , "#cebe5a" -- A
+        , "#d7954b" -- B
+        , "#e75637" -- C
+        , "#d12f2f" -- D
         ]

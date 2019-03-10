@@ -130,7 +130,7 @@ encode =
 
 decoder : Decoder PortfolioShares
 decoder =
-    Data.SharedJsonStuff.ratingToSliderDictDecodr shareDecoder
+    Data.SharedJsonStuff.ratingToSliderDictDecoder defaultShare shareDecoder
 
 
 encodeShare : Share -> Value
@@ -148,5 +148,10 @@ shareDecoder =
                         percentageShare from to
 
                     _ ->
-                        percentageShare 200 200
+                        defaultShare
             )
+
+
+defaultShare : Share
+defaultShare =
+    percentageShare 0 0

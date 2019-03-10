@@ -11,13 +11,15 @@ import Data.PortfolioStructure exposing (PortfolioShares)
 conservative : PortfolioShares
 conservative =
     initShares
-        [ ( AAAAA, 3 )
-        , ( AAAA, 6 )
-        , ( AAA, 16 )
-        , ( AA, 25 )
-        , ( A, 20 )
-        , ( B, 15 )
-        , ( C, 15 )
+        [ ( AAAAA, 16 )
+        , ( AAAA, 19 )
+        , ( AAA, 21 )
+        , ( AAE, 19 )
+        , ( AA, 11 )
+        , ( AE, 7 )
+        , ( A, 5 )
+        , ( B, 1 )
+        , ( C, 1 )
         , ( D, 0 )
         ]
 
@@ -25,28 +27,32 @@ conservative =
 balanced : PortfolioShares
 balanced =
     initShares
-        [ ( AAAAA, 1 )
-        , ( AAAA, 3 )
-        , ( AAA, 17 )
-        , ( AA, 20 )
-        , ( A, 25 )
-        , ( B, 20 )
-        , ( C, 12 )
-        , ( D, 2 )
+        [ ( AAAAA, 8 )
+        , ( AAAA, 14 )
+        , ( AAA, 16 )
+        , ( AAE, 18 )
+        , ( AA, 15 )
+        , ( AE, 12 )
+        , ( A, 9 )
+        , ( B, 5 )
+        , ( C, 2 )
+        , ( D, 1 )
         ]
 
 
 progressive : PortfolioShares
 progressive =
     initShares
-        [ ( AAAAA, 0 )
-        , ( AAAA, 2 )
-        , ( AAA, 13 )
+        [ ( AAAAA, 3 )
+        , ( AAAA, 7 )
+        , ( AAA, 10 )
+        , ( AAE, 14 )
         , ( AA, 15 )
-        , ( A, 20 )
-        , ( B, 25 )
-        , ( C, 20 )
-        , ( D, 5 )
+        , ( AE, 17 )
+        , ( A, 15 )
+        , ( B, 10 )
+        , ( C, 6 )
+        , ( D, 3 )
         ]
 
 

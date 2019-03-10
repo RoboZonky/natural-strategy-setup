@@ -11,6 +11,7 @@ import Data.Strategy as Strategy
 import Data.VersionedStrategy as VersionedStrategy
 import Expect
 import Test exposing (Test, describe, test)
+import Time
 
 
 invalidHashData : Test
@@ -51,9 +52,10 @@ validHashData =
     describe "Strategy.strategyFromUrlHash - valid inputs" <|
         [ test "default strategy" <|
             \() ->
-                case VersionedStrategy.loadStrategy "Mjt7ImgiOnsiYSI6MCwiYiI6WyIwIl0sImMiOlsxXSwiZCI6WzIwMCwyMDBdLCJlIjpbMl0sImYiOlsxXSwiZyI6eyJhIjowfSwiZzEiOjF9LCJpIjpbWzMsM10sWzYsNl0sWzE2LDE2XSxbMjUsMjVdLFsyMCwyMF0sWzE1LDE1XSxbMTUsMTVdLFswLDBdXSwiaiI6W1syMDAsMjAwXSxbMjAwLDIwMF0sWzIwMCwyMDBdLFsyMDAsMjAwXSxbMjAwLDIwMF0sWzIwMCwyMDBdLFsyMDAsMjAwXSxbMjAwLDIwMF1dLCJrIjp7Im8iOjB9LCJsIjp7Im0iOjB9fQ==" of
+                case VersionedStrategy.loadStrategy "Mjt7ImgiOnsiYSI6MCwiYiI6WyIwIl0sImMiOlsxXSwiZCI6WzIwMCwyMDBdLCJlIjpbMl0sImYiOlsxXSwiZyI6eyJhIjowfSwiZzEiOjF9LCJpIjpbWzE2LDE2XSxbMTksMTldLFsyMSwyMV0sWzE5LDE5XSxbMTEsMTFdLFs3LDddLFs1LDVdLFsxLDFdLFsxLDFdLFswLDBdXSwiaiI6W1syMDAsMjAwXSxbMjAwLDIwMF0sWzIwMCwyMDBdLFsyMDAsMjAwXSxbMjAwLDIwMF0sWzIwMCwyMDBdLFsyMDAsMjAwXSxbMjAwLDIwMF0sWzIwMCwyMDBdLFsyMDAsMjAwXV0sImsiOnsibyI6MH0sImwiOnsibSI6MH19" of
                     Ok ( decodedStrategy, warnings ) ->
-                        Strategy.strategyEqual Strategy.defaultStrategyConfiguration decodedStrategy |> Expect.true "Should decode to default strategy configuration"
+                        Strategy.strategyEqual Strategy.defaultStrategyConfiguration decodedStrategy
+                            |> Expect.true "Should decode to default strategy configuration"
 
                     Err e ->
                         Expect.fail <| "Failed to decode strategy: " ++ e

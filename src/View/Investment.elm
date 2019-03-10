@@ -7,9 +7,8 @@ import Bootstrap.Form as Form
 import Bootstrap.Grid as Grid
 import Bootstrap.Grid.Col as Col
 import Bootstrap.Utilities.Spacing as Spacing
-import Data.Filter.Conditions.Rating as Rating exposing (Rating)
+import Data.Filter.Conditions.Rating as Rating exposing (Rating, ratingDictToList)
 import Data.Investment as Investment exposing (InvestmentsPerRating)
-import Dict.Any
 import Html exposing (Html, a, b, div, span, strong, text)
 import Html.Attributes exposing (class, href, style)
 import Html.Events exposing (onSubmit)
@@ -69,13 +68,13 @@ warningWhenSizeExceeds5K invDefault invOverrides =
 
 investmentOverridesSliders : InvestmentsPerRating -> Html Msg
 investmentOverridesSliders invOverrides =
-    Dict.Any.toList invOverrides
-        |> List.map (\( rating, sliderState ) -> investmentSlider rating sliderState)
+    ratingDictToList invOverrides
+        |> List.map investmentSlider
         |> div []
 
 
-investmentSlider : Rating -> Investment.Size -> Html Msg
-investmentSlider rating sliderState =
+investmentSlider : ( Rating, Investment.Size ) -> Html Msg
+investmentSlider ( rating, sliderState ) =
     Form.formInline [ onSubmit NoOp ]
         [ b [ style "width" "105px" ] [ text <| Rating.showInterestPercent rating ]
         , Html.map (ChangeInvestment rating) <| RangeSlider.view sliderState

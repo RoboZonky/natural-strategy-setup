@@ -145,7 +145,7 @@ encode =
 
 decoder : Decoder InvestmentsPerRating
 decoder =
-    Data.SharedJsonStuff.ratingToSliderDictDecodr sizeDecoder
+    Data.SharedJsonStuff.ratingToSliderDictDecoder defaultSize sizeDecoder
 
 
 encodeSize : Size -> Value

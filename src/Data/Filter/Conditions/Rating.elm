@@ -8,6 +8,7 @@ module Data.Filter.Conditions.Rating exposing
     , fromHash
     , hash
     , initRatingDict
+    , ratingDictToList
     , showInterest
     , showInterestPercent
     , toInterestPercent
@@ -23,7 +24,9 @@ type Rating
     = AAAAA
     | AAAA
     | AAA
+    | AAE
     | AA
+    | AE
     | A
     | B
     | C
@@ -35,7 +38,9 @@ allRatings =
     [ AAAAA
     , AAAA
     , AAA
+    , AAE
     , AA
+    , AE
     , A
     , B
     , C
@@ -55,8 +60,14 @@ toInterestPercent r =
         AAA ->
             5.99
 
+        AAE ->
+            6.99
+
         AA ->
             8.49
+
+        AE ->
+            9.49
 
         A ->
             10.99
@@ -86,6 +97,13 @@ initRatingDict =
     Dict.Any.fromList hash
 
 
+{-| Result sorted by interest percentage corresponding to each rating from lowest (AAAAA first) to largest (D)
+-}
+ratingDictToList : AnyDict Int Rating a -> List ( Rating, a )
+ratingDictToList =
+    Dict.Any.toList >> List.sortBy (Tuple.first >> toInterestPercent)
+
+
 hash : Rating -> Int
 hash rating =
     case rating of
@@ -98,8 +116,14 @@ hash rating =
         AAA ->
             3
 
+        AAE ->
+            9
+
         AA ->
             4
+
+        AE ->
+            10
 
         A ->
             5
@@ -126,8 +150,14 @@ fromHash h =
         3 ->
             Just AAA
 
+        9 ->
+            Just AAE
+
         4 ->
             Just AA
+
+        10 ->
+            Just AE
 
         5 ->
             Just A

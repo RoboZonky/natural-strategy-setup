@@ -65,7 +65,7 @@ reservationSettingGen =
 
 portfolioSharesGen : Generator PortfolioShares
 portfolioSharesGen =
-    eightIntsThatAddUpTo100
+    tenIntsThatAddUpTo100
         |> Random.andThen
             (\minimumShares ->
                 List.map (\from -> percentageFrom from) minimumShares
@@ -502,21 +502,30 @@ randomRangeGtGen mi ma =
             )
 
 
-{-| To generate valid portfolio structure we need 8 non-negative ints that add up to 100.
-Start with [100], split all numbers randomly into two and then repeat twice to get list of 8 ints.
+{-| To generate valid portfolio structure we need 10 non-negative ints that add up to 100.
+We split the interval [0..100] into 10 subintervals by generating 9 boundary values, sorting them
+and calculating 10 differences as
+
+1.  100 - boundary9
+2.  boundary9 - boundary8
+    ...
+3.  boundary1 - 0
+
 -}
-eightIntsThatAddUpTo100 : Generator (List Int)
-eightIntsThatAddUpTo100 =
-    let
-        step : List Int -> Generator (List Int)
-        step =
-            List.map subdivide >> Random.combine >> Random.map List.concat
-    in
-    step [ 100 ]
-        |> Random.andThen (\twoInts -> step twoInts)
-        |> Random.andThen (\fourInts -> step fourInts)
+tenIntsThatAddUpTo100 : Generator (List Int)
+tenIntsThatAddUpTo100 =
+    Random.list 9 (Random.int 0 100)
+        |> Random.map
+            (\nineBoundaries ->
+                let
+                    sortedBoundaries =
+                        List.sort nineBoundaries
 
+                    upper =
+                        sortedBoundaries ++ [ 100 ]
 
-subdivide : Int -> Generator (List Int)
-subdivide numToSplit =
-    Random.int 0 numToSplit |> Random.map (\split -> [ split, numToSplit - split ])
+                    lower =
+                        0 :: sortedBoundaries
+                in
+                List.map2 (\bigger smaller -> bigger - smaller) upper lower
+            )
