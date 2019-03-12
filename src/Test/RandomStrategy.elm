@@ -24,6 +24,7 @@ import Data.Investment as Investment exposing (InvestmentsPerRating)
 import Data.InvestmentShare as InvestmentShare exposing (InvestmentShare)
 import Data.Portfolio exposing (Portfolio(..))
 import Data.PortfolioStructure as PortfolioStructure exposing (PortfolioShares)
+import Data.PortfolioStructure.PredefinedShares as PredefinedShares
 import Data.ReservationSetting exposing (ReservationSetting(..))
 import Data.Strategy exposing (GeneralSettings, StrategyConfiguration)
 import Data.TargetBalance as TargetBalance exposing (TargetBalance(..))
@@ -35,12 +36,18 @@ import Random.List
 
 strategyConfigurationGen : Generator StrategyConfiguration
 strategyConfigurationGen =
-    Random.map5 StrategyConfiguration
-        generalSettingsGen
-        portfolioSharesGen
-        investmentsPerRatingGen
-        buyingConfigGen
-        sellingConfigGen
+    {- Need the portfolio ahead of time because it determines if we
+       generate portfolio structure (for UserDefined) or use one of the predefined ones
+    -}
+    generalSettingsGen
+        |> Random.andThen
+            (\generalSettings ->
+                Random.map4 (StrategyConfiguration generalSettings)
+                    (portfolioSharesGen generalSettings.portfolio)
+                    investmentsPerRatingGen
+                    buyingConfigGen
+                    sellingConfigGen
+            )
 
 
 generalSettingsGen : Generator GeneralSettings
@@ -63,19 +70,32 @@ reservationSettingGen =
         ]
 
 
-portfolioSharesGen : Generator PortfolioShares
-portfolioSharesGen =
-    tenIntsThatAddUpTo100
-        |> Random.andThen
-            (\minimumShares ->
-                List.map (\from -> percentageFrom from) minimumShares
-                    |> Random.combine
-            )
-        |> Random.map
-            (\sharesList ->
-                List.map2 (\rtg ( from, to ) -> ( rtg, PortfolioStructure.percentageShare from to )) Rating.allRatings sharesList
-                    |> Rating.initRatingDict
-            )
+portfolioSharesGen : Portfolio -> Generator PortfolioShares
+portfolioSharesGen portfolio =
+    case portfolio of
+        Conservative ->
+            Random.constant PredefinedShares.conservative
+
+        Balanced ->
+            Random.constant PredefinedShares.balanced
+
+        Progressive ->
+            Random.constant PredefinedShares.progressive
+
+        UserDefined ->
+            tenIntsThatAddUpTo100
+                |> Random.andThen
+                    (\minimumShares ->
+                        List.map (\from -> percentageFrom from) minimumShares
+                            |> Random.combine
+                    )
+                |> Random.map
+                    (\sharesList ->
+                        List.map2 (\rtg ( from, to ) -> ( rtg, PortfolioStructure.percentageShare (toFloat from) (toFloat to) ))
+                            Rating.allRatings
+                            sharesList
+                            |> Rating.initRatingDict
+                    )
 
 
 investmentsPerRatingGen : Generator InvestmentsPerRating
@@ -243,12 +263,15 @@ loanAnnuityConditionGen =
 revenueRateConditionGen : Generator RevenueRateCondition
 revenueRateConditionGen =
     let
+        minAmount =
+            0.01
+
         maxAmount =
-            200
+            100
     in
-    Random.choices (Random.map RevenueRate.LessThan (Random.float 0 maxAmount))
-        [ randomFloatRangeGen 0 maxAmount |> Random.map (\( mi, mx ) -> RevenueRate.Between mi mx)
-        , Random.map RevenueRate.MoreThan (Random.float 0 maxAmount)
+    Random.choices (Random.map RevenueRate.LessThan <| Random.float minAmount maxAmount)
+        [ Random.map (\( mi, mx ) -> RevenueRate.Between mi mx) <| randomFloatRangeGen minAmount maxAmount
+        , Random.map RevenueRate.MoreThan <| Random.float minAmount maxAmount
         ]
         |> Random.map RevenueRateCondition
 

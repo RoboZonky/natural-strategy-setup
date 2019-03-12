@@ -18,8 +18,8 @@ conservative =
         , ( AA, 11 )
         , ( AE, 7 )
         , ( A, 5 )
-        , ( B, 1 )
-        , ( C, 1 )
+        , ( B, 1.5 )
+        , ( C, 0.5 )
         , ( D, 0 )
         ]
 
@@ -56,7 +56,7 @@ progressive =
         ]
 
 
-initShares : List ( Rating, Int ) -> PortfolioShares
+initShares : List ( Rating, Float ) -> PortfolioShares
 initShares =
     List.map (\( rtg, x ) -> ( rtg, Data.PortfolioStructure.percentageShare x x ))
         >> Rating.initRatingDict

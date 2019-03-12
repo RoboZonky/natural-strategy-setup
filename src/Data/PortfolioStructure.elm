@@ -76,14 +76,14 @@ toIntRange =
     RangeSlider.getValues >> (\( a, b ) -> ( round a, round b ))
 
 
-percentageShare : Int -> Int -> Share
+percentageShare : Float -> Float -> Share
 percentageShare from to =
     RangeSlider.init
         |> setStepSize (Just 1.0)
         |> setFormatter (\value -> String.fromFloat value ++ "%")
         |> setDimensions 300 57
         |> setExtents 0 100
-        |> setValues (toFloat from) (toFloat to)
+        |> setValues from to
 
 
 portfolioSlidersSubscription : PortfolioShares -> Sub Types.Msg
@@ -98,6 +98,7 @@ validate portfolioShares =
     let
         sumOfShareMinimums =
             Dict.Any.foldr (\_ sliderState sumAcc -> sumAcc + getSliderMinimum sliderState) 0 portfolioShares
+                |> round
     in
     Validate.validate (sumOfShareMinimums /= 100) <|
         "Součet minim musí být přesně 100% (teď je "
@@ -105,9 +106,9 @@ validate portfolioShares =
             ++ "%)"
 
 
-getSliderMinimum : RangeSlider -> Int
+getSliderMinimum : RangeSlider -> Float
 getSliderMinimum =
-    round << Tuple.first << RangeSlider.getValues
+    Tuple.first << RangeSlider.getValues
 
 
 portfolioSharesEqual : PortfolioShares -> PortfolioShares -> Bool
@@ -145,7 +146,7 @@ shareDecoder =
             (\xs ->
                 case xs of
                     from :: to :: [] ->
-                        percentageShare from to
+                        percentageShare (toFloat from) (toFloat to)
 
                     _ ->
                         defaultShare

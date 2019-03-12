@@ -337,23 +337,54 @@ generalSettingsDecoder =
 
 encodeStrategy : StrategyConfiguration -> Value
 encodeStrategy { generalSettings, portfolioShares, investmentSizeOverrides, buyingConfig, sellingConfig } =
-    Encode.object
-        [ ( "h", encodeGeneralSettings generalSettings )
-        , ( "i", PortfolioStructure.encode portfolioShares )
-        , ( "j", Investment.encode investmentSizeOverrides )
-        , ( "k", Filters.encodeBuyingConfiguration buyingConfig )
-        , ( "l", Filters.encodeSellingConfiguration sellingConfig )
-        ]
+    let
+        maybePortfolioStructure =
+            {- Only encode portfolio structure for user defined portfolios -}
+            case generalSettings.portfolio of
+                UserDefined ->
+                    [ ( "i", PortfolioStructure.encode portfolioShares ) ]
+
+                _ ->
+                    []
+    in
+    Encode.object <|
+        maybePortfolioStructure
+            ++ [ ( "h", encodeGeneralSettings generalSettings )
+               , ( "j", Investment.encode investmentSizeOverrides )
+               , ( "k", Filters.encodeBuyingConfiguration buyingConfig )
+               , ( "l", Filters.encodeSellingConfiguration sellingConfig )
+               ]
 
 
 strategyDecoder : Decoder StrategyConfiguration
 strategyDecoder =
-    Decode.map5 StrategyConfiguration
-        (Decode.field "h" generalSettingsDecoder)
-        (Decode.field "i" PortfolioStructure.decoder)
-        (Decode.field "j" Investment.decoder)
-        (Decode.field "k" Filters.decodeBuyingConfiguration)
-        (Decode.field "l" Filters.decodeSellingConfiguration)
+    let
+        portfolioStructureDecoder portfolio =
+            case portfolio of
+                Conservative ->
+                    Decode.succeed PredefinedShares.conservative
+
+                Balanced ->
+                    Decode.succeed PredefinedShares.balanced
+
+                Progressive ->
+                    Decode.succeed PredefinedShares.progressive
+
+                UserDefined ->
+                    Decode.field "i" PortfolioStructure.decoder
+    in
+    {- Need the portfolio ahead of time because it determines if we
+       should decode portfolio structure (for UserDefined) or use one of the predefined ones
+    -}
+    Decode.field "h" generalSettingsDecoder
+        |> Decode.andThen
+            (\generalSettings ->
+                Decode.map4 (StrategyConfiguration generalSettings)
+                    (portfolioStructureDecoder generalSettings.portfolio)
+                    (Decode.field "j" Investment.decoder)
+                    (Decode.field "k" Filters.decodeBuyingConfiguration)
+                    (Decode.field "l" Filters.decodeSellingConfiguration)
+            )
 
 
 strategyToUrlHash : StrategyConfiguration -> UrlHash
