@@ -21,7 +21,8 @@ import Util
 
 
 type Rating
-    = AAAAA
+    = AAAAAA
+    | AAAAA
     | AAAA
     | AAA
     | AAE
@@ -35,7 +36,8 @@ type Rating
 
 allRatings : List Rating
 allRatings =
-    [ AAAAA
+    [ AAAAAA
+    , AAAAA
     , AAAA
     , AAA
     , AAE
@@ -51,6 +53,9 @@ allRatings =
 toInterestPercent : Rating -> Float
 toInterestPercent r =
     case r of
+        AAAAAA ->
+            2.99
+
         AAAAA ->
             3.99
 
@@ -107,6 +112,9 @@ ratingDictToList =
 hash : Rating -> Int
 hash rating =
     case rating of
+        AAAAAA ->
+            11
+
         AAAAA ->
             1
 
@@ -141,6 +149,9 @@ hash rating =
 fromHash : Int -> Maybe Rating
 fromHash h =
     case h of
+        11 ->
+            Just AAAAAA
+
         1 ->
             Just AAAAA
 

@@ -54,7 +54,7 @@ public class RandomStrategyRenderingTest {
         assertThat(averageLengthOfUrlEncodedStrategy)
                 .as("Average length of strategy encoded in URL should be around 2700 characters")
                 .isNotEmpty()
-                .hasValueCloseTo(2700.0, Offset.offset(100.0));
+                .hasValueCloseTo(2600.0, Offset.offset(100.0));
 
         List<LogEntry> errorsAndWarnings = testApp.getBrowserConsoleLogs().filter(Level.WARNING);
         assertThat(errorsAndWarnings)

@@ -11,7 +11,8 @@ import Data.PortfolioStructure exposing (PortfolioShares)
 conservative : PortfolioShares
 conservative =
     initShares
-        [ ( AAAAA, 16 )
+        [ ( AAAAAA, 3 )
+        , ( AAAAA, 13 )
         , ( AAAA, 19 )
         , ( AAA, 21 )
         , ( AAE, 19 )
@@ -27,7 +28,8 @@ conservative =
 balanced : PortfolioShares
 balanced =
     initShares
-        [ ( AAAAA, 8 )
+        [ ( AAAAAA, 2 )
+        , ( AAAAA, 6 )
         , ( AAAA, 14 )
         , ( AAA, 16 )
         , ( AAE, 18 )
@@ -43,7 +45,8 @@ balanced =
 progressive : PortfolioShares
 progressive =
     initShares
-        [ ( AAAAA, 3 )
+        [ ( AAAAAA, 1 )
+        , ( AAAAA, 2 )
         , ( AAAA, 7 )
         , ( AAA, 10 )
         , ( AAE, 14 )

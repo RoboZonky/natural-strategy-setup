@@ -158,7 +158,8 @@ colors : Array Color
 colors =
     -- Pie slice colors taken from zonky dashboard
     Array.fromList
-        [ "#8b59be" -- AAAAA
+        [ "#c0498b" -- AAAAAA
+        , "#8b59be" -- AAAAA
         , "#596abe" -- AAAA
         , "#599ebe" -- AAA
         , "#5ABFA9" -- AAE

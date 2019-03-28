@@ -83,7 +83,7 @@ portfolioSharesGen portfolio =
             Random.constant PredefinedShares.progressive
 
         UserDefined ->
-            tenIntsThatAddUpTo100
+            elevenIntsThatAddUpTo100
                 |> Random.andThen
                     (\minimumShares ->
                         List.map (\from -> percentageFrom from) minimumShares
@@ -525,19 +525,19 @@ randomRangeGtGen mi ma =
             )
 
 
-{-| To generate valid portfolio structure we need 10 non-negative ints that add up to 100.
-We split the interval [0..100] into 10 subintervals by generating 9 boundary values, sorting them
-and calculating 10 differences as
+{-| To generate valid portfolio structure we need 11 non-negative integers that add up to 100.
+We split the interval [0..100] into 11 sub-intervals by generating 10 boundary values, sorting them
+and calculating 11 differences as
 
-1.  100 - boundary9
-2.  boundary9 - boundary8
+1.  100 - boundary10
+2.  boundary10 - boundary9
     ...
 3.  boundary1 - 0
 
 -}
-tenIntsThatAddUpTo100 : Generator (List Int)
-tenIntsThatAddUpTo100 =
-    Random.list 9 (Random.int 0 100)
+elevenIntsThatAddUpTo100 : Generator (List Int)
+elevenIntsThatAddUpTo100 =
+    Random.list 10 (Random.int 0 100)
         |> Random.map
             (\nineBoundaries ->
                 let
