@@ -193,8 +193,8 @@ whichEnabled amt =
 -- JSON
 
 
-ancodeLoanAnnuity : LoanAnnuity -> Value
-ancodeLoanAnnuity la =
+encodeLoanAnnuity : LoanAnnuity -> Value
+encodeLoanAnnuity la =
     case la of
         LessThan x ->
             Encode.list Encode.int [ 1, x ]
@@ -208,7 +208,7 @@ ancodeLoanAnnuity la =
 
 encodeCondition : LoanAnnuityCondition -> Value
 encodeCondition (LoanAnnuityCondition c) =
-    ancodeLoanAnnuity c
+    encodeLoanAnnuity c
 
 
 loanAnnuityDecoder : Decoder LoanAnnuity

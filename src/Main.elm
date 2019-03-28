@@ -224,7 +224,7 @@ updateHelper msg model =
             in
             askForBuyFilterDeletionConfirmation model newModel
 
-        DismisAlert ->
+        DismissAlert ->
             { model | alert = NoAlert }
 
         LoadUrl _ ->

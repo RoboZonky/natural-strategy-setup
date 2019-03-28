@@ -28,7 +28,7 @@ import Data.PortfolioStructure.PredefinedShares as PredefinedShares
 import Data.ReservationSetting exposing (ReservationSetting(..))
 import Data.Strategy exposing (GeneralSettings, StrategyConfiguration)
 import Data.TargetBalance as TargetBalance exposing (TargetBalance(..))
-import Data.TargetPortfolioSize as TargetPortfoliSize exposing (TargetPortfolioSize(..))
+import Data.TargetPortfolioSize as TargetPortfolioSize exposing (TargetPortfolioSize(..))
 import Random exposing (Generator)
 import Random.Extra as Random
 import Random.List
@@ -397,7 +397,7 @@ portfolioGen =
 
 targetPortfolioSizeGen : Generator TargetPortfolioSize
 targetPortfolioSizeGen =
-    Random.frequency ( 1, Random.constant TargetPortfoliSize.NotSpecified )
+    Random.frequency ( 1, Random.constant TargetPortfolioSize.NotSpecified )
         [ ( 2, Random.int 0 1000000 |> Random.map TargetPortfolioSize ) ]
 
 
@@ -456,17 +456,17 @@ nonemptySubset =
 
 
 subset : Int -> List a -> Generator (List a)
-subset minimumElements whatToSamleFrom =
+subset minimumElements whatToSampleFrom =
     let
         totalElemCount =
-            List.length whatToSamleFrom
+            List.length whatToSampleFrom
     in
     Random.int minimumElements totalElemCount
         |> Random.map (\selectedElemCount -> List.repeat selectedElemCount True ++ List.repeat (totalElemCount - selectedElemCount) False)
         |> Random.andThen (\bools -> Random.List.shuffle bools)
         |> Random.map
             (\bools ->
-                List.map2 (\a b -> ( a, b )) bools whatToSamleFrom
+                List.map2 (\a b -> ( a, b )) bools whatToSampleFrom
                     |> List.filterMap
                         (\( flag, thing ) ->
                             if flag then

@@ -42,7 +42,7 @@ type Msg
     | DeletionModalMsg DeletionModalMsg
     | TooltipMsg TipId Popover.State
     | SetDateTime Posix
-    | DismisAlert
+    | DismissAlert
     | LoadUrl Browser.UrlRequest
     | NoOp
 

@@ -51,7 +51,7 @@ view maybeAlert =
 closeAlertButton : Html Msg
 closeAlertButton =
     button
-        [ type_ "button", class "close", onClick DismisAlert ]
+        [ type_ "button", class "close", onClick DismissAlert ]
         [ span [] [ text "×" ] ]
 
 

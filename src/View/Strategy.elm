@@ -51,7 +51,7 @@ generalSettingsCard : GeneralSettings -> Accordion.State -> Tooltip.States -> Po
 generalSettingsCard settings accordionState tooltipStates generatedOn =
     let
         cardId =
-            "generalSettigsCard"
+            "generalSettingsCard"
     in
     Accordion.card
         { id = cardId
