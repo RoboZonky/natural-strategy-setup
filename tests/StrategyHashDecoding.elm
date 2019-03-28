@@ -11,7 +11,7 @@ import Data.Strategy as Strategy
 import Data.VersionedStrategy as VersionedStrategy
 import Expect
 import Test exposing (Test, describe, test)
-import Time
+import Util
 
 
 invalidHashData : Test
@@ -53,9 +53,12 @@ validHashData =
         [ test "default strategy" <|
             \() ->
                 case VersionedStrategy.loadStrategy "Mjt7ImgiOnsiYSI6MCwiYiI6WyIwIl0sImMiOlsxXSwiZCI6WzIwMCwyMDBdLCJlIjpbMl0sImYiOlsxXSwiZyI6eyJhIjowfSwiZzEiOjF9LCJqIjpbWzIwMCwyMDBdLFsyMDAsMjAwXSxbMjAwLDIwMF0sWzIwMCwyMDBdLFsyMDAsMjAwXSxbMjAwLDIwMF0sWzIwMCwyMDBdLFsyMDAsMjAwXSxbMjAwLDIwMF0sWzIwMCwyMDBdXSwiayI6eyJvIjowfSwibCI6eyJtIjowfX0=" of
-                    Ok ( decodedStrategy, warnings ) ->
+                    Ok ( decodedStrategy, [] ) ->
                         Strategy.strategyEqual Strategy.defaultStrategyConfiguration decodedStrategy
                             |> Expect.true "Should decode to default strategy configuration"
+
+                    Ok ( _, (_ :: _) as warnings ) ->
+                        Expect.fail <| "There were warnings while decoding strategy: " ++ Util.stringListToString warnings
 
                     Err e ->
                         Expect.fail <| "Failed to decode strategy: " ++ e

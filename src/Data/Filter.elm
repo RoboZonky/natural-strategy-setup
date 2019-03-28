@@ -16,7 +16,6 @@ module Data.Filter exposing
     , getFiltersRemovedByBuyingConfigurationChange
     , getMarketplaceEnablement
     , isValid
-    , itemToPluralString
     , itemToPluralStringGenitive
     , marketplaceFilterValidationErrors
     , removeSellFilterAt
@@ -505,22 +504,6 @@ type FilteredItem
 allFilteredItems : List FilteredItem
 allFilteredItems =
     [ Loan, Participation, Loan_And_Participation, Participation_To_Sell ]
-
-
-itemToPluralString : FilteredItem -> String
-itemToPluralString item =
-    case item of
-        Loan ->
-            "Půjčky"
-
-        Participation ->
-            "Participace"
-
-        Loan_And_Participation ->
-            "Půjčky i participace"
-
-        Participation_To_Sell ->
-            "Participace"
 
 
 itemToPluralStringGenitive : FilteredItem -> String

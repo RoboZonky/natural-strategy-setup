@@ -2,7 +2,6 @@ module Data.VersionedStrategy exposing (loadStrategy)
 
 import Base64
 import Data.Confirmation as Confirmation
-import Data.Filter exposing (SellingConfiguration(..))
 import Data.Filter.Conditions.Rating as Rating
 import Data.Migration.StrategyV1 as V1
 import Data.ReservationSetting as ReservationSetting

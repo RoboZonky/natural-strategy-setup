@@ -18,7 +18,7 @@ import RangeSlider
 import Types exposing (Msg(..))
 import Util
 import View.CardHeightWorkaround exposing (markOpenedAccordionCard)
-import View.PortfolioStructure.BarChart as BarChart exposing (view)
+import View.PortfolioStructure.BarChart as BarChart
 import View.Tooltip as Tooltip
 
 

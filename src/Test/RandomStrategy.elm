@@ -541,6 +541,7 @@ tenIntsThatAddUpTo100 =
         |> Random.map
             (\nineBoundaries ->
                 let
+                    sortedBoundaries : List Int
                     sortedBoundaries =
                         List.sort nineBoundaries
 

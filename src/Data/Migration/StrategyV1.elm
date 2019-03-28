@@ -5,7 +5,6 @@ module Data.Migration.StrategyV1 exposing
     , strategyDecoder
     )
 
-import Data.Confirmation exposing (ConfirmationSettings(..))
 import Data.ExitConfig as ExitConfig exposing (ExitConfig)
 import Data.Filter exposing (BuyingConfiguration(..), MarketplaceEnablement, MarketplaceFilter, SellingConfiguration(..), filteredItemDecoder)
 import Data.Filter.Conditions exposing (Conditions)
