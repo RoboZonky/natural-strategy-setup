@@ -25,12 +25,17 @@ view portfolioShares =
         viewBar =
             makeBar barWidthCalculator
 
+        bars : List (Svg msg)
         bars =
             List.indexedMap viewBar barData
+
+        chartHeightPx : String
+        chartHeightPx =
+            String.fromInt (pxSpacePerBar * List.length Rating.allRatings) ++ "px"
     in
     svg
         [ width "400px"
-        , height "365px"
+        , height chartHeightPx
         ]
         bars
 
@@ -39,16 +44,13 @@ makeBar : (Float -> Float) -> Int -> BarData -> Svg a
 makeBar barWidthCalculator index { rating, sharePercentMin, sharePercentMax, color } =
     let
         yPos =
-            20 + index * 36
+            10 + index * pxSpacePerBar
 
         minimumBarWidth =
             barWidthCalculator sharePercentMin
 
         maximumBarWidth =
             barWidthCalculator sharePercentMax
-
-        barHeight =
-            18
 
         legend =
             String.fromFloat sharePercentMin
@@ -170,3 +172,15 @@ colors =
         , "#e75637" -- C
         , "#d12f2f" -- D
         ]
+
+
+{-| Includes bar height and some space around it
+-}
+pxSpacePerBar : Int
+pxSpacePerBar =
+    barHeight * 2
+
+
+barHeight : Int
+barHeight =
+    18

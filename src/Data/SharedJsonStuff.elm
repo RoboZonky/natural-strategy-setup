@@ -38,7 +38,7 @@ ratingToSliderDictDecoder defaultSliderState sliderStateDecoder =
 
                     [ aaaaa, aaaa, aaa, aa, a, b, c, d {- 8 values for RZ older than 5.1.0 -} ] ->
                         -- Backward compatibility with pre RZ 5.1.0 strategies
-                        List.map2 Tuple.pair Rating.allRatings [ aaaaa, aaaa, aaa, defaultSliderState, aa, defaultSliderState, a, b, c, d ]
+                        List.map2 Tuple.pair Rating.allRatings [ defaultSliderState, aaaaa, aaaa, aaa, defaultSliderState, aa, defaultSliderState, a, b, c, d ]
                             |> Rating.initRatingDict
                             |> Decode.succeed
 
