@@ -57,6 +57,7 @@ renderInvestments defaultSize_ investments =
 
     else
         Dict.Any.toList investments
+            |> List.sortBy (\( rating, _ ) -> Rating.toInterestPercent rating)
             --filter our sizes equal to default size
             |> List.filter (\( _, invSize ) -> toIntRange invSize /= toIntRange defaultSize_)
             |> List.map renderInvestment

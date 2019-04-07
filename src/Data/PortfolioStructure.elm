@@ -62,6 +62,7 @@ renderPortfolioShares portfolio shares =
     case portfolio of
         UserDefined ->
             Dict.Any.toList shares
+                |> List.sortBy (\( rating, _ ) -> Rating.toInterestPercent rating)
                 -- Only render share in the config when maximum > 0
                 |> List.filter (\( _, share ) -> Tuple.second (toIntRange share) > 0)
                 |> List.map renderPortfolioShare
