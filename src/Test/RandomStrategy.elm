@@ -17,6 +17,7 @@ import Data.Filter.Conditions.Rating as Rating exposing (Rating, RatingCondition
 import Data.Filter.Conditions.Region as Region exposing (RegionCondition(..))
 import Data.Filter.Conditions.RemainingAmount as RemainingAmount exposing (RemainingAmountCondition(..))
 import Data.Filter.Conditions.RevenueRate as RevenueRate exposing (RevenueRateCondition(..))
+import Data.Filter.Conditions.SaleFee exposing (SaleFee(..), SaleFeeCondition(..))
 import Data.Filter.Conditions.Story exposing (Story(..), StoryCondition(..))
 import Data.Filter.Conditions.TermMonths as TermMonths exposing (TermMonthsCondition(..))
 import Data.Filter.Conditions.TermPercent as TermPercent exposing (TermPercentCondition(..))
@@ -164,7 +165,7 @@ conditionsGen minConditions filteredItem =
                     participationSpecificConditions
 
                 Participation_To_Sell ->
-                    participationSpecificConditions
+                    participationToSellSpecificCondition :: participationSpecificConditions
 
                 Loan_And_Participation ->
                     []
@@ -205,6 +206,11 @@ participationSpecificConditions =
     ]
 
 
+participationToSellSpecificCondition : Generator Condition
+participationToSellSpecificCondition =
+    Random.map Condition_Sale_Fee saleFeeConditionGen
+
+
 regionConditionGen : Generator RegionCondition
 regionConditionGen =
     nonemptySubset Region.allRegions |> Random.map RegionList
@@ -230,6 +236,12 @@ insuranceConditionGen : Generator InsuranceCondition
 insuranceConditionGen =
     Random.sample [ Active, Inactive ]
         |> Random.map (Maybe.withDefault Active >> InsuranceCondition)
+
+
+saleFeeConditionGen : Generator SaleFeeCondition
+saleFeeConditionGen =
+    Random.sample [ WithFee, NoFee ]
+        |> Random.map (Maybe.withDefault NoFee >> SaleFeeCondition)
 
 
 termMonthsConditionGen : Generator TermMonthsCondition

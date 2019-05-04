@@ -25,6 +25,7 @@ module Data.Filter.Conditions exposing
     , updateRegion
     , updateRemainingAmount
     , updateRevenueRate
+    , updateSaleFee
     , updateStory
     , updateTermMonths
     , updateTermPercent
@@ -41,6 +42,7 @@ import Data.Filter.Conditions.Purpose as Purpose exposing (PurposeCondition, Pur
 import Data.Filter.Conditions.Region as Region exposing (RegionCondition, RegionMsg)
 import Data.Filter.Conditions.RemainingAmount as RemainingAmount exposing (RemainingAmountCondition, RemainingAmountMsg)
 import Data.Filter.Conditions.RevenueRate as RevenueRate exposing (RevenueRateCondition, RevenueRateMsg)
+import Data.Filter.Conditions.SaleFee as SaleFee exposing (SaleFeeCondition, SaleFeeMsg)
 import Data.Filter.Conditions.Story as Story exposing (StoryCondition, StoryMsg)
 import Data.Filter.Conditions.TermMonths as TermMonths exposing (TermMonthsCondition, TermMonthsMsg)
 import Data.Filter.Conditions.TermPercent as TermPercent exposing (TermPercentCondition, TermPercentMsg)
@@ -65,6 +67,7 @@ type alias Conditions =
     , remainingAmount : Maybe RemainingAmountCondition
     , loanAnnuity : Maybe LoanAnnuityCondition
     , revenueRate : Maybe RevenueRateCondition
+    , saleFee : Maybe SaleFeeCondition
     }
 
 
@@ -83,6 +86,7 @@ type Condition
     | Condition_Story StoryCondition
     | Condition_Term_Months TermMonthsCondition
     | Condition_Term_Percent TermPercentCondition
+    | Condition_Sale_Fee SaleFeeCondition
 
 
 type ConditionType
@@ -97,6 +101,7 @@ type ConditionType
     | Remaining_Amount
     | Region
     | Revenue_Rate
+    | Sale_Fee
     | Story
     | Term_Months
     | Term_Percent
@@ -118,6 +123,7 @@ emptyConditions =
     , remainingAmount = Nothing
     , loanAnnuity = Nothing
     , revenueRate = Nothing
+    , saleFee = Nothing
     }
 
 
@@ -156,6 +162,9 @@ renderCondition condition =
 
         Condition_Revenue_Rate c ->
             RevenueRate.renderCondition c
+
+        Condition_Sale_Fee c ->
+            SaleFee.renderCondition c
 
         Condition_Story c ->
             Story.renderCondition c
@@ -208,6 +217,9 @@ conditionValidationError condition =
         Condition_Revenue_Rate c ->
             RevenueRate.validationErrors c
 
+        Condition_Sale_Fee _ ->
+            [{- Sale fee condition can't be invalid -> valid. errors list always empty -}]
+
         Condition_Story _ ->
             [{- Story condition can't be invalid -> valid. errors list always empty -}]
 
@@ -237,6 +249,7 @@ getDisabledConditionTypes cs =
         , addIfNothing .region Region
         , addIfNothing .remainingAmount Remaining_Amount
         , addIfNothing .revenueRate Revenue_Rate
+        , addIfNothing .saleFee Sale_Fee
         , addIfNothing .story Story
         , addIfNothing .termMonths Term_Months
         , addIfNothing .termPercent Term_Percent
@@ -262,6 +275,7 @@ getEnabledConditionTypes cs =
         , addIfJust .region Region
         , addIfJust .remainingAmount Remaining_Amount
         , addIfJust .revenueRate Revenue_Rate
+        , addIfJust .saleFee Sale_Fee
         , addIfJust .story Story
         , addIfJust .termMonths Term_Months
         , addIfJust .termPercent Term_Percent
@@ -287,6 +301,7 @@ getEnabledConditions cs =
         , addIfJust .region Condition_Region
         , addIfJust .remainingAmount Condition_Remaining_Amount
         , addIfJust .revenueRate Condition_Revenue_Rate
+        , addIfJust .saleFee Condition_Sale_Fee
         , addIfJust .story Condition_Story
         , addIfJust .termMonths Condition_Term_Months
         , addIfJust .termPercent Condition_Term_Percent
@@ -329,6 +344,9 @@ addCondition condition cs =
         Condition_Revenue_Rate c ->
             { cs | revenueRate = Just c }
 
+        Condition_Sale_Fee c ->
+            { cs | saleFee = Just c }
+
         Condition_Story c ->
             { cs | story = Just c }
 
@@ -357,6 +375,11 @@ updateRemainingAmount msg conditions =
 updateRevenueRate : RevenueRateMsg -> Conditions -> Conditions
 updateRevenueRate msg conditions =
     { conditions | revenueRate = Maybe.map (RevenueRate.update msg) conditions.revenueRate }
+
+
+updateSaleFee : SaleFeeMsg -> Conditions -> Conditions
+updateSaleFee msg conditions =
+    { conditions | saleFee = Maybe.map (SaleFee.update msg) conditions.saleFee }
 
 
 updateStory : StoryMsg -> Conditions -> Conditions
@@ -445,6 +468,9 @@ removeCondition conditionType cs =
         Revenue_Rate ->
             { cs | revenueRate = Nothing }
 
+        Sale_Fee ->
+            { cs | saleFee = Nothing }
+
         Story ->
             { cs | story = Nothing }
 
@@ -495,6 +521,9 @@ getDefaultCondition conditionType =
 
         Revenue_Rate ->
             Condition_Revenue_Rate RevenueRate.defaultCondition
+
+        Sale_Fee ->
+            Condition_Sale_Fee SaleFee.defaultCondition
 
         Story ->
             Condition_Story Story.defaultCondition
@@ -564,6 +593,9 @@ encodeCondition condition =
         Condition_Revenue_Rate c ->
             ( "O", RevenueRate.encodeCondition c )
 
+        Condition_Sale_Fee c ->
+            ( "P", SaleFee.encodeCondition c )
+
 
 conditionsDecoder : Decoder Conditions
 conditionsDecoder =
@@ -583,3 +615,4 @@ conditionsDecoder =
         |> andMap (optionalField "M" RemainingAmount.conditionDecoder)
         |> andMap (optionalField "N" LoanAnnuity.conditionDecoder)
         |> andMap (optionalField "O" RevenueRate.conditionDecoder)
+        |> andMap (optionalField "P" SaleFee.conditionDecoder)

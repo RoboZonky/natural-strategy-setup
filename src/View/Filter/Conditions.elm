@@ -17,6 +17,7 @@ import Data.Filter.Conditions.Purpose as Purpose exposing (Purpose(..), PurposeC
 import Data.Filter.Conditions.Region as Region exposing (Region(..), RegionCondition(..), RegionMsg)
 import Data.Filter.Conditions.RemainingAmount as RemainingAmount exposing (RemainingAmount(..), RemainingAmountCondition(..), RemainingAmountMsg)
 import Data.Filter.Conditions.RevenueRate as RevenueRate exposing (RevenueRate(..), RevenueRateCondition(..), RevenueRateMsg)
+import Data.Filter.Conditions.SaleFee as SaleFee exposing (SaleFee(..), SaleFeeCondition(..), SaleFeeMsg(..))
 import Data.Filter.Conditions.Story as Story exposing (Story(..), StoryCondition(..), StoryMsg)
 import Data.Filter.Conditions.TermMonths as TermMonths exposing (TermMonths(..), TermMonthsCondition(..), TermMonthsMsg)
 import Data.Filter.Conditions.TermPercent as TermPercent exposing (TermPercent(..), TermPercentCondition(..), TermPercentMsg)
@@ -66,21 +67,23 @@ conditionTypesThatApplyTo filteredItem =
         commonForParticipations =
             [ Term_Percent, Elapsed_Term_Months, Elapsed_Term_Percent, Remaining_Amount ]
     in
-    case filteredItem of
-        Loan ->
-            commonForAll
+    commonForAll
+        ++ (case filteredItem of
+                Loan ->
+                    []
 
-        Participation ->
-            commonForParticipations ++ commonForAll
+                Loan_And_Participation ->
+                    []
 
-        Participation_To_Sell ->
-            commonForParticipations ++ commonForAll
+                Participation ->
+                    commonForParticipations
 
-        Loan_And_Participation ->
-            commonForAll
+                Participation_To_Sell ->
+                    Sale_Fee :: commonForParticipations
+           )
 
 
-{-| Dropdown for enabling conditionts that are currently disabled, but can be enabled for given FilteredItem
+{-| Dropdown for enabling conditions that are currently disabled, but can be enabled for given FilteredItem
 -}
 conditionEnablementDropdown : FilteredItem -> Conditions -> Html Msg
 conditionEnablementDropdown filteredItem conditions =
@@ -147,6 +150,9 @@ conditionSubform item condition =
         Condition_Revenue_Rate c ->
             wrap Revenue_Rate <| Html.map RevenueRateMsg <| RevenueRate.form c
 
+        Condition_Sale_Fee c ->
+            wrap Sale_Fee <| Html.map SaleFeeMsg <| SaleFee.form c
+
         Condition_Story c ->
             wrap Story <| Html.map StoryMsg <| Story.form c
 
@@ -195,6 +201,9 @@ getVisibleLabel filteredItem conditionType =
 
         Revenue_Rate ->
             "Optimální výnos"
+
+        Sale_Fee ->
+            "Poplatek za prodej"
 
         Story ->
             "Příběh"
@@ -260,6 +269,7 @@ type
     | RegionMsg RegionMsg
     | RemainingAmountMsg RemainingAmountMsg
     | RevenueRateMsg RevenueRateMsg
+    | SaleFeeMsg SaleFeeMsg
     | StoryMsg StoryMsg
     | TermMonthsMsg TermMonthsMsg
     | TermPercentMsg TermPercentMsg
@@ -303,6 +313,9 @@ update msg model =
 
         RevenueRateMsg m ->
             C.updateRevenueRate m model
+
+        SaleFeeMsg m ->
+            C.updateSaleFee m model
 
         StoryMsg m ->
             C.updateStory m model
