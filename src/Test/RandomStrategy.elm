@@ -429,7 +429,7 @@ investmentShareGen =
 targetBalanceGen : Generator TargetBalance
 targetBalanceGen =
     Random.frequency ( 1, Random.constant TargetBalance.NotSpecified )
-        [ ( 2, Random.int 200 100000 |> Random.map TargetBalance ) ]
+        [ ( 2, Random.int 0 100000 |> Random.map TargetBalance ) ]
 
 
 confirmationSettingsGen : Generator ConfirmationSettings

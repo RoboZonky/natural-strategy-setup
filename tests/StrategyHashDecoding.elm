@@ -22,7 +22,7 @@ invalidHashData =
 
 strategyFromHashTest : ( String, String ) -> Test
 strategyFromHashTest ( urlHash, expectedError ) =
-    test ("invadlid hash '" ++ urlHash ++ "'") <|
+    test ("invalid hash '" ++ urlHash ++ "'") <|
         \() ->
             VersionedStrategy.loadStrategy (Base64.encode urlHash)
                 |> Expect.equal (Err expectedError)
@@ -52,7 +52,7 @@ validHashData =
     describe "Strategy.strategyFromUrlHash - valid inputs" <|
         [ test "default strategy" <|
             \() ->
-                case VersionedStrategy.loadStrategy "Mjt7ImgiOnsiYSI6MCwiYiI6WyIwIl0sImMiOlsxXSwiZCI6WzIwMCwyMDBdLCJlIjpbMl0sImYiOlsxXSwiZyI6eyJhIjowfSwiZzEiOjF9LCJqIjpbWzIwMCwyMDBdLFsyMDAsMjAwXSxbMjAwLDIwMF0sWzIwMCwyMDBdLFsyMDAsMjAwXSxbMjAwLDIwMF0sWzIwMCwyMDBdLFsyMDAsMjAwXSxbMjAwLDIwMF0sWzIwMCwyMDBdXSwiayI6eyJvIjowfSwibCI6eyJtIjowfX0=" of
+                case VersionedStrategy.loadStrategy "Mjt7ImgiOnsiYSI6MCwiYiI6WyIwIl0sImMiOlsxXSwiZCI6WzAsMjAwXSwiZSI6WzJdLCJmIjpbMV0sImciOnsiYSI6MH0sImcxIjoxfSwiaiI6W1swLDIwMF0sWzAsMjAwXSxbMCwyMDBdLFswLDIwMF0sWzAsMjAwXSxbMCwyMDBdLFswLDIwMF0sWzAsMjAwXSxbMCwyMDBdLFswLDIwMF0sWzAsMjAwXV0sImsiOnsibyI6MH0sImwiOnsibSI6MH19" of
                     Ok ( decodedStrategy, [] ) ->
                         Strategy.strategyEqual Strategy.defaultStrategyConfiguration decodedStrategy
                             |> Expect.true "Should decode to default strategy configuration"

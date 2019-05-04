@@ -92,7 +92,7 @@ mkSize from to =
 
 defaultSize : Size
 defaultSize =
-    mkSize 200 200
+    mkSize 0 200
 
 
 investmentSlidersSubscriptions : InvestmentsPerRating -> Sub Types.Msg

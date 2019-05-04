@@ -34,7 +34,7 @@ validate tb =
             []
 
         TargetBalance val ->
-            Validate.validate (val < 200) "Minimální výše investice na Zonky.cz je 200 Kč. Nastovavat nižší hodnotu nemá smysl."
+            Validate.validate (val < 0) "Disponibilní zůstatek nesmí být záporný"
 
 
 
