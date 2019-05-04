@@ -3,12 +3,14 @@ module View.SellConfig exposing (form)
 import Bootstrap.Accordion as Accordion
 import Bootstrap.Button as Button
 import Bootstrap.Card.Block as CardBlock
+import Bootstrap.Form.Radio as Radio
 import Bootstrap.Utilities.Spacing as Spacing
-import Data.Filter exposing (FilteredItem(..), SellingConfiguration(..))
+import Data.Filter exposing (FilteredItem(..), SellingConfiguration(..), validateSellingConfiguration)
 import Data.Filter.Complexity exposing (FilterComplexity(..), complexityButtonLabel)
 import Data.Tooltip as Tooltip
 import Html exposing (Html, div, text)
 import Types exposing (CreationModalMsg(..), Msg(..))
+import Util
 import Version exposing (filtersHowToLink)
 import View.CardHeightWorkaround exposing (markOpenedAccordionCard)
 import View.Filter exposing (filterListView)
@@ -34,20 +36,60 @@ form sellingConfiguration accordionState tooltipStates =
 
 viewSellingConfiguration : SellingConfiguration -> CardBlock.Item Msg
 viewSellingConfiguration sellingConfiguration =
-    let
-        emptyListMessageOrFilterList =
-            case sellingConfiguration of
-                SellSomething filters ->
-                    filterListView RemoveSellFilter filters
-
-                SellNothing ->
-                    div [] [ text "Prodej participací je zakázán. Chcete-li jej povolit, přidejte aspoň jedno pravidlo." ]
-    in
     CardBlock.custom <|
         div []
-            [ emptyListMessageOrFilterList
-            , filterCreationButtons
+            [ Radio.radio
+                [ Radio.id "sc1"
+                , radioName
+                , Radio.checked (toEnum sellingConfiguration == SNothing)
+                , Radio.onClick (SellingConfigChanged SellNothing)
+                ]
+                "Zakázat prodej participací"
+            , Radio.radio
+                [ Radio.id "sc2"
+                , radioName
+                , Radio.checked (toEnum sellingConfiguration == SWithoutCharge)
+                , Radio.onClick (SellingConfigChanged SellWithoutCharge)
+                ]
+                "Prodávat všechny participace bez poplatku, které odpovídají filtrům tržiště"
+            , Radio.radio
+                [ Radio.id "sc3"
+                , radioName
+                , Radio.checked (toEnum sellingConfiguration == SSomething)
+                , Radio.onClick <|
+                    case sellingConfiguration of
+                        SellSomething _ ->
+                            -- Avoid filter deletion confirmation modal when user accidentally selects this radio when already selected
+                            NoOp
+
+                        _ ->
+                            SellingConfigChanged (SellSomething [])
+                ]
+                "Prodávat participace splňující pravidla"
+            , filterListControls sellingConfiguration
             ]
+
+
+radioName : Radio.Option msg
+radioName =
+    Radio.name "sellconfig"
+
+
+filterListControls : SellingConfiguration -> Html Msg
+filterListControls sellingConfiguration =
+    case sellingConfiguration of
+        SellSomething filters ->
+            div []
+                [ filterListView RemoveSellFilter filters
+                , filterCreationButtons
+                , Util.viewErrors <| validateSellingConfiguration sellingConfiguration
+                ]
+
+        SellWithoutCharge ->
+            text ""
+
+        SellNothing ->
+            text ""
 
 
 filterCreationButtons : Html Msg
@@ -68,3 +110,22 @@ filterCreationButton filterComplexity buttonType =
         , Button.small
         ]
         [ text <| complexityButtonLabel filterComplexity ]
+
+
+type SellConfigEnum
+    = SNothing
+    | SSomething
+    | SWithoutCharge
+
+
+toEnum : SellingConfiguration -> SellConfigEnum
+toEnum sellingConfiguration =
+    case sellingConfiguration of
+        SellSomething _ ->
+            SSomething
+
+        SellWithoutCharge ->
+            SWithoutCharge
+
+        SellNothing ->
+            SNothing

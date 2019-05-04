@@ -14,6 +14,7 @@ module Data.Filter exposing
     , filteredItemDecoder
     , getAllowedFilterItems
     , getFiltersRemovedByBuyingConfigurationChange
+    , getFiltersRemovedBySellingConfigurationChange
     , getMarketplaceEnablement
     , isValid
     , itemToPluralStringGenitive
@@ -36,7 +37,7 @@ import Data.Validate as Validate
 import Html exposing (Html, span, text)
 import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as Encode exposing (Value)
-import List.Extra
+import List.Extra as List
 import Util
 
 
@@ -75,8 +76,11 @@ updateBuyFilters updater buyingConfiguration =
 addSellFilter : MarketplaceFilter -> SellingConfiguration -> SellingConfiguration
 addSellFilter newFilter sellingConfiguration =
     case sellingConfiguration of
+        SellWithoutCharge ->
+            SellWithoutCharge
+
         SellNothing ->
-            SellSomething [ newFilter ]
+            SellNothing
 
         SellSomething filters ->
             SellSomething <| filters ++ [ newFilter ]
@@ -88,13 +92,11 @@ removeSellFilterAt index sellingConfiguration =
         SellNothing ->
             SellNothing
 
-        SellSomething filters ->
-            case List.Extra.removeAt index filters of
-                [] ->
-                    SellNothing
+        SellWithoutCharge ->
+            SellWithoutCharge
 
-                nonEmptyFilterList ->
-                    SellSomething nonEmptyFilterList
+        SellSomething filters ->
+            SellSomething <| List.removeAt index filters
 
 
 togglePrimaryEnablement : Bool -> BuyingConfiguration -> BuyingConfiguration
@@ -182,11 +184,10 @@ toggleSecondaryEnablement enableSecondary buyingConfiguration =
 getFiltersRemovedByBuyingConfigurationChange : BuyingConfiguration -> BuyingConfiguration -> List MarketplaceFilter
 getFiltersRemovedByBuyingConfigurationChange old new =
     case ( old, new ) of
-        ( InvestNothing, _ ) ->
-            []
-
-        ( InvestEverything, _ ) ->
-            []
+        ( InvestSomething _ oldFilters, InvestSomething _ newFilters ) ->
+            List.filter
+                (\oldFilter -> List.notMember oldFilter newFilters)
+                oldFilters
 
         ( InvestSomething _ oldFilters, InvestNothing ) ->
             oldFilters
@@ -194,10 +195,29 @@ getFiltersRemovedByBuyingConfigurationChange old new =
         ( InvestSomething _ oldFilters, InvestEverything ) ->
             oldFilters
 
-        ( InvestSomething _ oldFilters, InvestSomething _ newFilters ) ->
+        ( InvestNothing, _ ) ->
+            []
+
+        ( InvestEverything, _ ) ->
+            []
+
+
+getFiltersRemovedBySellingConfigurationChange : SellingConfiguration -> SellingConfiguration -> List MarketplaceFilter
+getFiltersRemovedBySellingConfigurationChange old new =
+    case ( old, new ) of
+        ( SellSomething oldFilters, SellSomething newFilters ) ->
             List.filter
-                (\oldFilter -> not <| List.member oldFilter newFilters)
+                (\oldFilter -> List.notMember oldFilter newFilters)
                 oldFilters
+
+        ( SellSomething oldFilters, SellNothing ) ->
+            oldFilters
+
+        ( SellSomething oldFilters, SellWithoutCharge ) ->
+            oldFilters
+
+        _ ->
+            []
 
 
 removeDisabledFilters : MarketplaceEnablement -> List MarketplaceFilter -> List MarketplaceFilter
@@ -245,6 +265,7 @@ getAllowedFilterItems { primaryEnabled, secondaryEnabled } =
 
 type SellingConfiguration
     = SellNothing
+    | SellWithoutCharge
     | SellSomething (List MarketplaceFilter)
 
 
@@ -253,7 +274,10 @@ validateSellingConfiguration sellingConfiguration =
     case sellingConfiguration of
         SellSomething filterList ->
             Validate.validate (List.isEmpty filterList)
-                "Seznam pravidel nesmí být prázdný. Přidejte alespoň jedno pravidlo nebo zakažte prodej participací"
+                "Seznam pravidel prodeje nesmí být prázdný. Přidejte alespoň jedno pravidlo."
+
+        SellWithoutCharge ->
+            []
 
         SellNothing ->
             []
@@ -264,6 +288,9 @@ renderSellingConfiguration sellingConfiguration =
     case sellingConfiguration of
         SellNothing ->
             "Prodej participací zakázán."
+
+        SellWithoutCharge ->
+            "Prodávat všechny participace bez poplatku, které odpovídají filtrům tržiště."
 
         SellSomething filters ->
             renderSellFilters filters
@@ -503,7 +530,11 @@ type FilteredItem
 
 allFilteredItems : List FilteredItem
 allFilteredItems =
-    [ Loan, Participation, Loan_And_Participation, Participation_To_Sell ]
+    [ Loan
+    , Participation
+    , Loan_And_Participation
+    , Participation_To_Sell
+    ]
 
 
 itemToPluralStringGenitive : FilteredItem -> String
@@ -527,18 +558,21 @@ itemToPluralStringGenitive item =
 
 
 encodeSellingConfiguration : SellingConfiguration -> Value
-encodeSellingConfiguration sellingConfiguratin =
-    case sellingConfiguratin of
+encodeSellingConfiguration sellingConfiguration =
+    case sellingConfiguration of
         SellNothing ->
             Encode.object
-                [ ( "m", Encode.int 0 )
-                ]
+                [ ( "m", Encode.int 0 ) ]
 
         SellSomething filters ->
             Encode.object
                 [ ( "m", Encode.int 1 )
                 , ( "n", Encode.list encodeMarketplaceFilter filters )
                 ]
+
+        SellWithoutCharge ->
+            Encode.object
+                [ ( "m", Encode.int 2 ) ]
 
 
 decodeSellingConfiguration : Decoder SellingConfiguration
@@ -553,6 +587,9 @@ decodeSellingConfiguration =
                     1 ->
                         Decode.map SellSomething
                             (Decode.field "n" (Decode.list marketplaceFilterDecoder))
+
+                    2 ->
+                        Decode.succeed SellWithoutCharge
 
                     _ ->
                         Decode.fail <| "Unable to decode SellingConfiguration from " ++ String.fromInt x

@@ -1,105 +1,131 @@
 module View.Filter.DeletionModal exposing
-    ( ChangeToConfirm(..)
+    ( Config
     , Model
-    , UserDecision(..)
-    , askForConfirmation
+    , confirmBuyFiltersDeletion
+    , confirmSellFiltersDeletion
     , init
-    , update
     , view
     )
 
 import Bootstrap.Button as Button
 import Bootstrap.Modal as Modal
-import Data.Filter as Filter exposing (BuyingConfiguration, MarketplaceFilter)
+import Data.Filter as Filter exposing (BuyingConfiguration, MarketplaceFilter, SellingConfiguration)
 import Html exposing (Html, text)
-import Types exposing (DeletionModalMsg(..))
-
-
-init : Model
-init =
-    { changeToConfirm = NoChange
-    , openCloseState = Modal.hidden
-    }
-
-
-askForConfirmation : ChangeToConfirm -> Model
-askForConfirmation change =
-    { changeToConfirm = change
-    , openCloseState = Modal.shown
-    }
 
 
 type alias Model =
-    { changeToConfirm : ChangeToConfirm
+    { changeToConfirm : Maybe ChangeToConfirm
     , openCloseState : Modal.Visibility
     }
 
 
-update : DeletionModalMsg -> Model -> ( Model, Maybe UserDecision )
-update msg model =
-    case msg of
-        ConfirmDeletion ->
-            ( { model | openCloseState = Modal.hidden }, Just OkToDelete )
-
-        CancelDeletion ->
-            let
-                userChoice =
-                    case model.changeToConfirm of
-                        BuyingConfigChange previous _ ->
-                            RestorePreviousBuying previous
-
-                        NoChange ->
-                            OkToDelete
-            in
-            ( { model | openCloseState = Modal.hidden }, Just userChoice )
+type alias Config msg =
+    { setBuyingConfig : BuyingConfiguration -> msg
+    , setSellingConfig : SellingConfiguration -> msg
+    }
 
 
 type ChangeToConfirm
-    = BuyingConfigChange BuyingConfiguration BuyingConfiguration
-    | NoChange
+    = BuyingConfigChange BuyingConfiguration BuyingConfiguration (List MarketplaceFilter)
+    | SellingConfigChange SellingConfiguration SellingConfiguration (List MarketplaceFilter)
 
 
-type UserDecision
-    = RestorePreviousBuying BuyingConfiguration
-    | OkToDelete
+init : Model
+init =
+    { changeToConfirm = Nothing
+    , openCloseState = Modal.hidden
+    }
 
 
-view : Model -> Html DeletionModalMsg
-view { changeToConfirm, openCloseState } =
-    Modal.config CancelDeletion
-        |> Modal.large
-        |> Modal.h5 [] [ text "Potvrďte odstranění filtrů" ]
-        |> Modal.body [] [ modalBody changeToConfirm ]
-        |> Modal.footer []
-            [ Button.button
-                [ Button.danger
-                , Button.onClick ConfirmDeletion
-                ]
-                [ text "Ano, odstranit" ]
-            , Button.button
-                [ Button.success
-                , Button.onClick CancelDeletion
-                ]
-                [ text "Zrušit změnu" ]
-            ]
-        |> Modal.view openCloseState
+open : ChangeToConfirm -> Model
+open change =
+    { changeToConfirm = Just change
+    , openCloseState = Modal.shown
+    }
+
+
+confirmSellFiltersDeletion : SellingConfiguration -> SellingConfiguration -> Model
+confirmSellFiltersDeletion old new =
+    case Filter.getFiltersRemovedBySellingConfigurationChange old new of
+        [] ->
+            init
+
+        filtersToRemove ->
+            open (SellingConfigChange old new filtersToRemove)
+
+
+confirmBuyFiltersDeletion : BuyingConfiguration -> BuyingConfiguration -> Model
+confirmBuyFiltersDeletion old new =
+    case Filter.getFiltersRemovedByBuyingConfigurationChange old new of
+        [] ->
+            init
+
+        filtersToRemove ->
+            open (BuyingConfigChange old new filtersToRemove)
+
+
+cancelDeletion : Config msg -> ChangeToConfirm -> msg
+cancelDeletion config change =
+    case change of
+        BuyingConfigChange old _ _ ->
+            config.setBuyingConfig old
+
+        SellingConfigChange old _ _ ->
+            config.setSellingConfig old
+
+
+confirmDeletion : Config msg -> ChangeToConfirm -> msg
+confirmDeletion config change =
+    case change of
+        BuyingConfigChange _ new _ ->
+            config.setBuyingConfig new
+
+        SellingConfigChange _ new _ ->
+            config.setSellingConfig new
+
+
+view : Config msg -> Model -> Html msg
+view config { changeToConfirm, openCloseState } =
+    case changeToConfirm of
+        Just change ->
+            Modal.config (cancelDeletion config change)
+                |> Modal.large
+                |> Modal.h5 [] [ text "Potvrďte odstranění filtrů" ]
+                |> Modal.body [] [ modalBody change ]
+                |> Modal.footer []
+                    [ Button.button
+                        [ Button.danger
+                        , Button.onClick (confirmDeletion config change)
+                        ]
+                        [ text "Ano, odstranit" ]
+                    , Button.button
+                        [ Button.success
+                        , Button.onClick (cancelDeletion config change)
+                        ]
+                        [ text "Zrušit změnu" ]
+                    ]
+                |> Modal.view openCloseState
+
+        Nothing ->
+            text ""
 
 
 modalBody : ChangeToConfirm -> Html a
 modalBody change =
-    let
-        ( listOfFiltersToBeRemoved, itemBeingChanged ) =
-            case change of
-                BuyingConfigChange from to ->
-                    ( Filter.getFiltersRemovedByBuyingConfigurationChange from to, "nákupu" )
+    case change of
+        BuyingConfigChange _ _ removedFilters ->
+            viewFiltersToBeDeleted removedFilters "nákupu"
 
-                NoChange ->
-                    ( [], "" )
-    in
+        SellingConfigChange _ _ removedFilters ->
+            viewFiltersToBeDeleted removedFilters "prodeje"
+
+
+viewFiltersToBeDeleted : List MarketplaceFilter -> String -> Html a
+viewFiltersToBeDeleted filters itemBeingChanged =
     Html.div []
         [ text <| "Tato změna pravidel " ++ itemBeingChanged ++ " vyžaduje odstranění následujících filtrů"
         , Html.ul [] <|
-            List.map viewFilter listOfFiltersToBeRemoved
+            List.map viewFilter filters
         ]
 
 

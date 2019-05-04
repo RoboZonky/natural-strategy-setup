@@ -15,6 +15,7 @@ module Data.Strategy exposing
     , setPortfolio
     , setPortfolioShareRange
     , setReservationSetting
+    , setSellingConfiguration
     , setTargetBalance
     , setTargetPortfolioSize
     , strategyDecoder
@@ -201,6 +202,11 @@ removeSellFilter index config =
 setBuyingConfiguration : Filters.BuyingConfiguration -> StrategyConfiguration -> StrategyConfiguration
 setBuyingConfiguration buyingConfiguration strategy =
     { strategy | buyingConfig = buyingConfiguration }
+
+
+setSellingConfiguration : Filters.SellingConfiguration -> StrategyConfiguration -> StrategyConfiguration
+setSellingConfiguration sellingConfiguration strategy =
+    { strategy | sellingConfig = sellingConfiguration }
 
 
 togglePrimaryMarket : Bool -> StrategyConfiguration -> StrategyConfiguration

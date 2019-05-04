@@ -29,8 +29,15 @@ form config accordionState filterCreationState filterDeletionState tooltipStates
         [ Col.xs6 ]
         [ strategyForm config accordionState tooltipStates generatedOn
         , Html.map CreationModalMsg <| FilterCreationModal.view filterCreationState tooltipStates
-        , Html.map DeletionModalMsg <| FilterDeletionModal.view filterDeletionState
+        , FilterDeletionModal.view deletionModalConfig filterDeletionState
         ]
+
+
+deletionModalConfig : FilterDeletionModal.Config Msg
+deletionModalConfig =
+    { setBuyingConfig = SetBuyingConfig
+    , setSellingConfig = SetSellingConfig
+    }
 
 
 strategyForm : StrategyConfiguration -> Accordion.State -> Tooltip.States -> Posix -> Html Msg

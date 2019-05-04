@@ -1,7 +1,6 @@
 module Types exposing
     ( BaseUrl
     , CreationModalMsg(..)
-    , DeletionModalMsg(..)
     , Msg(..)
     , UrlHash
     )
@@ -11,7 +10,7 @@ import Bootstrap.Popover as Popover
 import Browser
 import Data.Confirmation as Confirmation
 import Data.ExitConfig as ExitConfig
-import Data.Filter exposing (FilteredItem)
+import Data.Filter exposing (BuyingConfiguration, FilteredItem, SellingConfiguration)
 import Data.Filter.Complexity exposing (FilterComplexity)
 import Data.Filter.Conditions.Rating exposing (Rating)
 import Data.Portfolio exposing (Portfolio)
@@ -35,11 +34,13 @@ type Msg
     | TargetBalanceChanged String
     | RemoveBuyFilter Int
     | RemoveSellFilter Int
+    | SellingConfigChanged SellingConfiguration
+    | SetSellingConfig SellingConfiguration
+    | SetBuyingConfig BuyingConfiguration
     | TogglePrimaryMarket Bool
     | ToggleSecondaryMarket Bool
     | AccordionMsg Accordion.State
     | CreationModalMsg CreationModalMsg
-    | DeletionModalMsg DeletionModalMsg
     | TooltipMsg TipId Popover.State
     | SetDateTime Posix
     | DismissAlert
@@ -59,11 +60,6 @@ type CreationModalMsg
     | SaveFilter
     | CloseModal
     | ModalNoOp
-
-
-type DeletionModalMsg
-    = ConfirmDeletion
-    | CancelDeletion
 
 
 type alias BaseUrl =

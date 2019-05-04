@@ -73,7 +73,7 @@ init () url key =
             loadStrategyFromUrl url
 
         baseUrl =
-            {- clear the fragmentfrom URL -}
+            {- clear the fragment from URL -}
             { url | fragment = Nothing }
     in
     ( initialModel baseUrl initialStrategy initialAlert
@@ -192,23 +192,31 @@ updateHelper msg model =
             in
             updateStrategy maybeInsertFilter { model | filterCreationState = newFilterCreationState }
 
-        DeletionModalMsg modalMsg ->
-            let
-                ( newFilterDeletionState, maybeUserDecision ) =
-                    FilterDeletionModal.update modalMsg model.filterDeletionState
-
-                maybeRestoreFilters =
-                    maybeUserDecision
-                        |> Maybe.map userDecisionToFilterUpdater
-                        |> Maybe.withDefault identity
-            in
-            updateStrategy maybeRestoreFilters { model | filterDeletionState = newFilterDeletionState }
-
         SetDateTime posix ->
             { model | generatedOn = posix }
 
         SetReservationSetting reservationSetting ->
             updateStrategy (Strategy.setReservationSetting reservationSetting) model
+
+        SellingConfigChanged sellingConfig ->
+            let
+                newModel =
+                    updateStrategy (Strategy.setSellingConfiguration sellingConfig) model
+            in
+            { newModel
+                | filterDeletionState =
+                    FilterDeletionModal.confirmSellFiltersDeletion
+                        model.strategyConfig.sellingConfig
+                        newModel.strategyConfig.sellingConfig
+            }
+
+        SetBuyingConfig buyingConfig ->
+            updateStrategy (Strategy.setBuyingConfiguration buyingConfig) model
+                |> closeDeletionConfirmationModal
+
+        SetSellingConfig sellingConfig ->
+            updateStrategy (Strategy.setSellingConfiguration sellingConfig) model
+                |> closeDeletionConfirmationModal
 
         TogglePrimaryMarket enable ->
             let
@@ -235,18 +243,6 @@ updateHelper msg model =
             model
 
 
-{-| Return a function which will either leave filters in the strategy as they are, or rever them to what they were before
--}
-userDecisionToFilterUpdater : FilterDeletionModal.UserDecision -> StrategyConfiguration -> StrategyConfiguration
-userDecisionToFilterUpdater userDecision =
-    case userDecision of
-        FilterDeletionModal.RestorePreviousBuying previousBuyingConfig ->
-            Strategy.setBuyingConfiguration previousBuyingConfig
-
-        FilterDeletionModal.OkToDelete ->
-            identity
-
-
 {-| Return a function that will insert given filter into the right place of StrategyConfiguration
 -}
 marketplaceFilterToFilterUpdater : Filters.MarketplaceFilter -> StrategyConfiguration -> StrategyConfiguration
@@ -261,24 +257,19 @@ marketplaceFilterToFilterUpdater newFilter =
 
 askForBuyFilterDeletionConfirmation : Model -> Model -> Model
 askForBuyFilterDeletionConfirmation oldModel newModel =
-    let
-        removedFilters =
-            Filters.getFiltersRemovedByBuyingConfigurationChange
+    { newModel
+        | filterDeletionState =
+            FilterDeletionModal.confirmBuyFiltersDeletion
                 oldModel.strategyConfig.buyingConfig
                 newModel.strategyConfig.buyingConfig
+    }
 
-        newFilterDeletionState =
-            if List.isEmpty removedFilters then
-                FilterDeletionModal.init
 
-            else
-                FilterDeletionModal.askForConfirmation
-                    (FilterDeletionModal.BuyingConfigChange
-                        oldModel.strategyConfig.buyingConfig
-                        newModel.strategyConfig.buyingConfig
-                    )
-    in
-    { newModel | filterDeletionState = newFilterDeletionState }
+closeDeletionConfirmationModal :
+    { a | filterDeletionState : FilterDeletionModal.Model }
+    -> { a | filterDeletionState : FilterDeletionModal.Model }
+closeDeletionConfirmationModal record =
+    { record | filterDeletionState = FilterDeletionModal.init }
 
 
 wrapIntOrEmpty : (Int -> a) -> a -> String -> a
