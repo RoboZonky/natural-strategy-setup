@@ -152,6 +152,8 @@ regionCheckbox : Int -> Region -> Bool -> Html RegionMsg
 regionCheckbox index region isEnabled =
     Checkbox.checkbox
         [ Checkbox.id ("region_" ++ String.fromInt index)
+        , Checkbox.checked isEnabled
+        , Checkbox.inline
         , Checkbox.onCheck
             (\checked ->
                 if checked then
@@ -160,8 +162,6 @@ regionCheckbox index region isEnabled =
                 else
                     RemoveRegion region
             )
-        , Checkbox.checked isEnabled
-        , Checkbox.inline
         ]
         (regionToString region)
 

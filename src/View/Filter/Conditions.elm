@@ -279,55 +279,55 @@ type
 
 
 update : Msg -> Model -> Model
-update msg model =
+update msg =
     case msg of
         AmountMsg m ->
-            C.updateAmount m model
+            C.updateAmount m
 
         ElapsedTermMonthsMsg m ->
-            C.updateElapsedTermMonths m model
+            C.updateElapsedTermMonths m
 
         ElapsedTermPercentMsg m ->
-            C.updateElapsedTermPercent m model
+            C.updateElapsedTermPercent m
 
         IncomeMsg m ->
-            C.updateIncome m model
+            C.updateIncome m
 
         InsuranceMsg m ->
-            C.updateInsurance m model
+            C.updateInsurance m
 
         InterestMsg m ->
-            C.updateInterest m model
+            C.updateInterest m
 
         LoanAnnuityMsg m ->
-            C.updateLoanAnnuity m model
+            C.updateLoanAnnuity m
 
         PurposeMsg m ->
-            C.updatePurpose m model
+            C.updatePurpose m
 
         RegionMsg m ->
-            C.updateRegion m model
+            C.updateRegion m
 
         RemainingAmountMsg m ->
-            C.updateRemainingAmount m model
+            C.updateRemainingAmount m
 
         RevenueRateMsg m ->
-            C.updateRevenueRate m model
+            C.updateRevenueRate m
 
         SaleFeeMsg m ->
-            C.updateSaleFee m model
+            C.updateSaleFee m
 
         StoryMsg m ->
-            C.updateStory m model
+            C.updateStory m
 
         TermMonthsMsg m ->
-            C.updateTermMonths m model
+            C.updateTermMonths m
 
         TermPercentMsg m ->
-            C.updateTermPercent m model
+            C.updateTermPercent m
 
         AddCondition c ->
-            C.addCondition c model
+            C.addCondition c
 
         RemoveCondition ct ->
-            C.removeCondition ct model
+            C.removeCondition ct

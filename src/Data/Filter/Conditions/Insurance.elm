@@ -56,9 +56,9 @@ update (SetInsurance i) _ =
 form : InsuranceCondition -> Html InsuranceMsg
 form (InsuranceCondition i) =
     Checkbox.checkbox
-        [ Checkbox.id (toDomId i)
-        , Checkbox.inline
+        [ Checkbox.id "insurance"
         , Checkbox.checked (i == Active)
+        , Checkbox.inline
         , Checkbox.onCheck
             (\checked ->
                 if checked then
@@ -69,16 +69,6 @@ form (InsuranceCondition i) =
             )
         ]
         "pojištění je aktivní"
-
-
-toDomId : Insurance -> String
-toDomId i =
-    case i of
-        Active ->
-            "insurance_active"
-
-        Inactive ->
-            "insurance_inactive"
 
 
 

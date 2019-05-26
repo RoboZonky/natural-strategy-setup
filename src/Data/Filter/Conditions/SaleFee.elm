@@ -58,8 +58,9 @@ update (SetSaleFee sf) _ =
 form : SaleFeeCondition -> Html SaleFeeMsg
 form (SaleFeeCondition sf) =
     Checkbox.checkbox
-        [ Checkbox.inline
+        [ Checkbox.id "sale_fee"
         , Checkbox.checked (sf == WithFee)
+        , Checkbox.inline
         , Checkbox.onCheck
             (\checked ->
                 if checked then

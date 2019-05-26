@@ -14,6 +14,7 @@ module Data.Filter.Conditions.TermPercent exposing
 import Bootstrap.Form as Form
 import Bootstrap.Form.Radio as Radio
 import Data.Validate as Validate
+import DomId exposing (DomId)
 import Html exposing (Html, text)
 import Html.Events exposing (onSubmit)
 import Json.Decode as Decode exposing (Decoder)
@@ -152,19 +153,19 @@ form (TermPercentCondition termPercent) =
     in
     Html.div []
         [ Form.formInline [ onSubmit TermPercentNoOp ]
-            [ termPercentRadio ltEnabled (SetLessThan "0") "nedosahuje"
+            [ termPercentRadio ltEnabled (SetLessThan "0") "nedosahuje" "tp1"
             , numericInput SetLessThan ltEnabled values.lessThan
             , unit
             ]
         , Form.formInline [ onSubmit TermPercentNoOp ]
-            [ termPercentRadio btwEnabled (SetBetween "0" "0") "je"
+            [ termPercentRadio btwEnabled (SetBetween "0" "0") "je" "tp2"
             , numericInput (\x -> SetBetween x values.betweenMax) btwEnabled values.betweenMin
             , text "až"
             , numericInput (\y -> SetBetween values.betweenMin y) btwEnabled values.betweenMax
             , unit
             ]
         , Form.formInline [ onSubmit TermPercentNoOp ]
-            [ termPercentRadio mtEnabled (SetMoreThan "0") "přesahuje"
+            [ termPercentRadio mtEnabled (SetMoreThan "0") "přesahuje" "tp3"
             , numericInput SetMoreThan mtEnabled values.moreThan
             , unit
             ]
@@ -181,10 +182,11 @@ numericInput =
     View.NumericInput.numericInput 0 100
 
 
-termPercentRadio : Bool -> TermPercentMsg -> String -> Html TermPercentMsg
-termPercentRadio checked msg label =
+termPercentRadio : Bool -> TermPercentMsg -> String -> DomId -> Html TermPercentMsg
+termPercentRadio checked msg label domId =
     Radio.radio
-        [ Radio.name "termPercent"
+        [ Radio.id domId
+        , Radio.name "termPercent"
         , Radio.checked checked
         , Radio.onClick msg
         ]

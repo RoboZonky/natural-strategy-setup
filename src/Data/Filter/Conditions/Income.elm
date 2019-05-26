@@ -122,6 +122,8 @@ incomeCheckbox : Int -> Income -> Bool -> Html IncomeMsg
 incomeCheckbox index income isEnabled =
     Checkbox.checkbox
         [ Checkbox.id ("income_" ++ String.fromInt index)
+        , Checkbox.checked isEnabled
+        , Checkbox.inline
         , Checkbox.onCheck
             (\checked ->
                 if checked then
@@ -130,8 +132,6 @@ incomeCheckbox index income isEnabled =
                 else
                     RemoveIncome income
             )
-        , Checkbox.checked isEnabled
-        , Checkbox.inline
         ]
         (incomeToString income)
 

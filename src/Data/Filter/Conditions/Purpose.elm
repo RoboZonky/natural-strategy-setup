@@ -127,6 +127,8 @@ purposeCheckbox : Int -> Purpose -> Bool -> Html PurposeMsg
 purposeCheckbox index purpose isEnabled =
     Checkbox.checkbox
         [ Checkbox.id ("purpose_" ++ String.fromInt index)
+        , Checkbox.checked isEnabled
+        , Checkbox.inline
         , Checkbox.onCheck
             (\checked ->
                 if checked then
@@ -135,8 +137,6 @@ purposeCheckbox index purpose isEnabled =
                 else
                     RemovePurpose purpose
             )
-        , Checkbox.checked isEnabled
-        , Checkbox.inline
         ]
         (purposeToString purpose)
 

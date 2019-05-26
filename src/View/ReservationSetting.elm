@@ -4,6 +4,7 @@ import Bootstrap.Card.Block as CardBlock
 import Bootstrap.Form.Fieldset as Fieldset
 import Bootstrap.Form.Radio as Radio
 import Data.ReservationSetting as ReservationSetting exposing (ReservationSetting(..))
+import DomId exposing (DomId)
 import Html exposing (Html, a, text)
 import Html.Attributes exposing (class, href)
 import Types exposing (Msg(..))
@@ -31,7 +32,7 @@ helpLink =
         [ text "Nápověda" ]
 
 
-reservationRadio : String -> ReservationSetting -> ReservationSetting -> Html Msg
+reservationRadio : DomId -> ReservationSetting -> ReservationSetting -> Html Msg
 reservationRadio domId thisRadioSetting currentReservationSetting =
     Radio.radio
         [ Radio.id domId
