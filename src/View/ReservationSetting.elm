@@ -6,7 +6,7 @@ import Bootstrap.Form.Radio as Radio
 import Data.ReservationSetting as ReservationSetting exposing (ReservationSetting(..))
 import DomId exposing (DomId)
 import Html exposing (Html, a, text)
-import Html.Attributes exposing (class, href)
+import Html.Attributes exposing (class, href, target)
 import Types exposing (Msg(..))
 
 
@@ -28,6 +28,7 @@ helpLink =
     a
         [ href "https://github.com/RoboZonky/natural-strategy-setup/blob/master/docs/ReservationSystem.md"
         , class "fieldset-legend-help"
+        , target "_blank"
         ]
         [ text "Nápověda" ]
 

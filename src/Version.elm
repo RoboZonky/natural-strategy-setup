@@ -9,7 +9,7 @@ module Version exposing
 
 import DateFormat as DF exposing (dayOfMonthNumber, monthNumber, yearNumber)
 import Html exposing (Html, a, text)
-import Html.Attributes exposing (href)
+import Html.Attributes exposing (href, target)
 import Time exposing (Posix)
 
 
@@ -17,7 +17,10 @@ import Time exposing (Posix)
 -}
 filtersHowToLink : Html a
 filtersHowToLink =
-    a [ href "https://github.com/RoboZonky/natural-strategy-setup/blob/master/docs/BuySellConfig.md" ]
+    a
+        [ href "https://github.com/RoboZonky/natural-strategy-setup/blob/master/docs/BuySellConfig.md"
+        , target "_blank"
+        ]
         [ text "Nápověda" ]
 
 

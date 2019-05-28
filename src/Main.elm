@@ -15,7 +15,7 @@ import Data.TargetPortfolioSize as TargetPortfolioSize exposing (TargetPortfolio
 import Data.Tooltip as Tooltip
 import Data.VersionedStrategy as VersionedStrategy
 import Html exposing (Html, a, footer, h1, text)
-import Html.Attributes exposing (class, href, style)
+import Html.Attributes exposing (class, href, style, target)
 import Task
 import Time exposing (Posix)
 import Types exposing (BaseUrl, CreationModalMsg(..), Msg(..))
@@ -301,11 +301,16 @@ infoFooter : Html Msg
 infoFooter =
     footer [ class "text-center mt-2", style "color" "gray" ]
         [ text "Autor "
-        , a [ href "http://janhrcek.cz" ] [ text "Jan Hrček" ]
+        , a
+            [ href "http://janhrcek.cz", target "_blank" ]
+            [ text "Jan Hrček" ]
         , text ". Běžící verze "
-        , a [ href Version.githubCommitLink ] [ text Version.commitHash ]
+        , a [ href Version.githubCommitLink, target "_blank" ]
+            [ text Version.commitHash ]
         , text ". Nahlásit chybu na "
-        , a [ href "https://github.com/RoboZonky/natural-strategy-setup/issues" ] [ text "stránce projektu" ]
+        , a
+            [ href "https://github.com/RoboZonky/natural-strategy-setup/issues", target "_blank" ]
+            [ text "stránce projektu" ]
         ]
 
 

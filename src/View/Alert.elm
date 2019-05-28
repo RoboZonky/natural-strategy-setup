@@ -2,7 +2,7 @@ module View.Alert exposing (AlertData(..), view)
 
 import Bootstrap.Alert
 import Html exposing (Html, a, button, div, li, span, text, ul)
-import Html.Attributes exposing (class, href, type_)
+import Html.Attributes exposing (class, href, target, type_)
 import Html.Events exposing (onClick)
 import Types exposing (Msg(..))
 import Url.Builder exposing (crossOrigin, string)
@@ -37,7 +37,11 @@ view maybeAlert =
                 , div [] [ text <| "Upozornění: Strategie se podařilo obnovit z URL jen částečně." ]
                 , div []
                     [ text "Došlo k několika zpětně nekompatibilním změnám ve formátu strategie (viz "
-                    , a [ href "https://github.com/RoboZonky/natural-strategy-setup/blob/master/docs/StrategyFormatChangelog.md" ] [ text "dokumentace" ]
+                    , a
+                        [ href "https://github.com/RoboZonky/natural-strategy-setup/blob/master/docs/StrategyFormatChangelog.md"
+                        , target "_blank"
+                        ]
+                        [ text "dokumentace" ]
                     , text ")"
                     ]
                 , div [] [ text "V důsledku toho musely být některé části vaší konfigurace odstraněny." ]
