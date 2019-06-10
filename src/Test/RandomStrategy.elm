@@ -200,10 +200,10 @@ termMonthsConditionGen =
         maxTermMonths =
             84
     in
-    Random.choices (Random.map TermMonths.LessThan (Random.int (minTermMonths + 1 {- 0 is invalid, as parser subtract 1 -}) (maxTermMonths + 1)))
+    Random.choices (Random.map TermMonths.LessThan (Random.int minTermMonths maxTermMonths))
         [ randomRangeGen minTermMonths maxTermMonths
             |> Random.map (\( mi, mx ) -> TermMonths.Between mi mx)
-        , Random.map TermMonths.MoreThan (Random.int minTermMonths (maxTermMonths - 1 {- max is invalid, as parser adds 1 -}))
+        , Random.map TermMonths.MoreThan (Random.int minTermMonths maxTermMonths)
         ]
         |> Random.map (TermMonthsCondition >> Condition_Term_Months)
 
@@ -217,9 +217,9 @@ termPercentConditionGen =
         maxTermPercent =
             100
     in
-    Random.choices (Random.map TermPercent.LessThan (Random.int (minTermPercent + 1 {- 0 is invalid, as parser subtract 1 -}) (maxTermPercent + 1)))
+    Random.choices (Random.map TermPercent.LessThan (Random.int minTermPercent maxTermPercent))
         [ percentRangeGen |> Random.map (\( mi, mx ) -> TermPercent.Between mi mx)
-        , Random.map TermPercent.MoreThan (Random.int minTermPercent (maxTermPercent - 1 {- max is invalid, as parser adds 1 -}))
+        , Random.map TermPercent.MoreThan (Random.int minTermPercent maxTermPercent)
         ]
         |> Random.map (TermPercentCondition >> Condition_Term_Percent)
 
@@ -233,10 +233,10 @@ elapsedTermMonthsConditionGen =
         maxTermMonths =
             84
     in
-    Random.choices (Random.map ElapsedTermMonths.LessThan (Random.int (minTermMonths + 1 {- 0 is invalid, as parser subtract 1 -}) (maxTermMonths + 1)))
+    Random.choices (Random.map ElapsedTermMonths.LessThan (Random.int minTermMonths maxTermMonths))
         [ randomRangeGen minTermMonths maxTermMonths
             |> Random.map (\( mi, mx ) -> ElapsedTermMonths.Between mi mx)
-        , Random.map ElapsedTermMonths.MoreThan (Random.int minTermMonths (maxTermMonths - 1 {- max is invalid, as parser adds 1 -}))
+        , Random.map ElapsedTermMonths.MoreThan (Random.int minTermMonths maxTermMonths)
         ]
         |> Random.map (ElapsedTermMonthsCondition >> Condition_Elapsed_Term_Months)
 
@@ -250,9 +250,9 @@ elapsedTermPercentConditionGen =
         maxTermPercent =
             100
     in
-    Random.choices (Random.map ElapsedTermPercent.LessThan (Random.int (minTermPercent + 1 {- 0 is invalid, as parser subtract 1 -}) (maxTermPercent + 1)))
+    Random.choices (Random.map ElapsedTermPercent.LessThan (Random.int minTermPercent maxTermPercent))
         [ percentRangeGen |> Random.map (\( mi, mx ) -> ElapsedTermPercent.Between mi mx)
-        , Random.map ElapsedTermPercent.MoreThan (Random.int minTermPercent (maxTermPercent - 1 {- max is invalid, as parser adds 1 -}))
+        , Random.map ElapsedTermPercent.MoreThan (Random.int minTermPercent maxTermPercent)
         ]
         |> Random.map (ElapsedTermPercentCondition >> Condition_Elapsed_Term_Percent)
 
