@@ -73,7 +73,8 @@ class TestApp implements Closeable {
 
     enum Deployment {
         CURRENT(Paths.get(System.getProperty("user.dir"), "target/testApp.html").toUri().toString()),
-        V1("https://janhrcek.cz/nss-strategy-compat/v1/");
+        V1("https://janhrcek.cz/nss-strategy-compat/v1/"),
+        V2("https://janhrcek.cz/nss-strategy-compat/v2/");
 
         private final URI uri;
 

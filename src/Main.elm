@@ -150,9 +150,6 @@ updateHelper msg model =
             in
             updateStrategy (Strategy.setTargetBalance newBalance) model
 
-        ConfirmationFormMsg confMsg ->
-            updateStrategy (Strategy.updateNotificationSettings confMsg) model
-
         ChangePortfolioSharePercentage rating sliderMsg ->
             updateStrategy
                 -- Any change from defaults automatically selects "user defined" portfolio

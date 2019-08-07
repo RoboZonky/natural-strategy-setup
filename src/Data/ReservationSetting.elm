@@ -2,6 +2,7 @@ module Data.ReservationSetting exposing
     ( ReservationSetting(..)
     , allSettings
     , decoder
+    , defaultSetting
     , encode
     , render
     )
@@ -17,6 +18,11 @@ type ReservationSetting
       -- FullOwnership
       AcceptMatching
     | Ignore
+
+
+defaultSetting : ReservationSetting
+defaultSetting =
+    Ignore
 
 
 allSettings : List ReservationSetting

@@ -10,7 +10,6 @@ import Time exposing (Posix)
 import Types exposing (Msg(..))
 import View.BuyingConfig as BuyingConfig
 import View.CardHeightWorkaround exposing (markOpenedAccordionCard)
-import View.Confirmation as Confirmation
 import View.ExitConfig as ExitConfig
 import View.Filter.CreationModal as FilterCreationModal
 import View.Filter.DeletionModal as FilterDeletionModal
@@ -70,7 +69,6 @@ generalSettingsCard settings accordionState tooltipStates generatedOn =
                 , InvestmentShare.form settings.defaultInvestmentShare
                 , TargetBalance.form settings.defaultTargetBalance
                 , ReservationSetting.form settings.reservationSetting
-                , Confirmation.form settings.confirmationSettings tooltipStates
                 , ExitConfig.form settings.exitConfig generatedOn tooltipStates
                 ]
             ]

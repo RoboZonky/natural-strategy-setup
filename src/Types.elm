@@ -8,7 +8,6 @@ module Types exposing
 import Bootstrap.Accordion as Accordion
 import Bootstrap.Popover as Popover
 import Browser
-import Data.Confirmation as Confirmation
 import Data.ExitConfig as ExitConfig
 import Data.Filter exposing (BuyingConfiguration, FilteredItem, SellingConfiguration)
 import Data.Filter.Complexity exposing (FilterComplexity)
@@ -27,7 +26,7 @@ type Msg
     | TargetPortfolioSizeChanged String
     | TargetPortfolioShareChanged String
     | ChangePortfolioSharePercentage Rating RangeSlider.Msg
-    | ConfirmationFormMsg Confirmation.ConfirmationFormMsg
+      --| ConfirmationFormMsg Confirmation.ConfirmationFormMsg
     | ChangeInvestment Rating RangeSlider.Msg
     | ChangeDefaultInvestment RangeSlider.Msg
     | SetReservationSetting ReservationSetting

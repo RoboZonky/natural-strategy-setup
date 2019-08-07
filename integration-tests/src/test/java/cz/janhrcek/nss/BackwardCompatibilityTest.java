@@ -6,6 +6,10 @@ import org.assertj.core.api.Assertions;
 import org.assertj.core.util.Strings;
 import org.junit.After;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
+import org.junit.runners.Parameterized.Parameter;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
@@ -18,12 +22,23 @@ import static java.util.stream.Collectors.mapping;
 import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
 
+@RunWith(Parameterized.class)
 public class BackwardCompatibilityTest {
 
 
     private final TestApp testApp = new TestApp(WebDriverFactory.createHeadlessWebDriver());
     private final NssApp nssApp = new NssApp(WebDriverFactory.createHeadlessWebDriver());
 
+    @Parameter
+    public TestApp.Deployment legacyDeployment;
+
+    @Parameters
+    public static Iterable<? extends Object> data() {
+        return Arrays.asList(
+                TestApp.Deployment.V1,
+                TestApp.Deployment.V2
+        );
+    }
 
     @After
     public void closeApps() {
@@ -32,16 +47,15 @@ public class BackwardCompatibilityTest {
     }
 
     @Test
-    public void canRestoreV1Stategies() {
-        testApp.open(TestApp.Deployment.V1);
+    public void canRestoreLegacyStrategies() {
+        testApp.open(legacyDeployment);
 
         ProgressBar progressBar = new ProgressBar();
-        final int numberOfStrategies = 200;
+        final int numberOfStrategies = 100;
         for (int i = 1; i <= numberOfStrategies; i++) {
             String strategyHash = testApp.getStrategyHash();
             nssApp.open(strategyHash);
             String notification = nssApp.getStrategyRestoredNotification();
-            //assertThat(notification).startsWith("Strategie byla úspěšně načtena z URL");
 
             if (notification.startsWith("Pokus o načtení strategie z URL se nezdařil")) {
                 URL errorReportingUrl = nssApp.getErrorReportingUrl();
