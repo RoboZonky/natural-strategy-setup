@@ -4,6 +4,7 @@ module Data.Strategy exposing
     , addBuyFilter
     , addSellFilter
     , defaultStrategyConfiguration
+    , portfolioStructureDecoder
     , removeBuyFilter
     , removeSellFilter
     , renderStrategyConfiguration
@@ -23,12 +24,10 @@ module Data.Strategy exposing
     , strategyToUrlHash
     , togglePrimaryMarket
     , toggleSecondaryMarket
-    , updateNotificationSettings
     , validateStrategyConfiguration
     )
 
 import Base64
-import Data.Confirmation as Confirmation exposing (ConfirmationFormMsg, ConfirmationSettings)
 import Data.ExitConfig as ExitConfig exposing (ExitConfig)
 import Data.Filter as Filters exposing (BuyingConfiguration, MarketplaceFilter, SellingConfiguration)
 import Data.Filter.Conditions.Rating exposing (Rating(..))
@@ -67,7 +66,6 @@ type alias GeneralSettings =
     , defaultInvestmentSize : Investment.Size
     , defaultInvestmentShare : InvestmentShare
     , defaultTargetBalance : TargetBalance
-    , confirmationSettings : ConfirmationSettings
     , reservationSetting : ReservationSetting
     }
 
@@ -81,8 +79,7 @@ defaultStrategyConfiguration =
         , defaultInvestmentSize = Investment.defaultSize
         , defaultInvestmentShare = InvestmentShare.NotSpecified
         , defaultTargetBalance = TargetBalance.NotSpecified
-        , confirmationSettings = Confirmation.confirmationsDisabled
-        , reservationSetting = ReservationSetting.Ignore
+        , reservationSetting = ReservationSetting.defaultSetting
         }
     , portfolioShares = PredefinedShares.conservative
     , investmentSizeOverrides = Investment.defaultInvestmentsPerRating Investment.defaultSize
@@ -130,13 +127,6 @@ setTargetPortfolioSize targetPortfolioSize ({ generalSettings } as config) =
 setDefaultInvestmentShare : InvestmentShare -> StrategyConfiguration -> StrategyConfiguration
 setDefaultInvestmentShare share ({ generalSettings } as config) =
     { config | generalSettings = { generalSettings | defaultInvestmentShare = share } }
-
-
-updateNotificationSettings : ConfirmationFormMsg -> StrategyConfiguration -> StrategyConfiguration
-updateNotificationSettings msg ({ generalSettings } as config) =
-    { config
-        | generalSettings = { generalSettings | confirmationSettings = Confirmation.update msg generalSettings.confirmationSettings }
-    }
 
 
 setPortfolioShareRange : Rating -> RangeSlider.Msg -> StrategyConfiguration -> StrategyConfiguration
@@ -254,7 +244,6 @@ renderGeneralSettings generalSettings =
         , Investment.renderSize generalSettings.defaultInvestmentSize
         , InvestmentShare.render generalSettings.defaultInvestmentShare
         , TargetBalance.render generalSettings.defaultTargetBalance
-        , Confirmation.render generalSettings.confirmationSettings
         ]
 
 
@@ -271,7 +260,6 @@ validateGeneralSettings : GeneralSettings -> List String
 validateGeneralSettings generalSettings =
     List.concat
         [ ExitConfig.validate generalSettings.exitConfig
-        , Confirmation.validate generalSettings.confirmationSettings
         , TargetPortfolioSize.validate generalSettings.targetPortfolioSize
         , InvestmentShare.validate generalSettings.defaultInvestmentShare
         , TargetBalance.validate generalSettings.defaultTargetBalance
@@ -300,7 +288,6 @@ generalSettingsEqual gs1 gs2 =
         , Investment.investmentSizeEqual gs1.defaultInvestmentSize gs2.defaultInvestmentSize
         , gs1.defaultInvestmentShare == gs2.defaultInvestmentShare
         , gs1.defaultTargetBalance == gs2.defaultTargetBalance
-        , Confirmation.equal gs1.confirmationSettings gs2.confirmationSettings
         ]
 
 
@@ -309,7 +296,7 @@ generalSettingsEqual gs1 gs2 =
 
 
 encodeGeneralSettings : GeneralSettings -> Value
-encodeGeneralSettings { portfolio, exitConfig, targetPortfolioSize, defaultInvestmentSize, defaultInvestmentShare, defaultTargetBalance, confirmationSettings, reservationSetting } =
+encodeGeneralSettings { portfolio, exitConfig, targetPortfolioSize, defaultInvestmentSize, defaultInvestmentShare, defaultTargetBalance, reservationSetting } =
     Encode.object
         [ ( "a", Portfolio.encode portfolio )
         , ( "b", ExitConfig.encode exitConfig )
@@ -317,21 +304,19 @@ encodeGeneralSettings { portfolio, exitConfig, targetPortfolioSize, defaultInves
         , ( "d", Investment.encodeSize defaultInvestmentSize )
         , ( "e", InvestmentShare.encode defaultInvestmentShare )
         , ( "f", TargetBalance.encode defaultTargetBalance )
-        , ( "g", Confirmation.encode confirmationSettings )
         , ( "g1", ReservationSetting.encode reservationSetting )
         ]
 
 
 generalSettingsDecoder : Decoder GeneralSettings
 generalSettingsDecoder =
-    Decode.map8 GeneralSettings
+    Decode.map7 GeneralSettings
         (Decode.field "a" Portfolio.decoder)
         (Decode.field "b" ExitConfig.decoder)
         (Decode.field "c" TargetPortfolioSize.decoder)
         (Decode.field "d" Investment.sizeDecoder)
         (Decode.field "e" InvestmentShare.decoder)
         (Decode.field "f" TargetBalance.decoder)
-        (Decode.field "g" Confirmation.decoder)
         (Decode.field "g1" ReservationSetting.decoder)
 
 
@@ -358,21 +343,6 @@ encodeStrategy { generalSettings, portfolioShares, investmentSizeOverrides, buyi
 
 strategyDecoder : Decoder StrategyConfiguration
 strategyDecoder =
-    let
-        portfolioStructureDecoder portfolio =
-            case portfolio of
-                Conservative ->
-                    Decode.succeed PredefinedShares.conservative
-
-                Balanced ->
-                    Decode.succeed PredefinedShares.balanced
-
-                Progressive ->
-                    Decode.succeed PredefinedShares.progressive
-
-                UserDefined ->
-                    Decode.field "i" PortfolioStructure.decoder
-    in
     {- Need the portfolio ahead of time because it determines if we
        should decode portfolio structure (for UserDefined) or use one of the predefined ones
     -}
@@ -387,11 +357,27 @@ strategyDecoder =
             )
 
 
+portfolioStructureDecoder : Portfolio -> Decoder PortfolioShares
+portfolioStructureDecoder portfolio =
+    case portfolio of
+        Conservative ->
+            Decode.succeed PredefinedShares.conservative
+
+        Balanced ->
+            Decode.succeed PredefinedShares.balanced
+
+        Progressive ->
+            Decode.succeed PredefinedShares.progressive
+
+        UserDefined ->
+            Decode.field "i" PortfolioStructure.decoder
+
+
 strategyToUrlHash : StrategyConfiguration -> UrlHash
 strategyToUrlHash strategyConfiguration =
     encodeStrategy strategyConfiguration
         |> Encode.encode 0
-        |> (\strategyJson -> "2;" ++ strategyJson)
+        |> (\strategyJson -> String.fromInt strategyVersion ++ ";" ++ strategyJson)
         |> Base64.encode
 
 
@@ -408,3 +394,8 @@ shareableUrlComment baseUrl strategyConfig =
         {- This line has to end with a newline, so it's accepted by RoboZonky parser as a comment -}
         , "# " ++ baseUrl ++ "#" ++ urlHash ++ "\n"
         ]
+
+
+strategyVersion : Int
+strategyVersion =
+    3

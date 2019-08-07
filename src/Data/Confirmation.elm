@@ -1,8 +1,8 @@
 module Data.Confirmation exposing
     ( ConfirmationFormMsg(..)
     , ConfirmationSettings(..)
-    , confirmationsDisabled
     , decoder
+    , defaultSettings
     , encode
     , equal
     , render
@@ -26,8 +26,8 @@ type ConfirmationSettings
     | Confirm InterestCondition
 
 
-confirmationsDisabled : ConfirmationSettings
-confirmationsDisabled =
+defaultSettings : ConfirmationSettings
+defaultSettings =
     NoConfirmation
 
 

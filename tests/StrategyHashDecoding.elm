@@ -7,11 +7,10 @@ module StrategyHashDecoding exposing
     )
 
 import Base64
-import Data.Strategy as Strategy
+import Data.Strategy as Strategy exposing (StrategyConfiguration)
 import Data.VersionedStrategy as VersionedStrategy
-import Expect
+import Expect exposing (Expectation)
 import Test exposing (Test, describe, test)
-import Util
 
 
 invalidHashData : Test
@@ -43,23 +42,52 @@ testData =
     , ( ";", "Failed to read strategy version from " )
     , ( "a;", "Failed to read strategy version from a" )
     , ( "0;", "Unsupported strategy version 0" )
-    , ( "3;", "Unsupported strategy version 3" )
+    , ( "99;", "Unsupported strategy version 99" )
     ]
 
 
 validHashData : Test
 validHashData =
     describe "Strategy.strategyFromUrlHash - valid inputs" <|
-        [ test "default strategy" <|
+        [ test "Default strategy" <|
             \() ->
-                case VersionedStrategy.loadStrategy "Mjt7ImgiOnsiYSI6MCwiYiI6WyIwIl0sImMiOlsxXSwiZCI6WzAsMjAwXSwiZSI6WzJdLCJmIjpbMV0sImciOnsiYSI6MH0sImcxIjoxfSwiaiI6W1swLDIwMF0sWzAsMjAwXSxbMCwyMDBdLFswLDIwMF0sWzAsMjAwXSxbMCwyMDBdLFswLDIwMF0sWzAsMjAwXSxbMCwyMDBdLFswLDIwMF0sWzAsMjAwXV0sImsiOnsibyI6MH0sImwiOnsibSI6MH19" of
-                    Ok ( decodedStrategy, [] ) ->
-                        Strategy.strategyEqual Strategy.defaultStrategyConfiguration decodedStrategy
-                            |> Expect.true "Should decode to default strategy configuration"
-
-                    Ok ( _, (_ :: _) as warnings ) ->
-                        Expect.fail <| "There were warnings while decoding strategy: " ++ Util.stringListToString warnings
-
-                    Err e ->
-                        Expect.fail <| "Failed to decode strategy: " ++ e
+                VersionedStrategy.loadStrategy "Mzt7ImgiOnsiYSI6MCwiYiI6WyIwIl0sImMiOlsxXSwiZCI6WzAsMjAwXSwiZSI6WzJdLCJmIjpbMV0sImcxIjoxfSwiaiI6W1swLDIwMF0sWzAsMjAwXSxbMCwyMDBdLFswLDIwMF0sWzAsMjAwXSxbMCwyMDBdLFswLDIwMF0sWzAsMjAwXSxbMCwyMDBdLFswLDIwMF0sWzAsMjAwXV0sImsiOnsibyI6MH0sImwiOnsibSI6MH19"
+                    |> withDecodedStrategy
+                        (Expect.all
+                            [ \( _, warnings ) -> List.isEmpty warnings |> Expect.true "There should be no warnings"
+                            , \( decodedStrategy, _ ) ->
+                                Strategy.strategyEqual Strategy.defaultStrategyConfiguration decodedStrategy
+                                    |> Expect.true "Should decode to default strategy configuration"
+                            ]
+                        )
+        , describe "Migration from v2 strategy"
+            [ test "mobile notifications enabled - should give warning about notifications being removed" <|
+                \() ->
+                    VersionedStrategy.loadStrategy "Mjt7ImgiOnsiYSI6MCwiYiI6WyIwIl0sImMiOlsxXSwiZCI6WzAsMjAwXSwiZSI6WzJdLCJmIjpbMV0sImciOnsiYSI6MSwiYiI6eyJ2IjozLCJ3Ijo1fX0sImcxIjoxfSwiaiI6W1swLDIwMF0sWzAsMjAwXSxbMCwyMDBdLFswLDIwMF0sWzAsMjAwXSxbMCwyMDBdLFswLDIwMF0sWzAsMjAwXSxbMCwyMDBdLFswLDIwMF0sWzAsMjAwXV0sImsiOnsibyI6MH0sImwiOnsibSI6MH19"
+                        |> withDecodedStrategy
+                            (Expect.all
+                                [ \( _, warnings ) -> warnings |> Expect.equal [ "Vaše strategie měla nastaveno Potvrzení investic mobilem, které muselo být odstraněno." ]
+                                , \( decodedStrategy, _ ) ->
+                                    Strategy.strategyEqual Strategy.defaultStrategyConfiguration decodedStrategy
+                                        |> Expect.true "Should decode to default strategy configuration"
+                                ]
+                            )
+            , test "default strategy = notification disabled" <|
+                \() ->
+                    VersionedStrategy.loadStrategy "Mjt7ImgiOnsiYSI6MCwiYiI6WyIwIl0sImMiOlsxXSwiZCI6WzAsMjAwXSwiZSI6WzJdLCJmIjpbMV0sImciOnsiYSI6MH0sImcxIjoxfSwiaiI6W1swLDIwMF0sWzAsMjAwXSxbMCwyMDBdLFswLDIwMF0sWzAsMjAwXSxbMCwyMDBdLFswLDIwMF0sWzAsMjAwXSxbMCwyMDBdLFswLDIwMF0sWzAsMjAwXV0sImsiOnsibyI6MH0sImwiOnsibSI6MH19"
+                        |> withDecodedStrategy (\( _, warnings ) -> List.isEmpty warnings |> Expect.true "There should be no warnings")
+            ]
         ]
+
+
+withDecodedStrategy :
+    (( StrategyConfiguration, List String ) -> Expectation) -- What to assert about successfully decoded strategy
+    -> Result String ( StrategyConfiguration, List String )
+    -> Expectation
+withDecodedStrategy buildExpectation decodingResult =
+    case decodingResult of
+        Ok ok ->
+            buildExpectation ok
+
+        Err error ->
+            Expect.fail <| "Failed to decode strategy: " ++ error

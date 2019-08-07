@@ -2,10 +2,9 @@ module Data.VersionedStrategy exposing (loadStrategy)
 
 import Base64
 import Data.Confirmation as Confirmation
-import Data.Filter.Conditions.Rating as Rating
 import Data.Migration.StrategyV1 as V1
-import Data.ReservationSetting as ReservationSetting
-import Data.Strategy as V2
+import Data.Migration.StrategyV2 as V2
+import Data.Strategy as V3
 import Json.Decode as Decode
 import Types exposing (UrlHash)
 
@@ -13,86 +12,63 @@ import Types exposing (UrlHash)
 type VersionedStrategy
     = V1 V1.DecodedStrategy
     | V2 V2.StrategyConfiguration
+    | V3 V3.StrategyConfiguration
 
 
-loadStrategy : UrlHash -> Result String ( V2.StrategyConfiguration, List String )
+loadStrategy : UrlHash -> Result String ( V3.StrategyConfiguration, List String )
 loadStrategy hash =
     case versionedStrategyFromUrlHash hash of
-        Ok (V1 decodedStrategy) ->
-            Ok (migrate_v1_to_v2 decodedStrategy)
+        Ok (V1 v1) ->
+            let
+                ( v2, warnings2 ) =
+                    V2.fromV1 v1
 
-        Ok (V2 stategyCofig) ->
-            Ok ( stategyCofig, [] )
+                ( v3, warnings3 ) =
+                    fromV2 v2
+            in
+            Ok ( v3, warnings2 ++ warnings3 )
+
+        Ok (V2 v2) ->
+            Ok (fromV2 v2)
+
+        Ok (V3 v3) ->
+            Ok ( v3, [] )
 
         Err e ->
             Err e
 
 
-migrate_v1_to_v2 : V1.DecodedStrategy -> ( V2.StrategyConfiguration, List String )
-migrate_v1_to_v2 { strategyConfig, removedBuyFilterCount, removedSellFilterCount } =
+fromV2 : V2.StrategyConfiguration -> ( V3.StrategyConfiguration, List String )
+fromV2 old =
     let
-        v2Strategy =
-            removeLegacyConfirmation strategyConfig
-
         shouldWarnAboutRemovedConfirmation =
-            strategyConfig.generalSettings.confirmationSettings /= Rating.defaultCondition
+            old.generalSettings.confirmationSettings /= Confirmation.defaultSettings
 
-        removedConfirmationWarning =
+        perhapsWarning =
             if shouldWarnAboutRemovedConfirmation then
                 [ "Vaše strategie měla nastaveno Potvrzení investic mobilem, které muselo být odstraněno." ]
 
             else
                 []
-
-        removedBuyFiltersWarning =
-            if removedBuyFilterCount > 0 then
-                [ pluralizeRules removedBuyFilterCount ++ " nákupu odstraněno, protože obsahovaly zpětně nekompatibilní podmínky" ]
-
-            else
-                []
-
-        removedSellFiltersWarning =
-            if removedSellFilterCount > 0 then
-                [ pluralizeRules removedSellFilterCount ++ " prodeje odstraněno, protože obsahovaly zpětně nekompatibilní podmínky" ]
-
-            else
-                []
     in
-    ( v2Strategy
-    , removedConfirmationWarning ++ removedBuyFiltersWarning ++ removedSellFiltersWarning
-    )
+    ( removeConfirmationSettings old, perhapsWarning )
 
 
-pluralizeRules : Int -> String
-pluralizeRules x =
-    String.fromInt x
-        ++ (if x == 1 then
-                " pravidlo"
-
-            else if 2 <= x && x <= 4 then
-                " pravidla"
-
-            else
-                " pravidel"
-           )
-
-
-removeLegacyConfirmation : V1.StrategyConfiguration -> V2.StrategyConfiguration
-removeLegacyConfirmation old =
+removeConfirmationSettings : V2.StrategyConfiguration -> V3.StrategyConfiguration
+removeConfirmationSettings old =
     let
-        removeLegacyConfirmation_ : V1.GeneralSettings -> V2.GeneralSettings
-        removeLegacyConfirmation_ gs =
+        removeConfirmationSettings_ : V2.GeneralSettings -> V3.GeneralSettings
+        removeConfirmationSettings_ gs =
             { portfolio = gs.portfolio
             , exitConfig = gs.exitConfig
             , targetPortfolioSize = gs.targetPortfolioSize
             , defaultInvestmentSize = gs.defaultInvestmentSize
             , defaultInvestmentShare = gs.defaultInvestmentShare
             , defaultTargetBalance = gs.defaultTargetBalance
-            , confirmationSettings = Confirmation.NoConfirmation
-            , reservationSetting = ReservationSetting.Ignore
+            , reservationSetting = gs.reservationSetting
             }
     in
-    { generalSettings = removeLegacyConfirmation_ old.generalSettings
+    { generalSettings = removeConfirmationSettings_ old.generalSettings
     , portfolioShares = old.portfolioShares
     , investmentSizeOverrides = old.investmentSizeOverrides
     , buyingConfig = old.buyingConfig
@@ -135,6 +111,11 @@ decodeStrategy version strategyJson =
             Decode.decodeString V2.strategyDecoder strategyJson
                 |> Result.mapError Decode.errorToString
                 |> Result.map V2
+
+        3 ->
+            Decode.decodeString V3.strategyDecoder strategyJson
+                |> Result.mapError Decode.errorToString
+                |> Result.map V3
 
         _ ->
             Err <| "Unsupported strategy version " ++ String.fromInt version

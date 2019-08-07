@@ -1,7 +1,6 @@
 module Test.RandomStrategy exposing (conditionsGen, strategyConfigurationGen)
 
 import Array
-import Data.Confirmation as Confirmation exposing (ConfirmationSettings)
 import Data.ExitConfig as ExitConfig
 import Data.Filter as Filter exposing (BuyingConfiguration, FilteredItem(..), MarketplaceEnablement, MarketplaceFilter, SellingConfiguration)
 import Data.Filter.Conditions exposing (Condition(..), Conditions, addCondition, emptyConditions)
@@ -59,7 +58,6 @@ generalSettingsGen =
         |> Random.andMap investmentSizeGen
         |> Random.andMap investmentShareGen
         |> Random.andMap targetBalanceGen
-        |> Random.andMap confirmationSettingsGen
         |> Random.andMap reservationSettingGen
 
 
@@ -430,12 +428,6 @@ targetBalanceGen : Generator TargetBalance
 targetBalanceGen =
     Random.frequency ( 1, Random.constant TargetBalance.NotSpecified )
         [ ( 2, Random.int 0 100000 |> Random.map TargetBalance ) ]
-
-
-confirmationSettingsGen : Generator ConfirmationSettings
-confirmationSettingsGen =
-    Random.frequency ( 1, Random.constant Confirmation.NoConfirmation )
-        [ ( 1, Random.map Confirmation.Confirm interestConditionGen ) ]
 
 
 exitConfigGen : Generator ExitConfig.ExitConfig

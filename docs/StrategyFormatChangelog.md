@@ -1,5 +1,10 @@
 # Změny formátu strategie
 
+## Robozonky 5.3.0
+
+Robozonky odstranilo podporu pro potvrzování investic mobilem.
+Pokud jste jej měli zapnutou, byla z vaší strategie odstraněna.
+
 ## Robozonky 5.1.0
 
 Začátkem roku 2019 odstranilo Zonky koncept ratingu půjček.
