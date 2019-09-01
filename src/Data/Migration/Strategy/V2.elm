@@ -22,8 +22,6 @@ import Data.TargetPortfolioSize as TargetPortfolioSize exposing (TargetPortfolio
 import Json.Decode as Decode exposing (Decoder)
 
 
-{-| Changes from V2 to V3: V3 removes the ConfirmationSettings condition
--}
 type alias GeneralSettings =
     { portfolio : Portfolio
     , exitConfig : ExitConfig
@@ -76,6 +74,12 @@ strategyDecoder =
             )
 
 
+{-| V1 -> V2 :
+
+  - Changed mobile notification condition to be based on rating percent (instead of rating letters)
+  - Removed "Loan Annuity", "Sale Fee" and "Revenue Rate" conditions
+
+-}
 fromV1 : V1.DecodedStrategy -> ( StrategyConfiguration, List MigrationWarning )
 fromV1 { strategyConfig, removedBuyFilterCount, removedSellFilterCount } =
     let

@@ -21,8 +21,6 @@ import Data.TargetPortfolioSize as TargetPortfolioSize exposing (TargetPortfolio
 import Json.Decode as Decode exposing (Decoder)
 
 
-{-| Changes from V3 to V4: V4 removes support for TargetBalance
--}
 type alias GeneralSettings =
     { portfolio : Portfolio
     , exitConfig : ExitConfig
@@ -71,6 +69,8 @@ strategyDecoder =
             )
 
 
+{-| V2 -> V3: V3 removes the ConfirmationSettings condition
+-}
 fromV2 : V2.StrategyConfiguration -> ( StrategyConfiguration, List MigrationWarning )
 fromV2 old =
     let

@@ -6,6 +6,8 @@ import Data.Strategy exposing (GeneralSettings, StrategyConfiguration)
 import Data.TargetBalance as TargetBalance
 
 
+{-| V3 -> V4: V4 removes support for TargetBalance
+-}
 fromV3 : V3.StrategyConfiguration -> ( StrategyConfiguration, List MigrationWarning )
 fromV3 old =
     let
