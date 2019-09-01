@@ -11,7 +11,7 @@ Pokud jste měli ve své strategii zapnuto nastavení `Investovat pouze pokud di
 
 ## Robozonky 5.3.0
 
-Robozonky odstranil podporu pro potvrzování investic mobilem.
+Odstranili jsme podporu pro potvrzování investic mobilem.
 Pokud jste jej měli zapnutou, byla z vaší strategie odstraněna.
 
 ## Robozonky 5.1.0

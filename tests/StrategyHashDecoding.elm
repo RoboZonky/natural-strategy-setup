@@ -83,7 +83,7 @@ validHashData =
                     VersionedStrategy.loadStrategy "Mzt7ImgiOnsiYSI6MCwiYiI6WyIwIl0sImMiOlsxXSwiZCI6WzAsMjAwXSwiZSI6WzJdLCJmIjpbMiwxMDAwXSwiZzEiOjF9LCJqIjpbWzAsMjAwXSxbMCwyMDBdLFswLDIwMF0sWzAsMjAwXSxbMCwyMDBdLFswLDIwMF0sWzAsMjAwXSxbMCwyMDBdLFswLDIwMF0sWzAsMjAwXSxbMCwyMDBdXSwiayI6eyJvIjowfSwibCI6eyJtIjowfX0="
                         |> withDecodedStrategy
                             (Expect.all
-                                [ \( _, warnings ) -> warnings |> Expect.equal [ "Vaše strategie měla nastavenou  omezení investic na základě disponibilního zůstatku\n\"Investovat pouze pokud disponibilní zůstatek přesáhne 1000 Kč.\"\n, které muselo být odstraněno." ]
+                                [ \( _, warnings ) -> warnings |> Expect.equal [ "Vaše strategie měla nastaveno omezení investic na základě disponibilního zůstatku\n\"Investovat pouze pokud disponibilní zůstatek přesáhne 1000 Kč.\"\n, které muselo být odstraněno." ]
                                 , \( decodedStrategy, _ ) ->
                                     Strategy.strategyEqual Strategy.defaultStrategyConfiguration decodedStrategy
                                         |> Expect.true "Should decode to default strategy configuration"

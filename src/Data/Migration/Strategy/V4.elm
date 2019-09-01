@@ -14,7 +14,7 @@ fromV3 old =
 
         perhapsWarning =
             if shouldWarnAboutRemovedTargetBalance then
-                [ "Vaše strategie měla nastavenou  omezení investic na základě disponibilního zůstatku\n\""
+                [ "Vaše strategie měla nastaveno omezení investic na základě disponibilního zůstatku\n\""
                     ++ TargetBalance.render old.generalSettings.defaultTargetBalance
                     ++ "\"\n, které muselo být odstraněno."
                 ]
