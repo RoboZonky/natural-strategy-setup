@@ -51,7 +51,7 @@ validHashData =
     describe "Strategy.strategyFromUrlHash - valid inputs" <|
         [ test "Default strategy" <|
             \() ->
-                VersionedStrategy.loadStrategy "Mzt7ImgiOnsiYSI6MCwiYiI6WyIwIl0sImMiOlsxXSwiZCI6WzAsMjAwXSwiZSI6WzJdLCJmIjpbMV0sImcxIjoxfSwiaiI6W1swLDIwMF0sWzAsMjAwXSxbMCwyMDBdLFswLDIwMF0sWzAsMjAwXSxbMCwyMDBdLFswLDIwMF0sWzAsMjAwXSxbMCwyMDBdLFswLDIwMF0sWzAsMjAwXV0sImsiOnsibyI6MH0sImwiOnsibSI6MH19"
+                VersionedStrategy.loadStrategy "NDt7ImgiOnsiYSI6MCwiYiI6WyIwIl0sImMiOlsxXSwiZCI6WzAsMjAwXSwiZSI6WzJdLCJnMSI6MX0sImoiOltbMCwyMDBdLFswLDIwMF0sWzAsMjAwXSxbMCwyMDBdLFswLDIwMF0sWzAsMjAwXSxbMCwyMDBdLFswLDIwMF0sWzAsMjAwXSxbMCwyMDBdLFswLDIwMF1dLCJrIjp7Im8iOjB9LCJsIjp7Im0iOjB9fQ=="
                     |> withDecodedStrategy
                         (Expect.all
                             [ \( _, warnings ) -> List.isEmpty warnings |> Expect.true "There should be no warnings"
@@ -60,7 +60,7 @@ validHashData =
                                     |> Expect.true "Should decode to default strategy configuration"
                             ]
                         )
-        , describe "Migration from v2 strategy"
+        , describe "V2 -> V3 migration"
             [ test "mobile notifications enabled - should give warning about notifications being removed" <|
                 \() ->
                     VersionedStrategy.loadStrategy "Mjt7ImgiOnsiYSI6MCwiYiI6WyIwIl0sImMiOlsxXSwiZCI6WzAsMjAwXSwiZSI6WzJdLCJmIjpbMV0sImciOnsiYSI6MSwiYiI6eyJ2IjozLCJ3Ijo1fX0sImcxIjoxfSwiaiI6W1swLDIwMF0sWzAsMjAwXSxbMCwyMDBdLFswLDIwMF0sWzAsMjAwXSxbMCwyMDBdLFswLDIwMF0sWzAsMjAwXSxbMCwyMDBdLFswLDIwMF0sWzAsMjAwXV0sImsiOnsibyI6MH0sImwiOnsibSI6MH19"
@@ -76,6 +76,30 @@ validHashData =
                 \() ->
                     VersionedStrategy.loadStrategy "Mjt7ImgiOnsiYSI6MCwiYiI6WyIwIl0sImMiOlsxXSwiZCI6WzAsMjAwXSwiZSI6WzJdLCJmIjpbMV0sImciOnsiYSI6MH0sImcxIjoxfSwiaiI6W1swLDIwMF0sWzAsMjAwXSxbMCwyMDBdLFswLDIwMF0sWzAsMjAwXSxbMCwyMDBdLFswLDIwMF0sWzAsMjAwXSxbMCwyMDBdLFswLDIwMF0sWzAsMjAwXV0sImsiOnsibyI6MH0sImwiOnsibSI6MH19"
                         |> withDecodedStrategy (\( _, warnings ) -> List.isEmpty warnings |> Expect.true "There should be no warnings")
+            ]
+        , describe "V3 -> V4 migration"
+            [ test "target balance set - should give warning about setting removed" <|
+                \() ->
+                    VersionedStrategy.loadStrategy "Mzt7ImgiOnsiYSI6MCwiYiI6WyIwIl0sImMiOlsxXSwiZCI6WzAsMjAwXSwiZSI6WzJdLCJmIjpbMiwxMDAwXSwiZzEiOjF9LCJqIjpbWzAsMjAwXSxbMCwyMDBdLFswLDIwMF0sWzAsMjAwXSxbMCwyMDBdLFswLDIwMF0sWzAsMjAwXSxbMCwyMDBdLFswLDIwMF0sWzAsMjAwXSxbMCwyMDBdXSwiayI6eyJvIjowfSwibCI6eyJtIjowfX0="
+                        |> withDecodedStrategy
+                            (Expect.all
+                                [ \( _, warnings ) -> warnings |> Expect.equal [ "Vaše strategie měla nastavenou  omezení investic na základě disponibilního zůstatku\n\"Investovat pouze pokud disponibilní zůstatek přesáhne 1000 Kč.\"\n, které muselo být odstraněno." ]
+                                , \( decodedStrategy, _ ) ->
+                                    Strategy.strategyEqual Strategy.defaultStrategyConfiguration decodedStrategy
+                                        |> Expect.true "Should decode to default strategy configuration"
+                                ]
+                            )
+            , test "Default V3 strategy - target balance not set - should give no warnings" <|
+                \() ->
+                    VersionedStrategy.loadStrategy "Mzt7ImgiOnsiYSI6MCwiYiI6WyIwIl0sImMiOlsxXSwiZCI6WzAsMjAwXSwiZSI6WzJdLCJmIjpbMV0sImcxIjoxfSwiaiI6W1swLDIwMF0sWzAsMjAwXSxbMCwyMDBdLFswLDIwMF0sWzAsMjAwXSxbMCwyMDBdLFswLDIwMF0sWzAsMjAwXSxbMCwyMDBdLFswLDIwMF0sWzAsMjAwXV0sImsiOnsibyI6MH0sImwiOnsibSI6MH19"
+                        |> withDecodedStrategy
+                            (Expect.all
+                                [ \( _, warnings ) -> warnings |> Expect.equal []
+                                , \( decodedStrategy, _ ) ->
+                                    Strategy.strategyEqual Strategy.defaultStrategyConfiguration decodedStrategy
+                                        |> Expect.true "Should decode to default strategy configuration"
+                                ]
+                            )
             ]
         ]
 

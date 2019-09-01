@@ -5,8 +5,8 @@ import Data.Migration.Migration as Migration exposing (MigrationWarning)
 import Data.Migration.Strategy.V1 as V1
 import Data.Migration.Strategy.V2 as V2
 import Data.Migration.Strategy.V3 as V3
+import Data.Migration.Strategy.V4 as V4
 import Data.Strategy as V4
-import Data.TargetBalance as TargetBalance
 import Json.Decode as Decode
 import Types exposing (UrlHash)
 
@@ -28,16 +28,16 @@ loadStrategy hash =
         Ok (V1 v1) ->
             V2.fromV1 v1
                 |> Migration.andThen V3.fromV2
-                |> Migration.andThen fromV3
+                |> Migration.andThen V4.fromV3
                 |> Ok
 
         Ok (V2 v2) ->
             V3.fromV2 v2
-                |> Migration.andThen fromV3
+                |> Migration.andThen V4.fromV3
                 |> Ok
 
         Ok (V3 v3) ->
-            fromV3 v3
+            V4.fromV3 v3
                 |> Ok
 
         Ok (V4 v4) ->
@@ -94,40 +94,3 @@ decodeVersionedStrategy versionedStrategyDecoder inject strategyJson =
     Decode.decodeString versionedStrategyDecoder strategyJson
         |> Result.mapError Decode.errorToString
         |> Result.map inject
-
-
-fromV3 : V3.StrategyConfiguration -> ( V4.StrategyConfiguration, List MigrationWarning )
-fromV3 old =
-    let
-        shouldWarnAboutRemovedTargetBalance =
-            old.generalSettings.defaultTargetBalance /= TargetBalance.NotSpecified
-
-        perhapsWarning =
-            if shouldWarnAboutRemovedTargetBalance then
-                [ "Vaše strategie měla nastavenou cílovou zůstatkovou částku, která musela být odstraněna." ]
-
-            else
-                []
-    in
-    ( removeTargetBalance old, perhapsWarning )
-
-
-removeTargetBalance : V3.StrategyConfiguration -> V4.StrategyConfiguration
-removeTargetBalance old =
-    let
-        removeTargetBalance_ : V3.GeneralSettings -> V4.GeneralSettings
-        removeTargetBalance_ gs =
-            { portfolio = gs.portfolio
-            , exitConfig = gs.exitConfig
-            , targetPortfolioSize = gs.targetPortfolioSize
-            , defaultInvestmentSize = gs.defaultInvestmentSize
-            , defaultInvestmentShare = gs.defaultInvestmentShare
-            , reservationSetting = gs.reservationSetting
-            }
-    in
-    { generalSettings = removeTargetBalance_ old.generalSettings
-    , portfolioShares = old.portfolioShares
-    , investmentSizeOverrides = old.investmentSizeOverrides
-    , buyingConfig = old.buyingConfig
-    , sellingConfig = old.sellingConfig
-    }
