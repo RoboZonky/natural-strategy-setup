@@ -26,11 +26,9 @@ type Msg
     | TargetPortfolioSizeChanged String
     | TargetPortfolioShareChanged String
     | ChangePortfolioSharePercentage Rating RangeSlider.Msg
-      --| ConfirmationFormMsg Confirmation.ConfirmationFormMsg
     | ChangeInvestment Rating RangeSlider.Msg
     | ChangeDefaultInvestment RangeSlider.Msg
     | SetReservationSetting ReservationSetting
-    | TargetBalanceChanged String
     | RemoveBuyFilter Int
     | RemoveSellFilter Int
     | SellingConfigChanged SellingConfiguration

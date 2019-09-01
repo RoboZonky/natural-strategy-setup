@@ -114,4 +114,20 @@ fromV3 old =
 
 removeTargetBalance : V3.StrategyConfiguration -> V4.StrategyConfiguration
 removeTargetBalance old =
-    old
+    let
+        removeTargetBalance_ : V3.GeneralSettings -> V4.GeneralSettings
+        removeTargetBalance_ gs =
+            { portfolio = gs.portfolio
+            , exitConfig = gs.exitConfig
+            , targetPortfolioSize = gs.targetPortfolioSize
+            , defaultInvestmentSize = gs.defaultInvestmentSize
+            , defaultInvestmentShare = gs.defaultInvestmentShare
+            , reservationSetting = gs.reservationSetting
+            }
+    in
+    { generalSettings = removeTargetBalance_ old.generalSettings
+    , portfolioShares = old.portfolioShares
+    , investmentSizeOverrides = old.investmentSizeOverrides
+    , buyingConfig = old.buyingConfig
+    , sellingConfig = old.sellingConfig
+    }

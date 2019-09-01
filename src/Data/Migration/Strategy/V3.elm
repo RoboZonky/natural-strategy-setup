@@ -5,7 +5,7 @@ module Data.Migration.Strategy.V3 exposing
     , strategyDecoder
     )
 
-import Data.Confirmation as Confirmation exposing (ConfirmationSettings)
+import Data.Confirmation as Confirmation
 import Data.ExitConfig as ExitConfig exposing (ExitConfig)
 import Data.Filter as Filters exposing (BuyingConfiguration, SellingConfiguration)
 import Data.Investment as Investment exposing (InvestmentsPerRating)

@@ -17,7 +17,6 @@ module Data.Strategy exposing
     , setPortfolioShareRange
     , setReservationSetting
     , setSellingConfiguration
-    , setTargetBalance
     , setTargetPortfolioSize
     , strategyDecoder
     , strategyEqual
@@ -37,7 +36,6 @@ import Data.Portfolio as Portfolio exposing (Portfolio(..))
 import Data.PortfolioStructure as PortfolioStructure exposing (PortfolioShares)
 import Data.PortfolioStructure.PredefinedShares as PredefinedShares
 import Data.ReservationSetting as ReservationSetting exposing (ReservationSetting)
-import Data.TargetBalance as TargetBalance exposing (TargetBalance)
 import Data.TargetPortfolioSize as TargetPortfolioSize exposing (TargetPortfolioSize)
 import Dict.Any
 import Json.Decode as Decode exposing (Decoder)
@@ -65,7 +63,6 @@ type alias GeneralSettings =
     , targetPortfolioSize : TargetPortfolioSize
     , defaultInvestmentSize : Investment.Size
     , defaultInvestmentShare : InvestmentShare
-    , defaultTargetBalance : TargetBalance
     , reservationSetting : ReservationSetting
     }
 
@@ -78,7 +75,6 @@ defaultStrategyConfiguration =
         , targetPortfolioSize = TargetPortfolioSize.NotSpecified
         , defaultInvestmentSize = Investment.defaultSize
         , defaultInvestmentShare = InvestmentShare.NotSpecified
-        , defaultTargetBalance = TargetBalance.NotSpecified
         , reservationSetting = ReservationSetting.defaultSetting
         }
     , portfolioShares = PredefinedShares.conservative
@@ -165,13 +161,6 @@ setDefaultInvestment msg config =
     }
 
 
-setTargetBalance : TargetBalance -> StrategyConfiguration -> StrategyConfiguration
-setTargetBalance newBalance ({ generalSettings } as config) =
-    { config
-        | generalSettings = { generalSettings | defaultTargetBalance = newBalance }
-    }
-
-
 setReservationSetting : ReservationSetting -> StrategyConfiguration -> StrategyConfiguration
 setReservationSetting reservationSetting ({ generalSettings } as config) =
     { config
@@ -243,7 +232,6 @@ renderGeneralSettings generalSettings =
         , TargetPortfolioSize.render generalSettings.targetPortfolioSize
         , Investment.renderSize generalSettings.defaultInvestmentSize
         , InvestmentShare.render generalSettings.defaultInvestmentShare
-        , TargetBalance.render generalSettings.defaultTargetBalance
         ]
 
 
@@ -262,7 +250,6 @@ validateGeneralSettings generalSettings =
         [ ExitConfig.validate generalSettings.exitConfig
         , TargetPortfolioSize.validate generalSettings.targetPortfolioSize
         , InvestmentShare.validate generalSettings.defaultInvestmentShare
-        , TargetBalance.validate generalSettings.defaultTargetBalance
         ]
 
 
@@ -287,7 +274,6 @@ generalSettingsEqual gs1 gs2 =
         , gs1.targetPortfolioSize == gs2.targetPortfolioSize
         , Investment.investmentSizeEqual gs1.defaultInvestmentSize gs2.defaultInvestmentSize
         , gs1.defaultInvestmentShare == gs2.defaultInvestmentShare
-        , gs1.defaultTargetBalance == gs2.defaultTargetBalance
         ]
 
 
@@ -296,27 +282,25 @@ generalSettingsEqual gs1 gs2 =
 
 
 encodeGeneralSettings : GeneralSettings -> Value
-encodeGeneralSettings { portfolio, exitConfig, targetPortfolioSize, defaultInvestmentSize, defaultInvestmentShare, defaultTargetBalance, reservationSetting } =
+encodeGeneralSettings { portfolio, exitConfig, targetPortfolioSize, defaultInvestmentSize, defaultInvestmentShare, reservationSetting } =
     Encode.object
         [ ( "a", Portfolio.encode portfolio )
         , ( "b", ExitConfig.encode exitConfig )
         , ( "c", TargetPortfolioSize.encode targetPortfolioSize )
         , ( "d", Investment.encodeSize defaultInvestmentSize )
         , ( "e", InvestmentShare.encode defaultInvestmentShare )
-        , ( "f", TargetBalance.encode defaultTargetBalance )
         , ( "g1", ReservationSetting.encode reservationSetting )
         ]
 
 
 generalSettingsDecoder : Decoder GeneralSettings
 generalSettingsDecoder =
-    Decode.map7 GeneralSettings
+    Decode.map6 GeneralSettings
         (Decode.field "a" Portfolio.decoder)
         (Decode.field "b" ExitConfig.decoder)
         (Decode.field "c" TargetPortfolioSize.decoder)
         (Decode.field "d" Investment.sizeDecoder)
         (Decode.field "e" InvestmentShare.decoder)
-        (Decode.field "f" TargetBalance.decoder)
         (Decode.field "g1" ReservationSetting.decoder)
 
 
@@ -398,4 +382,4 @@ shareableUrlComment baseUrl strategyConfig =
 
 strategyVersion : Int
 strategyVersion =
-    3
+    4
