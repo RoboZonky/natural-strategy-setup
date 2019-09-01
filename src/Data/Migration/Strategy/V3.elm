@@ -1,17 +1,17 @@
-module Data.Migration.StrategyV2 exposing
+module Data.Migration.Strategy.V3 exposing
     ( GeneralSettings
     , StrategyConfiguration
-    , fromV1
+    , fromV2
     , strategyDecoder
     )
 
-import Data.Confirmation as Confirmation exposing (ConfirmationSettings)
+import Data.Confirmation as Confirmation
 import Data.ExitConfig as ExitConfig exposing (ExitConfig)
 import Data.Filter as Filters exposing (BuyingConfiguration, SellingConfiguration)
-import Data.Filter.Conditions.Rating as Rating
 import Data.Investment as Investment exposing (InvestmentsPerRating)
 import Data.InvestmentShare as InvestmentShare exposing (InvestmentShare)
-import Data.Migration.StrategyV1 as V1
+import Data.Migration.Migration exposing (MigrationWarning)
+import Data.Migration.Strategy.V2 as V2
 import Data.Portfolio as Portfolio exposing (Portfolio(..))
 import Data.PortfolioStructure exposing (PortfolioShares)
 import Data.ReservationSetting as ReservationSetting exposing (ReservationSetting)
@@ -21,8 +21,6 @@ import Data.TargetPortfolioSize as TargetPortfolioSize exposing (TargetPortfolio
 import Json.Decode as Decode exposing (Decoder)
 
 
-{-| Changes from V2 to V3: V3 removes the ConfirmationSettings condition
--}
 type alias GeneralSettings =
     { portfolio : Portfolio
     , exitConfig : ExitConfig
@@ -30,9 +28,6 @@ type alias GeneralSettings =
     , defaultInvestmentSize : Investment.Size
     , defaultInvestmentShare : InvestmentShare
     , defaultTargetBalance : TargetBalance
-
-    -- V3 removes ConfirmationSettings condition
-    , confirmationSettings : ConfirmationSettings
     , reservationSetting : ReservationSetting
     }
 
@@ -48,14 +43,13 @@ type alias StrategyConfiguration =
 
 generalSettingsDecoder : Decoder GeneralSettings
 generalSettingsDecoder =
-    Decode.map8 GeneralSettings
+    Decode.map7 GeneralSettings
         (Decode.field "a" Portfolio.decoder)
         (Decode.field "b" ExitConfig.decoder)
         (Decode.field "c" TargetPortfolioSize.decoder)
         (Decode.field "d" Investment.sizeDecoder)
         (Decode.field "e" InvestmentShare.decoder)
         (Decode.field "f" TargetBalance.decoder)
-        (Decode.field "g" Confirmation.decoder)
         (Decode.field "g1" ReservationSetting.decoder)
 
 
@@ -75,73 +69,41 @@ strategyDecoder =
             )
 
 
-fromV1 : V1.DecodedStrategy -> ( StrategyConfiguration, List String )
-fromV1 { strategyConfig, removedBuyFilterCount, removedSellFilterCount } =
+{-| V2 -> V3: V3 removes the ConfirmationSettings condition
+-}
+fromV2 : V2.StrategyConfiguration -> ( StrategyConfiguration, List MigrationWarning )
+fromV2 old =
     let
-        v2Strategy =
-            removeLegacyConfirmation strategyConfig
-
         shouldWarnAboutRemovedConfirmation =
-            strategyConfig.generalSettings.confirmationSettings /= Rating.defaultCondition
+            old.generalSettings.confirmationSettings /= Confirmation.defaultSettings
 
-        removedConfirmationWarning =
+        perhapsWarning =
             if shouldWarnAboutRemovedConfirmation then
                 [ "Vaše strategie měla nastaveno Potvrzení investic mobilem, které muselo být odstraněno." ]
 
             else
                 []
-
-        removedBuyFiltersWarning =
-            if removedBuyFilterCount > 0 then
-                [ pluralizeRules removedBuyFilterCount ++ " nákupu odstraněno, protože obsahovaly zpětně nekompatibilní podmínky" ]
-
-            else
-                []
-
-        removedSellFiltersWarning =
-            if removedSellFilterCount > 0 then
-                [ pluralizeRules removedSellFilterCount ++ " prodeje odstraněno, protože obsahovaly zpětně nekompatibilní podmínky" ]
-
-            else
-                []
     in
-    ( v2Strategy
-    , removedConfirmationWarning ++ removedBuyFiltersWarning ++ removedSellFiltersWarning
-    )
+    ( removeConfirmationSettings old, perhapsWarning )
 
 
-removeLegacyConfirmation : V1.StrategyConfiguration -> StrategyConfiguration
-removeLegacyConfirmation old =
+removeConfirmationSettings : V2.StrategyConfiguration -> StrategyConfiguration
+removeConfirmationSettings old =
     let
-        removeLegacyConfirmation_ : V1.GeneralSettings -> GeneralSettings
-        removeLegacyConfirmation_ gs =
+        removeConfirmationSettings_ : V2.GeneralSettings -> GeneralSettings
+        removeConfirmationSettings_ gs =
             { portfolio = gs.portfolio
             , exitConfig = gs.exitConfig
             , targetPortfolioSize = gs.targetPortfolioSize
             , defaultInvestmentSize = gs.defaultInvestmentSize
             , defaultInvestmentShare = gs.defaultInvestmentShare
             , defaultTargetBalance = gs.defaultTargetBalance
-            , confirmationSettings = Confirmation.defaultSettings
-            , reservationSetting = ReservationSetting.defaultSetting
+            , reservationSetting = gs.reservationSetting
             }
     in
-    { generalSettings = removeLegacyConfirmation_ old.generalSettings
+    { generalSettings = removeConfirmationSettings_ old.generalSettings
     , portfolioShares = old.portfolioShares
     , investmentSizeOverrides = old.investmentSizeOverrides
     , buyingConfig = old.buyingConfig
     , sellingConfig = old.sellingConfig
     }
-
-
-pluralizeRules : Int -> String
-pluralizeRules x =
-    String.fromInt x
-        ++ (if x == 1 then
-                " pravidlo"
-
-            else if 2 <= x && x <= 4 then
-                " pravidla"
-
-            else
-                " pravidel"
-           )

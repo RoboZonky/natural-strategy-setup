@@ -1,10 +1,12 @@
 module Data.VersionedStrategy exposing (loadStrategy)
 
 import Base64
-import Data.Confirmation as Confirmation
-import Data.Migration.StrategyV1 as V1
-import Data.Migration.StrategyV2 as V2
-import Data.Strategy as V3
+import Data.Migration.Migration as Migration exposing (MigrationWarning)
+import Data.Migration.Strategy.V1 as V1
+import Data.Migration.Strategy.V2 as V2
+import Data.Migration.Strategy.V3 as V3
+import Data.Migration.Strategy.V4 as V4
+import Data.Strategy as V4
 import Json.Decode as Decode
 import Types exposing (UrlHash)
 
@@ -13,67 +15,36 @@ type VersionedStrategy
     = V1 V1.DecodedStrategy
     | V2 V2.StrategyConfiguration
     | V3 V3.StrategyConfiguration
+    | V4 V4.StrategyConfiguration
 
 
-loadStrategy : UrlHash -> Result String ( V3.StrategyConfiguration, List String )
+type alias StrategyJson =
+    String
+
+
+loadStrategy : UrlHash -> Result String ( V4.StrategyConfiguration, List MigrationWarning )
 loadStrategy hash =
     case versionedStrategyFromUrlHash hash of
         Ok (V1 v1) ->
-            let
-                ( v2, warnings2 ) =
-                    V2.fromV1 v1
-
-                ( v3, warnings3 ) =
-                    fromV2 v2
-            in
-            Ok ( v3, warnings2 ++ warnings3 )
+            V2.fromV1 v1
+                |> Migration.andThen V3.fromV2
+                |> Migration.andThen V4.fromV3
+                |> Ok
 
         Ok (V2 v2) ->
-            Ok (fromV2 v2)
+            V3.fromV2 v2
+                |> Migration.andThen V4.fromV3
+                |> Ok
 
         Ok (V3 v3) ->
-            Ok ( v3, [] )
+            V4.fromV3 v3
+                |> Ok
+
+        Ok (V4 v4) ->
+            Ok ( v4, [] )
 
         Err e ->
             Err e
-
-
-fromV2 : V2.StrategyConfiguration -> ( V3.StrategyConfiguration, List String )
-fromV2 old =
-    let
-        shouldWarnAboutRemovedConfirmation =
-            old.generalSettings.confirmationSettings /= Confirmation.defaultSettings
-
-        perhapsWarning =
-            if shouldWarnAboutRemovedConfirmation then
-                [ "Vaše strategie měla nastaveno Potvrzení investic mobilem, které muselo být odstraněno." ]
-
-            else
-                []
-    in
-    ( removeConfirmationSettings old, perhapsWarning )
-
-
-removeConfirmationSettings : V2.StrategyConfiguration -> V3.StrategyConfiguration
-removeConfirmationSettings old =
-    let
-        removeConfirmationSettings_ : V2.GeneralSettings -> V3.GeneralSettings
-        removeConfirmationSettings_ gs =
-            { portfolio = gs.portfolio
-            , exitConfig = gs.exitConfig
-            , targetPortfolioSize = gs.targetPortfolioSize
-            , defaultInvestmentSize = gs.defaultInvestmentSize
-            , defaultInvestmentShare = gs.defaultInvestmentShare
-            , defaultTargetBalance = gs.defaultTargetBalance
-            , reservationSetting = gs.reservationSetting
-            }
-    in
-    { generalSettings = removeConfirmationSettings_ old.generalSettings
-    , portfolioShares = old.portfolioShares
-    , investmentSizeOverrides = old.investmentSizeOverrides
-    , buyingConfig = old.buyingConfig
-    , sellingConfig = old.sellingConfig
-    }
 
 
 versionedStrategyFromUrlHash : UrlHash -> Result String VersionedStrategy
@@ -99,23 +70,27 @@ versionedStrategyFromUrlHash hash =
             )
 
 
-decodeStrategy : Int -> String -> Result String VersionedStrategy
+decodeStrategy : Int -> StrategyJson -> Result String VersionedStrategy
 decodeStrategy version strategyJson =
     case version of
         1 ->
-            Decode.decodeString V1.strategyDecoder strategyJson
-                |> Result.mapError Decode.errorToString
-                |> Result.map V1
+            decodeVersionedStrategy V1.strategyDecoder V1 strategyJson
 
         2 ->
-            Decode.decodeString V2.strategyDecoder strategyJson
-                |> Result.mapError Decode.errorToString
-                |> Result.map V2
+            decodeVersionedStrategy V2.strategyDecoder V2 strategyJson
 
         3 ->
-            Decode.decodeString V3.strategyDecoder strategyJson
-                |> Result.mapError Decode.errorToString
-                |> Result.map V3
+            decodeVersionedStrategy V3.strategyDecoder V3 strategyJson
+
+        4 ->
+            decodeVersionedStrategy V4.strategyDecoder V4 strategyJson
 
         _ ->
             Err <| "Unsupported strategy version " ++ String.fromInt version
+
+
+decodeVersionedStrategy : Decode.Decoder strat -> (strat -> VersionedStrategy) -> StrategyJson -> Result String VersionedStrategy
+decodeVersionedStrategy versionedStrategyDecoder inject strategyJson =
+    Decode.decodeString versionedStrategyDecoder strategyJson
+        |> Result.mapError Decode.errorToString
+        |> Result.map inject

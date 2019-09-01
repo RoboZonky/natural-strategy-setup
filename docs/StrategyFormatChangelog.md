@@ -1,8 +1,17 @@
 # Změny formátu strategie
 
+## Robozonky 5.4.0
+
+Po zavedení nové evropské směrnice [PSD2](https://cs.wikipedia.org/wiki/Sm%C4%9Brnice_PSD2) odstranilo 
+Zonky ze svých programových rozhraní informace o disponibilním zůstatku.
+Tyto informace RoboZonky používal pro funkci investování na základě disponibilního zůstaku.
+Tuto funkci jsme proto byli nuceni odstranit a spolu s ní i sekci `Obecná nastavení > Disponibilní zůstatek` ve webovém konfiguračním nástroji.
+Pokud jste měli ve své strategii zapnuto nastavení `Investovat pouze pokud disponibilní zůstatek přesáhne X Kč.`,
+ bylo z vaší strategie odstraněno. RoboZonky tedy odteď bude investovat vždy bez ohledu na disponibilní zůstatek.
+
 ## Robozonky 5.3.0
 
-Robozonky odstranilo podporu pro potvrzování investic mobilem.
+Odstranili jsme podporu pro potvrzování investic mobilem.
 Pokud jste jej měli zapnutou, byla z vaší strategie odstraněna.
 
 ## Robozonky 5.1.0

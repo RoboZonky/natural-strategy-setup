@@ -27,7 +27,6 @@ import Data.PortfolioStructure as PortfolioStructure exposing (PortfolioShares)
 import Data.PortfolioStructure.PredefinedShares as PredefinedShares
 import Data.ReservationSetting exposing (ReservationSetting(..))
 import Data.Strategy exposing (GeneralSettings, StrategyConfiguration)
-import Data.TargetBalance as TargetBalance exposing (TargetBalance(..))
 import Data.TargetPortfolioSize as TargetPortfolioSize exposing (TargetPortfolioSize(..))
 import Random exposing (Generator)
 import Random.Extra as Random
@@ -57,7 +56,6 @@ generalSettingsGen =
         |> Random.andMap targetPortfolioSizeGen
         |> Random.andMap investmentSizeGen
         |> Random.andMap investmentShareGen
-        |> Random.andMap targetBalanceGen
         |> Random.andMap reservationSettingGen
 
 
@@ -422,12 +420,6 @@ investmentShareGen : Generator InvestmentShare
 investmentShareGen =
     Random.frequency ( 1, Random.constant InvestmentShare.NotSpecified )
         [ ( 2, Random.map InvestmentShare.Percent <| Random.int 1 100 ) ]
-
-
-targetBalanceGen : Generator TargetBalance
-targetBalanceGen =
-    Random.frequency ( 1, Random.constant TargetBalance.NotSpecified )
-        [ ( 2, Random.int 0 100000 |> Random.map TargetBalance ) ]
 
 
 exitConfigGen : Generator ExitConfig.ExitConfig

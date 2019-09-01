@@ -10,7 +10,6 @@ import Data.InvestmentShare as InvestmentShare
 import Data.Portfolio
 import Data.PortfolioStructure as PortfolioStructure
 import Data.Strategy as Strategy exposing (StrategyConfiguration)
-import Data.TargetBalance as TargetBalance exposing (TargetBalance(..))
 import Data.TargetPortfolioSize as TargetPortfolioSize exposing (TargetPortfolioSize(..))
 import Data.Tooltip as Tooltip
 import Data.VersionedStrategy as VersionedStrategy
@@ -142,13 +141,6 @@ updateHelper msg model =
                     wrapIntOrEmpty InvestmentShare.Percent InvestmentShare.NotSpecified shareStr
             in
             updateStrategy (Strategy.setDefaultInvestmentShare share) model
-
-        TargetBalanceChanged newBalanceStr ->
-            let
-                newBalance =
-                    wrapIntOrEmpty TargetBalance TargetBalance.NotSpecified newBalanceStr
-            in
-            updateStrategy (Strategy.setTargetBalance newBalance) model
 
         ChangePortfolioSharePercentage rating sliderMsg ->
             updateStrategy

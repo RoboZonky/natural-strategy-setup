@@ -18,7 +18,6 @@ import View.InvestmentShare as InvestmentShare
 import View.PortfolioStructure as PortfolioStructure
 import View.ReservationSetting as ReservationSetting
 import View.SellConfig as SellConfig
-import View.TargetBalance as TargetBalance
 import View.TargetPortfolioSize as TargetPortfolioSize
 
 
@@ -67,7 +66,6 @@ generalSettingsCard settings accordionState tooltipStates generatedOn =
             [ Accordion.block []
                 [ TargetPortfolioSize.form settings.targetPortfolioSize
                 , InvestmentShare.form settings.defaultInvestmentShare
-                , TargetBalance.form settings.defaultTargetBalance
                 , ReservationSetting.form settings.reservationSetting
                 , ExitConfig.form settings.exitConfig generatedOn tooltipStates
                 ]
