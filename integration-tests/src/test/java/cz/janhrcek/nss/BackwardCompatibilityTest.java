@@ -36,7 +36,8 @@ public class BackwardCompatibilityTest {
     public static Iterable<? extends Object> data() {
         return Arrays.asList(
                 TestApp.Deployment.V1,
-                TestApp.Deployment.V2
+                TestApp.Deployment.V2,
+                TestApp.Deployment.V3
         );
     }
 

@@ -1,4 +1,4 @@
-module Data.Migration.StrategyV1 exposing
+module Data.Migration.Strategy.V1 exposing
     ( DecodedStrategy
     , GeneralSettings
     , StrategyConfiguration
