@@ -136,6 +136,8 @@ czechLocale =
     , negativeSuffix = ""
     , positivePrefix = ""
     , positiveSuffix = ""
+    , zeroPrefix = ""
+    , zeroSuffix = ""
     }
 
 
