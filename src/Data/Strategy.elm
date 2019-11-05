@@ -4,6 +4,7 @@ module Data.Strategy exposing
     , addBuyFilter
     , addSellFilter
     , defaultStrategyConfiguration
+    , generalSettingsDecoder
     , portfolioStructureDecoder
     , removeBuyFilter
     , removeSellFilter
@@ -382,4 +383,4 @@ shareableUrlComment baseUrl strategyConfig =
 
 strategyVersion : Int
 strategyVersion =
-    4
+    5
