@@ -9,5 +9,12 @@ import Data.Strategy exposing (StrategyConfiguration)
 Instead each rating has just one associated value (corresponding to what used to be "max")
 -}
 fromV4 : V4.StrategyConfiguration -> ( StrategyConfiguration, List MigrationWarning )
-fromV4 =
-    Debug.todo "TODO"
+fromV4 old =
+    ( { generalSettings = old.generalSettings
+      , portfolioShares = Debug.todo "" --: PortfolioShares
+      , investmentSizeOverrides = old.investmentSizeOverrides
+      , buyingConfig = old.buyingConfig
+      , sellingConfig = old.sellingConfig
+      }
+    , []
+    )

@@ -1,4 +1,10 @@
-module Slider exposing (Msg, PercentSlider, init, update, view)
+module Percentage exposing
+    ( Msg
+    , Percentage
+    , init
+    , update
+    , view
+    )
 
 import Html exposing (Html)
 import Html.Attributes as Attr exposing (type_)
@@ -6,28 +12,33 @@ import Html.Events as Events
 import Json.Decode as Decode
 
 
-type PercentSlider
-    = PercentSlider Int
+type Percentage
+    = Percentage Int
 
 
 type Msg
     = SetValue Int
 
 
-init : Int -> PercentSlider
+init : Int -> Percentage
 init =
-    PercentSlider << clamp 0 100
+    Percentage << clamp 0 100
 
 
-update : Msg -> PercentSlider -> PercentSlider
-update msg (PercentSlider _) =
+toInt : Percentage -> Int
+toInt (Percentage value) =
+    value
+
+
+update : Msg -> Percentage -> Percentage
+update msg (Percentage _) =
     case msg of
         SetValue newValue ->
-            PercentSlider newValue
+            Percentage newValue
 
 
-view : PercentSlider -> Html Msg
-view (PercentSlider value) =
+view : Percentage -> Html Msg
+view (Percentage value) =
     Html.input
         [ type_ "range"
         , Attr.min "0"
