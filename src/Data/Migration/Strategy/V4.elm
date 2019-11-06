@@ -9,9 +9,8 @@ import Data.Filter.Conditions.Rating exposing (Rating)
 import Data.Investment as Investment exposing (InvestmentsPerRating)
 import Data.Migration.Migration exposing (MigrationWarning)
 import Data.Migration.Strategy.V3 as V3
-import Data.Migration.Strategy.V4.PortfolioStructure as PortfolioStructure
 import Data.Portfolio exposing (Portfolio(..))
-import Data.PortfolioStructure.PredefinedShares as PredefinedShares
+import Data.PortfolioStructure as PortfolioStructure
 import Data.Strategy exposing (GeneralSettings, StrategyConfiguration, generalSettingsDecoder)
 import Data.TargetBalance as TargetBalance
 import Dict.Any exposing (AnyDict)
@@ -87,24 +86,8 @@ strategyDecoder =
         |> Decode.andThen
             (\generalSettings ->
                 Decode.map4 (StrategyConfiguration generalSettings)
-                    (portfolioStructureDecoder generalSettings.portfolio)
+                    (PortfolioStructure.decoderFromPortfolio generalSettings.portfolio)
                     (Decode.field "j" Investment.decoder)
                     (Decode.field "k" Filters.decodeBuyingConfiguration)
                     (Decode.field "l" Filters.decodeSellingConfiguration)
             )
-
-
-portfolioStructureDecoder : Portfolio -> Decoder PortfolioShares
-portfolioStructureDecoder portfolio =
-    case portfolio of
-        Conservative ->
-            Decode.succeed PredefinedShares.conservative
-
-        Balanced ->
-            Decode.succeed PredefinedShares.balanced
-
-        Progressive ->
-            Decode.succeed PredefinedShares.progressive
-
-        UserDefined ->
-            Decode.field "i" PortfolioStructure.decoder

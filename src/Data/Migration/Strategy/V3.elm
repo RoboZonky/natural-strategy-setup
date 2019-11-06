@@ -12,10 +12,9 @@ import Data.Investment as Investment exposing (InvestmentsPerRating)
 import Data.InvestmentShare as InvestmentShare exposing (InvestmentShare)
 import Data.Migration.Migration exposing (MigrationWarning)
 import Data.Migration.Strategy.V2 as V2
-import Data.Migration.Strategy.V4.PortfolioStructure exposing (PortfolioShares)
+import Data.Migration.Strategy.V4.PortfolioStructure as PortfolioStructure exposing (PortfolioShares)
 import Data.Portfolio as Portfolio exposing (Portfolio(..))
 import Data.ReservationSetting as ReservationSetting exposing (ReservationSetting)
-import Data.Strategy exposing (portfolioStructureDecoder)
 import Data.TargetBalance as TargetBalance exposing (TargetBalance)
 import Data.TargetPortfolioSize as TargetPortfolioSize exposing (TargetPortfolioSize)
 import Json.Decode as Decode exposing (Decoder)
@@ -62,7 +61,7 @@ strategyDecoder =
         |> Decode.andThen
             (\generalSettings ->
                 Decode.map4 (StrategyConfiguration generalSettings)
-                    (portfolioStructureDecoder generalSettings.portfolio)
+                    (PortfolioStructure.decoderFromPortfolio generalSettings.portfolio)
                     (Decode.field "j" Investment.decoder)
                     (Decode.field "k" Filters.decodeBuyingConfiguration)
                     (Decode.field "l" Filters.decodeSellingConfiguration)

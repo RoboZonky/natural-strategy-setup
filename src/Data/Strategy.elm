@@ -5,7 +5,6 @@ module Data.Strategy exposing
     , addSellFilter
     , defaultStrategyConfiguration
     , generalSettingsDecoder
-    , portfolioStructureDecoder
     , removeBuyFilter
     , removeSellFilter
     , renderStrategyConfiguration
@@ -35,7 +34,6 @@ import Data.Investment as Investment exposing (InvestmentsPerRating)
 import Data.InvestmentShare as InvestmentShare exposing (InvestmentShare)
 import Data.Portfolio as Portfolio exposing (Portfolio(..))
 import Data.PortfolioStructure as PortfolioStructure exposing (PortfolioShares)
-import Data.PortfolioStructure.PredefinedShares as PredefinedShares
 import Data.ReservationSetting as ReservationSetting exposing (ReservationSetting)
 import Data.TargetPortfolioSize as TargetPortfolioSize exposing (TargetPortfolioSize)
 import Dict.Any
@@ -78,7 +76,7 @@ defaultStrategyConfiguration =
         , defaultInvestmentShare = InvestmentShare.NotSpecified
         , reservationSetting = ReservationSetting.defaultSetting
         }
-    , portfolioShares = PredefinedShares.conservative
+    , portfolioShares = PortfolioStructure.conservative
     , investmentSizeOverrides = Investment.defaultInvestmentsPerRating Investment.defaultSize
     , buyingConfig = Filters.InvestEverything
     , sellingConfig = Filters.SellNothing
@@ -91,13 +89,13 @@ setPortfolio portfolio strategy =
         portfolioShares =
             case portfolio of
                 Conservative ->
-                    PredefinedShares.conservative
+                    PortfolioStructure.conservative
 
                 Balanced ->
-                    PredefinedShares.balanced
+                    PortfolioStructure.balanced
 
                 Progressive ->
-                    PredefinedShares.progressive
+                    PortfolioStructure.progressive
 
                 UserDefined ->
                     {- switch to UserDefined leaves the current slider configuration untouched -}
@@ -335,27 +333,11 @@ strategyDecoder =
         |> Decode.andThen
             (\generalSettings ->
                 Decode.map4 (StrategyConfiguration generalSettings)
-                    (portfolioStructureDecoder generalSettings.portfolio)
+                    (PortfolioStructure.decoderFromPortfolio generalSettings.portfolio)
                     (Decode.field "j" Investment.decoder)
                     (Decode.field "k" Filters.decodeBuyingConfiguration)
                     (Decode.field "l" Filters.decodeSellingConfiguration)
             )
-
-
-portfolioStructureDecoder : Portfolio -> Decoder PortfolioShares
-portfolioStructureDecoder portfolio =
-    case portfolio of
-        Conservative ->
-            Decode.succeed PredefinedShares.conservative
-
-        Balanced ->
-            Decode.succeed PredefinedShares.balanced
-
-        Progressive ->
-            Decode.succeed PredefinedShares.progressive
-
-        UserDefined ->
-            Decode.field "i" PortfolioStructure.decoder
 
 
 strategyToUrlHash : StrategyConfiguration -> UrlHash
