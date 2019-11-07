@@ -14,7 +14,7 @@ import Data.Tooltip as Tooltip
 import Html exposing (Html, b, div, text)
 import Html.Attributes exposing (class, selected, style, value)
 import Html.Events exposing (onSubmit)
-import RangeSlider
+import Percentage
 import Types exposing (Msg(..))
 import Util
 import View.CardHeightWorkaround exposing (markOpenedAccordionCard)
@@ -96,7 +96,7 @@ portfolioSharesSliders shares =
         ratingSlider ( rating, sliderState ) =
             Form.formInline [ onSubmit NoOp ]
                 [ b [ style "width" "105px" ] [ text <| Rating.showInterestPercent rating ]
-                , Html.map (ChangePortfolioSharePercentage rating) <| RangeSlider.view sliderState
+                , Html.map (ChangePortfolioSharePercentage rating) <| Percentage.view sliderState
                 ]
     in
     ratingDictToList shares

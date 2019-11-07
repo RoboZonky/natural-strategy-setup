@@ -8,7 +8,6 @@ import Data.Filter as Filters exposing (FilteredItem(..))
 import Data.Investment as Investment
 import Data.InvestmentShare as InvestmentShare
 import Data.Portfolio
-import Data.PortfolioStructure as PortfolioStructure
 import Data.Strategy as Strategy exposing (StrategyConfiguration)
 import Data.TargetPortfolioSize as TargetPortfolioSize exposing (TargetPortfolioSize(..))
 import Data.Tooltip as Tooltip
@@ -86,8 +85,7 @@ init () url key =
 subscriptions : Model -> Sub Msg
 subscriptions { strategyConfig } =
     Sub.batch
-        [ PortfolioStructure.portfolioSlidersSubscription strategyConfig.portfolioShares
-        , Investment.investmentSlidersSubscriptions strategyConfig.investmentSizeOverrides
+        [ Investment.investmentSlidersSubscriptions strategyConfig.investmentSizeOverrides
         , Investment.defaultInvestmentSliderSubscription strategyConfig.generalSettings.defaultInvestmentSize
         ]
 

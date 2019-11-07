@@ -1,5 +1,18 @@
 # Změny formátu strategie
 
+## Robozonky 5.6.0
+
+Byla zjednodušena konfigurace v sekci `Struktura portfolia`. Pokud zvolíte `mnou definované` portfolio, 
+od nynějška budete moci nastavit pro každou rizikovou kategorii pouze **jednu hodnotu** požadovaného procentuálního podílu 
+(např.: "Prostředky úročené 2,99 % p.a. mají tvořit **3 %** aktuální zůstatkové částky.")
+V minulosti bylo možné nastavit i **rozsah hodnotnot** (např.: "Prostředky úročené 2,99 % p.a. mají tvořit **3 až 5 %** aktuální zůstatkové částky.").
+Pokud jste ve své strategii měli nastaveno `mnou definované` portfolio s použitím rozsahu hodnot (např.: 3 až 5 %),
+ bylo změněno na použití horní hranice (v uvedeném příkladu to je 5%).
+
+Stejně jako v minulosti může i nyní součet procentuálních podílu přesahovat 100%.
+Přesto Vám doporučujeme držet se co nejblíže součtu 100%.
+Hodnoty výrazně přesahující 100% mohou vést ke zdánlivě nepředvídatelnému chování robota při sestavování portfolia.
+
 ## Robozonky 5.4.0
 
 Po zavedení nové evropské směrnice [PSD2](https://cs.wikipedia.org/wiki/Sm%C4%9Brnice_PSD2) odstranilo 

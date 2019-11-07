@@ -8,7 +8,6 @@ module Data.Migration.Strategy.V4.PortfolioStructure exposing
     , encode
     , percentageShare
     , portfolioSharesEqual
-    , portfolioSlidersSubscription
     , progressive
     , renderPortfolioShares
     , toIntRange
@@ -23,7 +22,6 @@ import Dict.Any exposing (AnyDict)
 import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as Encode exposing (Value)
 import RangeSlider exposing (RangeSlider, setDimensions, setExtents, setFormatter, setStepSize, setValues)
-import Types
 import Util
 
 
@@ -89,13 +87,6 @@ percentageShare from to =
         |> setDimensions 300 57
         |> setExtents 0 100
         |> setValues from to
-
-
-portfolioSlidersSubscription : PortfolioShares -> Sub Types.Msg
-portfolioSlidersSubscription shares =
-    Dict.Any.toList shares
-        |> List.map (\( rtg, sliderState ) -> Sub.map (Types.ChangePortfolioSharePercentage rtg) (RangeSlider.subscriptions sliderState))
-        |> Sub.batch
 
 
 validate : PortfolioShares -> List String

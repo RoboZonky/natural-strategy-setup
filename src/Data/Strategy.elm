@@ -40,6 +40,7 @@ import Dict.Any
 import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as Encode exposing (Value)
 import List.Extra
+import Percentage
 import RangeSlider
 import Time exposing (Posix)
 import Types exposing (BaseUrl, UrlHash)
@@ -124,12 +125,12 @@ setDefaultInvestmentShare share ({ generalSettings } as config) =
     { config | generalSettings = { generalSettings | defaultInvestmentShare = share } }
 
 
-setPortfolioShareRange : Rating -> RangeSlider.Msg -> StrategyConfiguration -> StrategyConfiguration
+setPortfolioShareRange : Rating -> Percentage.Msg -> StrategyConfiguration -> StrategyConfiguration
 setPortfolioShareRange rtg msg config =
     let
         sharesUpdater : PortfolioShares -> PortfolioShares
         sharesUpdater =
-            Dict.Any.update rtg (Maybe.map (RangeSlider.update msg))
+            Dict.Any.update rtg (Maybe.map (Percentage.update msg))
     in
     { config | portfolioShares = sharesUpdater config.portfolioShares }
 

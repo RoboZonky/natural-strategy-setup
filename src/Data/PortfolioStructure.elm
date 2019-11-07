@@ -6,24 +6,22 @@ module Data.PortfolioStructure exposing
     , decoder
     , decoderFromPortfolio
     , encode
-    , percentageShare
+    , fromIntList
     , portfolioSharesEqual
-    , portfolioSlidersSubscription
     , progressive
     , renderPortfolioShares
     , toIntRange
     , validate
     )
 
-import Data.Filter.Conditions.Rating as Rating exposing (Rating(..))
+import Data.Filter.Conditions.Rating as Rating exposing (Rating(..), ratingDictToList)
 import Data.Portfolio exposing (Portfolio(..))
-import Data.SharedJsonStuff
 import Data.Validate as Validate
 import Dict.Any exposing (AnyDict)
 import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as Encode exposing (Value)
-import RangeSlider exposing (RangeSlider, setDimensions, setExtents, setFormatter, setStepSize, setValues)
-import Types
+import Percentage exposing (Percentage)
+import RangeSlider exposing (RangeSlider)
 import Util
 
 
@@ -36,7 +34,7 @@ type alias PortfolioShare =
 
 
 type alias Share =
-    RangeSlider
+    Percentage
 
 
 renderPortfolioShare : PortfolioShare -> String
@@ -76,38 +74,33 @@ renderPortfolioShares portfolio shares =
             ""
 
 
+
+-- TODO get rid of this
+
+
 toIntRange : Share -> ( Int, Int )
-toIntRange =
-    RangeSlider.getValues >> (\( a, b ) -> ( round a, round b ))
+toIntRange x =
+    ( Percentage.toInt x, Percentage.toInt x )
 
 
-percentageShare : Float -> Float -> Share
-percentageShare from to =
-    RangeSlider.init
-        |> setStepSize (Just 1.0)
-        |> setFormatter (\value -> String.fromFloat value ++ "%")
-        |> setDimensions 300 57
-        |> setExtents 0 100
-        |> setValues from to
+
+-- TODO add permanent display of current share sum
 
 
-portfolioSlidersSubscription : PortfolioShares -> Sub Types.Msg
-portfolioSlidersSubscription shares =
-    Dict.Any.toList shares
-        |> List.map (\( rtg, sliderState ) -> Sub.map (Types.ChangePortfolioSharePercentage rtg) (RangeSlider.subscriptions sliderState))
-        |> Sub.batch
+shareSum : PortfolioShares -> Int
+shareSum =
+    Dict.Any.foldr (\_ percentage sumAcc -> sumAcc + Percentage.toInt percentage) 0
 
 
 validate : PortfolioShares -> List String
 validate portfolioShares =
     let
-        sumOfShareMinimums =
-            Dict.Any.foldr (\_ sliderState sumAcc -> sumAcc + getSliderMinimum sliderState) 0 portfolioShares
-                |> round
+        sumOfShares =
+            shareSum portfolioShares
     in
-    Validate.validate (sumOfShareMinimums /= 100) <|
-        "Součet minim musí být přesně 100% (teď je "
-            ++ String.fromInt sumOfShareMinimums
+    Validate.validate (sumOfShares < 100) <|
+        "Součet podílů nesmí být menší než 100% (teď je "
+            ++ String.fromInt sumOfShares
             ++ "%)"
 
 
@@ -118,11 +111,7 @@ getSliderMinimum =
 
 portfolioSharesEqual : PortfolioShares -> PortfolioShares -> Bool
 portfolioSharesEqual ps1 ps2 =
-    let
-        getSliderValues =
-            Dict.Any.values >> List.map RangeSlider.getValues
-    in
-    getSliderValues ps1 == getSliderValues ps2
+    Dict.Any.values ps1 == Dict.Any.values ps2
 
 
 
@@ -130,37 +119,63 @@ portfolioSharesEqual ps1 ps2 =
 
 
 encode : PortfolioShares -> Value
-encode =
-    Data.SharedJsonStuff.encodeRatingToSliderDict encodeShare
+encode shares =
+    ratingDictToList shares
+        |> Encode.list
+            (\( _
+                {- assuming that rating is always sorted in order of rating's toInterestPercent,
+                   so just encoding slider states
+                -}
+              , percentage
+              )
+             ->
+                encodePercentage percentage
+            )
 
 
 decoder : Decoder PortfolioShares
 decoder =
-    Data.SharedJsonStuff.ratingToSliderDictDecoder defaultShare shareDecoder
+    Decode.list shareDecoder
+        |> Decode.map fromIntList
+        |> Decode.andThen
+            (\res ->
+                case res of
+                    Ok shares ->
+                        Decode.succeed shares
+
+                    Err e ->
+                        Decode.fail e
+            )
 
 
-encodeShare : Share -> Value
-encodeShare sz =
-    toIntRange sz |> (\( from, to ) -> Encode.list Encode.int [ from, to ])
+fromIntList : List Percentage -> Result String PortfolioShares
+fromIntList percentageList =
+    let
+        expectedLength =
+            List.length Rating.allRatings
+
+        actualLength =
+            List.length percentageList
+    in
+    if expectedLength == actualLength then
+        Ok <| Rating.initRatingDict <| List.map2 Tuple.pair Rating.allRatings percentageList
+
+    else
+        Err <|
+            "Chybná při načítání struktury portfolia: čekal jsem "
+                ++ String.fromInt expectedLength
+                ++ " čísel, ale dostal jsem "
+                ++ String.fromInt actualLength
+
+
+encodePercentage : Share -> Value
+encodePercentage =
+    Percentage.toInt >> Encode.int
 
 
 shareDecoder : Decoder Share
 shareDecoder =
-    Decode.list Decode.int
-        |> Decode.map
-            (\xs ->
-                case xs of
-                    from :: to :: [] ->
-                        percentageShare (toFloat from) (toFloat to)
-
-                    _ ->
-                        defaultShare
-            )
-
-
-defaultShare : Share
-defaultShare =
-    percentageShare 0 0
+    Decode.map Percentage.fromInt Decode.int
 
 
 decoderFromPortfolio : Portfolio -> Decoder PortfolioShares
@@ -230,7 +245,11 @@ progressive =
         ]
 
 
+
+-- TODO: what to do about the fact that percentages can be float?
+
+
 initShares : List ( Rating, Float ) -> PortfolioShares
 initShares =
-    List.map (\( rtg, x ) -> ( rtg, percentageShare x x ))
+    List.map (Tuple.mapSecond (Percentage.fromInt << Basics.round))
         >> Rating.initRatingDict

@@ -5,7 +5,7 @@ import Data.Filter.Conditions.Rating as Rating exposing (Rating, ratingDictToLis
 import Data.PortfolioStructure exposing (PortfolioShares)
 import Dict.Any
 import Html exposing (Html)
-import RangeSlider
+import Percentage
 import Svg exposing (Svg, g, rect, svg, text, text_)
 import Svg.Attributes exposing (dominantBaseline, fill, height, style, width, x, y)
 
@@ -98,6 +98,8 @@ makeBar barWidthCalculator index { rating, sharePercentMin, sharePercentMax, col
 
 type alias BarData =
     { rating : Rating
+
+    -- TODO get rid of the Min
     , sharePercentMin : Float
     , sharePercentMax : Float
     , color : Color
@@ -107,14 +109,12 @@ type alias BarData =
 getBarData : PortfolioShares -> List BarData
 getBarData shares =
     List.map2
-        (\( rating, slider ) color ->
-            let
-                ( mi, ma ) =
-                    RangeSlider.getValues slider
-            in
+        (\( rating, percentage ) color ->
             { rating = rating
-            , sharePercentMin = mi
-            , sharePercentMax = ma
+
+            -- TODO maybe percentage should hold Float instead of Int?
+            , sharePercentMin = toFloat <| Percentage.toInt percentage
+            , sharePercentMax = toFloat <| Percentage.toInt percentage
             , color = color
             }
         )
@@ -147,7 +147,7 @@ createBarWidthCalculator biggestMaximumShare =
 getBiggestMaximumShare : PortfolioShares -> Float
 getBiggestMaximumShare portfolioShares =
     Dict.Any.values portfolioShares
-        |> List.map (RangeSlider.getValues >> Tuple.second)
+        |> List.map (toFloat << Percentage.toInt)
         |> List.maximum
         |> Maybe.withDefault 0
 

@@ -1,7 +1,8 @@
 module Percentage exposing
     ( Msg
     , Percentage
-    , init
+    , fromInt
+    , toInt
     , update
     , view
     )
@@ -20,8 +21,8 @@ type Msg
     = SetValue Int
 
 
-init : Int -> Percentage
-init =
+fromInt : Int -> Percentage
+fromInt =
     Percentage << clamp 0 100
 
 
