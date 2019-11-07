@@ -66,7 +66,7 @@ migratePortfolioStructure v4shares =
                 |> List.map (Percentage.fromInt << Tuple.second << V4PS.toIntRange)
 
         migratedShares =
-            case V5PS.fromIntList maxima of
+            case V5PS.fromPercentageList maxima of
                 Ok v5shares ->
                     v5shares
 

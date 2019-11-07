@@ -19,7 +19,7 @@ view portfolioShares =
 
         barWidthCalculator : Float -> Float
         barWidthCalculator =
-            createBarWidthCalculator <| getBiggestMaximumShare portfolioShares
+            createBarWidthCalculator <| getBiggestPercentage portfolioShares
 
         viewBar : Int -> BarData -> Svg msg
         viewBar =
@@ -41,26 +41,16 @@ view portfolioShares =
 
 
 makeBar : (Float -> Float) -> Int -> BarData -> Svg a
-makeBar barWidthCalculator index { rating, sharePercentMin, sharePercentMax, color } =
+makeBar barWidthCalculator index { rating, sharePercent, color } =
     let
         yPos =
             10 + index * pxSpacePerBar
 
-        minimumBarWidth =
-            barWidthCalculator sharePercentMin
-
-        maximumBarWidth =
-            barWidthCalculator sharePercentMax
+        barWidth =
+            barWidthCalculator sharePercent
 
         legend =
-            String.fromFloat sharePercentMin
-                ++ (if minimumBarWidth == maximumBarWidth then
-                        ""
-
-                    else
-                        "-" ++ String.fromFloat sharePercentMax
-                   )
-                ++ "%"
+            String.fromFloat sharePercent ++ "%"
     in
     g []
         [ text_
@@ -74,21 +64,12 @@ makeBar barWidthCalculator index { rating, sharePercentMin, sharePercentMax, col
             [ x "70"
             , y <| String.fromInt yPos
             , height <| String.fromInt barHeight
-            , width <| String.fromFloat minimumBarWidth
+            , width <| String.fromFloat barWidth
             , fill color
-            ]
-            []
-        , rect
-            [ x "70"
-            , y <| String.fromInt yPos
-            , height <| String.fromInt barHeight
-            , width <| String.fromFloat maximumBarWidth
-            , fill color
-            , style "fill-opacity:0.5"
             ]
             []
         , text_
-            [ x <| String.fromFloat <| maximumBarWidth + 75
+            [ x <| String.fromFloat <| barWidth + 75
             , y <| String.fromInt <| yPos + (barHeight // 2)
             , dominantBaseline "central"
             ]
@@ -98,10 +79,7 @@ makeBar barWidthCalculator index { rating, sharePercentMin, sharePercentMax, col
 
 type alias BarData =
     { rating : Rating
-
-    -- TODO get rid of the Min
-    , sharePercentMin : Float
-    , sharePercentMax : Float
+    , sharePercent : Float
     , color : Color
     }
 
@@ -111,10 +89,7 @@ getBarData shares =
     List.map2
         (\( rating, percentage ) color ->
             { rating = rating
-
-            -- TODO maybe percentage should hold Float instead of Int?
-            , sharePercentMin = toFloat <| Percentage.toInt percentage
-            , sharePercentMax = toFloat <| Percentage.toInt percentage
+            , sharePercent = toFloat <| Percentage.toInt percentage
             , color = color
             }
         )
@@ -132,20 +107,20 @@ When the percentages are larger, use proportion of maximum share in the graph
 
 -}
 createBarWidthCalculator : Float -> (Float -> Float)
-createBarWidthCalculator biggestMaximumShare =
+createBarWidthCalculator biggestPercentage =
     let
         pixelsPerPercent =
-            if biggestMaximumShare < 30 then
+            if biggestPercentage < 30 then
                 10
 
             else
-                260 / biggestMaximumShare
+                260 / biggestPercentage
     in
     \sharePercent -> pixelsPerPercent * sharePercent
 
 
-getBiggestMaximumShare : PortfolioShares -> Float
-getBiggestMaximumShare portfolioShares =
+getBiggestPercentage : PortfolioShares -> Float
+getBiggestPercentage portfolioShares =
     Dict.Any.values portfolioShares
         |> List.map (toFloat << Percentage.toInt)
         |> List.maximum

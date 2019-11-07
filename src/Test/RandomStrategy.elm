@@ -24,10 +24,10 @@ import Data.Investment as Investment exposing (InvestmentsPerRating)
 import Data.InvestmentShare as InvestmentShare exposing (InvestmentShare)
 import Data.Portfolio exposing (Portfolio(..))
 import Data.PortfolioStructure as PortfolioStructure exposing (PortfolioShares)
-import Data.PortfolioStructure.PredefinedShares as PredefinedShares
 import Data.ReservationSetting exposing (ReservationSetting(..))
 import Data.Strategy exposing (GeneralSettings, StrategyConfiguration)
 import Data.TargetPortfolioSize as TargetPortfolioSize exposing (TargetPortfolioSize(..))
+import Percentage
 import Random exposing (Generator)
 import Random.Extra as Random
 import Random.List
@@ -71,27 +71,24 @@ portfolioSharesGen : Portfolio -> Generator PortfolioShares
 portfolioSharesGen portfolio =
     case portfolio of
         Conservative ->
-            Random.constant PredefinedShares.conservative
+            Random.constant PortfolioStructure.conservative
 
         Balanced ->
-            Random.constant PredefinedShares.balanced
+            Random.constant PortfolioStructure.balanced
 
         Progressive ->
-            Random.constant PredefinedShares.progressive
+            Random.constant PortfolioStructure.progressive
 
         UserDefined ->
             elevenIntsThatAddUpTo100
-                |> Random.andThen
-                    (\minimumShares ->
-                        List.map (\from -> percentageFrom from) minimumShares
-                            |> Random.combine
-                    )
                 |> Random.map
-                    (\sharesList ->
-                        List.map2 (\rtg ( from, to ) -> ( rtg, PortfolioStructure.percentageShare (toFloat from) (toFloat to) ))
-                            Rating.allRatings
-                            sharesList
-                            |> Rating.initRatingDict
+                    (\percentages ->
+                        case PortfolioStructure.fromPercentageList <| List.map Percentage.fromInt percentages of
+                            Ok structure ->
+                                structure
+
+                            Err err ->
+                                Debug.todo <| "Failed to construct portfolio structure from 11 percentages: " ++ err
                     )
 
 

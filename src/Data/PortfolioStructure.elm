@@ -6,7 +6,7 @@ module Data.PortfolioStructure exposing
     , decoder
     , decoderFromPortfolio
     , encode
-    , fromIntList
+    , fromPercentageList
     , portfolioSharesEqual
     , progressive
     , renderPortfolioShares
@@ -21,7 +21,6 @@ import Dict.Any exposing (AnyDict)
 import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as Encode exposing (Value)
 import Percentage exposing (Percentage)
-import RangeSlider exposing (RangeSlider)
 import Util
 
 
@@ -104,11 +103,6 @@ validate portfolioShares =
             ++ "%)"
 
 
-getSliderMinimum : RangeSlider -> Float
-getSliderMinimum =
-    Tuple.first << RangeSlider.getValues
-
-
 portfolioSharesEqual : PortfolioShares -> PortfolioShares -> Bool
 portfolioSharesEqual ps1 ps2 =
     Dict.Any.values ps1 == Dict.Any.values ps2
@@ -136,7 +130,7 @@ encode shares =
 decoder : Decoder PortfolioShares
 decoder =
     Decode.list shareDecoder
-        |> Decode.map fromIntList
+        |> Decode.map fromPercentageList
         |> Decode.andThen
             (\res ->
                 case res of
@@ -148,8 +142,8 @@ decoder =
             )
 
 
-fromIntList : List Percentage -> Result String PortfolioShares
-fromIntList percentageList =
+fromPercentageList : List Percentage -> Result String PortfolioShares
+fromPercentageList percentageList =
     let
         expectedLength =
             List.length Rating.allRatings
