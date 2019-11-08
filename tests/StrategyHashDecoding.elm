@@ -51,7 +51,7 @@ validHashData =
     describe "Strategy.strategyFromUrlHash - valid inputs" <|
         [ test "Default strategy" <|
             \() ->
-                VersionedStrategy.loadStrategy "NDt7ImgiOnsiYSI6MCwiYiI6WyIwIl0sImMiOlsxXSwiZCI6WzAsMjAwXSwiZSI6WzJdLCJnMSI6MX0sImoiOltbMCwyMDBdLFswLDIwMF0sWzAsMjAwXSxbMCwyMDBdLFswLDIwMF0sWzAsMjAwXSxbMCwyMDBdLFswLDIwMF0sWzAsMjAwXSxbMCwyMDBdLFswLDIwMF1dLCJrIjp7Im8iOjB9LCJsIjp7Im0iOjB9fQ=="
+                VersionedStrategy.loadStrategy "NTt7ImgiOnsiYSI6MCwiYiI6WyIwIl0sImMiOlsxXSwiZCI6WzAsMjAwXSwiZSI6WzJdLCJnMSI6MX0sImoiOltbMCwyMDBdLFswLDIwMF0sWzAsMjAwXSxbMCwyMDBdLFswLDIwMF0sWzAsMjAwXSxbMCwyMDBdLFswLDIwMF0sWzAsMjAwXSxbMCwyMDBdLFswLDIwMF1dLCJrIjp7Im8iOjB9LCJsIjp7Im0iOjB9fQ=="
                     |> withDecodedStrategy
                         (Expect.all
                             [ \( _, warnings ) -> List.isEmpty warnings |> Expect.true "There should be no warnings"

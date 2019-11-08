@@ -9,6 +9,7 @@ module Data.Migration.Strategy.V4.PortfolioStructure exposing
     , percentageShare
     , portfolioSharesEqual
     , progressive
+    , ratingDictToList
     , renderPortfolioShares
     , toIntRange
     , validate
@@ -114,6 +115,11 @@ portfolioSharesEqual ps1 ps2 =
             Dict.Any.values >> List.map RangeSlider.getValues
     in
     getSliderValues ps1 == getSliderValues ps2
+
+
+ratingDictToList : AnyDict Int Rating a -> List ( Rating, a )
+ratingDictToList =
+    Dict.Any.toList >> List.sortBy (Tuple.first >> Rating.toInterestPercent)
 
 
 

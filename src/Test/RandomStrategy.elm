@@ -83,12 +83,10 @@ portfolioSharesGen portfolio =
             elevenIntsThatAddUpTo100
                 |> Random.map
                     (\percentages ->
-                        case PortfolioStructure.fromPercentageList <| List.map Percentage.fromInt percentages of
-                            Ok structure ->
-                                structure
-
-                            Err err ->
-                                Debug.todo <| "Failed to construct portfolio structure from 11 percentages: " ++ err
+                        Rating.initRatingDict <|
+                            List.map2 (\rating percentage -> ( rating, Percentage.fromInt percentage ))
+                                Rating.allRatings
+                                percentages
                     )
 
 
