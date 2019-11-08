@@ -142,7 +142,7 @@ fromPercentageList percentageList =
 
     else
         Err <|
-            "Chybná při načítání struktury portfolia: čekal jsem "
+            "Dočlo k chybě při načítání struktury portfolia: čekal jsem "
                 ++ String.fromInt expectedLength
                 ++ " čísel, ale dostal jsem "
                 ++ String.fromInt actualLength
@@ -225,11 +225,7 @@ progressive =
         ]
 
 
-
--- TODO: what to do about the fact that percentages can be float?
-
-
 initShares : List ( Rating, Float ) -> PortfolioShares
 initShares =
-    List.map (Tuple.mapSecond (Percentage.fromInt << Basics.round))
+    List.map (Tuple.mapSecond (Basics.round >> Percentage.fromInt))
         >> Rating.initRatingDict

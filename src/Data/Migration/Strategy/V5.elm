@@ -32,19 +32,19 @@ fromV4 old =
 migratePortfolioStructure : V4PS.PortfolioShares -> ( V5PS.PortfolioShares, List MigrationWarning )
 migratePortfolioStructure v4shares =
     let
-        warningsAboutUnequalRanges =
+        sharesDefinedWithRanges =
             v4shares
                 |> Dict.Any.map (\_ slider -> V4PS.toIntRange slider)
                 -- Warning will be shown if user had minimum /= maximum for any rating
                 |> Dict.Any.filter (\_ ( min, max ) -> min /= max)
                 |> Dict.Any.toList
 
-        migrationWarnings =
-            if List.isEmpty warningsAboutUnequalRanges then
+        simplificationWarning =
+            if List.isEmpty sharesDefinedWithRanges then
                 []
 
             else
-                warningsAboutUnequalRanges
+                sharesDefinedWithRanges
                     |> List.map
                         (\( rating, ( min, max ) ) ->
                             " • "
@@ -58,20 +58,21 @@ migratePortfolioStructure v4shares =
                                 ++ "%'"
                         )
                     |> String.join "\n"
-                    |> (\items -> "Vaše strategie měla nastavenu vámi definovanou strukturu portfolia, která byla zjednodušena:\n" ++ items)
+                    |> (\items -> "Vaše strategie měla nastavenu vámi definovanou strukturu portfolia, která musela být zjednodušena:\n" ++ items)
                     |> List.singleton
 
         maxima =
             Dict.Any.values v4shares
                 |> List.map (Percentage.fromInt << Tuple.second << V4PS.toIntRange)
-
-        migratedShares =
-            case V5PS.fromPercentageList maxima of
-                Ok v5shares ->
-                    v5shares
-
-                Err _ ->
-                    -- TODO should there be warning? This should never happen, because we're only encoding valid portfolio structure into URL
-                    V5PS.conservative
     in
-    ( migratedShares, migrationWarnings )
+    case V5PS.fromPercentageList maxima of
+        Ok v5shares ->
+            ( v5shares, simplificationWarning )
+
+        Err errorAboutIncorrectStructure ->
+            -- This shouldn't happen, unless people manually meddle with the URL encoded strategy
+            ( V5PS.conservative
+            , [ errorAboutIncorrectStructure
+                    ++ " \nNastavil jsem 'konzervativní' portfolio, které si můžete v sekci 'Struktura portfolia' upravit podle potřeby."
+              ]
+            )
