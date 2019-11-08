@@ -101,6 +101,8 @@ validHashData =
                                 ]
                             )
             ]
+
+        -- TODO add test confirming V4 -> V5 gives warning when portfolio structure defined by range
         ]
 
 

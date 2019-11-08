@@ -525,7 +525,7 @@ and calculating 11 differences as
 -}
 elevenIntsThatAddUpTo100 : Generator (List Int)
 elevenIntsThatAddUpTo100 =
-    Random.list 10 (Random.int 0 100)
+    Random.list (List.length Rating.allRatings - 1) (Random.int 0 100)
         |> Random.map
             (\nineBoundaries ->
                 let
