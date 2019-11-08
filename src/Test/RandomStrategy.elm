@@ -480,11 +480,6 @@ percentRangeGen =
     randomRangeGen 0 100
 
 
-percentageFrom : Int -> Generator ( Int, Int )
-percentageFrom from =
-    Random.int from 100 |> Random.map (\to -> ( from, to ))
-
-
 {-| Generate pair (x, y) such that mi <= x <= y <= ma
 -}
 randomRangeGen : Int -> Int -> Generator ( Int, Int )

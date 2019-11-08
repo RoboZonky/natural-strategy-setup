@@ -10,7 +10,6 @@ module Data.PortfolioStructure exposing
     , portfolioSharesEqual
     , progressive
     , renderPortfolioShares
-    , toIntRange
     , validate
     )
 
@@ -32,6 +31,10 @@ type alias PortfolioShare =
     ( Rating, Share )
 
 
+
+-- TODO  remove this alias
+
+
 type alias Share =
     Percentage
 
@@ -46,16 +49,8 @@ renderPortfolioShare ( rating, share ) =
 
 
 renderShare : Share -> String
-renderShare share =
-    let
-        ( minPercent, maxPercent ) =
-            toIntRange share
-    in
-    if minPercent == maxPercent then
-        String.fromInt minPercent
-
-    else
-        String.fromInt minPercent ++ " až " ++ String.fromInt maxPercent
+renderShare =
+    String.fromInt << Percentage.toInt
 
 
 renderPortfolioShares : Portfolio -> PortfolioShares -> String
@@ -65,21 +60,12 @@ renderPortfolioShares portfolio shares =
             Dict.Any.toList shares
                 |> List.sortBy (\( rating, _ ) -> Rating.toInterestPercent rating)
                 -- Only render share in the config when maximum > 0
-                |> List.filter (\( _, share ) -> Tuple.second (toIntRange share) > 0)
+                |> List.filter (\( _, percentage ) -> Percentage.toInt percentage > 0)
                 |> List.map renderPortfolioShare
                 |> Util.renderNonemptySection "\n- Úprava struktury portfolia"
 
         _ ->
             ""
-
-
-
--- TODO get rid of this
-
-
-toIntRange : Share -> ( Int, Int )
-toIntRange x =
-    ( Percentage.toInt x, Percentage.toInt x )
 
 
 
