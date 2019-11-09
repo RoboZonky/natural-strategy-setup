@@ -7,10 +7,8 @@ module Data.Migration.Strategy.V4.PortfolioStructure exposing
     , decoderFromPortfolio
     , encode
     , percentageShare
-    , portfolioSharesEqual
     , progressive
     , ratingDictToList
-    , renderPortfolioShares
     , toIntRange
     , validate
     )
@@ -23,7 +21,6 @@ import Dict.Any exposing (AnyDict)
 import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as Encode exposing (Value)
 import RangeSlider exposing (RangeSlider, setDimensions, setExtents, setFormatter, setStepSize, setValues)
-import Util
 
 
 type alias PortfolioShares =
@@ -36,43 +33,6 @@ type alias PortfolioShare =
 
 type alias Share =
     RangeSlider
-
-
-renderPortfolioShare : PortfolioShare -> String
-renderPortfolioShare ( rating, share ) =
-    "Prostředky úročené "
-        ++ Rating.showInterestPercent rating
-        ++ " mají tvořit "
-        ++ renderShare share
-        ++ " % aktuální zůstatkové částky."
-
-
-renderShare : Share -> String
-renderShare share =
-    let
-        ( minPercent, maxPercent ) =
-            toIntRange share
-    in
-    if minPercent == maxPercent then
-        String.fromInt minPercent
-
-    else
-        String.fromInt minPercent ++ " až " ++ String.fromInt maxPercent
-
-
-renderPortfolioShares : Portfolio -> PortfolioShares -> String
-renderPortfolioShares portfolio shares =
-    case portfolio of
-        UserDefined ->
-            Dict.Any.toList shares
-                |> List.sortBy (\( rating, _ ) -> Rating.toInterestPercent rating)
-                -- Only render share in the config when maximum > 0
-                |> List.filter (\( _, share ) -> Tuple.second (toIntRange share) > 0)
-                |> List.map renderPortfolioShare
-                |> Util.renderNonemptySection "\n- Úprava struktury portfolia"
-
-        _ ->
-            ""
 
 
 toIntRange : Share -> ( Int, Int )
@@ -106,15 +66,6 @@ validate portfolioShares =
 getSliderMinimum : RangeSlider -> Float
 getSliderMinimum =
     Tuple.first << RangeSlider.getValues
-
-
-portfolioSharesEqual : PortfolioShares -> PortfolioShares -> Bool
-portfolioSharesEqual ps1 ps2 =
-    let
-        getSliderValues =
-            Dict.Any.values >> List.map RangeSlider.getValues
-    in
-    getSliderValues ps1 == getSliderValues ps2
 
 
 ratingDictToList : AnyDict Int Rating a -> List ( Rating, a )

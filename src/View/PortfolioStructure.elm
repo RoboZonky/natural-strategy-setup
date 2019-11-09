@@ -14,7 +14,6 @@ import Html.Attributes exposing (class, selected, style, value)
 import Html.Events exposing (onSubmit)
 import Percentage
 import Types exposing (Msg(..))
-import Util
 import View.CardHeightWorkaround exposing (markOpenedAccordionCard)
 import View.Tooltip as Tooltip
 
@@ -38,10 +37,7 @@ form portfolio shares accordionState tooltipStates =
                         [ defaultPortfolioForm portfolio
                         , Html.p [] [ text "Požadovaný podíl investovaný do půjček podle rizikových kategorií můžete upravit pomocí posuvníků" ]
                         , portfolioSharesSliders shares
-                        , Html.p []
-                            [ text <| "Součet podílů je "
-                            , Html.b [] [ Html.text <| String.fromInt (PortfolioStructure.shareSum shares) ++ " %" ]
-                            ]
+                        , sumSummaryView shares
                         ]
                 ]
             ]
@@ -74,14 +70,29 @@ defaultPortfolioSelect currentPortfolio =
         optionList
 
 
-validationErrors : PortfolioShares -> Html a
-validationErrors shares =
-    case PortfolioStructure.validate shares of
-        [] ->
-            text ""
+sumSummaryView : PortfolioShares -> Html a
+sumSummaryView shares =
+    let
+        sumOfShares =
+            PortfolioStructure.shareSum shares
 
-        errors ->
-            Util.viewErrors errors
+        warnings =
+            if sumOfShares < 100 then
+                Html.p [ style "color" "red" ]
+                    [ Html.text "Součet podílů nesmí být menší než 100%" ]
+
+            else if sumOfShares > 100 then
+                Html.p [ style "color" "orange" ]
+                    [ text "Součet podílů přesahuje 100%, což není nutně problém, ale může vést k nepředvídatelné struktuře portfolia." ]
+
+            else
+                Html.div [ style "height" "24px" ] []
+    in
+    Html.p []
+        [ text "Součet podílů je "
+        , Html.b [] [ Html.text <| String.fromInt (PortfolioStructure.shareSum shares) ++ " %" ]
+        , warnings
+        ]
 
 
 portfolioSharesSliders : PortfolioShares -> Html Msg
@@ -96,4 +107,4 @@ portfolioSharesSliders shares =
     in
     ratingDictToList shares
         |> List.map ratingSlider
-        |> div []
+        |> Html.p []
