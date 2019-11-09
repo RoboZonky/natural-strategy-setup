@@ -69,7 +69,7 @@ validHashData =
                     VersionedStrategy.loadStrategy "Mjt7ImgiOnsiYSI6MCwiYiI6WyIwIl0sImMiOlsxXSwiZCI6WzAsMjAwXSwiZSI6WzJdLCJmIjpbMV0sImciOnsiYSI6MSwiYiI6eyJ2IjozLCJ3Ijo1fX0sImcxIjoxfSwiaiI6W1swLDIwMF0sWzAsMjAwXSxbMCwyMDBdLFswLDIwMF0sWzAsMjAwXSxbMCwyMDBdLFswLDIwMF0sWzAsMjAwXSxbMCwyMDBdLFswLDIwMF0sWzAsMjAwXV0sImsiOnsibyI6MH0sImwiOnsibSI6MH19"
                         |> withDecodedStrategy
                             (Expect.all
-                                [ \( _, warnings ) -> warnings |> Expect.equal [ "Vaše strategie měla nastaveno Potvrzení investic mobilem, které muselo být odstraněno." ]
+                                [ \( _, warnings ) -> warnings |> Expect.equal [ "strategie měla nastaveno Potvrzení investic mobilem, které muselo být odstraněno." ]
                                 , \( decodedStrategy, _ ) ->
                                     Strategy.strategyEqual Strategy.defaultStrategyConfiguration decodedStrategy
                                         |> Expect.true "Should decode to default strategy configuration"
@@ -86,7 +86,7 @@ validHashData =
                     VersionedStrategy.loadStrategy "Mzt7ImgiOnsiYSI6MCwiYiI6WyIwIl0sImMiOlsxXSwiZCI6WzAsMjAwXSwiZSI6WzJdLCJmIjpbMiwxMDAwXSwiZzEiOjF9LCJqIjpbWzAsMjAwXSxbMCwyMDBdLFswLDIwMF0sWzAsMjAwXSxbMCwyMDBdLFswLDIwMF0sWzAsMjAwXSxbMCwyMDBdLFswLDIwMF0sWzAsMjAwXSxbMCwyMDBdXSwiayI6eyJvIjowfSwibCI6eyJtIjowfX0="
                         |> withDecodedStrategy
                             (Expect.all
-                                [ \( _, warnings ) -> warnings |> Expect.equal [ "Vaše strategie měla nastaveno omezení investic na základě disponibilního zůstatku\n\"Investovat pouze pokud disponibilní zůstatek přesáhne 1000 Kč.\"\n, které muselo být odstraněno." ]
+                                [ \( _, warnings ) -> warnings |> Expect.equal [ "strategie měla nastaveno omezení investic na základě disponibilního zůstatku\n\"Investovat pouze pokud disponibilní zůstatek přesáhne 1000 Kč.\"\n, které muselo být odstraněno." ]
                                 , \( decodedStrategy, _ ) ->
                                     Strategy.strategyEqual Strategy.defaultStrategyConfiguration decodedStrategy
                                         |> Expect.true "Should decode to default strategy configuration"
@@ -113,8 +113,11 @@ validHashData =
                                 [ \( _, warnings ) ->
                                     warnings
                                         |> Expect.equal
-                                            -- TODO these should be sorted by rating and more readable
-                                            [ "Vaše strategie měla nastavenu vámi definovanou strukturu portfolia, která musela být zjednodušena:\n • 2,99 % p.a. z rozsahu '3 až 10%' na '10%'\n • 3,99 % p.a. z rozsahu '13 až 20%' na '20%'\n • 4,99 % p.a. z rozsahu '19 až 30%' na '30%'\n • 19,99 % p.a. z rozsahu '0 až 10%' na '10%'"
+                                            [ "strategie měla nastavenu vámi definovanou strukturu portfolia, která musela být zjednodušena:"
+                                            , "\u{00A0}\u{00A0}Požadovaný podíl investovaný do půjček s úročením 2,99 % p.a. byl změněn z rozsahu '3 až 10%' na '10%'"
+                                            , "\u{00A0}\u{00A0}Požadovaný podíl investovaný do půjček s úročením 3,99 % p.a. byl změněn z rozsahu '13 až 20%' na '20%'"
+                                            , "\u{00A0}\u{00A0}Požadovaný podíl investovaný do půjček s úročením 4,99 % p.a. byl změněn z rozsahu '19 až 30%' na '30%'"
+                                            , "\u{00A0}\u{00A0}Požadovaný podíl investovaný do půjček s úročením 19,99 % p.a. byl změněn z rozsahu '0 až 10%' na '10%'"
                                             ]
                                 , \( decodedStrategy, _ ) ->
                                     let

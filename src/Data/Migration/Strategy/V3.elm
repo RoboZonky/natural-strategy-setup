@@ -78,7 +78,7 @@ fromV2 old =
 
         perhapsWarning =
             if shouldWarnAboutRemovedConfirmation then
-                [ "Vaše strategie měla nastaveno Potvrzení investic mobilem, které muselo být odstraněno." ]
+                [ "strategie měla nastaveno Potvrzení investic mobilem, které muselo být odstraněno." ]
 
             else
                 []

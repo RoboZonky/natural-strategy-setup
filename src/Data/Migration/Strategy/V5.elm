@@ -46,9 +46,9 @@ migratePortfolioStructure v4shares =
                 sharesDefinedWithRanges
                     |> List.map
                         (\( rating, ( min, max ) ) ->
-                            " • "
+                            "\u{00A0}\u{00A0}Požadovaný podíl investovaný do půjček s úročením "
                                 ++ Rating.showInterestPercent rating
-                                ++ " z rozsahu '"
+                                ++ " byl změněn z rozsahu '"
                                 ++ String.fromInt min
                                 ++ " až "
                                 ++ String.fromInt max
@@ -56,9 +56,7 @@ migratePortfolioStructure v4shares =
                                 ++ String.fromInt max
                                 ++ "%'"
                         )
-                    |> String.join "\n"
-                    |> (\items -> "Vaše strategie měla nastavenu vámi definovanou strukturu portfolia, která musela být zjednodušena:\n" ++ items)
-                    |> List.singleton
+                    |> (\items -> "strategie měla nastavenu vámi definovanou strukturu portfolia, která musela být zjednodušena:" :: items)
 
         maxima =
             Rating.ratingDictToList v4shares
