@@ -15,6 +15,7 @@ import Data.Filter.Conditions.Rating exposing (Rating)
 import Data.Portfolio exposing (Portfolio)
 import Data.ReservationSetting exposing (ReservationSetting)
 import Data.Tooltip exposing (TipId)
+import Percentage
 import RangeSlider
 import Time exposing (Posix)
 import View.Filter.Conditions as Conditions
@@ -25,7 +26,7 @@ type Msg
     | ExitConfigChanged ExitConfig.ExitConfig
     | TargetPortfolioSizeChanged String
     | TargetPortfolioShareChanged String
-    | ChangePortfolioSharePercentage Rating RangeSlider.Msg
+    | ChangePortfolioPercentage Rating Percentage.Msg
     | ChangeInvestment Rating RangeSlider.Msg
     | ChangeDefaultInvestment RangeSlider.Msg
     | SetReservationSetting ReservationSetting

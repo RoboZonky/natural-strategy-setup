@@ -34,7 +34,7 @@ view maybeAlert =
         WarningAlert warnings ->
             Bootstrap.Alert.simpleWarning []
                 [ closeAlertButton
-                , div [] [ text <| "Upozornění: Strategie se podařilo obnovit z URL jen částečně." ]
+                , div [] [ text <| "Upozornění: Strategii se podařilo obnovit z URL jen částečně." ]
                 , div []
                     [ text "Došlo k několika zpětně nekompatibilním změnám ve formátu strategie (viz "
                     , a

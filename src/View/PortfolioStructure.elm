@@ -4,26 +4,22 @@ import Bootstrap.Accordion as Accordion
 import Bootstrap.Card.Block as CardBlock
 import Bootstrap.Form as Form
 import Bootstrap.Form.Select as Select
-import Bootstrap.Grid as Grid
-import Bootstrap.Grid.Col as Col
 import Bootstrap.Utilities.Spacing as Spacing
 import Data.Filter.Conditions.Rating as Rating exposing (ratingDictToList)
 import Data.Portfolio as Portfolio exposing (Portfolio(..), allPortfolios)
-import Data.PortfolioStructure as PortfolioStructure exposing (PortfolioShares)
+import Data.PortfolioStructure as PortfolioStructure exposing (PortfolioStructure)
 import Data.Tooltip as Tooltip
-import Html exposing (Html, b, div, text)
+import Html exposing (Html, div, text)
 import Html.Attributes exposing (class, selected, style, value)
 import Html.Events exposing (onSubmit)
-import RangeSlider
+import Percentage
 import Types exposing (Msg(..))
-import Util
 import View.CardHeightWorkaround exposing (markOpenedAccordionCard)
-import View.PortfolioStructure.BarChart as BarChart
 import View.Tooltip as Tooltip
 
 
-form : Portfolio -> PortfolioShares -> Accordion.State -> Tooltip.States -> Accordion.Card Msg
-form portfolio shares accordionState tooltipStates =
+form : Portfolio -> PortfolioStructure -> Accordion.State -> Tooltip.States -> Accordion.Card Msg
+form portfolio portfolioStructure accordionState tooltipStates =
     let
         cardId =
             "portfolioStructureCard"
@@ -39,15 +35,9 @@ form portfolio shares accordionState tooltipStates =
                 [ CardBlock.custom <|
                     div [ class "tab-with-sliders" ]
                         [ defaultPortfolioForm portfolio
-                        , text "Požadovaný podíl investovaný do půjček podle rizikových kategorií můžete upravit pomocí posuvníků"
-                        , Grid.row []
-                            [ Grid.col [ Col.xs6 ]
-                                [ portfolioSharesSliders shares ]
-                            , Grid.col [ Col.xs6 ]
-                                [ BarChart.view shares
-                                , validationErrors shares
-                                ]
-                            ]
+                        , Html.p [] [ text "Požadovaný podíl investovaný do půjček podle rizikových kategorií můžete upravit pomocí posuvníků" ]
+                        , slidersView portfolioStructure
+                        , sumSummaryView portfolioStructure
                         ]
                 ]
             ]
@@ -80,25 +70,41 @@ defaultPortfolioSelect currentPortfolio =
         optionList
 
 
-validationErrors : PortfolioShares -> Html a
-validationErrors shares =
-    case PortfolioStructure.validate shares of
-        [] ->
-            text ""
-
-        errors ->
-            Util.viewErrors errors
-
-
-portfolioSharesSliders : PortfolioShares -> Html Msg
-portfolioSharesSliders shares =
+sumSummaryView : PortfolioStructure -> Html a
+sumSummaryView portfolioStructure =
     let
-        ratingSlider ( rating, sliderState ) =
-            Form.formInline [ onSubmit NoOp ]
-                [ b [ style "width" "105px" ] [ text <| Rating.showInterestPercent rating ]
-                , Html.map (ChangePortfolioSharePercentage rating) <| RangeSlider.view sliderState
+        sumOfPercentages =
+            PortfolioStructure.percentageSum portfolioStructure
+
+        warnings =
+            if sumOfPercentages < 100 then
+                Html.p [ style "color" "red" ]
+                    [ Html.text "Součet podílů nesmí být menší než 100%" ]
+
+            else if sumOfPercentages > 100 then
+                Html.p [ style "color" "orange" ]
+                    [ text "Součet podílů přesahuje 100%, což není nutně problém, ale může vést k nepředvídatelné struktuře portfolia." ]
+
+            else
+                Html.div [ style "height" "24px" ] []
+    in
+    Html.p []
+        [ text "Součet podílů je "
+        , Html.b [] [ Html.text <| String.fromInt (PortfolioStructure.percentageSum portfolioStructure) ++ " %" ]
+        , warnings
+        ]
+
+
+slidersView : PortfolioStructure -> Html Msg
+slidersView portfolioStructure =
+    let
+        ratingSlider ( rating, percentage ) =
+            Form.formInline [ onSubmit NoOp, class (Rating.toColorClass rating) ]
+                [ Html.b [ style "width" "105px" ] [ text <| Rating.showInterestPercent rating ]
+                , Html.map (ChangePortfolioPercentage rating) <| Percentage.view percentage
+                , Html.b [ Spacing.mx2 ] [ text <| String.fromInt (Percentage.toInt percentage) ++ " %" ]
                 ]
     in
-    ratingDictToList shares
+    ratingDictToList portfolioStructure
         |> List.map ratingSlider
-        |> div []
+        |> Html.p []

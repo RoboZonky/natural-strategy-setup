@@ -4,7 +4,7 @@ module Data.Strategy exposing
     , addBuyFilter
     , addSellFilter
     , defaultStrategyConfiguration
-    , portfolioStructureDecoder
+    , generalSettingsDecoder
     , removeBuyFilter
     , removeSellFilter
     , renderStrategyConfiguration
@@ -14,7 +14,7 @@ module Data.Strategy exposing
     , setExitConfig
     , setInvestment
     , setPortfolio
-    , setPortfolioShareRange
+    , setPortfolioSharePercentage
     , setReservationSetting
     , setSellingConfiguration
     , setTargetPortfolioSize
@@ -33,14 +33,14 @@ import Data.Filter.Conditions.Rating exposing (Rating(..))
 import Data.Investment as Investment exposing (InvestmentsPerRating)
 import Data.InvestmentShare as InvestmentShare exposing (InvestmentShare)
 import Data.Portfolio as Portfolio exposing (Portfolio(..))
-import Data.PortfolioStructure as PortfolioStructure exposing (PortfolioShares)
-import Data.PortfolioStructure.PredefinedShares as PredefinedShares
+import Data.PortfolioStructure as PortfolioStructure exposing (PortfolioStructure)
 import Data.ReservationSetting as ReservationSetting exposing (ReservationSetting)
 import Data.TargetPortfolioSize as TargetPortfolioSize exposing (TargetPortfolioSize)
 import Dict.Any
 import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as Encode exposing (Value)
 import List.Extra
+import Percentage
 import RangeSlider
 import Time exposing (Posix)
 import Types exposing (BaseUrl, UrlHash)
@@ -50,7 +50,7 @@ import Version
 
 type alias StrategyConfiguration =
     { generalSettings : GeneralSettings
-    , portfolioShares : PortfolioShares
+    , portfolioStructure : PortfolioStructure
     , investmentSizeOverrides : InvestmentsPerRating
     , buyingConfig : BuyingConfiguration
     , sellingConfig : SellingConfiguration
@@ -77,7 +77,7 @@ defaultStrategyConfiguration =
         , defaultInvestmentShare = InvestmentShare.NotSpecified
         , reservationSetting = ReservationSetting.defaultSetting
         }
-    , portfolioShares = PredefinedShares.conservative
+    , portfolioStructure = PortfolioStructure.conservative
     , investmentSizeOverrides = Investment.defaultInvestmentsPerRating Investment.defaultSize
     , buyingConfig = Filters.InvestEverything
     , sellingConfig = Filters.SellNothing
@@ -90,23 +90,23 @@ setPortfolio portfolio strategy =
         portfolioShares =
             case portfolio of
                 Conservative ->
-                    PredefinedShares.conservative
+                    PortfolioStructure.conservative
 
                 Balanced ->
-                    PredefinedShares.balanced
+                    PortfolioStructure.balanced
 
                 Progressive ->
-                    PredefinedShares.progressive
+                    PortfolioStructure.progressive
 
                 UserDefined ->
                     {- switch to UserDefined leaves the current slider configuration untouched -}
-                    strategy.portfolioShares
+                    strategy.portfolioStructure
     in
     case strategy of
         { generalSettings } as settings ->
             { settings
                 | generalSettings = { generalSettings | portfolio = portfolio }
-                , portfolioShares = portfolioShares
+                , portfolioStructure = portfolioShares
             }
 
 
@@ -125,14 +125,14 @@ setDefaultInvestmentShare share ({ generalSettings } as config) =
     { config | generalSettings = { generalSettings | defaultInvestmentShare = share } }
 
 
-setPortfolioShareRange : Rating -> RangeSlider.Msg -> StrategyConfiguration -> StrategyConfiguration
-setPortfolioShareRange rtg msg config =
+setPortfolioSharePercentage : Rating -> Percentage.Msg -> StrategyConfiguration -> StrategyConfiguration
+setPortfolioSharePercentage rtg msg config =
     let
-        sharesUpdater : PortfolioShares -> PortfolioShares
-        sharesUpdater =
-            Dict.Any.update rtg (Maybe.map (RangeSlider.update msg))
+        updatePortfolioStructure : PortfolioStructure -> PortfolioStructure
+        updatePortfolioStructure =
+            Dict.Any.update rtg (Maybe.map (Percentage.update msg))
     in
-    { config | portfolioShares = sharesUpdater config.portfolioShares }
+    { config | portfolioStructure = updatePortfolioStructure config.portfolioStructure }
 
 
 setInvestment : Rating -> RangeSlider.Msg -> StrategyConfiguration -> StrategyConfiguration
@@ -209,12 +209,12 @@ addSellFilter newFilter config =
 
 
 renderStrategyConfiguration : BaseUrl -> Posix -> StrategyConfiguration -> String
-renderStrategyConfiguration baseUrl generatedOn ({ generalSettings, portfolioShares, investmentSizeOverrides, buyingConfig, sellingConfig } as strategyConfig) =
+renderStrategyConfiguration baseUrl generatedOn ({ generalSettings, portfolioStructure, investmentSizeOverrides, buyingConfig, sellingConfig } as strategyConfig) =
     Util.joinNonemptyLines
         [ Version.strategyComment generatedOn
         , Version.robozonkyVersionStatement
         , renderGeneralSettings generalSettings
-        , PortfolioStructure.renderPortfolioShares generalSettings.portfolio portfolioShares
+        , PortfolioStructure.renderPortfolioStructure generalSettings.portfolio portfolioStructure
         , Investment.renderInvestments generalSettings.defaultInvestmentSize investmentSizeOverrides
         , Filters.renderBuyingConfiguration buyingConfig
         , Filters.renderSellingConfiguration sellingConfig
@@ -239,7 +239,7 @@ validateStrategyConfiguration : StrategyConfiguration -> List String
 validateStrategyConfiguration strategyConfig =
     List.concat
         [ validateGeneralSettings strategyConfig.generalSettings
-        , PortfolioStructure.validate strategyConfig.portfolioShares
+        , PortfolioStructure.validate strategyConfig.portfolioStructure
         , Filters.validateSellingConfiguration strategyConfig.sellingConfig
         ]
 
@@ -259,7 +259,7 @@ strategyEqual : StrategyConfiguration -> StrategyConfiguration -> Bool
 strategyEqual s1 s2 =
     Util.and
         [ generalSettingsEqual s1.generalSettings s2.generalSettings
-        , PortfolioStructure.portfolioSharesEqual s1.portfolioShares s2.portfolioShares
+        , PortfolioStructure.portfolioStructureEqual s1.portfolioStructure s2.portfolioStructure
         , Investment.investmentsPerRatingEqual s1.investmentSizeOverrides s2.investmentSizeOverrides
         , s1.buyingConfig == s2.buyingConfig
         , s1.sellingConfig == s2.sellingConfig
@@ -305,13 +305,13 @@ generalSettingsDecoder =
 
 
 encodeStrategy : StrategyConfiguration -> Value
-encodeStrategy { generalSettings, portfolioShares, investmentSizeOverrides, buyingConfig, sellingConfig } =
+encodeStrategy { generalSettings, portfolioStructure, investmentSizeOverrides, buyingConfig, sellingConfig } =
     let
         maybePortfolioStructure =
             {- Only encode portfolio structure for user defined portfolios -}
             case generalSettings.portfolio of
                 UserDefined ->
-                    [ ( "i", PortfolioStructure.encode portfolioShares ) ]
+                    [ ( "i", PortfolioStructure.encode portfolioStructure ) ]
 
                 _ ->
                     []
@@ -334,27 +334,11 @@ strategyDecoder =
         |> Decode.andThen
             (\generalSettings ->
                 Decode.map4 (StrategyConfiguration generalSettings)
-                    (portfolioStructureDecoder generalSettings.portfolio)
+                    (PortfolioStructure.decoderFromPortfolio generalSettings.portfolio)
                     (Decode.field "j" Investment.decoder)
                     (Decode.field "k" Filters.decodeBuyingConfiguration)
                     (Decode.field "l" Filters.decodeSellingConfiguration)
             )
-
-
-portfolioStructureDecoder : Portfolio -> Decoder PortfolioShares
-portfolioStructureDecoder portfolio =
-    case portfolio of
-        Conservative ->
-            Decode.succeed PredefinedShares.conservative
-
-        Balanced ->
-            Decode.succeed PredefinedShares.balanced
-
-        Progressive ->
-            Decode.succeed PredefinedShares.progressive
-
-        UserDefined ->
-            Decode.field "i" PortfolioStructure.decoder
 
 
 strategyToUrlHash : StrategyConfiguration -> UrlHash
@@ -382,4 +366,4 @@ shareableUrlComment baseUrl strategyConfig =
 
 strategyVersion : Int
 strategyVersion =
-    4
+    5

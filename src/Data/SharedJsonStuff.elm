@@ -7,7 +7,7 @@ import Json.Encode as Encode exposing (Value)
 import RangeSlider exposing (RangeSlider)
 
 
-{-| Encoders / Decoders shared by InvestmentsPerRating and PortfolioShares
+{-| Encoders / Decoders shared by InvestmentsPerRating and PortfolioStructure
 -}
 encodeRatingToSliderDict : (RangeSlider -> Value) -> AnyDict Int Rating RangeSlider -> Value
 encodeRatingToSliderDict sliderEncoder dict =

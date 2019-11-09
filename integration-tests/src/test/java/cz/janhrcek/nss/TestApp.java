@@ -75,7 +75,8 @@ class TestApp implements Closeable {
         CURRENT(Paths.get(System.getProperty("user.dir"), "target/testApp.html").toUri().toString()),
         V1("https://janhrcek.cz/nss-strategy-compat/v1/"),
         V2("https://janhrcek.cz/nss-strategy-compat/v2/"),
-        V3("https://janhrcek.cz/nss-strategy-compat/v3/");
+        V3("https://janhrcek.cz/nss-strategy-compat/v3/"),
+        V4("https://janhrcek.cz/nss-strategy-compat/v4/");
 
         private final URI uri;
 

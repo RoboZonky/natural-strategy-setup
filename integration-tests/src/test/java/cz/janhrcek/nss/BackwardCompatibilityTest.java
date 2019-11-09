@@ -37,7 +37,8 @@ public class BackwardCompatibilityTest {
         return Arrays.asList(
                 TestApp.Deployment.V1,
                 TestApp.Deployment.V2,
-                TestApp.Deployment.V3
+                TestApp.Deployment.V3,
+                TestApp.Deployment.V4
         );
     }
 

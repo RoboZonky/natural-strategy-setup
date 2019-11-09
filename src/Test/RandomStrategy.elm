@@ -23,11 +23,11 @@ import Data.Filter.Conditions.TermPercent as TermPercent exposing (TermPercentCo
 import Data.Investment as Investment exposing (InvestmentsPerRating)
 import Data.InvestmentShare as InvestmentShare exposing (InvestmentShare)
 import Data.Portfolio exposing (Portfolio(..))
-import Data.PortfolioStructure as PortfolioStructure exposing (PortfolioShares)
-import Data.PortfolioStructure.PredefinedShares as PredefinedShares
+import Data.PortfolioStructure as PortfolioStructure exposing (PortfolioStructure)
 import Data.ReservationSetting exposing (ReservationSetting(..))
 import Data.Strategy exposing (GeneralSettings, StrategyConfiguration)
 import Data.TargetPortfolioSize as TargetPortfolioSize exposing (TargetPortfolioSize(..))
+import Percentage
 import Random exposing (Generator)
 import Random.Extra as Random
 import Random.List
@@ -67,31 +67,26 @@ reservationSettingGen =
         ]
 
 
-portfolioSharesGen : Portfolio -> Generator PortfolioShares
+portfolioSharesGen : Portfolio -> Generator PortfolioStructure
 portfolioSharesGen portfolio =
     case portfolio of
         Conservative ->
-            Random.constant PredefinedShares.conservative
+            Random.constant PortfolioStructure.conservative
 
         Balanced ->
-            Random.constant PredefinedShares.balanced
+            Random.constant PortfolioStructure.balanced
 
         Progressive ->
-            Random.constant PredefinedShares.progressive
+            Random.constant PortfolioStructure.progressive
 
         UserDefined ->
             elevenIntsThatAddUpTo100
-                |> Random.andThen
-                    (\minimumShares ->
-                        List.map (\from -> percentageFrom from) minimumShares
-                            |> Random.combine
-                    )
                 |> Random.map
-                    (\sharesList ->
-                        List.map2 (\rtg ( from, to ) -> ( rtg, PortfolioStructure.percentageShare (toFloat from) (toFloat to) ))
-                            Rating.allRatings
-                            sharesList
-                            |> Rating.initRatingDict
+                    (\percentages ->
+                        Rating.initRatingDict <|
+                            List.map2 (\rating percentage -> ( rating, Percentage.fromInt percentage ))
+                                Rating.allRatings
+                                percentages
                     )
 
 
@@ -483,11 +478,6 @@ percentRangeGen =
     randomRangeGen 0 100
 
 
-percentageFrom : Int -> Generator ( Int, Int )
-percentageFrom from =
-    Random.int from 100 |> Random.map (\to -> ( from, to ))
-
-
 {-| Generate pair (x, y) such that mi <= x <= y <= ma
 -}
 randomRangeGen : Int -> Int -> Generator ( Int, Int )
@@ -535,7 +525,7 @@ and calculating 11 differences as
 -}
 elevenIntsThatAddUpTo100 : Generator (List Int)
 elevenIntsThatAddUpTo100 =
-    Random.list 10 (Random.int 0 100)
+    Random.list (List.length Rating.allRatings - 1) (Random.int 0 100)
         |> Random.map
             (\nineBoundaries ->
                 let
