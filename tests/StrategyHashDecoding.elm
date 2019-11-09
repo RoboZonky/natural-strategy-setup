@@ -7,10 +7,14 @@ module StrategyHashDecoding exposing
     )
 
 import Base64
-import Data.Strategy as Strategy exposing (StrategyConfiguration)
+import Data.Filter.Conditions.Rating as Rating
+import Data.Portfolio as Portfolio
+import Data.Strategy as Strategy exposing (StrategyConfiguration, defaultStrategyConfiguration)
 import Data.VersionedStrategy as VersionedStrategy
 import Expect exposing (Expectation)
+import Percentage
 import Test exposing (Test, describe, test)
+import Time
 
 
 invalidHashData : Test
@@ -101,9 +105,54 @@ validHashData =
                                 ]
                             )
             ]
-
-        -- TODO add test confirming V4 -> V5 gives warning when portfolio structure defined by range
+        , describe "V4 -> V5 migration"
+            [ test "custom portfolio using ranges - should give warning about portfolio simplification" <|
+                \() ->
+                    VersionedStrategy.loadStrategy "NDt7ImkiOltbMywxMF0sWzEzLDIwXSxbMTksMzBdLFsyMSwyMV0sWzE5LDE5XSxbMTEsMTFdLFs3LDddLFs1LDVdLFsyLDJdLFsxLDFdLFswLDEwXV0sImgiOnsiYSI6MywiYiI6WyIwIl0sImMiOlsxXSwiZCI6WzAsMjAwXSwiZSI6WzJdLCJnMSI6MX0sImoiOltbMCwyMDBdLFswLDIwMF0sWzAsMjAwXSxbMCwyMDBdLFswLDIwMF0sWzAsMjAwXSxbMCwyMDBdLFswLDIwMF0sWzAsMjAwXSxbMCwyMDBdLFswLDIwMF1dLCJrIjp7Im8iOjB9LCJsIjp7Im0iOjB9fQ=="
+                        |> withDecodedStrategy
+                            (Expect.all
+                                [ \( _, warnings ) ->
+                                    warnings
+                                        |> Expect.equal
+                                            -- TODO these should be sorted by rating and more readable
+                                            [ "Vaše strategie měla nastavenu vámi definovanou strukturu portfolia, která musela být zjednodušena:\n • 3,99 % p.a. z rozsahu '13 až 20%' na '20%'\n • 4,99 % p.a. z rozsahu '19 až 30%' na '30%'\n • 19,99 % p.a. z rozsahu '0 až 10%' na '10%'\n • 2,99 % p.a. z rozsahu '3 až 10%' na '10%'"
+                                            ]
+                                , \( decodedStrategy, _ ) ->
+                                    let
+                                        expectedStrategy : Strategy.StrategyConfiguration
+                                        expectedStrategy =
+                                            defaultStrategyConfiguration
+                                                |> Strategy.setPortfolio Portfolio.UserDefined
+                                                |> Strategy.setPortfolioSharePercentage Rating.AAAAAA (Percentage.SetValue 10)
+                                                |> Strategy.setPortfolioSharePercentage Rating.AAAAA (Percentage.SetValue 20)
+                                                |> Strategy.setPortfolioSharePercentage Rating.AAAA (Percentage.SetValue 30)
+                                                |> Strategy.setPortfolioSharePercentage Rating.D (Percentage.SetValue 10)
+                                    in
+                                    Strategy.strategyEqual expectedStrategy decodedStrategy
+                                        |> Expect.true "Should decode to expected Strategy"
+                                ]
+                            )
+            , test "custom portfolio without ranges - should not give any warnings" <|
+                \() ->
+                    VersionedStrategy.loadStrategy "NDt7ImkiOltbMywzXSxbMTMsMTNdLFsxOSwxOV0sWzIxLDIxXSxbMTksMTldLFsxMSwxMV0sWzcsN10sWzUsNV0sWzIsMl0sWzEsMV0sWzAsMF1dLCJoIjp7ImEiOjMsImIiOlsiMCJdLCJjIjpbMV0sImQiOlswLDIwMF0sImUiOlsyXSwiZzEiOjF9LCJqIjpbWzAsMjAwXSxbMCwyMDBdLFswLDIwMF0sWzAsMjAwXSxbMCwyMDBdLFswLDIwMF0sWzAsMjAwXSxbMCwyMDBdLFswLDIwMF0sWzAsMjAwXSxbMCwyMDBdXSwiayI6eyJvIjowfSwibCI6eyJtIjowfX0="
+                        |> withDecodedStrategy
+                            (Expect.all
+                                [ \( _, warnings ) -> warnings |> Expect.equal []
+                                , \( decodedStrategy, _ ) ->
+                                    let
+                                        expectedStrategy =
+                                            Strategy.setPortfolio Portfolio.UserDefined defaultStrategyConfiguration
+                                    in
+                                    Strategy.strategyEqual expectedStrategy decodedStrategy
+                                        |> Expect.true "Should decode almost default strategy with UserDefined portfolio"
+                                ]
+                            )
+            ]
         ]
+
+
+
+--|> Strategy.setPortfolioSharePercentage
 
 
 withDecodedStrategy :

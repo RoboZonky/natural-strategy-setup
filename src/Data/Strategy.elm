@@ -14,7 +14,7 @@ module Data.Strategy exposing
     , setExitConfig
     , setInvestment
     , setPortfolio
-    , setPortfolioShareRange
+    , setPortfolioSharePercentage
     , setReservationSetting
     , setSellingConfiguration
     , setTargetPortfolioSize
@@ -125,8 +125,8 @@ setDefaultInvestmentShare share ({ generalSettings } as config) =
     { config | generalSettings = { generalSettings | defaultInvestmentShare = share } }
 
 
-setPortfolioShareRange : Rating -> Percentage.Msg -> StrategyConfiguration -> StrategyConfiguration
-setPortfolioShareRange rtg msg config =
+setPortfolioSharePercentage : Rating -> Percentage.Msg -> StrategyConfiguration -> StrategyConfiguration
+setPortfolioSharePercentage rtg msg config =
     let
         sharesUpdater : PortfolioShares -> PortfolioShares
         sharesUpdater =

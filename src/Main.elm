@@ -143,7 +143,7 @@ updateHelper msg model =
         ChangePortfolioSharePercentage rating sliderMsg ->
             updateStrategy
                 -- Any change from defaults automatically selects "user defined" portfolio
-                (Strategy.setPortfolio Data.Portfolio.UserDefined << Strategy.setPortfolioShareRange rating sliderMsg)
+                (Strategy.setPortfolio Data.Portfolio.UserDefined << Strategy.setPortfolioSharePercentage rating sliderMsg)
                 model
 
         ChangeInvestment rating sliderMsg ->

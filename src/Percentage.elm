@@ -1,5 +1,5 @@
 module Percentage exposing
-    ( Msg
+    ( Msg(..)
     , Percentage
     , fromInt
     , toInt
