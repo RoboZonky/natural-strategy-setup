@@ -90,7 +90,7 @@ toInterestPercent r =
 
 {-| This is to associate colors with slider thumbs.
 Ideally I'd want to set color programmatically, but didn't figure out how to do it,
-because it's set in via CSS pseudo classes, like: "-moz-range-thumb"
+because it's associated with elements via CSS pseudo classes, like: "-moz-range-thumb"
 -}
 toColorClass : Rating -> String
 toColorClass rating =

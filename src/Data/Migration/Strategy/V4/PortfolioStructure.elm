@@ -14,6 +14,7 @@ module Data.Migration.Strategy.V4.PortfolioStructure exposing
 
 import Data.Filter.Conditions.Rating as Rating exposing (Rating(..))
 import Data.Portfolio exposing (Portfolio(..))
+import Data.PortfolioStructure as PortfolioStructure
 import Data.SharedJsonStuff
 import Data.Validate as Validate
 import Dict.Any exposing (AnyDict)
@@ -123,53 +124,17 @@ decoderFromPortfolio portfolio =
 
 conservative : PortfolioShares
 conservative =
-    initShares
-        [ ( AAAAAA, 3 )
-        , ( AAAAA, 13 )
-        , ( AAAA, 19 )
-        , ( AAA, 21 )
-        , ( AAE, 19 )
-        , ( AA, 11 )
-        , ( AE, 7 )
-        , ( A, 5 )
-        , ( B, 1.5 )
-        , ( C, 0.5 )
-        , ( D, 0 )
-        ]
+    initShares PortfolioStructure.conservativeShares
 
 
 balanced : PortfolioShares
 balanced =
-    initShares
-        [ ( AAAAAA, 2 )
-        , ( AAAAA, 6 )
-        , ( AAAA, 14 )
-        , ( AAA, 16 )
-        , ( AAE, 18 )
-        , ( AA, 15 )
-        , ( AE, 12 )
-        , ( A, 9 )
-        , ( B, 5 )
-        , ( C, 2 )
-        , ( D, 1 )
-        ]
+    initShares PortfolioStructure.balancedShares
 
 
 progressive : PortfolioShares
 progressive =
-    initShares
-        [ ( AAAAAA, 1 )
-        , ( AAAAA, 2 )
-        , ( AAAA, 7 )
-        , ( AAA, 10 )
-        , ( AAE, 14 )
-        , ( AA, 15 )
-        , ( AE, 17 )
-        , ( A, 15 )
-        , ( B, 10 )
-        , ( C, 6 )
-        , ( D, 3 )
-        ]
+    initShares PortfolioStructure.progressiveShares
 
 
 initShares : List ( Rating, Float ) -> PortfolioShares
