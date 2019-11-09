@@ -10,6 +10,7 @@ module Data.PortfolioStructure exposing
     , portfolioSharesEqual
     , progressive
     , renderPortfolioShares
+    , shareSum
     , validate
     )
 
@@ -66,10 +67,6 @@ renderPortfolioShares portfolio shares =
 
         _ ->
             ""
-
-
-
--- TODO add permanent display of current share sum
 
 
 shareSum : PortfolioShares -> Int

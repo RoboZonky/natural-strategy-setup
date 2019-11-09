@@ -42,6 +42,7 @@ view : Percentage -> Html Msg
 view (Percentage value) =
     Html.input
         [ type_ "range"
+        , Attr.class "percentage"
         , Attr.min "0"
         , Attr.max "100"
         , Attr.step "1"

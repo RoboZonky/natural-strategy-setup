@@ -11,6 +11,7 @@ module Data.Filter.Conditions.Rating exposing
     , ratingDictToList
     , showInterest
     , showInterestPercent
+    , toColorClass
     , toInterestPercent
     )
 
@@ -85,6 +86,49 @@ toInterestPercent r =
 
         D ->
             19.99
+
+
+{-| This is to associate colors with slider thumbs.
+Ideally I'd want to set color programmatically, but didn't figure out how to do it,
+because it's set in via CSS pseudo classes, like: "-moz-range-thumb"
+-}
+toColorClass : Rating -> String
+toColorClass rating =
+    "slider-color-"
+        ++ (case rating of
+                AAAAAA ->
+                    "aaaaaa"
+
+                AAAAA ->
+                    "aaaaa"
+
+                AAAA ->
+                    "aaaa"
+
+                AAA ->
+                    "aaa"
+
+                AAE ->
+                    "aae"
+
+                AA ->
+                    "aa"
+
+                AE ->
+                    "ae"
+
+                A ->
+                    "a"
+
+                B ->
+                    "b"
+
+                C ->
+                    "c"
+
+                D ->
+                    "d"
+           )
 
 
 showInterest : Rating -> String

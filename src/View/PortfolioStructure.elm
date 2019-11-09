@@ -4,21 +4,18 @@ import Bootstrap.Accordion as Accordion
 import Bootstrap.Card.Block as CardBlock
 import Bootstrap.Form as Form
 import Bootstrap.Form.Select as Select
-import Bootstrap.Grid as Grid
-import Bootstrap.Grid.Col as Col
 import Bootstrap.Utilities.Spacing as Spacing
 import Data.Filter.Conditions.Rating as Rating exposing (ratingDictToList)
 import Data.Portfolio as Portfolio exposing (Portfolio(..), allPortfolios)
 import Data.PortfolioStructure as PortfolioStructure exposing (PortfolioShares)
 import Data.Tooltip as Tooltip
-import Html exposing (Html, b, div, text)
+import Html exposing (Html, div, text)
 import Html.Attributes exposing (class, selected, style, value)
 import Html.Events exposing (onSubmit)
 import Percentage
 import Types exposing (Msg(..))
 import Util
 import View.CardHeightWorkaround exposing (markOpenedAccordionCard)
-import View.PortfolioStructure.BarChart as BarChart
 import View.Tooltip as Tooltip
 
 
@@ -39,14 +36,11 @@ form portfolio shares accordionState tooltipStates =
                 [ CardBlock.custom <|
                     div [ class "tab-with-sliders" ]
                         [ defaultPortfolioForm portfolio
-                        , text "Požadovaný podíl investovaný do půjček podle rizikových kategorií můžete upravit pomocí posuvníků"
-                        , Grid.row []
-                            [ Grid.col [ Col.xs6 ]
-                                [ portfolioSharesSliders shares ]
-                            , Grid.col [ Col.xs6 ]
-                                [ BarChart.view shares
-                                , validationErrors shares
-                                ]
+                        , Html.p [] [ text "Požadovaný podíl investovaný do půjček podle rizikových kategorií můžete upravit pomocí posuvníků" ]
+                        , portfolioSharesSliders shares
+                        , Html.p []
+                            [ text <| "Součet podílů je "
+                            , Html.b [] [ Html.text <| String.fromInt (PortfolioStructure.shareSum shares) ++ " %" ]
                             ]
                         ]
                 ]
@@ -93,10 +87,11 @@ validationErrors shares =
 portfolioSharesSliders : PortfolioShares -> Html Msg
 portfolioSharesSliders shares =
     let
-        ratingSlider ( rating, sliderState ) =
-            Form.formInline [ onSubmit NoOp ]
-                [ b [ style "width" "105px" ] [ text <| Rating.showInterestPercent rating ]
-                , Html.map (ChangePortfolioSharePercentage rating) <| Percentage.view sliderState
+        ratingSlider ( rating, percentage ) =
+            Form.formInline [ onSubmit NoOp, class (Rating.toColorClass rating) ]
+                [ Html.b [ style "width" "105px" ] [ text <| Rating.showInterestPercent rating ]
+                , Html.map (ChangePortfolioSharePercentage rating) <| Percentage.view percentage
+                , Html.b [ Spacing.mx2 ] [ text <| String.fromInt (Percentage.toInt percentage) ++ " %" ]
                 ]
     in
     ratingDictToList shares
