@@ -61,7 +61,7 @@ migratePortfolioStructure v4shares =
                     |> List.singleton
 
         maxima =
-            V4PS.ratingDictToList v4shares
+            Rating.ratingDictToList v4shares
                 |> List.map (Percentage.fromInt << Tuple.second << V4PS.toIntRange << Tuple.second)
     in
     case V5PS.fromPercentageList maxima of

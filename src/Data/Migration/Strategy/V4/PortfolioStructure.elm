@@ -8,7 +8,6 @@ module Data.Migration.Strategy.V4.PortfolioStructure exposing
     , encode
     , percentageShare
     , progressive
-    , ratingDictToList
     , toIntRange
     , validate
     )
@@ -66,11 +65,6 @@ validate portfolioShares =
 getSliderMinimum : RangeSlider -> Float
 getSliderMinimum =
     Tuple.first << RangeSlider.getValues
-
-
-ratingDictToList : AnyDict Int Rating a -> List ( Rating, a )
-ratingDictToList =
-    Dict.Any.toList >> List.sortBy (Tuple.first >> Rating.toInterestPercent)
 
 
 

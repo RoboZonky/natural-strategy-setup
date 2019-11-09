@@ -23,10 +23,6 @@ import Percentage exposing (Percentage)
 import Util
 
 
-
--- TODO make this opaque to prevent Dict.Any.toList which leads to things not properly sorted
-
-
 type alias PortfolioStructure =
     AnyDict Int Rating Percentage
 
