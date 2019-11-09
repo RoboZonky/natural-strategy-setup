@@ -1,7 +1,9 @@
 module Percentage exposing
     ( Msg(..)
     , Percentage
+    , fromFloat
     , fromInt
+    , toFloat
     , toInt
     , update
     , view
@@ -13,40 +15,53 @@ import Html.Events as Events
 import Json.Decode as Decode
 
 
+{-| Internally storing as Float, because predefined "conservative" portfolio has .5 values
+and we want to sum them up correctly without rounding
+-}
 type Percentage
-    = Percentage Int
+    = Percentage Float
 
 
 type Msg
     = SetValue Int
 
 
+fromFloat : Float -> Percentage
+fromFloat =
+    clamp 0 100 >> Percentage
+
+
+toFloat : Percentage -> Float
+toFloat (Percentage value) =
+    value
+
+
 fromInt : Int -> Percentage
 fromInt =
-    Percentage << clamp 0 100
+    Basics.toFloat >> fromFloat
 
 
 toInt : Percentage -> Int
-toInt (Percentage value) =
-    value
+toInt =
+    toFloat >> Basics.round
 
 
 update : Msg -> Percentage -> Percentage
 update msg (Percentage _) =
     case msg of
         SetValue newValue ->
-            Percentage newValue
+            Percentage (Basics.toFloat newValue)
 
 
 view : Percentage -> Html Msg
-view (Percentage value) =
+view percentage =
     Html.input
         [ type_ "range"
         , Attr.class "percentage"
         , Attr.min "0"
         , Attr.max "100"
         , Attr.step "1"
-        , Attr.value (String.fromInt value)
+        , Attr.value <| String.fromInt <| toInt percentage
         , Events.on "input"
             (Events.targetValue
                 |> Decode.andThen valueDecoder

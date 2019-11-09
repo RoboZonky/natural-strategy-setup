@@ -56,8 +56,10 @@ renderPortfolioStructure portfolio portfolioStructure =
 
 
 percentageSum : PortfolioStructure -> Int
-percentageSum =
-    Dict.Any.foldr (\_ percentage sumAcc -> sumAcc + Percentage.toInt percentage) 0
+percentageSum portfolioStructure =
+    portfolioStructure
+        |> Dict.Any.foldr (\_ percentage sumAcc -> sumAcc + Percentage.toFloat percentage) 0
+        |> Basics.round
 
 
 validate : PortfolioStructure -> List String
@@ -74,7 +76,11 @@ validate portfolioStructure =
 
 portfolioStructureEqual : PortfolioStructure -> PortfolioStructure -> Bool
 portfolioStructureEqual ps1 ps2 =
-    Dict.Any.values ps1 == Dict.Any.values ps2
+    let
+        toComparable =
+            Dict.Any.values << Dict.Any.map (\_ percentage -> Percentage.toInt percentage)
+    in
+    toComparable ps1 == toComparable ps2
 
 
 
@@ -210,5 +216,5 @@ progressive =
 
 initPortfolioStructure : List ( Rating, Float ) -> PortfolioStructure
 initPortfolioStructure =
-    List.map (Tuple.mapSecond (Basics.round >> Percentage.fromInt))
+    List.map (Tuple.mapSecond Percentage.fromFloat)
         >> Rating.initRatingDict

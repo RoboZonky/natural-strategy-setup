@@ -153,10 +153,6 @@ validHashData =
         ]
 
 
-
---|> Strategy.setPortfolioSharePercentage
-
-
 withDecodedStrategy :
     (( StrategyConfiguration, List String ) -> Expectation) -- What to assert about successfully decoded strategy
     -> Result String ( StrategyConfiguration, List String )

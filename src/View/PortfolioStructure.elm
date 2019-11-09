@@ -83,7 +83,6 @@ sumSummaryView portfolioStructure =
 
             else if sumOfPercentages > 100 then
                 Html.p [ style "color" "orange" ]
-                    -- TODO this shows 101 for conservative - should I enable
                     [ text "Součet podílů přesahuje 100%, což není nutně problém, ale může vést k nepředvídatelné struktuře portfolia." ]
 
             else
