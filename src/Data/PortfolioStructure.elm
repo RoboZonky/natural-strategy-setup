@@ -1,20 +1,19 @@
 module Data.PortfolioStructure exposing
-    ( PortfolioShare
-    , PortfolioShares
+    ( PortfolioStructure
     , balanced
     , conservative
     , decoder
     , decoderFromPortfolio
     , encode
     , fromPercentageList
-    , portfolioSharesEqual
+    , percentageSum
+    , portfolioStructureEqual
     , progressive
-    , renderPortfolioShares
-    , shareSum
+    , renderPortfolioStructure
     , validate
     )
 
-import Data.Filter.Conditions.Rating as Rating exposing (Rating(..), ratingDictToList)
+import Data.Filter.Conditions.Rating as Rating exposing (Rating(..))
 import Data.Portfolio exposing (Portfolio(..))
 import Data.Validate as Validate
 import Dict.Any exposing (AnyDict)
@@ -24,70 +23,61 @@ import Percentage exposing (Percentage)
 import Util
 
 
-type alias PortfolioShares =
-    AnyDict Int Rating Share
+
+-- TODO make this opaque to prevent Dict.Any.toList which leads to things not properly sorted
 
 
-type alias PortfolioShare =
-    ( Rating, Share )
+type alias PortfolioStructure =
+    AnyDict Int Rating Percentage
 
 
-
--- TODO  remove this alias
-
-
-type alias Share =
-    Percentage
-
-
-renderPortfolioShare : PortfolioShare -> String
-renderPortfolioShare ( rating, share ) =
+renderRatingPercentage : ( Rating, Percentage ) -> String
+renderRatingPercentage ( rating, percentage ) =
     "Prostředky úročené "
         ++ Rating.showInterestPercent rating
         ++ " mají tvořit "
-        ++ renderShare share
+        ++ renderPercentage percentage
         ++ " % aktuální zůstatkové částky."
 
 
-renderShare : Share -> String
-renderShare =
+renderPercentage : Percentage -> String
+renderPercentage =
     String.fromInt << Percentage.toInt
 
 
-renderPortfolioShares : Portfolio -> PortfolioShares -> String
-renderPortfolioShares portfolio shares =
+renderPortfolioStructure : Portfolio -> PortfolioStructure -> String
+renderPortfolioStructure portfolio portfolioStructure =
     case portfolio of
         UserDefined ->
-            Dict.Any.toList shares
-                |> List.sortBy (\( rating, _ ) -> Rating.toInterestPercent rating)
-                -- Only render share in the config when maximum > 0
+            Rating.ratingDictToList portfolioStructure
+                -- Only render percentage in the config when value > 0
                 |> List.filter (\( _, percentage ) -> Percentage.toInt percentage > 0)
-                |> List.map renderPortfolioShare
+                |> List.map renderRatingPercentage
                 |> Util.renderNonemptySection "\n- Úprava struktury portfolia"
 
         _ ->
             ""
 
 
-shareSum : PortfolioShares -> Int
-shareSum =
+percentageSum : PortfolioStructure -> Int
+percentageSum =
     Dict.Any.foldr (\_ percentage sumAcc -> sumAcc + Percentage.toInt percentage) 0
 
 
-validate : PortfolioShares -> List String
-validate portfolioShares =
+validate : PortfolioStructure -> List String
+validate portfolioStructure =
     let
-        sumOfShares =
-            shareSum portfolioShares
+        sumOfPercentages =
+            percentageSum portfolioStructure
     in
-    Validate.validate (sumOfShares < 100) <|
+    Validate.validate (sumOfPercentages < 100) <|
         "Součet podílů nesmí být menší než 100% (teď je "
-            ++ String.fromInt sumOfShares
+            ++ String.fromInt sumOfPercentages
             ++ "%)"
 
 
-portfolioSharesEqual : PortfolioShares -> PortfolioShares -> Bool
-portfolioSharesEqual ps1 ps2 =
+portfolioStructureEqual : PortfolioStructure -> PortfolioStructure -> Bool
+portfolioStructureEqual ps1 ps2 =
     Dict.Any.values ps1 == Dict.Any.values ps2
 
 
@@ -95,9 +85,9 @@ portfolioSharesEqual ps1 ps2 =
 -- JSON
 
 
-encode : PortfolioShares -> Value
-encode shares =
-    ratingDictToList shares
+encode : PortfolioStructure -> Value
+encode portfolioStructure =
+    Rating.ratingDictToList portfolioStructure
         |> Encode.list
             (\( _
                 {- assuming that rating is always sorted in order of rating's toInterestPercent,
@@ -110,22 +100,22 @@ encode shares =
             )
 
 
-decoder : Decoder PortfolioShares
+decoder : Decoder PortfolioStructure
 decoder =
-    Decode.list shareDecoder
+    Decode.list percentageDecoder
         |> Decode.map fromPercentageList
         |> Decode.andThen
             (\res ->
                 case res of
-                    Ok shares ->
-                        Decode.succeed shares
+                    Ok portfolioStructure ->
+                        Decode.succeed portfolioStructure
 
                     Err e ->
                         Decode.fail e
             )
 
 
-fromPercentageList : List Percentage -> Result String PortfolioShares
+fromPercentageList : List Percentage -> Result String PortfolioStructure
 fromPercentageList percentageList =
     let
         expectedLength =
@@ -145,17 +135,17 @@ fromPercentageList percentageList =
                 ++ String.fromInt actualLength
 
 
-encodePercentage : Share -> Value
+encodePercentage : Percentage -> Value
 encodePercentage =
     Percentage.toInt >> Encode.int
 
 
-shareDecoder : Decoder Share
-shareDecoder =
+percentageDecoder : Decoder Percentage
+percentageDecoder =
     Decode.map Percentage.fromInt Decode.int
 
 
-decoderFromPortfolio : Portfolio -> Decoder PortfolioShares
+decoderFromPortfolio : Portfolio -> Decoder PortfolioStructure
 decoderFromPortfolio portfolio =
     case portfolio of
         Conservative ->
@@ -171,9 +161,9 @@ decoderFromPortfolio portfolio =
             Decode.field "i" decoder
 
 
-conservative : PortfolioShares
+conservative : PortfolioStructure
 conservative =
-    initShares
+    initPortfolioStructure
         [ ( AAAAAA, 3 )
         , ( AAAAA, 13 )
         , ( AAAA, 19 )
@@ -188,9 +178,9 @@ conservative =
         ]
 
 
-balanced : PortfolioShares
+balanced : PortfolioStructure
 balanced =
-    initShares
+    initPortfolioStructure
         [ ( AAAAAA, 2 )
         , ( AAAAA, 6 )
         , ( AAAA, 14 )
@@ -205,9 +195,9 @@ balanced =
         ]
 
 
-progressive : PortfolioShares
+progressive : PortfolioStructure
 progressive =
-    initShares
+    initPortfolioStructure
         [ ( AAAAAA, 1 )
         , ( AAAAA, 2 )
         , ( AAAA, 7 )
@@ -222,7 +212,7 @@ progressive =
         ]
 
 
-initShares : List ( Rating, Float ) -> PortfolioShares
-initShares =
+initPortfolioStructure : List ( Rating, Float ) -> PortfolioStructure
+initPortfolioStructure =
     List.map (Tuple.mapSecond (Basics.round >> Percentage.fromInt))
         >> Rating.initRatingDict

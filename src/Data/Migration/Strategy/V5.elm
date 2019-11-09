@@ -6,7 +6,6 @@ import Data.Migration.Strategy.V4 as V4
 import Data.Migration.Strategy.V4.PortfolioStructure as V4PS
 import Data.PortfolioStructure as V5PS
 import Data.Strategy exposing (StrategyConfiguration)
-import Dict.Any
 import Percentage
 
 
@@ -16,11 +15,11 @@ Instead each rating has just one associated value (corresponding to what used to
 fromV4 : V4.StrategyConfiguration -> ( StrategyConfiguration, List MigrationWarning )
 fromV4 old =
     let
-        ( newPortfolioShares, warnings ) =
+        ( newPortfolioStructure, warnings ) =
             migratePortfolioStructure old.portfolioShares
     in
     ( { generalSettings = old.generalSettings
-      , portfolioShares = newPortfolioShares
+      , portfolioStructure = newPortfolioStructure
       , investmentSizeOverrides = old.investmentSizeOverrides
       , buyingConfig = old.buyingConfig
       , sellingConfig = old.sellingConfig
@@ -29,15 +28,15 @@ fromV4 old =
     )
 
 
-migratePortfolioStructure : V4PS.PortfolioShares -> ( V5PS.PortfolioShares, List MigrationWarning )
+migratePortfolioStructure : V4PS.PortfolioShares -> ( V5PS.PortfolioStructure, List MigrationWarning )
 migratePortfolioStructure v4shares =
     let
         sharesDefinedWithRanges =
             v4shares
-                |> Dict.Any.map (\_ slider -> V4PS.toIntRange slider)
+                |> Rating.ratingDictToList
+                |> List.map (\( rating, slider ) -> ( rating, V4PS.toIntRange slider ))
                 -- Warning will be shown if user had minimum /= maximum for any rating
-                |> Dict.Any.filter (\_ ( min, max ) -> min /= max)
-                |> Dict.Any.toList
+                |> List.filter (\( _, ( min, max ) ) -> min /= max)
 
         simplificationWarning =
             if List.isEmpty sharesDefinedWithRanges then
@@ -66,8 +65,8 @@ migratePortfolioStructure v4shares =
                 |> List.map (Percentage.fromInt << Tuple.second << V4PS.toIntRange << Tuple.second)
     in
     case V5PS.fromPercentageList maxima of
-        Ok v5shares ->
-            ( v5shares, simplificationWarning )
+        Ok v5PortfolioStructure ->
+            ( v5PortfolioStructure, simplificationWarning )
 
         Err errorAboutIncorrectStructure ->
             -- This shouldn't happen, unless people manually meddle with the URL encoded strategy

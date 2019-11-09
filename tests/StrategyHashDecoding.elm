@@ -14,7 +14,6 @@ import Data.VersionedStrategy as VersionedStrategy
 import Expect exposing (Expectation)
 import Percentage
 import Test exposing (Test, describe, test)
-import Time
 
 
 invalidHashData : Test
@@ -115,7 +114,7 @@ validHashData =
                                     warnings
                                         |> Expect.equal
                                             -- TODO these should be sorted by rating and more readable
-                                            [ "Vaše strategie měla nastavenu vámi definovanou strukturu portfolia, která musela být zjednodušena:\n • 3,99 % p.a. z rozsahu '13 až 20%' na '20%'\n • 4,99 % p.a. z rozsahu '19 až 30%' na '30%'\n • 19,99 % p.a. z rozsahu '0 až 10%' na '10%'\n • 2,99 % p.a. z rozsahu '3 až 10%' na '10%'"
+                                            [ "Vaše strategie měla nastavenu vámi definovanou strukturu portfolia, která musela být zjednodušena:\n • 2,99 % p.a. z rozsahu '3 až 10%' na '10%'\n • 3,99 % p.a. z rozsahu '13 až 20%' na '20%'\n • 4,99 % p.a. z rozsahu '19 až 30%' na '30%'\n • 19,99 % p.a. z rozsahu '0 až 10%' na '10%'"
                                             ]
                                 , \( decodedStrategy, _ ) ->
                                     let

@@ -23,7 +23,7 @@ import Data.Filter.Conditions.TermPercent as TermPercent exposing (TermPercentCo
 import Data.Investment as Investment exposing (InvestmentsPerRating)
 import Data.InvestmentShare as InvestmentShare exposing (InvestmentShare)
 import Data.Portfolio exposing (Portfolio(..))
-import Data.PortfolioStructure as PortfolioStructure exposing (PortfolioShares)
+import Data.PortfolioStructure as PortfolioStructure exposing (PortfolioStructure)
 import Data.ReservationSetting exposing (ReservationSetting(..))
 import Data.Strategy exposing (GeneralSettings, StrategyConfiguration)
 import Data.TargetPortfolioSize as TargetPortfolioSize exposing (TargetPortfolioSize(..))
@@ -67,7 +67,7 @@ reservationSettingGen =
         ]
 
 
-portfolioSharesGen : Portfolio -> Generator PortfolioShares
+portfolioSharesGen : Portfolio -> Generator PortfolioStructure
 portfolioSharesGen portfolio =
     case portfolio of
         Conservative ->

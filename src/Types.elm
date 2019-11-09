@@ -26,7 +26,7 @@ type Msg
     | ExitConfigChanged ExitConfig.ExitConfig
     | TargetPortfolioSizeChanged String
     | TargetPortfolioShareChanged String
-    | ChangePortfolioSharePercentage Rating Percentage.Msg
+    | ChangePortfolioPercentage Rating Percentage.Msg
     | ChangeInvestment Rating RangeSlider.Msg
     | ChangeDefaultInvestment RangeSlider.Msg
     | SetReservationSetting ReservationSetting

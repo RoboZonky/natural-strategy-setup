@@ -39,12 +39,12 @@ deletionModalConfig =
 
 
 strategyForm : StrategyConfiguration -> Accordion.State -> Tooltip.States -> Posix -> Html Msg
-strategyForm { generalSettings, portfolioShares, investmentSizeOverrides, buyingConfig, sellingConfig } accordionState tooltipStates generatedOn =
+strategyForm { generalSettings, portfolioStructure, investmentSizeOverrides, buyingConfig, sellingConfig } accordionState tooltipStates generatedOn =
     Accordion.config AccordionMsg
         |> Accordion.onlyOneOpen
         |> Accordion.cards
             [ generalSettingsCard generalSettings accordionState tooltipStates generatedOn
-            , PortfolioStructure.form generalSettings.portfolio portfolioShares accordionState tooltipStates
+            , PortfolioStructure.form generalSettings.portfolio portfolioStructure accordionState tooltipStates
             , Investment.form generalSettings.defaultInvestmentSize investmentSizeOverrides
             , BuyingConfig.form buyingConfig accordionState tooltipStates
             , SellConfig.form sellingConfig accordionState tooltipStates

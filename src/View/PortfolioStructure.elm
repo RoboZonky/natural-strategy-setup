@@ -7,7 +7,7 @@ import Bootstrap.Form.Select as Select
 import Bootstrap.Utilities.Spacing as Spacing
 import Data.Filter.Conditions.Rating as Rating exposing (ratingDictToList)
 import Data.Portfolio as Portfolio exposing (Portfolio(..), allPortfolios)
-import Data.PortfolioStructure as PortfolioStructure exposing (PortfolioShares)
+import Data.PortfolioStructure as PortfolioStructure exposing (PortfolioStructure)
 import Data.Tooltip as Tooltip
 import Html exposing (Html, div, text)
 import Html.Attributes exposing (class, selected, style, value)
@@ -18,8 +18,8 @@ import View.CardHeightWorkaround exposing (markOpenedAccordionCard)
 import View.Tooltip as Tooltip
 
 
-form : Portfolio -> PortfolioShares -> Accordion.State -> Tooltip.States -> Accordion.Card Msg
-form portfolio shares accordionState tooltipStates =
+form : Portfolio -> PortfolioStructure -> Accordion.State -> Tooltip.States -> Accordion.Card Msg
+form portfolio portfolioStructure accordionState tooltipStates =
     let
         cardId =
             "portfolioStructureCard"
@@ -36,8 +36,8 @@ form portfolio shares accordionState tooltipStates =
                     div [ class "tab-with-sliders" ]
                         [ defaultPortfolioForm portfolio
                         , Html.p [] [ text "Požadovaný podíl investovaný do půjček podle rizikových kategorií můžete upravit pomocí posuvníků" ]
-                        , portfolioSharesSliders shares
-                        , sumSummaryView shares
+                        , slidersView portfolioStructure
+                        , sumSummaryView portfolioStructure
                         ]
                 ]
             ]
@@ -70,18 +70,18 @@ defaultPortfolioSelect currentPortfolio =
         optionList
 
 
-sumSummaryView : PortfolioShares -> Html a
-sumSummaryView shares =
+sumSummaryView : PortfolioStructure -> Html a
+sumSummaryView portfolioStructure =
     let
-        sumOfShares =
-            PortfolioStructure.shareSum shares
+        sumOfPercentages =
+            PortfolioStructure.percentageSum portfolioStructure
 
         warnings =
-            if sumOfShares < 100 then
+            if sumOfPercentages < 100 then
                 Html.p [ style "color" "red" ]
                     [ Html.text "Součet podílů nesmí být menší než 100%" ]
 
-            else if sumOfShares > 100 then
+            else if sumOfPercentages > 100 then
                 Html.p [ style "color" "orange" ]
                     -- TODO this shows 101 for conservative - should I enable
                     [ text "Součet podílů přesahuje 100%, což není nutně problém, ale může vést k nepředvídatelné struktuře portfolia." ]
@@ -91,21 +91,21 @@ sumSummaryView shares =
     in
     Html.p []
         [ text "Součet podílů je "
-        , Html.b [] [ Html.text <| String.fromInt (PortfolioStructure.shareSum shares) ++ " %" ]
+        , Html.b [] [ Html.text <| String.fromInt (PortfolioStructure.percentageSum portfolioStructure) ++ " %" ]
         , warnings
         ]
 
 
-portfolioSharesSliders : PortfolioShares -> Html Msg
-portfolioSharesSliders shares =
+slidersView : PortfolioStructure -> Html Msg
+slidersView portfolioStructure =
     let
         ratingSlider ( rating, percentage ) =
             Form.formInline [ onSubmit NoOp, class (Rating.toColorClass rating) ]
                 [ Html.b [ style "width" "105px" ] [ text <| Rating.showInterestPercent rating ]
-                , Html.map (ChangePortfolioSharePercentage rating) <| Percentage.view percentage
+                , Html.map (ChangePortfolioPercentage rating) <| Percentage.view percentage
                 , Html.b [ Spacing.mx2 ] [ text <| String.fromInt (Percentage.toInt percentage) ++ " %" ]
                 ]
     in
-    ratingDictToList shares
+    ratingDictToList portfolioStructure
         |> List.map ratingSlider
         |> Html.p []
