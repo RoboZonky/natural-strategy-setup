@@ -3,6 +3,7 @@ module Data.PortfolioStructure exposing
     , PortfolioShares
     , decoder
     , encode
+    , ensureIntegralValues
     , percentageShare
     , portfolioSharesEqual
     , portfolioSlidersSubscription
@@ -75,6 +76,16 @@ renderPortfolioShares portfolio shares =
 toIntRange : Share -> ( Int, Int )
 toIntRange =
     RangeSlider.getValues >> (\( a, b ) -> ( round a, round b ))
+
+
+ensureIntegralValues : PortfolioShares -> PortfolioShares
+ensureIntegralValues =
+    let
+        ensureIntegralValuesSlider slider =
+            toIntRange slider
+                |> (\( a, b ) -> RangeSlider.setValues (toFloat a) (toFloat b) slider)
+    in
+    Dict.Any.map (\_ -> ensureIntegralValuesSlider)
 
 
 percentageShare : Float -> Float -> Share

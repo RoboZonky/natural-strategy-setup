@@ -99,8 +99,15 @@ setPortfolio portfolio strategy =
                     PredefinedShares.progressive
 
                 UserDefined ->
-                    {- switch to UserDefined leaves the current slider configuration untouched -}
-                    strategy.portfolioShares
+                    roundValuesWhenChangingToUserDefined strategy.portfolioShares
+
+        roundValuesWhenChangingToUserDefined =
+            -- Switch from NOT UserDefined to UserDefined needs to round values to avoid 100+ sums
+            if strategy.generalSettings.portfolio /= UserDefined then
+                PortfolioStructure.ensureIntegralValues
+
+            else
+                identity
     in
     case strategy of
         { generalSettings } as settings ->
