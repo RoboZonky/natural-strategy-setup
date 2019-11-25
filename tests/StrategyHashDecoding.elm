@@ -128,6 +128,8 @@ validHashData =
                                                 |> Strategy.setPortfolioSharePercentage Rating.AAAAAA (Percentage.SetValue 10)
                                                 |> Strategy.setPortfolioSharePercentage Rating.AAAAA (Percentage.SetValue 20)
                                                 |> Strategy.setPortfolioSharePercentage Rating.AAAA (Percentage.SetValue 30)
+                                                |> Strategy.setPortfolioSharePercentage Rating.B (Percentage.SetValue 2)
+                                                |> Strategy.setPortfolioSharePercentage Rating.C (Percentage.SetValue 1)
                                                 |> Strategy.setPortfolioSharePercentage Rating.D (Percentage.SetValue 10)
                                     in
                                     Strategy.strategyEqual expectedStrategy decodedStrategy
@@ -143,7 +145,10 @@ validHashData =
                                 , \( decodedStrategy, _ ) ->
                                     let
                                         expectedStrategy =
-                                            Strategy.setPortfolio Portfolio.UserDefined defaultStrategyConfiguration
+                                            defaultStrategyConfiguration
+                                                |> Strategy.setPortfolio Portfolio.UserDefined
+                                                |> Strategy.setPortfolioSharePercentage Rating.B (Percentage.SetValue 2)
+                                                |> Strategy.setPortfolioSharePercentage Rating.C (Percentage.SetValue 1)
                                     in
                                     Strategy.strategyEqual expectedStrategy decodedStrategy
                                         |> Expect.true "Should decode almost default strategy with UserDefined portfolio"

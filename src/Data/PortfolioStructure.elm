@@ -12,6 +12,7 @@ module Data.PortfolioStructure exposing
     , portfolioStructureEqual
     , progressive
     , progressiveShares
+    , renderPercentage
     , renderPortfolioStructure
     , validate
     )
@@ -41,7 +42,8 @@ renderRatingPercentage ( rating, percentage ) =
 
 renderPercentage : Percentage -> String
 renderPercentage =
-    String.fromInt << Percentage.toInt
+    -- Not using FormatNumber, because I actually don't want to show decimal places when the numbers are integral
+    Percentage.toFloat >> String.fromFloat >> String.replace "." ","
 
 
 renderPortfolioStructure : Portfolio -> PortfolioStructure -> String
@@ -81,7 +83,7 @@ portfolioStructureEqual : PortfolioStructure -> PortfolioStructure -> Bool
 portfolioStructureEqual ps1 ps2 =
     let
         toComparable =
-            Dict.Any.values << Dict.Any.map (\_ percentage -> Percentage.toInt percentage)
+            Dict.Any.values << Dict.Any.map (\_ percentage -> Percentage.toFloat percentage)
     in
     toComparable ps1 == toComparable ps2
 
@@ -142,12 +144,13 @@ fromPercentageList percentageList =
 
 encodePercentage : Percentage -> Value
 encodePercentage =
-    Percentage.toInt >> Encode.int
+    -- Encoding float to support the edge case when user switches from Conservative to UserDefined and keeps the 0.5s
+    Percentage.toFloat >> Encode.float
 
 
 percentageDecoder : Decoder Percentage
 percentageDecoder =
-    Decode.map Percentage.fromInt Decode.int
+    Decode.map Percentage.fromFloat Decode.float
 
 
 decoderFromPortfolio : Portfolio -> Decoder PortfolioStructure

@@ -4,6 +4,7 @@ import Data.Filter.Conditions.Rating as Rating
 import Data.Migration.Migration exposing (MigrationWarning)
 import Data.Migration.Strategy.V4 as V4
 import Data.Migration.Strategy.V4.PortfolioStructure as V4PS
+import Data.Portfolio exposing (Portfolio(..))
 import Data.PortfolioStructure as V5PS
 import Data.Strategy exposing (StrategyConfiguration)
 import Percentage
@@ -16,7 +17,18 @@ fromV4 : V4.StrategyConfiguration -> ( StrategyConfiguration, List MigrationWarn
 fromV4 old =
     let
         ( newPortfolioStructure, warnings ) =
-            migratePortfolioStructure old.portfolioShares
+            case old.generalSettings.portfolio of
+                Conservative ->
+                    ( V5PS.conservative, [] )
+
+                Balanced ->
+                    ( V5PS.balanced, [] )
+
+                Progressive ->
+                    ( V5PS.progressive, [] )
+
+                UserDefined ->
+                    migratePortfolioStructure old.portfolioShares
     in
     ( { generalSettings = old.generalSettings
       , portfolioStructure = newPortfolioStructure
