@@ -2,7 +2,7 @@
 
 Web configuration of investment strategy for [RoboZonky](https://robozonky.github.io/).
 
-## Running in development mode
+## Run in development mode
 
 Use [elm-live](https://github.com/wking-io/elm-live) to start the development server and open the running app in the browser.
 
@@ -10,7 +10,7 @@ Use [elm-live](https://github.com/wking-io/elm-live) to start the development se
 elm-live --dir dist --open -- src/Main.elm --output dist/js/elm.js
 ```
 
-## Running tests
+## Run tests
 
 There is [elm-test](https://package.elm-lang.org/packages/elm-explorations/test/latest/) based suite of unit tests in `tests` folder,
 which can be run from the root of the project using `elm-test`.
@@ -24,8 +24,29 @@ cd RoboZonky
 mvn clean install -DskipTests -Dgpg.skip=true
 ```
 
-After you have `elm-test` installed and robozonky artifacts built in your m2 repo you can run all tests using:
+You also need to install simple web server (sws) binary which is used to serve the app for selenium tests
+
+```bash
+stack install sws
+```
+
+After you have `elm-test` and `sws` binaries installed and robozonky artifacts built in your m2 repo you can run all tests using:
 
 ```bash
 ./test.sh
 ```
+
+## Release new strategy version
+
+Whenever there are backwards incompatible changes to the strategy format,
+the commit before them needs to be tagged and testing app built from the repo based on that tag should be uploaded to [nss-strategy-compat](https://github.com/jhrcek/jhrcek.github.io/tree/master/nss-strategy-compat) for future backward compatibility testing:
+
+```bash
+NEW_VERSION=v0.6
+git tag -a $NEW_VERSION -m"DESCRIBE CHANGES"
+# After running tests
+mkdir ~/Devel/github.com/jhrcek/jhrcek.github.io/nss-strategy-compat/$NEW_VERSION
+mv integration-tests/target/testApp.html ~/Devel/github.com/jhrcek/jhrcek.github.io/nss-strategy-compat/$NEW_VERSION/index.html
+# Add links to jhrcek.github.io/nss-strategy-compat/README.md
+```
+
