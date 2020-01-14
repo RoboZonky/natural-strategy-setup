@@ -1,12 +1,19 @@
-module Data.Migration.Strategy.V5 exposing (fromV4)
+module Data.Migration.Strategy.V5 exposing (GeneralSettings, StrategyConfiguration, fromV4, strategyDecoder)
 
+import Data.ExitConfig exposing (ExitConfig)
+import Data.Filter as Filters exposing (BuyingConfiguration, SellingConfiguration)
 import Data.Filter.Conditions.Rating as Rating
+import Data.Investment as Investment exposing (InvestmentsPerRating)
+import Data.InvestmentShare exposing (InvestmentShare)
 import Data.Migration.Migration exposing (MigrationWarning)
 import Data.Migration.Strategy.V4 as V4
 import Data.Migration.Strategy.V4.PortfolioStructure as V4PS
 import Data.Portfolio exposing (Portfolio(..))
-import Data.PortfolioStructure as V5PS
-import Data.Strategy exposing (StrategyConfiguration)
+import Data.PortfolioStructure as V5PS exposing (PortfolioStructure)
+import Data.ReservationSetting exposing (ReservationSetting)
+import Data.Strategy exposing (StrategyConfiguration, generalSettingsDecoder)
+import Data.TargetPortfolioSize exposing (TargetPortfolioSize)
+import Json.Decode as Decode exposing (Decoder)
 import Percentage
 
 
@@ -38,6 +45,25 @@ fromV4 old =
       }
     , warnings
     )
+
+
+type alias StrategyConfiguration =
+    { generalSettings : GeneralSettings
+    , portfolioStructure : PortfolioStructure
+    , investmentSizeOverrides : InvestmentsPerRating
+    , buyingConfig : BuyingConfiguration
+    , sellingConfig : SellingConfiguration
+    }
+
+
+type alias GeneralSettings =
+    { portfolio : Portfolio
+    , exitConfig : ExitConfig
+    , targetPortfolioSize : TargetPortfolioSize
+    , defaultInvestmentSize : Investment.Size
+    , defaultInvestmentShare : InvestmentShare
+    , reservationSetting : ReservationSetting
+    }
 
 
 migratePortfolioStructure : V4PS.PortfolioShares -> ( V5PS.PortfolioStructure, List MigrationWarning )
@@ -84,4 +110,20 @@ migratePortfolioStructure v4shares =
             , [ errorAboutIncorrectStructure
                     ++ " \nNastavil jsem 'konzervativní' portfolio, které si můžete v sekci 'Struktura portfolia' upravit podle potřeby."
               ]
+            )
+
+
+strategyDecoder : Decoder StrategyConfiguration
+strategyDecoder =
+    {- Need the portfolio ahead of time because it determines if we
+       should decode portfolio structure (for UserDefined) or use one of the predefined ones
+    -}
+    Decode.field "h" generalSettingsDecoder
+        |> Decode.andThen
+            (\generalSettings ->
+                Decode.map4 (StrategyConfiguration generalSettings)
+                    (V5PS.decoderFromPortfolio generalSettings.portfolio)
+                    (Decode.field "j" Investment.decoder)
+                    (Decode.field "k" Filters.decodeBuyingConfiguration)
+                    (Decode.field "l" Filters.decodeSellingConfiguration)
             )

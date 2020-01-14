@@ -7,7 +7,8 @@ import Data.Migration.Strategy.V2 as V2
 import Data.Migration.Strategy.V3 as V3
 import Data.Migration.Strategy.V4 as V4
 import Data.Migration.Strategy.V5 as V5
-import Data.Strategy as V5
+import Data.Migration.Strategy.V6 as V6
+import Data.Strategy as V6
 import Json.Decode as Decode
 import Types exposing (UrlHash)
 
@@ -18,13 +19,14 @@ type VersionedStrategy
     | V3 V3.StrategyConfiguration
     | V4 V4.StrategyConfiguration
     | V5 V5.StrategyConfiguration
+    | V6 V6.StrategyConfiguration
 
 
 type alias StrategyJson =
     String
 
 
-loadStrategy : UrlHash -> Result String ( V5.StrategyConfiguration, List MigrationWarning )
+loadStrategy : UrlHash -> Result String ( V6.StrategyConfiguration, List MigrationWarning )
 loadStrategy hash =
     case versionedStrategyFromUrlHash hash of
         Ok (V1 v1) ->
@@ -32,25 +34,32 @@ loadStrategy hash =
                 |> Migration.andThen V3.fromV2
                 |> Migration.andThen V4.fromV3
                 |> Migration.andThen V5.fromV4
+                |> Migration.andThen V6.fromV5
                 |> Ok
 
         Ok (V2 v2) ->
             V3.fromV2 v2
                 |> Migration.andThen V4.fromV3
                 |> Migration.andThen V5.fromV4
+                |> Migration.andThen V6.fromV5
                 |> Ok
 
         Ok (V3 v3) ->
             V4.fromV3 v3
                 |> Migration.andThen V5.fromV4
+                |> Migration.andThen V6.fromV5
                 |> Ok
 
         Ok (V4 v4) ->
             V5.fromV4 v4
+                |> Migration.andThen V6.fromV5
                 |> Ok
 
         Ok (V5 v5) ->
-            Ok ( v5, [] )
+            V6.fromV5 v5 |> Ok
+
+        Ok (V6 v6) ->
+            Ok ( v6, [] )
 
         Err e ->
             Err e
@@ -96,6 +105,9 @@ decodeStrategy version strategyJson =
 
         5 ->
             decodeVersionedStrategy V5.strategyDecoder V5 strategyJson
+
+        6 ->
+            decodeVersionedStrategy V6.strategyDecoder V6 strategyJson
 
         _ ->
             Err <| "Unsupported strategy version " ++ String.fromInt version

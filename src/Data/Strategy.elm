@@ -366,4 +366,4 @@ shareableUrlComment baseUrl strategyConfig =
 
 strategyVersion : Int
 strategyVersion =
-    5
+    6
