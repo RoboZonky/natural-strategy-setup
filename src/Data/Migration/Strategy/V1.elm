@@ -21,10 +21,10 @@ import Data.Filter.Conditions.Story as Story
 import Data.Filter.Conditions.TermMonths as TermMonths
 import Data.Filter.Conditions.TermPercent as TermPercent
 import Data.Investment as Investment exposing (InvestmentsPerRating)
-import Data.InvestmentShare as InvestmentShare exposing (InvestmentShare)
+import Data.Migration.Strategy.V1.TargetBalance as TargetBalance exposing (TargetBalance)
 import Data.Migration.Strategy.V4.PortfolioStructure as PortfolioStructure exposing (PortfolioShares)
+import Data.Migration.Strategy.V5.InvestmentShare as InvestmentShare exposing (InvestmentShare)
 import Data.Portfolio as Portfolio exposing (Portfolio(..))
-import Data.TargetBalance as TargetBalance exposing (TargetBalance)
 import Data.TargetPortfolioSize as TargetPortfolioSize exposing (TargetPortfolioSize)
 import Json.Decode as Decode exposing (Decoder)
 import Json.Decode.Extra exposing (andMap, optionalField)

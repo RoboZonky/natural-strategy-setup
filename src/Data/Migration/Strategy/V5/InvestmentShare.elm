@@ -1,14 +1,10 @@
-module Data.InvestmentShare exposing
+module Data.Migration.Strategy.V5.InvestmentShare exposing
     ( InvestmentShare(..)
     , decoder
-    , encode
     , render
-    , validate
     )
 
-import Data.Validate as Validate
 import Json.Decode as Decode exposing (Decoder)
-import Json.Encode as Encode exposing (Value)
 import Util
 
 
@@ -25,30 +21,6 @@ render investmentShare =
 
         NotSpecified ->
             ""
-
-
-validate : InvestmentShare -> List String
-validate s =
-    case s of
-        Percent pct ->
-            Validate.intInRange "Podíl výše úvěru v procentech" 1 100 pct
-
-        NotSpecified ->
-            []
-
-
-
--- JSON
-
-
-encode : InvestmentShare -> Value
-encode is =
-    case is of
-        Percent pct ->
-            Encode.list Encode.int [ 1, pct ]
-
-        NotSpecified ->
-            Encode.list Encode.int [ 2 ]
 
 
 decoder : Decoder InvestmentShare

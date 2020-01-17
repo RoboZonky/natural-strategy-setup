@@ -5,18 +5,18 @@ module Data.Migration.Strategy.V2 exposing
     , strategyDecoder
     )
 
-import Data.Confirmation as Confirmation exposing (ConfirmationSettings)
 import Data.ExitConfig as ExitConfig exposing (ExitConfig)
 import Data.Filter as Filters exposing (BuyingConfiguration, SellingConfiguration)
 import Data.Filter.Conditions.Rating as Rating
 import Data.Investment as Investment exposing (InvestmentsPerRating)
-import Data.InvestmentShare as InvestmentShare exposing (InvestmentShare)
 import Data.Migration.Migration exposing (MigrationWarning)
 import Data.Migration.Strategy.V1 as V1
+import Data.Migration.Strategy.V1.TargetBalance as TargetBalance exposing (TargetBalance)
+import Data.Migration.Strategy.V2.Confirmation as Confirmation exposing (ConfirmationSettings)
 import Data.Migration.Strategy.V4.PortfolioStructure as PortfolioStructure exposing (PortfolioShares)
+import Data.Migration.Strategy.V5.InvestmentShare as InvestmentShare exposing (InvestmentShare)
 import Data.Portfolio as Portfolio exposing (Portfolio(..))
 import Data.ReservationSetting as ReservationSetting exposing (ReservationSetting)
-import Data.TargetBalance as TargetBalance exposing (TargetBalance)
 import Data.TargetPortfolioSize as TargetPortfolioSize exposing (TargetPortfolioSize)
 import Json.Decode as Decode exposing (Decoder)
 

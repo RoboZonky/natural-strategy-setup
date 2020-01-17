@@ -5,21 +5,17 @@ module Data.Migration.Strategy.V4.PortfolioStructure exposing
     , conservative
     , decoder
     , decoderFromPortfolio
-    , encode
     , percentageShare
     , progressive
     , toIntRange
-    , validate
     )
 
 import Data.Filter.Conditions.Rating as Rating exposing (Rating(..))
 import Data.Portfolio exposing (Portfolio(..))
 import Data.PortfolioStructure as PortfolioStructure
 import Data.SharedJsonStuff
-import Data.Validate as Validate
 import Dict.Any exposing (AnyDict)
 import Json.Decode as Decode exposing (Decoder)
-import Json.Encode as Encode exposing (Value)
 import RangeSlider exposing (RangeSlider, setDimensions, setExtents, setFormatter, setStepSize, setValues)
 
 
@@ -50,41 +46,13 @@ percentageShare from to =
         |> setValues from to
 
 
-validate : PortfolioShares -> List String
-validate portfolioShares =
-    let
-        sumOfShareMinimums =
-            Dict.Any.foldr (\_ sliderState sumAcc -> sumAcc + getSliderMinimum sliderState) 0 portfolioShares
-                |> round
-    in
-    Validate.validate (sumOfShareMinimums /= 100) <|
-        "Součet minim musí být přesně 100% (teď je "
-            ++ String.fromInt sumOfShareMinimums
-            ++ "%)"
-
-
-getSliderMinimum : RangeSlider -> Float
-getSliderMinimum =
-    Tuple.first << RangeSlider.getValues
-
-
 
 -- JSON
-
-
-encode : PortfolioShares -> Value
-encode =
-    Data.SharedJsonStuff.encodeRatingToSliderDict encodeShare
 
 
 decoder : Decoder PortfolioShares
 decoder =
     Data.SharedJsonStuff.ratingToSliderDictDecoder defaultShare shareDecoder
-
-
-encodeShare : Share -> Value
-encodeShare sz =
-    toIntRange sz |> (\( from, to ) -> Encode.list Encode.int [ from, to ])
 
 
 shareDecoder : Decoder Share

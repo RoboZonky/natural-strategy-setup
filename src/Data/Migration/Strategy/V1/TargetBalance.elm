@@ -1,14 +1,10 @@
-module Data.TargetBalance exposing
+module Data.Migration.Strategy.V1.TargetBalance exposing
     ( TargetBalance(..)
     , decoder
-    , encode
     , render
-    , validate
     )
 
-import Data.Validate as Validate
 import Json.Decode as Decode exposing (Decoder)
-import Json.Encode as Encode exposing (Value)
 import Util
 
 
@@ -25,30 +21,6 @@ render targetBalance =
 
         NotSpecified ->
             ""
-
-
-validate : TargetBalance -> List String
-validate tb =
-    case tb of
-        NotSpecified ->
-            []
-
-        TargetBalance val ->
-            Validate.validate (val < 0) "Disponibilní zůstatek nesmí být záporný"
-
-
-
--- JSON
-
-
-encode : TargetBalance -> Value
-encode tb =
-    case tb of
-        NotSpecified ->
-            Encode.list Encode.int [ 1 ]
-
-        TargetBalance pct ->
-            Encode.list Encode.int [ 2, pct ]
 
 
 decoder : Decoder TargetBalance

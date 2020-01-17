@@ -1,17 +1,23 @@
 module Data.Migration.Strategy.V4 exposing
-    ( StrategyConfiguration
+    ( GeneralSettings
+    , StrategyConfiguration
     , fromV3
+    , generalSettingsDecoder
     , strategyDecoder
     )
 
+import Data.ExitConfig as ExitConfig exposing (ExitConfig)
 import Data.Filter as Filters exposing (BuyingConfiguration, SellingConfiguration)
 import Data.Filter.Conditions.Rating exposing (Rating)
 import Data.Investment as Investment exposing (InvestmentsPerRating)
 import Data.Migration.Migration exposing (MigrationWarning)
+import Data.Migration.Strategy.V1.TargetBalance as TargetBalance
 import Data.Migration.Strategy.V3 as V3
 import Data.Migration.Strategy.V4.PortfolioStructure as PortfolioStructure
-import Data.Strategy exposing (GeneralSettings, StrategyConfiguration, generalSettingsDecoder)
-import Data.TargetBalance as TargetBalance
+import Data.Migration.Strategy.V5.InvestmentShare as InvestmentShare exposing (InvestmentShare)
+import Data.Portfolio as Portfolio exposing (Portfolio)
+import Data.ReservationSetting as ReservationSetting exposing (ReservationSetting)
+import Data.TargetPortfolioSize as TargetPortfolioSize exposing (TargetPortfolioSize)
 import Dict.Any exposing (AnyDict)
 import Json.Decode as Decode exposing (Decoder)
 import RangeSlider exposing (RangeSlider)
@@ -23,6 +29,16 @@ type alias StrategyConfiguration =
     , investmentSizeOverrides : InvestmentsPerRating
     , buyingConfig : BuyingConfiguration
     , sellingConfig : SellingConfiguration
+    }
+
+
+type alias GeneralSettings =
+    { portfolio : Portfolio
+    , exitConfig : ExitConfig
+    , targetPortfolioSize : TargetPortfolioSize
+    , defaultInvestmentSize : Investment.Size
+    , defaultInvestmentShare : InvestmentShare
+    , reservationSetting : ReservationSetting
     }
 
 
@@ -90,3 +106,14 @@ strategyDecoder =
                     (Decode.field "k" Filters.decodeBuyingConfiguration)
                     (Decode.field "l" Filters.decodeSellingConfiguration)
             )
+
+
+generalSettingsDecoder : Decoder GeneralSettings
+generalSettingsDecoder =
+    Decode.map6 GeneralSettings
+        (Decode.field "a" Portfolio.decoder)
+        (Decode.field "b" ExitConfig.decoder)
+        (Decode.field "c" TargetPortfolioSize.decoder)
+        (Decode.field "d" Investment.sizeDecoder)
+        (Decode.field "e" InvestmentShare.decoder)
+        (Decode.field "g1" ReservationSetting.decoder)

@@ -10,7 +10,6 @@ module Data.Strategy exposing
     , renderStrategyConfiguration
     , setBuyingConfiguration
     , setDefaultInvestment
-    , setDefaultInvestmentShare
     , setExitConfig
     , setInvestment
     , setPortfolio
@@ -31,7 +30,6 @@ import Data.ExitConfig as ExitConfig exposing (ExitConfig)
 import Data.Filter as Filters exposing (BuyingConfiguration, MarketplaceFilter, SellingConfiguration)
 import Data.Filter.Conditions.Rating exposing (Rating(..))
 import Data.Investment as Investment exposing (InvestmentsPerRating)
-import Data.InvestmentShare as InvestmentShare exposing (InvestmentShare)
 import Data.Portfolio as Portfolio exposing (Portfolio(..))
 import Data.PortfolioStructure as PortfolioStructure exposing (PortfolioStructure)
 import Data.ReservationSetting as ReservationSetting exposing (ReservationSetting)
@@ -66,8 +64,6 @@ type alias GeneralSettings =
     , defaultInvestmentSize : Investment.Size
 
     -- TODO add defaultPurchaseSize
-    -- TODO remove this field
-    , defaultInvestmentShare : InvestmentShare
     , reservationSetting : ReservationSetting
     }
 
@@ -79,7 +75,6 @@ defaultStrategyConfiguration =
         , exitConfig = ExitConfig.DontExit
         , targetPortfolioSize = TargetPortfolioSize.NotSpecified
         , defaultInvestmentSize = Investment.defaultSize
-        , defaultInvestmentShare = InvestmentShare.NotSpecified
         , reservationSetting = ReservationSetting.defaultSetting
         }
     , portfolioStructure = PortfolioStructure.conservative
@@ -123,11 +118,6 @@ setExitConfig exitConfig ({ generalSettings } as config) =
 setTargetPortfolioSize : TargetPortfolioSize -> StrategyConfiguration -> StrategyConfiguration
 setTargetPortfolioSize targetPortfolioSize ({ generalSettings } as config) =
     { config | generalSettings = { generalSettings | targetPortfolioSize = targetPortfolioSize } }
-
-
-setDefaultInvestmentShare : InvestmentShare -> StrategyConfiguration -> StrategyConfiguration
-setDefaultInvestmentShare share ({ generalSettings } as config) =
-    { config | generalSettings = { generalSettings | defaultInvestmentShare = share } }
 
 
 setPortfolioSharePercentage : Rating -> Percentage.Msg -> StrategyConfiguration -> StrategyConfiguration
@@ -237,7 +227,6 @@ renderGeneralSettings generalSettings =
 
         -- TODO PurchaseSize here
         , TargetPortfolioSize.render generalSettings.targetPortfolioSize
-        , InvestmentShare.render generalSettings.defaultInvestmentShare
         , ExitConfig.render generalSettings.exitConfig
         ]
 
@@ -256,7 +245,6 @@ validateGeneralSettings generalSettings =
     List.concat
         [ ExitConfig.validate generalSettings.exitConfig
         , TargetPortfolioSize.validate generalSettings.targetPortfolioSize
-        , InvestmentShare.validate generalSettings.defaultInvestmentShare
         ]
 
 
@@ -280,7 +268,6 @@ generalSettingsEqual gs1 gs2 =
         , gs1.exitConfig == gs2.exitConfig
         , gs1.targetPortfolioSize == gs2.targetPortfolioSize
         , Investment.investmentSizeEqual gs1.defaultInvestmentSize gs2.defaultInvestmentSize
-        , gs1.defaultInvestmentShare == gs2.defaultInvestmentShare
         ]
 
 
@@ -289,25 +276,23 @@ generalSettingsEqual gs1 gs2 =
 
 
 encodeGeneralSettings : GeneralSettings -> Value
-encodeGeneralSettings { portfolio, exitConfig, targetPortfolioSize, defaultInvestmentSize, defaultInvestmentShare, reservationSetting } =
+encodeGeneralSettings { portfolio, exitConfig, targetPortfolioSize, defaultInvestmentSize, reservationSetting } =
     Encode.object
         [ ( "a", Portfolio.encode portfolio )
         , ( "b", ExitConfig.encode exitConfig )
         , ( "c", TargetPortfolioSize.encode targetPortfolioSize )
         , ( "d", Investment.encodeSize defaultInvestmentSize )
-        , ( "e", InvestmentShare.encode defaultInvestmentShare )
         , ( "g1", ReservationSetting.encode reservationSetting )
         ]
 
 
 generalSettingsDecoder : Decoder GeneralSettings
 generalSettingsDecoder =
-    Decode.map6 GeneralSettings
+    Decode.map5 GeneralSettings
         (Decode.field "a" Portfolio.decoder)
         (Decode.field "b" ExitConfig.decoder)
         (Decode.field "c" TargetPortfolioSize.decoder)
         (Decode.field "d" Investment.sizeDecoder)
-        (Decode.field "e" InvestmentShare.decoder)
         (Decode.field "g1" ReservationSetting.decoder)
 
 

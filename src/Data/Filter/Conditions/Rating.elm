@@ -4,7 +4,6 @@ module Data.Filter.Conditions.Rating exposing
     , allRatings
     , conditionDecoder
     , defaultCondition
-    , encodeCondition
     , fromHash
     , hash
     , initRatingDict
@@ -17,7 +16,6 @@ module Data.Filter.Conditions.Rating exposing
 
 import Dict.Any exposing (AnyDict)
 import Json.Decode as Decode exposing (Decoder)
-import Json.Encode as Encode exposing (Value)
 import Util
 
 
@@ -236,16 +234,6 @@ type RatingCondition
 
 
 -- JSON
-
-
-encodeRating : Rating -> Value
-encodeRating =
-    Util.enumEncoder allRatings
-
-
-encodeCondition : RatingCondition -> Value
-encodeCondition (RatingList rs) =
-    Encode.list encodeRating rs
 
 
 ratingDecoder : Decoder Rating
