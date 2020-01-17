@@ -76,7 +76,8 @@ class TestApp implements Closeable {
         V1("https://janhrcek.cz/nss-strategy-compat/v1/"),
         V2("https://janhrcek.cz/nss-strategy-compat/v2/"),
         V3("https://janhrcek.cz/nss-strategy-compat/v3/"),
-        V4("https://janhrcek.cz/nss-strategy-compat/v4/");
+        V4("https://janhrcek.cz/nss-strategy-compat/v4/"),
+        V5("https://janhrcek.cz/nss-strategy-compat/v5/");
 
         private final URI uri;
 
