@@ -38,7 +38,8 @@ public class BackwardCompatibilityTest {
                 TestApp.Deployment.V1,
                 TestApp.Deployment.V2,
                 TestApp.Deployment.V3,
-                TestApp.Deployment.V4
+                TestApp.Deployment.V4,
+                TestApp.Deployment.V5
         );
     }
 
