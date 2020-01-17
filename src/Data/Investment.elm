@@ -42,11 +42,13 @@ type alias Size =
 
 renderSize : Size -> String
 renderSize size =
+    -- TODO "'Robot má investovat do úvěrů po "
     "Běžná výše investice je" ++ investmentSizeToString size ++ " Kč."
 
 
 renderInvestment : ( Rating, Size ) -> String
 renderInvestment ( rating, size ) =
+    -- TODO "Do úvěrů s úročením " ...  "investovat po " ... " Kč."
     "S úročením " ++ Rating.showInterestPercent rating ++ " jednotlivě investovat" ++ investmentSizeToString size ++ " Kč."
 
 

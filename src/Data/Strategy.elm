@@ -52,6 +52,8 @@ type alias StrategyConfiguration =
     { generalSettings : GeneralSettings
     , portfolioStructure : PortfolioStructure
     , investmentSizeOverrides : InvestmentsPerRating
+
+    -- TODO add purchaseSizeOverrides
     , buyingConfig : BuyingConfiguration
     , sellingConfig : SellingConfiguration
     }
@@ -62,6 +64,9 @@ type alias GeneralSettings =
     , exitConfig : ExitConfig
     , targetPortfolioSize : TargetPortfolioSize
     , defaultInvestmentSize : Investment.Size
+
+    -- TODO add defaultPurchaseSize
+    -- TODO remove this field
     , defaultInvestmentShare : InvestmentShare
     , reservationSetting : ReservationSetting
     }
@@ -228,10 +233,12 @@ renderGeneralSettings generalSettings =
         [ "- Obecná nastavení"
         , Portfolio.render generalSettings.portfolio
         , ReservationSetting.render generalSettings.reservationSetting
-        , ExitConfig.render generalSettings.exitConfig
-        , TargetPortfolioSize.render generalSettings.targetPortfolioSize
         , Investment.renderSize generalSettings.defaultInvestmentSize
+
+        -- TODO PurchaseSize here
+        , TargetPortfolioSize.render generalSettings.targetPortfolioSize
         , InvestmentShare.render generalSettings.defaultInvestmentShare
+        , ExitConfig.render generalSettings.exitConfig
         ]
 
 
