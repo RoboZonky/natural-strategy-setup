@@ -14,7 +14,6 @@ import View.ExitConfig as ExitConfig
 import View.Filter.CreationModal as FilterCreationModal
 import View.Filter.DeletionModal as FilterDeletionModal
 import View.Investment as Investment
-import View.InvestmentShare as InvestmentShare
 import View.PortfolioStructure as PortfolioStructure
 import View.ReservationSetting as ReservationSetting
 import View.SellConfig as SellConfig
@@ -65,7 +64,6 @@ generalSettingsCard settings accordionState tooltipStates generatedOn =
         , blocks =
             [ Accordion.block []
                 [ TargetPortfolioSize.form settings.targetPortfolioSize
-                , InvestmentShare.form settings.defaultInvestmentShare
                 , ReservationSetting.form settings.reservationSetting
                 , ExitConfig.form settings.exitConfig generatedOn tooltipStates
                 ]

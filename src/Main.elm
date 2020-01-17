@@ -6,7 +6,6 @@ import Browser exposing (UrlRequest(..))
 import Browser.Navigation exposing (Key)
 import Data.Filter as Filters exposing (FilteredItem(..))
 import Data.Investment as Investment
-import Data.InvestmentShare as InvestmentShare
 import Data.Portfolio
 import Data.Strategy as Strategy exposing (StrategyConfiguration)
 import Data.TargetPortfolioSize as TargetPortfolioSize exposing (TargetPortfolioSize(..))
@@ -132,13 +131,6 @@ updateHelper msg model =
                     wrapIntOrEmpty TargetPortfolioSize TargetPortfolioSize.NotSpecified targetSizeStr
             in
             updateStrategy (Strategy.setTargetPortfolioSize targetSize) model
-
-        TargetPortfolioShareChanged shareStr ->
-            let
-                share =
-                    wrapIntOrEmpty InvestmentShare.Percent InvestmentShare.NotSpecified shareStr
-            in
-            updateStrategy (Strategy.setDefaultInvestmentShare share) model
 
         ChangePortfolioPercentage rating sliderMsg ->
             updateStrategy

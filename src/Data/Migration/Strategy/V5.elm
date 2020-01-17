@@ -1,18 +1,17 @@
-module Data.Migration.Strategy.V5 exposing (GeneralSettings, StrategyConfiguration, fromV4, strategyDecoder)
+module Data.Migration.Strategy.V5 exposing
+    ( StrategyConfiguration
+    , fromV4
+    , strategyDecoder
+    )
 
-import Data.ExitConfig exposing (ExitConfig)
 import Data.Filter as Filters exposing (BuyingConfiguration, SellingConfiguration)
 import Data.Filter.Conditions.Rating as Rating
 import Data.Investment as Investment exposing (InvestmentsPerRating)
-import Data.InvestmentShare exposing (InvestmentShare)
 import Data.Migration.Migration exposing (MigrationWarning)
 import Data.Migration.Strategy.V4 as V4
 import Data.Migration.Strategy.V4.PortfolioStructure as V4PS
 import Data.Portfolio exposing (Portfolio(..))
 import Data.PortfolioStructure as V5PS exposing (PortfolioStructure)
-import Data.ReservationSetting exposing (ReservationSetting)
-import Data.Strategy exposing (StrategyConfiguration, generalSettingsDecoder)
-import Data.TargetPortfolioSize exposing (TargetPortfolioSize)
 import Json.Decode as Decode exposing (Decoder)
 import Percentage
 
@@ -48,21 +47,11 @@ fromV4 old =
 
 
 type alias StrategyConfiguration =
-    { generalSettings : GeneralSettings
+    { generalSettings : V4.GeneralSettings
     , portfolioStructure : PortfolioStructure
     , investmentSizeOverrides : InvestmentsPerRating
     , buyingConfig : BuyingConfiguration
     , sellingConfig : SellingConfiguration
-    }
-
-
-type alias GeneralSettings =
-    { portfolio : Portfolio
-    , exitConfig : ExitConfig
-    , targetPortfolioSize : TargetPortfolioSize
-    , defaultInvestmentSize : Investment.Size
-    , defaultInvestmentShare : InvestmentShare
-    , reservationSetting : ReservationSetting
     }
 
 
@@ -118,7 +107,7 @@ strategyDecoder =
     {- Need the portfolio ahead of time because it determines if we
        should decode portfolio structure (for UserDefined) or use one of the predefined ones
     -}
-    Decode.field "h" generalSettingsDecoder
+    Decode.field "h" V4.generalSettingsDecoder
         |> Decode.andThen
             (\generalSettings ->
                 Decode.map4 (StrategyConfiguration generalSettings)

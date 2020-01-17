@@ -21,7 +21,6 @@ import Data.Filter.Conditions.Story exposing (Story(..), StoryCondition(..))
 import Data.Filter.Conditions.TermMonths as TermMonths exposing (TermMonthsCondition(..))
 import Data.Filter.Conditions.TermPercent as TermPercent exposing (TermPercentCondition(..))
 import Data.Investment as Investment exposing (InvestmentsPerRating)
-import Data.InvestmentShare as InvestmentShare exposing (InvestmentShare)
 import Data.Portfolio exposing (Portfolio(..))
 import Data.PortfolioStructure as PortfolioStructure exposing (PortfolioStructure)
 import Data.ReservationSetting exposing (ReservationSetting(..))
@@ -55,7 +54,6 @@ generalSettingsGen =
         |> Random.andMap exitConfigGen
         |> Random.andMap targetPortfolioSizeGen
         |> Random.andMap investmentSizeGen
-        |> Random.andMap investmentShareGen
         |> Random.andMap reservationSettingGen
 
 
@@ -409,12 +407,6 @@ targetPortfolioSizeGen =
 investmentSizeGen : Generator Investment.Size
 investmentSizeGen =
     investment0to5kRange
-
-
-investmentShareGen : Generator InvestmentShare
-investmentShareGen =
-    Random.frequency ( 1, Random.constant InvestmentShare.NotSpecified )
-        [ ( 2, Random.map InvestmentShare.Percent <| Random.int 1 100 ) ]
 
 
 exitConfigGen : Generator ExitConfig.ExitConfig

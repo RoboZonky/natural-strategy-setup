@@ -25,7 +25,6 @@ type Msg
     = PortfolioChanged Portfolio
     | ExitConfigChanged ExitConfig.ExitConfig
     | TargetPortfolioSizeChanged String
-    | TargetPortfolioShareChanged String
     | ChangePortfolioPercentage Rating Percentage.Msg
     | ChangeInvestment Rating RangeSlider.Msg
     | ChangeDefaultInvestment RangeSlider.Msg
