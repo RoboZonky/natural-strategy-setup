@@ -7,8 +7,8 @@ module Data.Migration.Strategy.V3 exposing
 
 import Data.ExitConfig as ExitConfig exposing (ExitConfig)
 import Data.Filter as Filters exposing (BuyingConfiguration, SellingConfiguration)
-import Data.Investment as Investment exposing (InvestmentsPerRating)
 import Data.Migration.Migration exposing (MigrationWarning)
+import Data.Migration.Strategy.V1.Investment as Investment exposing (InvestmentsPerRating)
 import Data.Migration.Strategy.V1.TargetBalance as TargetBalance exposing (TargetBalance)
 import Data.Migration.Strategy.V2 as V2
 import Data.Migration.Strategy.V2.Confirmation as Confirmation
