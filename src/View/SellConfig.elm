@@ -55,6 +55,13 @@ viewSellingConfiguration sellingConfiguration =
             , Radio.radio
                 [ Radio.id "sc3"
                 , radioName
+                , Radio.checked (toEnum sellingConfiguration == SWithoutChargeAndDiscount)
+                , Radio.onClick (SellingConfigChanged SellWithoutChargeAndDiscount)
+                ]
+                "Prodávat všechny participace bez poplatku a slevy, které odpovídají filtrům tržiště."
+            , Radio.radio
+                [ Radio.id "sc4"
+                , radioName
                 , Radio.checked (toEnum sellingConfiguration == SSomething)
                 , Radio.onClick <|
                     case sellingConfiguration of
@@ -84,6 +91,9 @@ filterListControls sellingConfiguration =
                 , filterCreationButtons
                 , Util.viewErrors <| validateSellingConfiguration sellingConfiguration
                 ]
+
+        SellWithoutChargeAndDiscount ->
+            text ""
 
         SellWithoutCharge ->
             text ""
@@ -116,6 +126,7 @@ type SellConfigEnum
     = SNothing
     | SSomething
     | SWithoutCharge
+    | SWithoutChargeAndDiscount
 
 
 toEnum : SellingConfiguration -> SellConfigEnum
@@ -126,6 +137,9 @@ toEnum sellingConfiguration =
 
         SellWithoutCharge ->
             SWithoutCharge
+
+        SellWithoutChargeAndDiscount ->
+            SWithoutChargeAndDiscount
 
         SellNothing ->
             SNothing

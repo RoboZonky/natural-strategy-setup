@@ -120,6 +120,7 @@ sellingConfigGen : Generator SellingConfiguration
 sellingConfigGen =
     Random.frequency ( 1, Random.constant Filter.SellNothing )
         [ ( 1, Random.constant Filter.SellWithoutCharge )
+        , ( 1, Random.constant Filter.SellWithoutChargeAndDiscount )
 
         -- Generate nonempty filter list here, as empty filter list is invalid, prevented by form validation
         , ( 3, Random.map Filter.SellSomething (Random.rangeLengthList 1 10 sellFilterGen) )
