@@ -20,7 +20,7 @@ import Data.Filter.Conditions.RemainingAmount as RemainingAmount
 import Data.Filter.Conditions.Story as Story
 import Data.Filter.Conditions.TermMonths as TermMonths
 import Data.Filter.Conditions.TermPercent as TermPercent
-import Data.Investment as Investment exposing (InvestmentsPerRating)
+import Data.Migration.Strategy.V1.Investment as Investment exposing (InvestmentsPerRating)
 import Data.Migration.Strategy.V1.TargetBalance as TargetBalance exposing (TargetBalance)
 import Data.Migration.Strategy.V4.PortfolioStructure as PortfolioStructure exposing (PortfolioShares)
 import Data.Migration.Strategy.V5.InvestmentShare as InvestmentShare exposing (InvestmentShare)

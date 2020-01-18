@@ -8,9 +8,9 @@ module Data.Migration.Strategy.V2 exposing
 import Data.ExitConfig as ExitConfig exposing (ExitConfig)
 import Data.Filter as Filters exposing (BuyingConfiguration, SellingConfiguration)
 import Data.Filter.Conditions.Rating as Rating
-import Data.Investment as Investment exposing (InvestmentsPerRating)
 import Data.Migration.Migration exposing (MigrationWarning)
 import Data.Migration.Strategy.V1 as V1
+import Data.Migration.Strategy.V1.Investment as Investment exposing (InvestmentsPerRating)
 import Data.Migration.Strategy.V1.TargetBalance as TargetBalance exposing (TargetBalance)
 import Data.Migration.Strategy.V2.Confirmation as Confirmation exposing (ConfirmationSettings)
 import Data.Migration.Strategy.V4.PortfolioStructure as PortfolioStructure exposing (PortfolioShares)

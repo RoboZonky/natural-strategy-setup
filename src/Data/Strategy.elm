@@ -61,6 +61,8 @@ type alias GeneralSettings =
     { portfolio : Portfolio
     , exitConfig : ExitConfig
     , targetPortfolioSize : TargetPortfolioSize
+
+    -- TODO change from Range to single value (Int)
     , defaultInvestmentSize : Investment.Size
 
     -- TODO add defaultPurchaseSize
