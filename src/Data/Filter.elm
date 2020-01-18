@@ -79,6 +79,9 @@ addSellFilter newFilter sellingConfiguration =
         SellWithoutCharge ->
             SellWithoutCharge
 
+        SellWithoutChargeAndDiscount ->
+            SellWithoutChargeAndDiscount
+
         SellNothing ->
             SellNothing
 
@@ -94,6 +97,9 @@ removeSellFilterAt index sellingConfiguration =
 
         SellWithoutCharge ->
             SellWithoutCharge
+
+        SellWithoutChargeAndDiscount ->
+            SellWithoutChargeAndDiscount
 
         SellSomething filters ->
             SellSomething <| List.removeAt index filters
@@ -266,6 +272,7 @@ getAllowedFilterItems { primaryEnabled, secondaryEnabled } =
 type SellingConfiguration
     = SellNothing
     | SellWithoutCharge
+    | SellWithoutChargeAndDiscount
     | SellSomething (List MarketplaceFilter)
 
 
@@ -275,6 +282,9 @@ validateSellingConfiguration sellingConfiguration =
         SellSomething filterList ->
             Validate.validate (List.isEmpty filterList)
                 "Seznam pravidel prodeje nesmí být prázdný. Přidejte alespoň jedno pravidlo."
+
+        SellWithoutChargeAndDiscount ->
+            []
 
         SellWithoutCharge ->
             []
@@ -291,6 +301,9 @@ renderSellingConfiguration sellingConfiguration =
 
         SellWithoutCharge ->
             "Prodávat všechny participace bez poplatku, které odpovídají filtrům tržiště."
+
+        SellWithoutChargeAndDiscount ->
+            "Prodávat všechny participace bez poplatku a slevy, které odpovídají filtrům tržiště."
 
         SellSomething filters ->
             renderSellFilters filters
@@ -559,20 +572,21 @@ itemToPluralStringGenitive item =
 
 encodeSellingConfiguration : SellingConfiguration -> Value
 encodeSellingConfiguration sellingConfiguration =
-    case sellingConfiguration of
-        SellNothing ->
-            Encode.object
+    Encode.object <|
+        case sellingConfiguration of
+            SellNothing ->
                 [ ( "m", Encode.int 0 ) ]
 
-        SellSomething filters ->
-            Encode.object
+            SellSomething filters ->
                 [ ( "m", Encode.int 1 )
                 , ( "n", Encode.list encodeMarketplaceFilter filters )
                 ]
 
-        SellWithoutCharge ->
-            Encode.object
+            SellWithoutCharge ->
                 [ ( "m", Encode.int 2 ) ]
+
+            SellWithoutChargeAndDiscount ->
+                [ ( "m", Encode.int 3 ) ]
 
 
 decodeSellingConfiguration : Decoder SellingConfiguration
@@ -590,6 +604,9 @@ decodeSellingConfiguration =
 
                     2 ->
                         Decode.succeed SellWithoutCharge
+
+                    3 ->
+                        Decode.succeed SellWithoutChargeAndDiscount
 
                     _ ->
                         Decode.fail <| "Unable to decode SellingConfiguration from " ++ String.fromInt x
