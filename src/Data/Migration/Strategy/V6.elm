@@ -1,9 +1,12 @@
 module Data.Migration.Strategy.V6 exposing (fromV5)
 
+import Data.Investment as Investment
 import Data.Migration.Migration exposing (MigrationWarning)
+import Data.Migration.Strategy.V1.Investment as V1Investment
 import Data.Migration.Strategy.V5 as V5
 import Data.Migration.Strategy.V5.InvestmentShare as V5IS
 import Data.Strategy exposing (StrategyConfiguration)
+import Dict.Any
 
 
 {-| V5 -> V6:
@@ -29,11 +32,11 @@ fromV5 old =
             { portfolio = oldGS.portfolio
             , exitConfig = oldGS.exitConfig
             , targetPortfolioSize = oldGS.targetPortfolioSize
-            , defaultInvestmentSize = oldGS.defaultInvestmentSize
+            , defaultInvestmentSize = newDefaultInvestmentSize
             , reservationSetting = oldGS.reservationSetting
             }
 
-        disWarning =
+        diShareWarning =
             case oldGS.defaultInvestmentShare of
                 V5IS.NotSpecified ->
                     []
@@ -45,12 +48,37 @@ fromV5 old =
                         ++ V5IS.render notDefault
                         ++ "'. Podpora pro toto nastavení býla v odstraněna v RoboZonky 5.7.0"
                     ]
+
+        ( newDefaultInvestmentSize, diSizeWarning ) =
+            migrateInvestment oldGS.defaultInvestmentSize
+
+        ( newInvestmentSizeOverrides, ispWarning ) =
+            migrateInvestmentsPerRating old.investmentSizeOverrides
     in
     ( { generalSettings = newGeneralSettings
       , portfolioStructure = old.portfolioStructure
-      , investmentSizeOverrides = old.investmentSizeOverrides
+      , investmentSizeOverrides = newInvestmentSizeOverrides
       , buyingConfig = old.buyingConfig
       , sellingConfig = old.sellingConfig
       }
-    , disWarning
+    , diShareWarning ++ diSizeWarning ++ ispWarning
     )
+
+
+migrateInvestment : V1Investment.Size -> ( Investment.PrimaryInvestmentSize, List MigrationWarning )
+migrateInvestment oldSize =
+    ( migrateSize oldSize
+    , [{- TODO warnings -}]
+    )
+
+
+migrateInvestmentsPerRating : V1Investment.InvestmentsPerRating -> ( Investment.InvestmentsPerRating, List MigrationWarning )
+migrateInvestmentsPerRating oldIpr =
+    ( Dict.Any.map (\_ range -> migrateSize range) oldIpr
+    , [{- TODO warnings -}]
+    )
+
+
+migrateSize : V1Investment.Size -> Investment.PrimaryInvestmentSize
+migrateSize =
+    Investment.fromInt << Tuple.second << V1Investment.toIntRange

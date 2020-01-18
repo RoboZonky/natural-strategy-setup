@@ -1,20 +1,17 @@
-module StrategyEncodingDecoding exposing (amountCondition, amountConditionFuzzer, conditions, encodeAndDecode, hundredRandomConditions, interestCondition, interestConditionFuzzer, investmentsPerRating, makeIprComparable, portfolio)
+module StrategyEncodingDecoding exposing (amountCondition, amountConditionFuzzer, conditions, encodeAndDecode, hundredRandomConditions, interestCondition, interestConditionFuzzer, investmentsPerRating, portfolio)
 
 import Data.Filter exposing (FilteredItem(..))
 import Data.Filter.Conditions as Conditions exposing (Conditions)
 import Data.Filter.Conditions.Amount as Amount exposing (AmountCondition(..))
 import Data.Filter.Conditions.Interest as Interest exposing (InterestCondition(..))
 import Data.Filter.Conditions.Rating as Rating exposing (Rating)
-import Data.Investment as Investment
+import Data.Investment as Investment exposing (investmentsPerRatingEqual)
 import Data.Portfolio as Portfolio
-import Dict exposing (Dict)
-import Dict.Any
 import Expect
 import Fuzz exposing (Fuzzer)
 import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as Encode exposing (Value)
 import Random
-import RangeSlider
 import Test exposing (..)
 import Test.RandomStrategy as RS
 
@@ -135,20 +132,17 @@ investmentsPerRating =
                 let
                     origInv =
                         Investment.defaultInvestmentsPerRating Investment.defaultSize
+
+                    result =
+                        encodeAndDecode Investment.encode Investment.decoder origInv
                 in
-                encodeAndDecode Investment.encode Investment.decoder origInv
-                    |> Result.map makeIprComparable
-                    |> Expect.equal (Ok <| makeIprComparable origInv)
+                case result of
+                    Ok decodedInv ->
+                        Expect.true "InvestmentsPerRating encoding and decoding should roundtrip" (investmentsPerRatingEqual origInv decodedInv)
+
+                    Err e ->
+                        Expect.fail e
         ]
-
-
-{-| IPR Contains RangeSlider.model which contains functions, which can't be compared for equality
--}
-makeIprComparable : Investment.InvestmentsPerRating -> Dict Float ( Float, Float )
-makeIprComparable ipr =
-    Dict.Any.toList ipr
-        |> List.map (\( rtg, slider ) -> ( Rating.toInterestPercent rtg, RangeSlider.getValues slider ))
-        |> Dict.fromList
 
 
 

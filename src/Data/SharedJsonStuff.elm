@@ -1,21 +1,9 @@
-module Data.SharedJsonStuff exposing (encodeRatingToSliderDict, ratingToSliderDictDecoder)
+module Data.SharedJsonStuff exposing (ratingToSliderDictDecoder)
 
-import Data.Filter.Conditions.Rating as Rating exposing (Rating(..), ratingDictToList)
+import Data.Filter.Conditions.Rating as Rating exposing (Rating(..))
 import Dict.Any exposing (AnyDict)
 import Json.Decode as Decode exposing (Decoder)
-import Json.Encode as Encode exposing (Value)
 import RangeSlider exposing (RangeSlider)
-
-
-{-| Encoders / Decoders shared by InvestmentsPerRating and PortfolioStructure
--}
-encodeRatingToSliderDict : (RangeSlider -> Value) -> AnyDict Int Rating RangeSlider -> Value
-encodeRatingToSliderDict sliderEncoder dict =
-    ratingDictToList dict
-        |> Encode.list
-            (\( _ {- assuming that rating is always sorted in order of rating's toInterestPercent, so just encoding slider states -}, slider ) ->
-                sliderEncoder slider
-            )
 
 
 ratingToSliderDictDecoder : RangeSlider -> Decoder RangeSlider -> Decoder (AnyDict Int Rating RangeSlider)
