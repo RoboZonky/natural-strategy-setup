@@ -1,58 +1,75 @@
 module Data.Investment exposing
     ( InvestmentsPerRating
-    , Size
+    , Msg(..)
+    , PrimaryInvestmentSize
     , anyInvestmentExceeds5k
     , decoder
-    , defaultInvestmentSliderSubscription
     , defaultInvestmentsPerRating
     , defaultSize
     , encode
     , encodeSize
+    , fromInt
     , investmentSizeEqual
-    , investmentSlidersSubscriptions
     , investmentsPerRatingEqual
-    , mkSize
     , renderInvestments
     , renderSize
     , sizeDecoder
+    , toInt
+    , update
     )
 
 import Data.Filter.Conditions.Rating as Rating exposing (Rating)
-import Data.SharedJsonStuff
 import Dict.Any exposing (AnyDict)
 import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as Encode exposing (Value)
-import RangeSlider exposing (RangeSlider, setDimensions, setExtents, setFormatter, setStepSize, setValues)
-import Types
 import Util
 
 
 type alias InvestmentsPerRating =
-    AnyDict Int Rating Size
+    AnyDict Int Rating PrimaryInvestmentSize
 
 
-defaultInvestmentsPerRating : Size -> InvestmentsPerRating
+defaultInvestmentsPerRating : PrimaryInvestmentSize -> InvestmentsPerRating
 defaultInvestmentsPerRating initialSize =
     Rating.initRatingDict <| List.map (\r -> ( r, initialSize )) Rating.allRatings
 
 
-type alias Size =
-    RangeSlider
+type PrimaryInvestmentSize
+    = PIS Int
 
 
-renderSize : Size -> String
-renderSize size =
-    -- TODO "'Robot má investovat do úvěrů po "
-    "Běžná výše investice je" ++ investmentSizeToString size ++ " Kč."
+type Msg
+    = SetValue Int
 
 
-renderInvestment : ( Rating, Size ) -> String
+update : Msg -> PrimaryInvestmentSize -> PrimaryInvestmentSize
+update msg (PIS _) =
+    case msg of
+        SetValue newValue ->
+            PIS newValue
+
+
+fromInt : Int -> PrimaryInvestmentSize
+fromInt =
+    PIS
+
+
+toInt : PrimaryInvestmentSize -> Int
+toInt (PIS sz) =
+    sz
+
+
+renderSize : PrimaryInvestmentSize -> String
+renderSize pis =
+    "Robot má investovat do úvěrů po " ++ investmentSizeToString pis ++ " Kč."
+
+
+renderInvestment : ( Rating, PrimaryInvestmentSize ) -> String
 renderInvestment ( rating, size ) =
-    -- TODO "Do úvěrů s úročením " ...  "investovat po " ... " Kč."
-    "S úročením " ++ Rating.showInterestPercent rating ++ " jednotlivě investovat" ++ investmentSizeToString size ++ " Kč."
+    "Do úvěrů s úročením " ++ Rating.showInterestPercent rating ++ " investovat po " ++ investmentSizeToString size ++ " Kč."
 
 
-renderInvestments : Size -> InvestmentsPerRating -> String
+renderInvestments : PrimaryInvestmentSize -> InvestmentsPerRating -> String
 renderInvestments defaultSize_ investments =
     if Dict.Any.isEmpty investments then
         ""
@@ -60,80 +77,46 @@ renderInvestments defaultSize_ investments =
     else
         Rating.ratingDictToList investments
             --filter our sizes equal to default size
-            |> List.filter (\( _, invSize ) -> toIntRange invSize /= toIntRange defaultSize_)
+            |> List.filter (\( _, invSize ) -> invSize /= defaultSize_)
             |> List.map renderInvestment
             |> Util.renderNonemptySection "\n- Výše investice"
 
 
-investmentSizeToString : Size -> String
-investmentSizeToString size =
-    let
-        ( mini, maxi ) =
-            toIntRange size
-    in
-    if mini == maxi then
-        " " ++ String.fromInt mini
 
-    else if mini == 0 then
-        " až " ++ String.fromInt maxi
-
-    else
-        " " ++ String.fromInt mini ++ " až " ++ String.fromInt maxi
+-- TODO maybe remove this
 
 
-mkSize : Int -> Int -> Size
-mkSize from to =
-    RangeSlider.init
-        |> setStepSize (Just 200)
-        |> setFormatter (\value -> String.fromFloat value ++ "Kč")
-        |> setDimensions 300 57
-        |> setExtents 0 20000
-        |> setValues (toFloat from) (toFloat to)
+investmentSizeToString : PrimaryInvestmentSize -> String
+investmentSizeToString (PIS s) =
+    String.fromInt s
 
 
-defaultSize : Size
+defaultSize : PrimaryInvestmentSize
 defaultSize =
-    mkSize 0 200
+    PIS 200
 
 
-investmentSlidersSubscriptions : InvestmentsPerRating -> Sub Types.Msg
-investmentSlidersSubscriptions iprSliderStates =
-    Dict.Any.toList iprSliderStates
-        |> List.map (\( rtg, sliderState ) -> Sub.map (Types.ChangeInvestment rtg) (RangeSlider.subscriptions sliderState))
-        |> Sub.batch
-
-
-defaultInvestmentSliderSubscription : Size -> Sub Types.Msg
-defaultInvestmentSliderSubscription =
-    Sub.map Types.ChangeDefaultInvestment << RangeSlider.subscriptions
-
-
-toIntRange : Size -> ( Int, Int )
-toIntRange =
-    RangeSlider.getValues >> (\( a, b ) -> ( round a, round b ))
-
-
-anyInvestmentExceeds5k : Size -> InvestmentsPerRating -> Bool
+anyInvestmentExceeds5k : PrimaryInvestmentSize -> InvestmentsPerRating -> Bool
 anyInvestmentExceeds5k default overrides =
-    Dict.Any.toList overrides
-        |> List.map (\( _, size ) -> toIntRange size |> Tuple.second)
-        |> List.append [ toIntRange default |> Tuple.second ]
+    default
+        :: Dict.Any.values overrides
+        |> List.map toInt
         |> List.filter (\x -> x > 5000)
         |> (not << List.isEmpty)
 
 
-investmentSizeEqual : Size -> Size -> Bool
-investmentSizeEqual s1 s2 =
-    RangeSlider.getValues s1 == RangeSlider.getValues s2
+
+-- TODO remove
+
+
+investmentSizeEqual : PrimaryInvestmentSize -> PrimaryInvestmentSize -> Bool
+investmentSizeEqual =
+    (==)
 
 
 investmentsPerRatingEqual : InvestmentsPerRating -> InvestmentsPerRating -> Bool
 investmentsPerRatingEqual ipr1 ipr2 =
-    let
-        getSliderValues =
-            Dict.Any.values >> List.map RangeSlider.getValues
-    in
-    getSliderValues ipr1 == getSliderValues ipr2
+    Dict.Any.values ipr1 == Dict.Any.values ipr2
 
 
 
@@ -142,28 +125,36 @@ investmentsPerRatingEqual ipr1 ipr2 =
 
 encode : InvestmentsPerRating -> Value
 encode =
-    Data.SharedJsonStuff.encodeRatingToSliderDict encodeSize
+    Rating.ratingDictToList
+        >> Encode.list
+            (\( _ {- assuming that rating is always sorted in order of rating's toInterestPercent, so just encoding slider states -}, size ) ->
+                encodeSize size
+            )
 
 
 decoder : Decoder InvestmentsPerRating
 decoder =
-    Data.SharedJsonStuff.ratingToSliderDictDecoder defaultSize sizeDecoder
-
-
-encodeSize : Size -> Value
-encodeSize sz =
-    toIntRange sz |> (\( from, to ) -> Encode.list Encode.int [ from, to ])
-
-
-sizeDecoder : Decoder Size
-sizeDecoder =
-    Decode.list Decode.int
-        |> Decode.map
-            (\xs ->
-                case xs of
-                    from :: to :: [] ->
-                        mkSize from to
+    Decode.list sizeDecoder
+        |> Decode.andThen
+            (\sizes ->
+                case sizes of
+                    [ _, _, _, _, _, _, _, _, _, _, _ {- 11 values since RZ 5.1.1 -} ] ->
+                        List.map2 Tuple.pair Rating.allRatings sizes
+                            |> Rating.initRatingDict
+                            |> Decode.succeed
 
                     _ ->
-                        defaultSize
+                        "Unexpected number of values when decoding InvestmentPerRating: "
+                            ++ String.fromInt (List.length sizes)
+                            |> Decode.fail
             )
+
+
+encodeSize : PrimaryInvestmentSize -> Value
+encodeSize (PIS sz) =
+    Encode.int sz
+
+
+sizeDecoder : Decoder PrimaryInvestmentSize
+sizeDecoder =
+    Decode.map PIS Decode.int

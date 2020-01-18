@@ -39,7 +39,6 @@ import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as Encode exposing (Value)
 import List.Extra
 import Percentage
-import RangeSlider
 import Time exposing (Posix)
 import Types exposing (BaseUrl, UrlHash)
 import Util
@@ -63,7 +62,7 @@ type alias GeneralSettings =
     , targetPortfolioSize : TargetPortfolioSize
 
     -- TODO change from Range to single value (Int)
-    , defaultInvestmentSize : Investment.Size
+    , defaultInvestmentSize : Investment.PrimaryInvestmentSize
 
     -- TODO add defaultPurchaseSize
     , reservationSetting : ReservationSetting
@@ -132,22 +131,22 @@ setPortfolioSharePercentage rtg msg config =
     { config | portfolioStructure = updatePortfolioStructure config.portfolioStructure }
 
 
-setInvestment : Rating -> RangeSlider.Msg -> StrategyConfiguration -> StrategyConfiguration
+setInvestment : Rating -> Investment.Msg -> StrategyConfiguration -> StrategyConfiguration
 setInvestment rtg msg config =
     let
         investmentUpdater : InvestmentsPerRating -> InvestmentsPerRating
         investmentUpdater =
-            Dict.Any.update rtg (Maybe.map (RangeSlider.update msg))
+            Dict.Any.update rtg (Maybe.map (Investment.update msg))
     in
     { config | investmentSizeOverrides = investmentUpdater config.investmentSizeOverrides }
 
 
-setDefaultInvestment : RangeSlider.Msg -> StrategyConfiguration -> StrategyConfiguration
+setDefaultInvestment : Investment.Msg -> StrategyConfiguration -> StrategyConfiguration
 setDefaultInvestment msg config =
     let
         setDefaultInvestmentHelper : GeneralSettings -> GeneralSettings
         setDefaultInvestmentHelper generalSettings =
-            { generalSettings | defaultInvestmentSize = RangeSlider.update msg generalSettings.defaultInvestmentSize }
+            { generalSettings | defaultInvestmentSize = Investment.update msg generalSettings.defaultInvestmentSize }
 
         newGeneralSettings =
             setDefaultInvestmentHelper config.generalSettings

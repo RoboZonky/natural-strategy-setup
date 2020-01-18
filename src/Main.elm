@@ -5,7 +5,6 @@ import Bootstrap.Grid as Grid
 import Browser exposing (UrlRequest(..))
 import Browser.Navigation exposing (Key)
 import Data.Filter as Filters exposing (FilteredItem(..))
-import Data.Investment as Investment
 import Data.Portfolio
 import Data.Strategy as Strategy exposing (StrategyConfiguration)
 import Data.TargetPortfolioSize as TargetPortfolioSize exposing (TargetPortfolioSize(..))
@@ -57,7 +56,7 @@ main =
         { init = init
         , update = update
         , view = viewDocument
-        , subscriptions = subscriptions
+        , subscriptions = \_ -> Sub.none
         , onUrlChange = always NoOp
         , onUrlRequest = LoadUrl
         }
@@ -79,14 +78,6 @@ init () url key =
         , Browser.Navigation.replaceUrl key (Url.toString baseUrl)
         ]
     )
-
-
-subscriptions : Model -> Sub Msg
-subscriptions { strategyConfig } =
-    Sub.batch
-        [ Investment.investmentSlidersSubscriptions strategyConfig.investmentSizeOverrides
-        , Investment.defaultInvestmentSliderSubscription strategyConfig.generalSettings.defaultInvestmentSize
-        ]
 
 
 updateStrategy : (StrategyConfiguration -> StrategyConfiguration) -> Model -> Model

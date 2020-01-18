@@ -2,9 +2,9 @@ module Data.Migration.Strategy.V1.Investment exposing
     ( InvestmentsPerRating
     , Size
     , decoder
-    , defaultSize
     , mkSize
     , sizeDecoder
+    , toIntRange
     )
 
 import Data.Filter.Conditions.Rating exposing (Rating)
@@ -35,6 +35,11 @@ mkSize from to =
 defaultSize : Size
 defaultSize =
     mkSize 0 200
+
+
+toIntRange : Size -> ( Int, Int )
+toIntRange =
+    RangeSlider.getValues >> (\( a, b ) -> ( round a, round b ))
 
 
 decoder : Decoder InvestmentsPerRating

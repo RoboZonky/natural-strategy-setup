@@ -12,11 +12,11 @@ import Data.ExitConfig as ExitConfig
 import Data.Filter exposing (BuyingConfiguration, FilteredItem, SellingConfiguration)
 import Data.Filter.Complexity exposing (FilterComplexity)
 import Data.Filter.Conditions.Rating exposing (Rating)
+import Data.Investment as Investment
 import Data.Portfolio exposing (Portfolio)
 import Data.ReservationSetting exposing (ReservationSetting)
 import Data.Tooltip exposing (TipId)
 import Percentage
-import RangeSlider
 import Time exposing (Posix)
 import View.Filter.Conditions as Conditions
 
@@ -26,8 +26,8 @@ type Msg
     | ExitConfigChanged ExitConfig.ExitConfig
     | TargetPortfolioSizeChanged String
     | ChangePortfolioPercentage Rating Percentage.Msg
-    | ChangeInvestment Rating RangeSlider.Msg
-    | ChangeDefaultInvestment RangeSlider.Msg
+    | ChangeInvestment Rating Investment.Msg
+    | ChangeDefaultInvestment Investment.Msg
     | SetReservationSetting ReservationSetting
     | RemoveBuyFilter Int
     | RemoveSellFilter Int
