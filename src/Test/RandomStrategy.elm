@@ -40,8 +40,9 @@ strategyConfigurationGen =
     generalSettingsGen
         |> Random.andThen
             (\generalSettings ->
-                Random.map4 (StrategyConfiguration generalSettings)
+                Random.map5 (StrategyConfiguration generalSettings)
                     (portfolioSharesGen generalSettings.portfolio)
+                    investmentsPerRatingGen
                     investmentsPerRatingGen
                     buyingConfigGen
                     sellingConfigGen
@@ -53,6 +54,7 @@ generalSettingsGen =
     Random.map GeneralSettings portfolioGen
         |> Random.andMap exitConfigGen
         |> Random.andMap targetPortfolioSizeGen
+        |> Random.andMap investmentSizeGen
         |> Random.andMap investmentSizeGen
         |> Random.andMap reservationSettingGen
 
