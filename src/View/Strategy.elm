@@ -3,6 +3,7 @@ module View.Strategy exposing (form)
 import Bootstrap.Accordion as Accordion
 import Bootstrap.Grid as Grid
 import Bootstrap.Grid.Col as Col
+import Data.Filter as Filter
 import Data.Investment as Investment
 import Data.Strategy exposing (GeneralSettings, StrategyConfiguration)
 import Data.Tooltip as Tooltip
@@ -38,13 +39,23 @@ deletionModalConfig =
 
 
 strategyForm : StrategyConfiguration -> Accordion.State -> Tooltip.States -> Posix -> Html Msg
-strategyForm { generalSettings, portfolioStructure, investmentSizeOverrides, buyingConfig, sellingConfig } accordionState tooltipStates generatedOn =
+strategyForm { generalSettings, portfolioStructure, primaryInvestmentOverrides, secondaryPurchaseOverrides, buyingConfig, sellingConfig } accordionState tooltipStates generatedOn =
     Accordion.config AccordionMsg
         |> Accordion.onlyOneOpen
         |> Accordion.cards
             [ generalSettingsCard generalSettings accordionState tooltipStates generatedOn
             , PortfolioStructure.form generalSettings.portfolio portfolioStructure accordionState tooltipStates
-            , Investment.form primaryInvestmentConfig generalSettings.defaultInvestmentSize investmentSizeOverrides
+
+            -- TODO hide stuff when respective marketplaces disabled
+            , Investment.form
+                primaryInvestmentConfig
+                (Filter.isBuyingOnPrimaryEnabled buyingConfig)
+                generalSettings.defaultPrimaryInvestmentSize
+                primaryInvestmentOverrides
+            , Investment.form secondaryPurchaseConfig
+                (Filter.isBuyingOnSecondaryEnabled buyingConfig)
+                generalSettings.defaultSecondaryPurchaseSize
+                secondaryPurchaseOverrides
             , BuyingConfig.form buyingConfig accordionState tooltipStates
             , SellConfig.form sellingConfig accordionState tooltipStates
             ]
@@ -53,8 +64,38 @@ strategyForm { generalSettings, portfolioStructure, investmentSizeOverrides, buy
 
 primaryInvestmentConfig : Investment.Config Msg
 primaryInvestmentConfig =
-    { onDefaultInvestmentChange = DefaultPrimaryInvestmentChanged
+    { accordionId = "primaryInvestment"
+    , accordionHeader = "Primární tržiště - výše investice"
+    , marketplaceNotEnabled =
+        Html.div []
+            [ Html.text "Toto nastavení není k dispozici, protože jste v sekci "
+            , Html.b [] [ Html.text "Pravidla nákupu" ]
+            , Html.text " zaškrtli možnost "
+            , Html.b [] [ Html.text "Ignorovat všechny půjčky" ]
+            ]
+    , defaultLabel = "Běžná výše investice je "
+    , overrideLabel = "Pokud si přejete, aby se výše investice do půjček lišily od běžné výše na základě rizikových kategorií, upravte je pomocí posuvníků"
+    , onDefaultInvestmentChange = DefaultPrimaryInvestmentChanged
     , onInvestmentChange = PrimaryInvestmentChanged
+    , noOp = NoOp
+    }
+
+
+secondaryPurchaseConfig : Investment.Config Msg
+secondaryPurchaseConfig =
+    { accordionId = "secondaryPurchase"
+    , accordionHeader = "Sekundární tržiště - výše nákupu"
+    , marketplaceNotEnabled =
+        Html.div []
+            [ Html.text "Toto nastavení není k dispozici, protože jste v sekci "
+            , Html.b [] [ Html.text "Pravidla nákupu" ]
+            , Html.text " zaškrtli možnost "
+            , Html.b [] [ Html.text "Ignorovat všechny participace" ]
+            ]
+    , defaultLabel = "Běžná částka pro nákup participace je maximálně "
+    , overrideLabel = "Pokud si přejete, aby se maximální výše nákupu lišily od běžné výše na základě rizikových kategorií, upravte je pomocí posuvníků"
+    , onDefaultInvestmentChange = DefaultSecondaryPurchaseChanged
+    , onInvestmentChange = SecondaryPurchaseChanged
     , noOp = NoOp
     }
 

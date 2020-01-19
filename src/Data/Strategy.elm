@@ -9,9 +9,11 @@ module Data.Strategy exposing
     , removeSellFilter
     , renderStrategyConfiguration
     , setBuyingConfiguration
-    , setDefaultInvestment
+    , setDefaultInvestmentPrimary
+    , setDefaultInvestmentSecondary
     , setExitConfig
-    , setInvestment
+    , setInvestmentPrimary
+    , setInvestmentSecondary
     , setPortfolio
     , setPortfolioSharePercentage
     , setReservationSetting
@@ -48,9 +50,8 @@ import Version
 type alias StrategyConfiguration =
     { generalSettings : GeneralSettings
     , portfolioStructure : PortfolioStructure
-    , investmentSizeOverrides : InvestmentsPerRating
-
-    -- TODO add purchaseSizeOverrides
+    , primaryInvestmentOverrides : InvestmentsPerRating
+    , secondaryPurchaseOverrides : InvestmentsPerRating
     , buyingConfig : BuyingConfiguration
     , sellingConfig : SellingConfiguration
     }
@@ -60,11 +61,8 @@ type alias GeneralSettings =
     { portfolio : Portfolio
     , exitConfig : ExitConfig
     , targetPortfolioSize : TargetPortfolioSize
-
-    -- TODO change from Range to single value (Int)
-    , defaultInvestmentSize : Investment.Size
-
-    -- TODO add defaultPurchaseSize
+    , defaultPrimaryInvestmentSize : Investment.Size
+    , defaultSecondaryPurchaseSize : Investment.Size
     , reservationSetting : ReservationSetting
     }
 
@@ -75,11 +73,13 @@ defaultStrategyConfiguration =
         { portfolio = Portfolio.Conservative
         , exitConfig = ExitConfig.DontExit
         , targetPortfolioSize = TargetPortfolioSize.NotSpecified
-        , defaultInvestmentSize = Investment.defaultSize
+        , defaultPrimaryInvestmentSize = Investment.defaultSize
+        , defaultSecondaryPurchaseSize = Investment.defaultSize
         , reservationSetting = ReservationSetting.defaultSetting
         }
     , portfolioStructure = PortfolioStructure.conservative
-    , investmentSizeOverrides = Investment.defaultInvestmentsPerRating Investment.defaultSize
+    , primaryInvestmentOverrides = Investment.defaultInvestmentsPerRating Investment.defaultSize
+    , secondaryPurchaseOverrides = Investment.defaultInvestmentsPerRating Investment.defaultSize
     , buyingConfig = Filters.InvestEverything
     , sellingConfig = Filters.SellNothing
     }
@@ -131,29 +131,50 @@ setPortfolioSharePercentage rtg msg config =
     { config | portfolioStructure = updatePortfolioStructure config.portfolioStructure }
 
 
-setInvestment : Rating -> Investment.Msg -> StrategyConfiguration -> StrategyConfiguration
-setInvestment rtg msg config =
-    let
-        investmentUpdater : InvestmentsPerRating -> InvestmentsPerRating
-        investmentUpdater =
-            Dict.Any.update rtg (Maybe.map (Investment.update msg))
-    in
-    { config | investmentSizeOverrides = investmentUpdater config.investmentSizeOverrides }
+setInvestmentPrimary : Rating -> Investment.Msg -> StrategyConfiguration -> StrategyConfiguration
+setInvestmentPrimary rating msg config =
+    { config | primaryInvestmentOverrides = updateInvestmentForRating rating msg config.primaryInvestmentOverrides }
 
 
-setDefaultInvestment : Investment.Msg -> StrategyConfiguration -> StrategyConfiguration
-setDefaultInvestment msg config =
+setInvestmentSecondary : Rating -> Investment.Msg -> StrategyConfiguration -> StrategyConfiguration
+setInvestmentSecondary rating msg config =
+    { config | secondaryPurchaseOverrides = updateInvestmentForRating rating msg config.secondaryPurchaseOverrides }
+
+
+updateInvestmentForRating : Rating -> Investment.Msg -> InvestmentsPerRating -> InvestmentsPerRating
+updateInvestmentForRating rating msg =
+    Dict.Any.update rating (Maybe.map (Investment.update msg))
+
+
+setDefaultInvestmentPrimary : Investment.Msg -> StrategyConfiguration -> StrategyConfiguration
+setDefaultInvestmentPrimary msg config =
     let
         setDefaultInvestmentHelper : GeneralSettings -> GeneralSettings
         setDefaultInvestmentHelper generalSettings =
-            { generalSettings | defaultInvestmentSize = Investment.update msg generalSettings.defaultInvestmentSize }
+            { generalSettings | defaultPrimaryInvestmentSize = Investment.update msg generalSettings.defaultPrimaryInvestmentSize }
 
         newGeneralSettings =
             setDefaultInvestmentHelper config.generalSettings
     in
     { config
         | generalSettings = newGeneralSettings
-        , investmentSizeOverrides = Investment.defaultInvestmentsPerRating newGeneralSettings.defaultInvestmentSize
+        , primaryInvestmentOverrides = Investment.defaultInvestmentsPerRating newGeneralSettings.defaultPrimaryInvestmentSize
+    }
+
+
+setDefaultInvestmentSecondary : Investment.Msg -> StrategyConfiguration -> StrategyConfiguration
+setDefaultInvestmentSecondary msg config =
+    let
+        setDefaultInvestmentHelper : GeneralSettings -> GeneralSettings
+        setDefaultInvestmentHelper generalSettings =
+            { generalSettings | defaultSecondaryPurchaseSize = Investment.update msg generalSettings.defaultSecondaryPurchaseSize }
+
+        newGeneralSettings =
+            setDefaultInvestmentHelper config.generalSettings
+    in
+    { config
+        | generalSettings = newGeneralSettings
+        , secondaryPurchaseOverrides = Investment.defaultInvestmentsPerRating newGeneralSettings.defaultSecondaryPurchaseSize
     }
 
 
@@ -205,31 +226,49 @@ addSellFilter newFilter config =
 
 
 renderStrategyConfiguration : BaseUrl -> Posix -> StrategyConfiguration -> String
-renderStrategyConfiguration baseUrl generatedOn ({ generalSettings, portfolioStructure, investmentSizeOverrides, buyingConfig, sellingConfig } as strategyConfig) =
-    Util.joinNonemptyLines
-        [ Version.strategyComment generatedOn
-        , Version.robozonkyVersionStatement
-        , renderGeneralSettings generalSettings
-        , PortfolioStructure.renderPortfolioStructure generalSettings.portfolio portfolioStructure
-        , Investment.renderInvestmentsPrimary generalSettings.defaultInvestmentSize investmentSizeOverrides
-        , Filters.renderBuyingConfiguration buyingConfig
-        , Filters.renderSellingConfiguration sellingConfig
-        , shareableUrlComment baseUrl strategyConfig
-        ]
+renderStrategyConfiguration baseUrl generatedOn ({ generalSettings, portfolioStructure, primaryInvestmentOverrides, secondaryPurchaseOverrides, buyingConfig, sellingConfig } as strategyConfig) =
+    Util.joinNonemptyLines <|
+        List.filterMap identity
+            [ Just <| Version.strategyComment generatedOn
+            , Just <| Version.robozonkyVersionStatement
+            , Just <| renderGeneralSettings buyingConfig generalSettings
+            , Just <| PortfolioStructure.renderPortfolioStructure generalSettings.portfolio portfolioStructure
+            , if Filters.isBuyingOnPrimaryEnabled buyingConfig then
+                Just <| Investment.renderInvestmentsPrimary generalSettings.defaultPrimaryInvestmentSize primaryInvestmentOverrides
+
+              else
+                Nothing
+            , if Filters.isBuyingOnSecondaryEnabled buyingConfig then
+                Just <| Investment.renderInvestmentsSecondary generalSettings.defaultSecondaryPurchaseSize secondaryPurchaseOverrides
+
+              else
+                Nothing
+            , Just <| Filters.renderBuyingConfiguration buyingConfig
+            , Just <| Filters.renderSellingConfiguration sellingConfig
+            , Just <| shareableUrlComment baseUrl strategyConfig
+            ]
 
 
-renderGeneralSettings : GeneralSettings -> String
-renderGeneralSettings generalSettings =
-    Util.joinNonemptyLines
-        [ "- Obecná nastavení"
-        , Portfolio.render generalSettings.portfolio
-        , ReservationSetting.render generalSettings.reservationSetting
-        , Investment.renderSizePrimary generalSettings.defaultInvestmentSize
+renderGeneralSettings : BuyingConfiguration -> GeneralSettings -> String
+renderGeneralSettings buyingConfig generalSettings =
+    Util.joinNonemptyLines <|
+        List.filterMap identity
+            [ Just <| "- Obecná nastavení"
+            , Just <| Portfolio.render generalSettings.portfolio
+            , Just <| ReservationSetting.render generalSettings.reservationSetting
+            , if Filters.isBuyingOnPrimaryEnabled buyingConfig then
+                Just <| Investment.renderSizePrimary generalSettings.defaultPrimaryInvestmentSize
 
-        -- TODO PurchaseSize here
-        , TargetPortfolioSize.render generalSettings.targetPortfolioSize
-        , ExitConfig.render generalSettings.exitConfig
-        ]
+              else
+                Nothing
+            , if Filters.isBuyingOnSecondaryEnabled buyingConfig then
+                Just <| Investment.renderSizeSecondary generalSettings.defaultSecondaryPurchaseSize
+
+              else
+                Nothing
+            , Just <| TargetPortfolioSize.render generalSettings.targetPortfolioSize
+            , Just <| ExitConfig.render generalSettings.exitConfig
+            ]
 
 
 validateStrategyConfiguration : StrategyConfiguration -> List String
@@ -256,7 +295,8 @@ strategyEqual s1 s2 =
     Util.and
         [ generalSettingsEqual s1.generalSettings s2.generalSettings
         , PortfolioStructure.portfolioStructureEqual s1.portfolioStructure s2.portfolioStructure
-        , Investment.investmentsPerRatingEqual s1.investmentSizeOverrides s2.investmentSizeOverrides
+        , Investment.investmentsPerRatingEqual s1.primaryInvestmentOverrides s2.primaryInvestmentOverrides
+        , Investment.investmentsPerRatingEqual s1.secondaryPurchaseOverrides s2.secondaryPurchaseOverrides
         , s1.buyingConfig == s2.buyingConfig
         , s1.sellingConfig == s2.sellingConfig
         ]
@@ -268,7 +308,8 @@ generalSettingsEqual gs1 gs2 =
         [ gs1.portfolio == gs2.portfolio
         , gs1.exitConfig == gs2.exitConfig
         , gs1.targetPortfolioSize == gs2.targetPortfolioSize
-        , Investment.investmentSizeEqual gs1.defaultInvestmentSize gs2.defaultInvestmentSize
+        , Investment.investmentSizeEqual gs1.defaultPrimaryInvestmentSize gs2.defaultPrimaryInvestmentSize
+        , Investment.investmentSizeEqual gs1.defaultSecondaryPurchaseSize gs2.defaultSecondaryPurchaseSize
         ]
 
 
@@ -277,28 +318,30 @@ generalSettingsEqual gs1 gs2 =
 
 
 encodeGeneralSettings : GeneralSettings -> Value
-encodeGeneralSettings { portfolio, exitConfig, targetPortfolioSize, defaultInvestmentSize, reservationSetting } =
+encodeGeneralSettings { portfolio, exitConfig, targetPortfolioSize, defaultPrimaryInvestmentSize, defaultSecondaryPurchaseSize, reservationSetting } =
     Encode.object
         [ ( "a", Portfolio.encode portfolio )
         , ( "b", ExitConfig.encode exitConfig )
         , ( "c", TargetPortfolioSize.encode targetPortfolioSize )
-        , ( "d", Investment.encodeSize defaultInvestmentSize )
+        , ( "d", Investment.encodeSize defaultPrimaryInvestmentSize )
+        , ( "d1", Investment.encodeSize defaultSecondaryPurchaseSize )
         , ( "g1", ReservationSetting.encode reservationSetting )
         ]
 
 
 generalSettingsDecoder : Decoder GeneralSettings
 generalSettingsDecoder =
-    Decode.map5 GeneralSettings
+    Decode.map6 GeneralSettings
         (Decode.field "a" Portfolio.decoder)
         (Decode.field "b" ExitConfig.decoder)
         (Decode.field "c" TargetPortfolioSize.decoder)
         (Decode.field "d" Investment.sizeDecoder)
+        (Decode.field "d1" Investment.sizeDecoder)
         (Decode.field "g1" ReservationSetting.decoder)
 
 
 encodeStrategy : StrategyConfiguration -> Value
-encodeStrategy { generalSettings, portfolioStructure, investmentSizeOverrides, buyingConfig, sellingConfig } =
+encodeStrategy { generalSettings, portfolioStructure, primaryInvestmentOverrides, secondaryPurchaseOverrides, buyingConfig, sellingConfig } =
     let
         maybePortfolioStructure =
             {- Only encode portfolio structure for user defined portfolios -}
@@ -312,7 +355,8 @@ encodeStrategy { generalSettings, portfolioStructure, investmentSizeOverrides, b
     Encode.object <|
         maybePortfolioStructure
             ++ [ ( "h", encodeGeneralSettings generalSettings )
-               , ( "j", Investment.encode investmentSizeOverrides )
+               , ( "j", Investment.encode primaryInvestmentOverrides )
+               , ( "j1", Investment.encode secondaryPurchaseOverrides )
                , ( "k", Filters.encodeBuyingConfiguration buyingConfig )
                , ( "l", Filters.encodeSellingConfiguration sellingConfig )
                ]
@@ -326,9 +370,10 @@ strategyDecoder =
     Decode.field "h" generalSettingsDecoder
         |> Decode.andThen
             (\generalSettings ->
-                Decode.map4 (StrategyConfiguration generalSettings)
+                Decode.map5 (StrategyConfiguration generalSettings)
                     (PortfolioStructure.decoderFromPortfolio generalSettings.portfolio)
                     (Decode.field "j" Investment.decoder)
+                    (Decode.field "j1" Investment.decoder)
                     (Decode.field "k" Filters.decodeBuyingConfiguration)
                     (Decode.field "l" Filters.decodeSellingConfiguration)
             )

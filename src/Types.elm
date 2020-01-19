@@ -27,7 +27,9 @@ type Msg
     | TargetPortfolioSizeChanged String
     | PortfolioPercentageChanged Rating Percentage.Msg
     | DefaultPrimaryInvestmentChanged Investment.Msg
+    | DefaultSecondaryPurchaseChanged Investment.Msg
     | PrimaryInvestmentChanged Rating Investment.Msg
+    | SecondaryPurchaseChanged Rating Investment.Msg
     | ReservationSettingChanged ReservationSetting
     | RemoveBuyFilter Int
     | RemoveSellFilter Int

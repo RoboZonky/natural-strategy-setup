@@ -16,6 +16,8 @@ module Data.Filter exposing
     , getFiltersRemovedByBuyingConfigurationChange
     , getFiltersRemovedBySellingConfigurationChange
     , getMarketplaceEnablement
+    , isBuyingOnPrimaryEnabled
+    , isBuyingOnSecondaryEnabled
     , isValid
     , itemToPluralStringGenitive
     , marketplaceFilterValidationErrors
@@ -58,6 +60,16 @@ getMarketplaceEnablement buyingConfiguration =
 
         InvestSomething enablement _ ->
             enablement
+
+
+isBuyingOnPrimaryEnabled : BuyingConfiguration -> Bool
+isBuyingOnPrimaryEnabled =
+    getMarketplaceEnablement >> .primaryEnabled
+
+
+isBuyingOnSecondaryEnabled : BuyingConfiguration -> Bool
+isBuyingOnSecondaryEnabled =
+    getMarketplaceEnablement >> .secondaryEnabled
 
 
 updateBuyFilters : (List MarketplaceFilter -> List MarketplaceFilter) -> BuyingConfiguration -> BuyingConfiguration

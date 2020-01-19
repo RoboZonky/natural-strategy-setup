@@ -130,10 +130,16 @@ updateHelper msg model =
                 model
 
         PrimaryInvestmentChanged rating sliderMsg ->
-            updateStrategy (Strategy.setInvestment rating sliderMsg) model
+            updateStrategy (Strategy.setInvestmentPrimary rating sliderMsg) model
+
+        SecondaryPurchaseChanged rating sliderMsg ->
+            updateStrategy (Strategy.setInvestmentSecondary rating sliderMsg) model
 
         DefaultPrimaryInvestmentChanged sliderMsg ->
-            updateStrategy (Strategy.setDefaultInvestment sliderMsg) model
+            updateStrategy (Strategy.setDefaultInvestmentPrimary sliderMsg) model
+
+        DefaultSecondaryPurchaseChanged sliderMsg ->
+            updateStrategy (Strategy.setDefaultInvestmentSecondary sliderMsg) model
 
         RemoveBuyFilter index ->
             updateStrategy (Strategy.removeBuyFilter index) model

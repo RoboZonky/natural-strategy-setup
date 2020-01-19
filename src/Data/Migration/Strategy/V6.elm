@@ -32,7 +32,10 @@ fromV5 old =
             { portfolio = oldGS.portfolio
             , exitConfig = oldGS.exitConfig
             , targetPortfolioSize = oldGS.targetPortfolioSize
-            , defaultInvestmentSize = newDefaultInvestmentSize
+            , defaultPrimaryInvestmentSize = newDefaultInvestmentSize
+
+            -- duplicate inv size
+            , defaultSecondaryPurchaseSize = newDefaultInvestmentSize
             , reservationSetting = oldGS.reservationSetting
             }
 
@@ -57,7 +60,10 @@ fromV5 old =
     in
     ( { generalSettings = newGeneralSettings
       , portfolioStructure = old.portfolioStructure
-      , investmentSizeOverrides = newInvestmentSizeOverrides
+      , primaryInvestmentOverrides = newInvestmentSizeOverrides
+
+      -- duplicate inv sizes
+      , secondaryPurchaseOverrides = newInvestmentSizeOverrides
       , buyingConfig = old.buyingConfig
       , sellingConfig = old.sellingConfig
       }

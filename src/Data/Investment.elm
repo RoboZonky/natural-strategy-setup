@@ -13,7 +13,9 @@ module Data.Investment exposing
     , investmentSizeEqual
     , investmentsPerRatingEqual
     , renderInvestmentsPrimary
+    , renderInvestmentsSecondary
     , renderSizePrimary
+    , renderSizeSecondary
     , sizeDecoder
     , update
     )
@@ -94,9 +96,19 @@ renderSizePrimary size =
     "Robot má investovat do úvěrů po " ++ toCzkString size ++ "."
 
 
+renderSizeSecondary : Size -> String
+renderSizeSecondary size =
+    "Robot má nakupovat participace nejvýše za " ++ toCzkString size ++ "."
+
+
 renderSizePerRatingPrimary : ( Rating, Size ) -> String
 renderSizePerRatingPrimary ( rating, size ) =
     "Do úvěrů s úročením " ++ Rating.showInterestPercent rating ++ " investovat po " ++ toCzkString size ++ "."
+
+
+renderSizePerRatingSecondary : ( Rating, Size ) -> String
+renderSizePerRatingSecondary ( rating, size ) =
+    "Participace s úročením " ++ Rating.showInterestPercent rating ++ " nakupovat nejvýše za " ++ toCzkString size ++ "."
 
 
 renderInvestmentsPrimary : Size -> InvestmentsPerRating -> String
@@ -110,6 +122,19 @@ renderInvestmentsPrimary defaultSize_ investments =
             |> List.filter (\( _, invSize ) -> invSize /= defaultSize_)
             |> List.map renderSizePerRatingPrimary
             |> Util.renderNonemptySection "\n- Výše investice"
+
+
+renderInvestmentsSecondary : Size -> InvestmentsPerRating -> String
+renderInvestmentsSecondary defaultSize_ investments =
+    if Dict.Any.isEmpty investments then
+        ""
+
+    else
+        Rating.ratingDictToList investments
+            --filter our sizes equal to default size
+            |> List.filter (\( _, invSize ) -> invSize /= defaultSize_)
+            |> List.map renderSizePerRatingSecondary
+            |> Util.renderNonemptySection "\n- Výše nákupu"
 
 
 anyInvestmentExceeds5k : Size -> InvestmentsPerRating -> Bool
@@ -167,24 +192,33 @@ decoder =
 
 
 type alias Config msg =
-    { onDefaultInvestmentChange : Msg -> msg
+    { accordionId : String
+    , accordionHeader : String
+    , marketplaceNotEnabled : Html msg
+    , defaultLabel : String
+    , overrideLabel : String
+    , onDefaultInvestmentChange : Msg -> msg
     , onInvestmentChange : Rating -> Msg -> msg
     , noOp : msg
     }
 
 
-form : Config msg -> Size -> InvestmentsPerRating -> Accordion.Card msg
-form config invDefault invOverrides =
+form : Config msg -> Bool -> Size -> InvestmentsPerRating -> Accordion.Card msg
+form config buyingEnabled invDefault invOverrides =
     Accordion.card
-        { id = "investmentSizeCard"
+        { id = config.accordionId
         , options = []
-        , header = Accordion.headerH4 [] <| Accordion.toggle [] [ text "Výše investice" ]
+        , header = Accordion.headerH4 [] <| Accordion.toggle [] [ text config.accordionHeader ]
         , blocks =
-            [ Accordion.block [ CardBlock.attrs [ class "tab-with-sliders" ] ]
-                [ defaultInvestmentForm config invDefault
-                , investmentOverridesForm config invDefault invOverrides
+            if buyingEnabled then
+                [ Accordion.block [ CardBlock.attrs [ class "tab-with-sliders" ] ]
+                    [ defaultInvestmentForm config invDefault
+                    , investmentOverridesForm config invDefault invOverrides
+                    ]
                 ]
-            ]
+
+            else
+                [ Accordion.block [] [ CardBlock.custom config.marketplaceNotEnabled ] ]
         }
 
 
@@ -192,11 +226,9 @@ defaultInvestmentForm : Config msg -> Size -> CardBlock.Item msg
 defaultInvestmentForm config invDefault =
     CardBlock.custom <|
         Form.formInline [ onSubmit config.noOp ]
-            [ span [ Spacing.mr2 ] [ text "Běžná výše investice je" ]
+            [ span [ Spacing.mr2 ] [ text config.defaultLabel ]
             , Html.map config.onDefaultInvestmentChange <| sliderView invDefault
             , span [ Spacing.ml2 ] [ Html.text <| toCzkString invDefault ]
-
-            -- TODO style the sliders
             ]
 
 
@@ -204,7 +236,7 @@ investmentOverridesForm : Config msg -> Size -> InvestmentsPerRating -> CardBloc
 investmentOverridesForm config invDefault invOverrides =
     CardBlock.custom <|
         div []
-            [ text "Pokud si přejete, aby se výše investice do půjček lišily od běžné výše na základě rizikových kategorií, upravte je pomocí posuvníků"
+            [ text config.overrideLabel
             , Grid.row []
                 [ Grid.col [ Col.xs6 ] [ investmentOverridesSliders config invOverrides ]
                 , Grid.col [ Col.xs6 ] [ warningWhenSizeExceeds5K invDefault invOverrides ]
@@ -217,6 +249,8 @@ warningWhenSizeExceeds5K invDefault invOverrides =
     if anyInvestmentExceeds5k invDefault invOverrides then
         Alert.simpleDanger []
             [ strong [] [ text "Upozornění. " ]
+
+            -- TODO parametrize this text
             , text "Maximální výše investice na Zonky se řídí"
             , a [ href "https://zonky.cz/downloads/Zonky_Parametry_castek_pro_investovani.pdf" ] [ text " následujícími pravidly" ]
             , text ". Nastavíte-li částku vyšší, robot bude investovat pouze maximální povolenou částku."
@@ -239,8 +273,6 @@ investmentSlider config ( rating, invSize ) =
         [ b [ style "width" "105px" ] [ text <| Rating.showInterestPercent rating ]
         , Html.map (config.onInvestmentChange rating) <| sliderView invSize
         , span [ Spacing.ml2 ] [ Html.text <| toCzkString invSize ]
-
-        -- TODO show slider value
         ]
 
 
@@ -249,9 +281,13 @@ sliderView size =
     Html.input
         [ Attr.type_ "range"
         , Attr.class "investment-slider"
+
+        -- I don't know why, but it doesn't work when included in JUST css for ".investment-slider" class
+        , Attr.style "-webkit-appearance" "none"
         , Attr.min "200"
         , Attr.max "20000"
         , Attr.step "200"
+        , Attr.style "width" "200px"
         , Attr.value <| String.fromInt <| toInt size
         , Events.on "input"
             (Events.targetValue
