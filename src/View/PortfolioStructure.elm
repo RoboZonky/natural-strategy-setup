@@ -101,7 +101,7 @@ slidersView portfolioStructure =
         ratingSlider ( rating, percentage ) =
             Form.formInline [ onSubmit NoOp, class (Rating.toColorClass rating) ]
                 [ Html.b [ style "width" "105px" ] [ text <| Rating.showInterestPercent rating ]
-                , Html.map (ChangePortfolioPercentage rating) <| Percentage.view percentage
+                , Html.map (PortfolioPercentageChanged rating) <| Percentage.view percentage
                 , Html.b [ Spacing.mx2 ] [ text <| PortfolioStructure.renderPercentage percentage ++ " %" ]
                 ]
     in

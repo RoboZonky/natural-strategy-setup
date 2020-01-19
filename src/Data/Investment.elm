@@ -1,7 +1,7 @@
 module Data.Investment exposing
     ( InvestmentsPerRating
     , Msg(..)
-    , PrimaryInvestmentSize
+    , Size
     , anyInvestmentExceeds5k
     , decoder
     , defaultInvestmentsPerRating
@@ -14,6 +14,7 @@ module Data.Investment exposing
     , renderInvestments
     , renderSize
     , sizeDecoder
+    , toCzkString
     , toInt
     , update
     )
@@ -26,50 +27,55 @@ import Util
 
 
 type alias InvestmentsPerRating =
-    AnyDict Int Rating PrimaryInvestmentSize
+    AnyDict Int Rating Size
 
 
-defaultInvestmentsPerRating : PrimaryInvestmentSize -> InvestmentsPerRating
+defaultInvestmentsPerRating : Size -> InvestmentsPerRating
 defaultInvestmentsPerRating initialSize =
     Rating.initRatingDict <| List.map (\r -> ( r, initialSize )) Rating.allRatings
 
 
-type PrimaryInvestmentSize
-    = PIS Int
+type Size
+    = Size Int
 
 
 type Msg
     = SetValue Int
 
 
-update : Msg -> PrimaryInvestmentSize -> PrimaryInvestmentSize
-update msg (PIS _) =
+update : Msg -> Size -> Size
+update msg (Size _) =
     case msg of
         SetValue newValue ->
-            PIS newValue
+            Size newValue
 
 
-fromInt : Int -> PrimaryInvestmentSize
+fromInt : Int -> Size
 fromInt =
-    PIS
+    Size
 
 
-toInt : PrimaryInvestmentSize -> Int
-toInt (PIS sz) =
+toInt : Size -> Int
+toInt (Size sz) =
     sz
 
 
-renderSize : PrimaryInvestmentSize -> String
+toCzkString : Size -> String
+toCzkString pis =
+    investmentSizeToString pis ++ " Kč"
+
+
+renderSize : Size -> String
 renderSize pis =
     "Robot má investovat do úvěrů po " ++ investmentSizeToString pis ++ " Kč."
 
 
-renderInvestment : ( Rating, PrimaryInvestmentSize ) -> String
+renderInvestment : ( Rating, Size ) -> String
 renderInvestment ( rating, size ) =
     "Do úvěrů s úročením " ++ Rating.showInterestPercent rating ++ " investovat po " ++ investmentSizeToString size ++ " Kč."
 
 
-renderInvestments : PrimaryInvestmentSize -> InvestmentsPerRating -> String
+renderInvestments : Size -> InvestmentsPerRating -> String
 renderInvestments defaultSize_ investments =
     if Dict.Any.isEmpty investments then
         ""
@@ -86,17 +92,17 @@ renderInvestments defaultSize_ investments =
 -- TODO maybe remove this
 
 
-investmentSizeToString : PrimaryInvestmentSize -> String
-investmentSizeToString (PIS s) =
+investmentSizeToString : Size -> String
+investmentSizeToString (Size s) =
     String.fromInt s
 
 
-defaultSize : PrimaryInvestmentSize
+defaultSize : Size
 defaultSize =
-    PIS 200
+    Size 200
 
 
-anyInvestmentExceeds5k : PrimaryInvestmentSize -> InvestmentsPerRating -> Bool
+anyInvestmentExceeds5k : Size -> InvestmentsPerRating -> Bool
 anyInvestmentExceeds5k default overrides =
     default
         :: Dict.Any.values overrides
@@ -109,7 +115,7 @@ anyInvestmentExceeds5k default overrides =
 -- TODO remove
 
 
-investmentSizeEqual : PrimaryInvestmentSize -> PrimaryInvestmentSize -> Bool
+investmentSizeEqual : Size -> Size -> Bool
 investmentSizeEqual =
     (==)
 
@@ -150,11 +156,11 @@ decoder =
             )
 
 
-encodeSize : PrimaryInvestmentSize -> Value
-encodeSize (PIS sz) =
+encodeSize : Size -> Value
+encodeSize (Size sz) =
     Encode.int sz
 
 
-sizeDecoder : Decoder PrimaryInvestmentSize
+sizeDecoder : Decoder Size
 sizeDecoder =
-    Decode.map PIS Decode.int
+    Decode.map Size Decode.int

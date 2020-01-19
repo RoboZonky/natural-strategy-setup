@@ -25,10 +25,10 @@ type Msg
     = PortfolioChanged Portfolio
     | ExitConfigChanged ExitConfig.ExitConfig
     | TargetPortfolioSizeChanged String
-    | ChangePortfolioPercentage Rating Percentage.Msg
-    | ChangeInvestment Rating Investment.Msg
-    | ChangeDefaultInvestment Investment.Msg
-    | SetReservationSetting ReservationSetting
+    | PortfolioPercentageChanged Rating Percentage.Msg
+    | DefaultPrimaryInvestmentChanged Investment.Msg
+    | PrimaryInvestmentChanged Rating Investment.Msg
+    | ReservationSettingChanged ReservationSetting
     | RemoveBuyFilter Int
     | RemoveSellFilter Int
     | SellingConfigChanged SellingConfiguration

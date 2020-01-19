@@ -123,16 +123,16 @@ updateHelper msg model =
             in
             updateStrategy (Strategy.setTargetPortfolioSize targetSize) model
 
-        ChangePortfolioPercentage rating sliderMsg ->
+        PortfolioPercentageChanged rating sliderMsg ->
             updateStrategy
                 -- Any change from defaults automatically selects "user defined" portfolio
                 (Strategy.setPortfolio Data.Portfolio.UserDefined << Strategy.setPortfolioSharePercentage rating sliderMsg)
                 model
 
-        ChangeInvestment rating sliderMsg ->
+        PrimaryInvestmentChanged rating sliderMsg ->
             updateStrategy (Strategy.setInvestment rating sliderMsg) model
 
-        ChangeDefaultInvestment sliderMsg ->
+        DefaultPrimaryInvestmentChanged sliderMsg ->
             updateStrategy (Strategy.setDefaultInvestment sliderMsg) model
 
         RemoveBuyFilter index ->
@@ -165,7 +165,7 @@ updateHelper msg model =
         SetDateTime posix ->
             { model | generatedOn = posix }
 
-        SetReservationSetting reservationSetting ->
+        ReservationSettingChanged reservationSetting ->
             updateStrategy (Strategy.setReservationSetting reservationSetting) model
 
         SellingConfigChanged sellingConfig ->

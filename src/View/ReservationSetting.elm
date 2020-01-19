@@ -39,7 +39,7 @@ reservationRadio domId thisRadioSetting currentReservationSetting =
         [ Radio.id domId
         , Radio.checked (currentReservationSetting == thisRadioSetting)
         , Radio.name "reservationSystem"
-        , Radio.onClick (SetReservationSetting thisRadioSetting)
+        , Radio.onClick (ReservationSettingChanged thisRadioSetting)
         ]
         (toRadioLabel thisRadioSetting)
 

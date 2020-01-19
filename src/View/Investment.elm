@@ -1,4 +1,4 @@
-module View.Investment exposing (form)
+module View.Investment exposing (Config, form)
 
 import Bootstrap.Accordion as Accordion
 import Bootstrap.Alert as Alert
@@ -8,7 +8,7 @@ import Bootstrap.Grid as Grid
 import Bootstrap.Grid.Col as Col
 import Bootstrap.Utilities.Spacing as Spacing
 import Data.Filter.Conditions.Rating as Rating exposing (Rating, ratingDictToList)
-import Data.Investment as Investment exposing (InvestmentsPerRating, PrimaryInvestmentSize)
+import Data.Investment as Investment exposing (InvestmentsPerRating, Size)
 import Html exposing (Html, a, b, div, span, strong, text)
 import Html.Attributes as Attr exposing (class, href, style)
 import Html.Events as Events exposing (onSubmit)
@@ -16,46 +16,53 @@ import Json.Decode as Decode
 import Types exposing (Msg(..))
 
 
-form : PrimaryInvestmentSize -> InvestmentsPerRating -> Accordion.Card Msg
-form invDefault invOverrides =
+type alias Config msg =
+    { onDefaultInvestmentChange : Investment.Msg -> msg
+    , onInvestmentChange : Rating -> Investment.Msg -> msg
+    , noOp : msg
+    }
+
+
+form : Config msg -> Size -> InvestmentsPerRating -> Accordion.Card msg
+form config invDefault invOverrides =
     Accordion.card
         { id = "investmentSizeCard"
         , options = []
         , header = Accordion.headerH4 [] <| Accordion.toggle [] [ text "Výše investice" ]
         , blocks =
             [ Accordion.block [ CardBlock.attrs [ class "tab-with-sliders" ] ]
-                [ defaultInvestmentForm invDefault
-                , investmentOverridesForm invDefault invOverrides
+                [ defaultInvestmentForm config invDefault
+                , investmentOverridesForm config invDefault invOverrides
                 ]
             ]
         }
 
 
-defaultInvestmentForm : PrimaryInvestmentSize -> CardBlock.Item Msg
-defaultInvestmentForm invDefault =
+defaultInvestmentForm : Config msg -> Size -> CardBlock.Item msg
+defaultInvestmentForm config invDefault =
     CardBlock.custom <|
-        Form.formInline [ onSubmit NoOp ]
+        Form.formInline [ onSubmit config.noOp ]
             [ span [ Spacing.mr2 ] [ text "Běžná výše investice je" ]
-            , Html.map ChangeDefaultInvestment <| sliderView invDefault
+            , Html.map config.onDefaultInvestmentChange <| sliderView invDefault
+            , span [ Spacing.ml2 ] [ Html.text <| Investment.toCzkString invDefault ]
 
-            -- TODO show slider value
             -- TODO style the sliders
             ]
 
 
-investmentOverridesForm : PrimaryInvestmentSize -> InvestmentsPerRating -> CardBlock.Item Msg
-investmentOverridesForm invDefault invOverrides =
+investmentOverridesForm : Config msg -> Size -> InvestmentsPerRating -> CardBlock.Item msg
+investmentOverridesForm config invDefault invOverrides =
     CardBlock.custom <|
         div []
             [ text "Pokud si přejete, aby se výše investice do půjček lišily od běžné výše na základě rizikových kategorií, upravte je pomocí posuvníků"
             , Grid.row []
-                [ Grid.col [ Col.xs6 ] [ investmentOverridesSliders invOverrides ]
+                [ Grid.col [ Col.xs6 ] [ investmentOverridesSliders config invOverrides ]
                 , Grid.col [ Col.xs6 ] [ warningWhenSizeExceeds5K invDefault invOverrides ]
                 ]
             ]
 
 
-warningWhenSizeExceeds5K : PrimaryInvestmentSize -> InvestmentsPerRating -> Html a
+warningWhenSizeExceeds5K : Size -> InvestmentsPerRating -> Html a
 warningWhenSizeExceeds5K invDefault invOverrides =
     if Investment.anyInvestmentExceeds5k invDefault invOverrides then
         Alert.simpleDanger []
@@ -69,29 +76,30 @@ warningWhenSizeExceeds5K invDefault invOverrides =
         text ""
 
 
-investmentOverridesSliders : InvestmentsPerRating -> Html Msg
-investmentOverridesSliders invOverrides =
+investmentOverridesSliders : Config msg -> InvestmentsPerRating -> Html msg
+investmentOverridesSliders config invOverrides =
     ratingDictToList invOverrides
-        |> List.map investmentSlider
+        |> List.map (investmentSlider config)
         |> div []
 
 
-investmentSlider : ( Rating, PrimaryInvestmentSize ) -> Html Msg
-investmentSlider ( rating, sliderState ) =
-    Form.formInline [ onSubmit NoOp ]
+investmentSlider : Config msg -> ( Rating, Size ) -> Html msg
+investmentSlider config ( rating, invSize ) =
+    Form.formInline [ onSubmit config.noOp ]
         [ b [ style "width" "105px" ] [ text <| Rating.showInterestPercent rating ]
-        , Html.map (ChangeInvestment rating) <| sliderView sliderState
+        , Html.map (config.onInvestmentChange rating) <| sliderView invSize
+        , span [ Spacing.ml2 ] [ Html.text <| Investment.toCzkString invSize ]
 
         -- TODO show slider value
         ]
 
 
-sliderView : PrimaryInvestmentSize -> Html Investment.Msg
+sliderView : Size -> Html Investment.Msg
 sliderView pis =
     Html.input
         [ Attr.type_ "range"
         , Attr.class "primary-investment-slider"
-        , Attr.min "0"
+        , Attr.min "200"
         , Attr.max "20000"
         , Attr.step "200"
         , Attr.value <| String.fromInt <| Investment.toInt pis

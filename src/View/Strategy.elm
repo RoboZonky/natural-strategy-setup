@@ -44,11 +44,19 @@ strategyForm { generalSettings, portfolioStructure, investmentSizeOverrides, buy
         |> Accordion.cards
             [ generalSettingsCard generalSettings accordionState tooltipStates generatedOn
             , PortfolioStructure.form generalSettings.portfolio portfolioStructure accordionState tooltipStates
-            , Investment.form generalSettings.defaultInvestmentSize investmentSizeOverrides
+            , Investment.form primaryInvestmentConfig generalSettings.defaultInvestmentSize investmentSizeOverrides
             , BuyingConfig.form buyingConfig accordionState tooltipStates
             , SellConfig.form sellingConfig accordionState tooltipStates
             ]
         |> Accordion.view accordionState
+
+
+primaryInvestmentConfig : Investment.Config Msg
+primaryInvestmentConfig =
+    { onDefaultInvestmentChange = DefaultPrimaryInvestmentChanged
+    , onInvestmentChange = PrimaryInvestmentChanged
+    , noOp = NoOp
+    }
 
 
 generalSettingsCard : GeneralSettings -> Accordion.State -> Tooltip.States -> Posix -> Accordion.Card Msg

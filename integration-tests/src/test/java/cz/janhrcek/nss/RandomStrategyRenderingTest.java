@@ -51,7 +51,7 @@ public class RandomStrategyRenderingTest {
         OptionalDouble averageLengthOfUrlEncodedStrategy = encodedStrategyLengths.stream()
                 .mapToInt(Integer::intValue)
                 .average();
-        final double expectedEncodedStrategyLengh = 2300;
+        final double expectedEncodedStrategyLengh = 2000;
         assertThat(averageLengthOfUrlEncodedStrategy)
                 .as("Average length of strategy encoded in URL should be around " + expectedEncodedStrategyLengh + " characters")
                 .isNotEmpty()
