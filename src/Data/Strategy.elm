@@ -62,7 +62,7 @@ type alias GeneralSettings =
     , targetPortfolioSize : TargetPortfolioSize
 
     -- TODO change from Range to single value (Int)
-    , defaultInvestmentSize : Investment.PrimaryInvestmentSize
+    , defaultInvestmentSize : Investment.Size
 
     -- TODO add defaultPurchaseSize
     , reservationSetting : ReservationSetting

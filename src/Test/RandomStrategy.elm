@@ -98,7 +98,7 @@ investmentsPerRatingGen =
             )
 
 
-investment0to5kRange : Generator Investment.PrimaryInvestmentSize
+investment0to5kRange : Generator Investment.Size
 investment0to5kRange =
     Random.int 0 25 |> Random.map (\n -> Investment.fromInt <| 200 * n)
 
@@ -404,7 +404,7 @@ targetPortfolioSizeGen =
         [ ( 2, Random.int 0 1000000 |> Random.map TargetPortfolioSize ) ]
 
 
-investmentSizeGen : Generator Investment.PrimaryInvestmentSize
+investmentSizeGen : Generator Investment.Size
 investmentSizeGen =
     investment0to5kRange
 

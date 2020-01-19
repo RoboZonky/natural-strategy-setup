@@ -65,7 +65,7 @@ fromV5 old =
     )
 
 
-migrateInvestment : V1Investment.Size -> ( Investment.PrimaryInvestmentSize, List MigrationWarning )
+migrateInvestment : V1Investment.Size -> ( Investment.Size, List MigrationWarning )
 migrateInvestment oldSize =
     ( migrateSize oldSize
     , [{- TODO warnings -}]
@@ -79,6 +79,6 @@ migrateInvestmentsPerRating oldIpr =
     )
 
 
-migrateSize : V1Investment.Size -> Investment.PrimaryInvestmentSize
+migrateSize : V1Investment.Size -> Investment.Size
 migrateSize =
     Investment.fromInt << Tuple.second << V1Investment.toIntRange
