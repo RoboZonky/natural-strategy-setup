@@ -211,7 +211,7 @@ renderStrategyConfiguration baseUrl generatedOn ({ generalSettings, portfolioStr
         , Version.robozonkyVersionStatement
         , renderGeneralSettings generalSettings
         , PortfolioStructure.renderPortfolioStructure generalSettings.portfolio portfolioStructure
-        , Investment.renderInvestments generalSettings.defaultInvestmentSize investmentSizeOverrides
+        , Investment.renderInvestmentsPrimary generalSettings.defaultInvestmentSize investmentSizeOverrides
         , Filters.renderBuyingConfiguration buyingConfig
         , Filters.renderSellingConfiguration sellingConfig
         , shareableUrlComment baseUrl strategyConfig
@@ -224,7 +224,7 @@ renderGeneralSettings generalSettings =
         [ "- Obecná nastavení"
         , Portfolio.render generalSettings.portfolio
         , ReservationSetting.render generalSettings.reservationSetting
-        , Investment.renderSize generalSettings.defaultInvestmentSize
+        , Investment.renderSizePrimary generalSettings.defaultInvestmentSize
 
         -- TODO PurchaseSize here
         , TargetPortfolioSize.render generalSettings.targetPortfolioSize
