@@ -3,6 +3,7 @@ module View.Strategy exposing (form)
 import Bootstrap.Accordion as Accordion
 import Bootstrap.Grid as Grid
 import Bootstrap.Grid.Col as Col
+import Data.Investment as Investment
 import Data.Strategy exposing (GeneralSettings, StrategyConfiguration)
 import Data.Tooltip as Tooltip
 import Html exposing (Html, text)
@@ -13,7 +14,6 @@ import View.CardHeightWorkaround exposing (markOpenedAccordionCard)
 import View.ExitConfig as ExitConfig
 import View.Filter.CreationModal as FilterCreationModal
 import View.Filter.DeletionModal as FilterDeletionModal
-import View.Investment as Investment
 import View.PortfolioStructure as PortfolioStructure
 import View.ReservationSetting as ReservationSetting
 import View.SellConfig as SellConfig

@@ -1,26 +1,35 @@
 module Data.Investment exposing
-    ( InvestmentsPerRating
+    ( Config
+    , InvestmentsPerRating
     , Msg(..)
     , Size
-    , anyInvestmentExceeds5k
     , decoder
     , defaultInvestmentsPerRating
     , defaultSize
     , encode
     , encodeSize
+    , form
     , fromInt
     , investmentSizeEqual
     , investmentsPerRatingEqual
-    , renderInvestments
-    , renderSize
+    , renderInvestmentsPrimary
+    , renderSizePrimary
     , sizeDecoder
-    , toCzkString
-    , toInt
     , update
     )
 
-import Data.Filter.Conditions.Rating as Rating exposing (Rating)
+import Bootstrap.Accordion as Accordion
+import Bootstrap.Alert as Alert
+import Bootstrap.Card.Block as CardBlock
+import Bootstrap.Form as Form
+import Bootstrap.Grid as Grid
+import Bootstrap.Grid.Col as Col
+import Bootstrap.Utilities.Spacing as Spacing
+import Data.Filter.Conditions.Rating as Rating exposing (Rating, ratingDictToList)
 import Dict.Any exposing (AnyDict)
+import Html exposing (Html, a, b, div, span, strong, text)
+import Html.Attributes as Attr exposing (class, href, style)
+import Html.Events as Events exposing (onSubmit)
 import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as Encode exposing (Value)
 import Util
@@ -39,15 +48,9 @@ type Size
     = Size Int
 
 
-type Msg
-    = SetValue Int
-
-
-update : Msg -> Size -> Size
-update msg (Size _) =
-    case msg of
-        SetValue newValue ->
-            Size newValue
+defaultSize : Size
+defaultSize =
+    Size 200
 
 
 fromInt : Int -> Size
@@ -61,22 +64,43 @@ toInt (Size sz) =
 
 
 toCzkString : Size -> String
-toCzkString pis =
-    investmentSizeToString pis ++ " Kč"
+toCzkString (Size sz) =
+    String.fromInt sz ++ " Kč"
 
 
-renderSize : Size -> String
-renderSize pis =
-    "Robot má investovat do úvěrů po " ++ investmentSizeToString pis ++ " Kč."
+encodeSize : Size -> Value
+encodeSize (Size sz) =
+    Encode.int sz
 
 
-renderInvestment : ( Rating, Size ) -> String
-renderInvestment ( rating, size ) =
-    "Do úvěrů s úročením " ++ Rating.showInterestPercent rating ++ " investovat po " ++ investmentSizeToString size ++ " Kč."
+sizeDecoder : Decoder Size
+sizeDecoder =
+    Decode.map Size Decode.int
 
 
-renderInvestments : Size -> InvestmentsPerRating -> String
-renderInvestments defaultSize_ investments =
+type Msg
+    = SetValue Int
+
+
+update : Msg -> Size -> Size
+update msg (Size _) =
+    case msg of
+        SetValue newValue ->
+            Size newValue
+
+
+renderSizePrimary : Size -> String
+renderSizePrimary size =
+    "Robot má investovat do úvěrů po " ++ toCzkString size ++ "."
+
+
+renderSizePerRatingPrimary : ( Rating, Size ) -> String
+renderSizePerRatingPrimary ( rating, size ) =
+    "Do úvěrů s úročením " ++ Rating.showInterestPercent rating ++ " investovat po " ++ toCzkString size ++ "."
+
+
+renderInvestmentsPrimary : Size -> InvestmentsPerRating -> String
+renderInvestmentsPrimary defaultSize_ investments =
     if Dict.Any.isEmpty investments then
         ""
 
@@ -84,22 +108,8 @@ renderInvestments defaultSize_ investments =
         Rating.ratingDictToList investments
             --filter our sizes equal to default size
             |> List.filter (\( _, invSize ) -> invSize /= defaultSize_)
-            |> List.map renderInvestment
+            |> List.map renderSizePerRatingPrimary
             |> Util.renderNonemptySection "\n- Výše investice"
-
-
-
--- TODO maybe remove this
-
-
-investmentSizeToString : Size -> String
-investmentSizeToString (Size s) =
-    String.fromInt s
-
-
-defaultSize : Size
-defaultSize =
-    Size 200
 
 
 anyInvestmentExceeds5k : Size -> InvestmentsPerRating -> Bool
@@ -109,10 +119,6 @@ anyInvestmentExceeds5k default overrides =
         |> List.map toInt
         |> List.filter (\x -> x > 5000)
         |> (not << List.isEmpty)
-
-
-
--- TODO remove
 
 
 investmentSizeEqual : Size -> Size -> Bool
@@ -156,11 +162,110 @@ decoder =
             )
 
 
-encodeSize : Size -> Value
-encodeSize (Size sz) =
-    Encode.int sz
+
+-- VIEW
 
 
-sizeDecoder : Decoder Size
-sizeDecoder =
-    Decode.map Size Decode.int
+type alias Config msg =
+    { onDefaultInvestmentChange : Msg -> msg
+    , onInvestmentChange : Rating -> Msg -> msg
+    , noOp : msg
+    }
+
+
+form : Config msg -> Size -> InvestmentsPerRating -> Accordion.Card msg
+form config invDefault invOverrides =
+    Accordion.card
+        { id = "investmentSizeCard"
+        , options = []
+        , header = Accordion.headerH4 [] <| Accordion.toggle [] [ text "Výše investice" ]
+        , blocks =
+            [ Accordion.block [ CardBlock.attrs [ class "tab-with-sliders" ] ]
+                [ defaultInvestmentForm config invDefault
+                , investmentOverridesForm config invDefault invOverrides
+                ]
+            ]
+        }
+
+
+defaultInvestmentForm : Config msg -> Size -> CardBlock.Item msg
+defaultInvestmentForm config invDefault =
+    CardBlock.custom <|
+        Form.formInline [ onSubmit config.noOp ]
+            [ span [ Spacing.mr2 ] [ text "Běžná výše investice je" ]
+            , Html.map config.onDefaultInvestmentChange <| sliderView invDefault
+            , span [ Spacing.ml2 ] [ Html.text <| toCzkString invDefault ]
+
+            -- TODO style the sliders
+            ]
+
+
+investmentOverridesForm : Config msg -> Size -> InvestmentsPerRating -> CardBlock.Item msg
+investmentOverridesForm config invDefault invOverrides =
+    CardBlock.custom <|
+        div []
+            [ text "Pokud si přejete, aby se výše investice do půjček lišily od běžné výše na základě rizikových kategorií, upravte je pomocí posuvníků"
+            , Grid.row []
+                [ Grid.col [ Col.xs6 ] [ investmentOverridesSliders config invOverrides ]
+                , Grid.col [ Col.xs6 ] [ warningWhenSizeExceeds5K invDefault invOverrides ]
+                ]
+            ]
+
+
+warningWhenSizeExceeds5K : Size -> InvestmentsPerRating -> Html a
+warningWhenSizeExceeds5K invDefault invOverrides =
+    if anyInvestmentExceeds5k invDefault invOverrides then
+        Alert.simpleDanger []
+            [ strong [] [ text "Upozornění. " ]
+            , text "Maximální výše investice na Zonky se řídí"
+            , a [ href "https://zonky.cz/downloads/Zonky_Parametry_castek_pro_investovani.pdf" ] [ text " následujícími pravidly" ]
+            , text ". Nastavíte-li částku vyšší, robot bude investovat pouze maximální povolenou částku."
+            ]
+
+    else
+        text ""
+
+
+investmentOverridesSliders : Config msg -> InvestmentsPerRating -> Html msg
+investmentOverridesSliders config invOverrides =
+    ratingDictToList invOverrides
+        |> List.map (investmentSlider config)
+        |> div []
+
+
+investmentSlider : Config msg -> ( Rating, Size ) -> Html msg
+investmentSlider config ( rating, invSize ) =
+    Form.formInline [ onSubmit config.noOp ]
+        [ b [ style "width" "105px" ] [ text <| Rating.showInterestPercent rating ]
+        , Html.map (config.onInvestmentChange rating) <| sliderView invSize
+        , span [ Spacing.ml2 ] [ Html.text <| toCzkString invSize ]
+
+        -- TODO show slider value
+        ]
+
+
+sliderView : Size -> Html Msg
+sliderView size =
+    Html.input
+        [ Attr.type_ "range"
+        , Attr.class "investment-slider"
+        , Attr.min "200"
+        , Attr.max "20000"
+        , Attr.step "200"
+        , Attr.value <| String.fromInt <| toInt size
+        , Events.on "input"
+            (Events.targetValue
+                |> Decode.andThen valueDecoder
+            )
+        ]
+        []
+
+
+valueDecoder : String -> Decode.Decoder Msg
+valueDecoder str =
+    case String.toInt str of
+        Nothing ->
+            Decode.fail "ignore"
+
+        Just i ->
+            Decode.succeed (SetValue i)
