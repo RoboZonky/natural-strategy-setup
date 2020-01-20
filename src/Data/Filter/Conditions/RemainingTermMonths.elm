@@ -1,7 +1,7 @@
-module Data.Filter.Conditions.TermMonths exposing
-    ( TermMonths(..)
-    , TermMonthsCondition(..)
-    , TermMonthsMsg
+module Data.Filter.Conditions.RemainingTermMonths exposing
+    ( RemainingTermMonths(..)
+    , RemainingTermMonthsCondition(..)
+    , RemainingTermMonthsMsg
     , conditionDecoder
     , defaultCondition
     , encodeCondition
@@ -23,23 +23,23 @@ import Util exposing (parseInt, zeroToEmpty)
 import View.NumericInput
 
 
-type TermMonths
+type RemainingTermMonths
     = LessThan Int
     | Between Int Int
     | MoreThan Int
 
 
-type TermMonthsCondition
-    = TermMonthsCondition TermMonths
+type RemainingTermMonthsCondition
+    = RemainingTermMonthsCondition RemainingTermMonths
 
 
-defaultCondition : TermMonthsCondition
+defaultCondition : RemainingTermMonthsCondition
 defaultCondition =
-    TermMonthsCondition (LessThan 0)
+    RemainingTermMonthsCondition (LessThan 0)
 
 
-termMonthsToString : TermMonths -> String
-termMonthsToString termMonths =
+remainingTermMonthsToString : RemainingTermMonths -> String
+remainingTermMonthsToString termMonths =
     case termMonths of
         LessThan maxBound ->
             "nedosahuje " ++ String.fromInt maxBound
@@ -51,13 +51,13 @@ termMonthsToString termMonths =
             "přesahuje " ++ String.fromInt minBound
 
 
-renderCondition : TermMonthsCondition -> String
-renderCondition (TermMonthsCondition term) =
-    "délka " ++ termMonthsToString term ++ " měsíců"
+renderCondition : RemainingTermMonthsCondition -> String
+renderCondition (RemainingTermMonthsCondition term) =
+    "délka " ++ remainingTermMonthsToString term ++ " měsíců"
 
 
-validationErrors : TermMonthsCondition -> List String
-validationErrors (TermMonthsCondition t) =
+validationErrors : RemainingTermMonthsCondition -> List String
+validationErrors (RemainingTermMonthsCondition t) =
     case t of
         LessThan x ->
             validateInRange 1 85 x
@@ -79,14 +79,14 @@ minNotGtMax =
     Validate.minNotGtMax "Délka úvěru v měsících"
 
 
-type TermMonthsMsg
+type RemainingTermMonthsMsg
     = SetLessThan String
     | SetBetween String String
     | SetMoreThan String
     | TermMonthsNoOp
 
 
-whichEnabled : TermMonths -> ( Bool, Bool, Bool )
+whichEnabled : RemainingTermMonths -> ( Bool, Bool, Bool )
 whichEnabled termMonths =
     case termMonths of
         LessThan _ ->
@@ -99,7 +99,7 @@ whichEnabled termMonths =
             ( False, False, True )
 
 
-msgToModel : TermMonthsMsg -> Maybe TermMonths
+msgToModel : RemainingTermMonthsMsg -> Maybe RemainingTermMonths
 msgToModel msg =
     case msg of
         SetLessThan hi ->
@@ -115,11 +115,11 @@ msgToModel msg =
             Nothing
 
 
-update : TermMonthsMsg -> TermMonthsCondition -> TermMonthsCondition
-update msg (TermMonthsCondition term) =
+update : RemainingTermMonthsMsg -> RemainingTermMonthsCondition -> RemainingTermMonthsCondition
+update msg (RemainingTermMonthsCondition term) =
     msgToModel msg
         |> Maybe.withDefault term
-        |> TermMonthsCondition
+        |> RemainingTermMonthsCondition
 
 
 type alias TermMonthsRadioValues =
@@ -130,8 +130,8 @@ type alias TermMonthsRadioValues =
     }
 
 
-form : TermMonthsCondition -> Html TermMonthsMsg
-form (TermMonthsCondition termMonths) =
+form : RemainingTermMonthsCondition -> Html RemainingTermMonthsMsg
+form (RemainingTermMonthsCondition termMonths) =
     let
         values =
             case termMonths of
@@ -149,19 +149,19 @@ form (TermMonthsCondition termMonths) =
     in
     Html.div []
         [ Form.formInline [ onSubmit TermMonthsNoOp ]
-            [ termMonthsRadio ltEnabled (SetLessThan "0") "nedosahuje" "tm1"
+            [ remainingTermMonthsRadio ltEnabled (SetLessThan "0") "nedosahuje" "tm1"
             , numericInput SetLessThan ltEnabled values.lessThan
             , unit
             ]
         , Form.formInline [ onSubmit TermMonthsNoOp ]
-            [ termMonthsRadio btwEnabled (SetBetween "0" "0") "je" "tm2"
+            [ remainingTermMonthsRadio btwEnabled (SetBetween "0" "0") "je" "tm2"
             , numericInput (\x -> SetBetween x values.betweenMax) btwEnabled values.betweenMin
             , text "až"
             , numericInput (\y -> SetBetween values.betweenMin y) btwEnabled values.betweenMax
             , unit
             ]
         , Form.formInline [ onSubmit TermMonthsNoOp ]
-            [ termMonthsRadio mtEnabled (SetMoreThan "0") "přesahuje" "tm3"
+            [ remainingTermMonthsRadio mtEnabled (SetMoreThan "0") "přesahuje" "tm3"
             , numericInput SetMoreThan mtEnabled values.moreThan
             , unit
             ]
@@ -173,13 +173,13 @@ unit =
     text "měsíců"
 
 
-numericInput : (String -> TermMonthsMsg) -> Bool -> String -> Html TermMonthsMsg
+numericInput : (String -> RemainingTermMonthsMsg) -> Bool -> String -> Html RemainingTermMonthsMsg
 numericInput =
     View.NumericInput.numericInput 0 85
 
 
-termMonthsRadio : Bool -> TermMonthsMsg -> String -> DomId -> Html TermMonthsMsg
-termMonthsRadio checked msg label domId =
+remainingTermMonthsRadio : Bool -> RemainingTermMonthsMsg -> String -> DomId -> Html RemainingTermMonthsMsg
+remainingTermMonthsRadio checked msg label domId =
     Radio.radio
         [ Radio.id domId
         , Radio.name "termMonths"
@@ -193,8 +193,8 @@ termMonthsRadio checked msg label domId =
 -- JSON
 
 
-encodeTermMonths : TermMonths -> Value
-encodeTermMonths amt =
+encodeRemainingTermMonths : RemainingTermMonths -> Value
+encodeRemainingTermMonths amt =
     case amt of
         LessThan x ->
             Encode.list Encode.int [ 1, x ]
@@ -206,13 +206,13 @@ encodeTermMonths amt =
             Encode.list Encode.int [ 3, y ]
 
 
-encodeCondition : TermMonthsCondition -> Value
-encodeCondition (TermMonthsCondition c) =
-    encodeTermMonths c
+encodeCondition : RemainingTermMonthsCondition -> Value
+encodeCondition (RemainingTermMonthsCondition c) =
+    encodeRemainingTermMonths c
 
 
-termMonthsDecoder : Decoder TermMonths
-termMonthsDecoder =
+remainingTermMonthsDecoder : Decoder RemainingTermMonths
+remainingTermMonthsDecoder =
     Decode.list Decode.int
         |> Decode.andThen
             (\ints ->
@@ -231,6 +231,6 @@ termMonthsDecoder =
             )
 
 
-conditionDecoder : Decoder TermMonthsCondition
+conditionDecoder : Decoder RemainingTermMonthsCondition
 conditionDecoder =
-    Decode.map TermMonthsCondition termMonthsDecoder
+    Decode.map RemainingTermMonthsCondition remainingTermMonthsDecoder

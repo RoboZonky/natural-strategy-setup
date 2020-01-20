@@ -41,10 +41,10 @@ import Data.Filter.Conditions.LoanAnnuity as LoanAnnuity exposing (LoanAnnuityCo
 import Data.Filter.Conditions.Purpose as Purpose exposing (PurposeCondition, PurposeMsg)
 import Data.Filter.Conditions.Region as Region exposing (RegionCondition, RegionMsg)
 import Data.Filter.Conditions.RemainingAmount as RemainingAmount exposing (RemainingAmountCondition, RemainingAmountMsg)
+import Data.Filter.Conditions.RemainingTermMonths as RemainingTermMonths exposing (RemainingTermMonthsCondition, RemainingTermMonthsMsg)
 import Data.Filter.Conditions.RevenueRate as RevenueRate exposing (RevenueRateCondition, RevenueRateMsg)
 import Data.Filter.Conditions.SaleFee as SaleFee exposing (SaleFeeCondition, SaleFeeMsg)
 import Data.Filter.Conditions.Story as Story exposing (StoryCondition, StoryMsg)
-import Data.Filter.Conditions.TermMonths as TermMonths exposing (TermMonthsCondition, TermMonthsMsg)
 import Data.Filter.Conditions.TermPercent as TermPercent exposing (TermPercentCondition, TermPercentMsg)
 import Json.Decode as Decode exposing (Decoder)
 import Json.Decode.Extra exposing (andMap, optionalField)
@@ -57,7 +57,7 @@ type alias Conditions =
     , income : Maybe IncomeCondition
     , purpose : Maybe PurposeCondition
     , story : Maybe StoryCondition
-    , termMonths : Maybe TermMonthsCondition
+    , remainingTermMonths : Maybe RemainingTermMonthsCondition
     , termPercent : Maybe TermPercentCondition
     , elapsedTermMonths : Maybe ElapsedTermMonthsCondition
     , elapsedTermPercent : Maybe ElapsedTermPercentCondition
@@ -84,7 +84,7 @@ type Condition
     | Condition_Region RegionCondition
     | Condition_Revenue_Rate RevenueRateCondition
     | Condition_Story StoryCondition
-    | Condition_Term_Months TermMonthsCondition
+    | Condition_Remaining_Term_Months RemainingTermMonthsCondition
     | Condition_Term_Percent TermPercentCondition
     | Condition_Sale_Fee SaleFeeCondition
 
@@ -103,7 +103,7 @@ type ConditionType
     | Revenue_Rate
     | Sale_Fee
     | Story
-    | Term_Months
+    | Remaining_Term_Months
     | Term_Percent
 
 
@@ -113,7 +113,7 @@ emptyConditions =
     , income = Nothing
     , purpose = Nothing
     , story = Nothing
-    , termMonths = Nothing
+    , remainingTermMonths = Nothing
     , termPercent = Nothing
     , elapsedTermMonths = Nothing
     , elapsedTermPercent = Nothing
@@ -169,8 +169,8 @@ renderCondition condition =
         Condition_Story c ->
             Story.renderCondition c
 
-        Condition_Term_Months c ->
-            TermMonths.renderCondition c
+        Condition_Remaining_Term_Months c ->
+            RemainingTermMonths.renderCondition c
 
         Condition_Term_Percent c ->
             TermPercent.renderCondition c
@@ -223,8 +223,8 @@ conditionValidationError condition =
         Condition_Story _ ->
             [{- Story condition can't be invalid -> valid. errors list always empty -}]
 
-        Condition_Term_Months c ->
-            TermMonths.validationErrors c
+        Condition_Remaining_Term_Months c ->
+            RemainingTermMonths.validationErrors c
 
         Condition_Term_Percent c ->
             TermPercent.validationErrors c
@@ -251,7 +251,7 @@ getDisabledConditionTypes cs =
         , addIfNothing .revenueRate Revenue_Rate
         , addIfNothing .saleFee Sale_Fee
         , addIfNothing .story Story
-        , addIfNothing .termMonths Term_Months
+        , addIfNothing .remainingTermMonths Remaining_Term_Months
         , addIfNothing .termPercent Term_Percent
         ]
 
@@ -277,7 +277,7 @@ getEnabledConditionTypes cs =
         , addIfJust .revenueRate Revenue_Rate
         , addIfJust .saleFee Sale_Fee
         , addIfJust .story Story
-        , addIfJust .termMonths Term_Months
+        , addIfJust .remainingTermMonths Remaining_Term_Months
         , addIfJust .termPercent Term_Percent
         ]
 
@@ -303,7 +303,7 @@ getEnabledConditions cs =
         , addIfJust .revenueRate Condition_Revenue_Rate
         , addIfJust .saleFee Condition_Sale_Fee
         , addIfJust .story Condition_Story
-        , addIfJust .termMonths Condition_Term_Months
+        , addIfJust .remainingTermMonths Condition_Remaining_Term_Months
         , addIfJust .termPercent Condition_Term_Percent
         ]
 
@@ -350,8 +350,8 @@ addCondition condition cs =
         Condition_Story c ->
             { cs | story = Just c }
 
-        Condition_Term_Months c ->
-            { cs | termMonths = Just c }
+        Condition_Remaining_Term_Months c ->
+            { cs | remainingTermMonths = Just c }
 
         Condition_Term_Percent c ->
             { cs | termPercent = Just c }
@@ -392,9 +392,9 @@ updatePurpose msg conditions =
     { conditions | purpose = Maybe.map (Purpose.update msg) conditions.purpose }
 
 
-updateTermMonths : TermMonthsMsg -> Conditions -> Conditions
+updateTermMonths : RemainingTermMonthsMsg -> Conditions -> Conditions
 updateTermMonths msg conditions =
-    { conditions | termMonths = Maybe.map (TermMonths.update msg) conditions.termMonths }
+    { conditions | remainingTermMonths = Maybe.map (RemainingTermMonths.update msg) conditions.remainingTermMonths }
 
 
 updateTermPercent : TermPercentMsg -> Conditions -> Conditions
@@ -474,8 +474,8 @@ removeCondition conditionType cs =
         Story ->
             { cs | story = Nothing }
 
-        Term_Months ->
-            { cs | termMonths = Nothing }
+        Remaining_Term_Months ->
+            { cs | remainingTermMonths = Nothing }
 
         Term_Percent ->
             { cs | termPercent = Nothing }
@@ -528,8 +528,8 @@ getDefaultCondition conditionType =
         Story ->
             Condition_Story Story.defaultCondition
 
-        Term_Months ->
-            Condition_Term_Months TermMonths.defaultCondition
+        Remaining_Term_Months ->
+            Condition_Remaining_Term_Months RemainingTermMonths.defaultCondition
 
         Term_Percent ->
             Condition_Term_Percent TermPercent.defaultCondition
@@ -563,8 +563,8 @@ encodeCondition condition =
         Condition_Story c ->
             ( "E", Story.encodeCondition c )
 
-        Condition_Term_Months c ->
-            ( "F", TermMonths.encodeCondition c )
+        Condition_Remaining_Term_Months c ->
+            ( "F", RemainingTermMonths.encodeCondition c )
 
         Condition_Term_Percent c ->
             ( "G", TermPercent.encodeCondition c )
@@ -605,7 +605,7 @@ conditionsDecoder =
         |> andMap (optionalField "C" Income.conditionDecoder)
         |> andMap (optionalField "D" Purpose.conditionDecoder)
         |> andMap (optionalField "E" Story.conditionDecoder)
-        |> andMap (optionalField "F" TermMonths.conditionDecoder)
+        |> andMap (optionalField "F" RemainingTermMonths.conditionDecoder)
         |> andMap (optionalField "G" TermPercent.conditionDecoder)
         |> andMap (optionalField "H" ElapsedTermMonths.conditionDecoder)
         |> andMap (optionalField "I" ElapsedTermPercent.conditionDecoder)
