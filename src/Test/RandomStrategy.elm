@@ -7,6 +7,7 @@ import Data.Filter.Conditions exposing (Condition(..), Conditions, addCondition,
 import Data.Filter.Conditions.Amount as Amount exposing (AmountCondition(..))
 import Data.Filter.Conditions.ElapsedTermMonths as ElapsedTermMonths exposing (ElapsedTermMonthsCondition(..))
 import Data.Filter.Conditions.ElapsedTermPercent as ElapsedTermPercent exposing (ElapsedTermPercentCondition(..))
+import Data.Filter.Conditions.Health as Health exposing (Health(..), HealthCondition(..))
 import Data.Filter.Conditions.Income as Income exposing (IncomeCondition(..))
 import Data.Filter.Conditions.Insurance exposing (Insurance(..), InsuranceCondition(..))
 import Data.Filter.Conditions.Interest as Interest exposing (InterestCondition(..))
@@ -195,6 +196,7 @@ participationSpecificConditions =
     , Random.map Condition_Elapsed_Term_Months elapsedTermMonthsConditionGen
     , Random.map Condition_Elapsed_Term_Percent elapsedTermPercentConditionGen
     , Random.map Condition_Remaining_Amount remainingAmountConditionGen
+    , Random.map Condition_Health healthConditionGen
     ]
 
 
@@ -218,6 +220,11 @@ incomeConditionGen =
 purposeConditionGen : Generator PurposeCondition
 purposeConditionGen =
     nonemptySubset Purpose.allPurposes |> Random.map PurposeList
+
+
+healthConditionGen : Generator HealthCondition
+healthConditionGen =
+    nonemptySubset Health.allHealths |> Random.map HealthList
 
 
 storyConditionGen : Generator StoryCondition

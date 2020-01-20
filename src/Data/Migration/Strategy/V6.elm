@@ -19,6 +19,9 @@ import Dict.Any
       - added purchaseSizeOverrides
       - changed investmentSizeOverrides from range to single numbers
       - Buying and Selling configuration
+  - New conditions
+      - Health (for Participations)
+      - Relative profit (for Participations to sell)
         -- TODO new conditions added
 
 -}
