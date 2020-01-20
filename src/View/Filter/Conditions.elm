@@ -15,6 +15,7 @@ import Data.Filter.Conditions.Interest as Interest exposing (Interest(..), Inter
 import Data.Filter.Conditions.LoanAnnuity as LoanAnnuity exposing (LoanAnnuity(..), LoanAnnuityCondition(..), LoanAnnuityMsg)
 import Data.Filter.Conditions.Purpose as Purpose exposing (Purpose(..), PurposeCondition(..), PurposeMsg)
 import Data.Filter.Conditions.Region as Region exposing (Region(..), RegionCondition(..), RegionMsg)
+import Data.Filter.Conditions.RelativeProfit as RelativeProfit exposing (RelativeProfitMsg)
 import Data.Filter.Conditions.RemainingAmount as RemainingAmount exposing (RemainingAmount(..), RemainingAmountCondition(..), RemainingAmountMsg)
 import Data.Filter.Conditions.RemainingTermMonths as RemainingTermMonths exposing (RemainingTermMonths(..), RemainingTermMonthsCondition(..), RemainingTermMonthsMsg)
 import Data.Filter.Conditions.RevenueRate as RevenueRate exposing (RevenueRate(..), RevenueRateCondition(..), RevenueRateMsg)
@@ -79,7 +80,7 @@ conditionTypesThatApplyTo filteredItem =
                     commonForParticipations
 
                 Participation_To_Sell ->
-                    Sale_Fee :: commonForParticipations
+                    Relative_Profit :: Sale_Fee :: commonForParticipations
            )
 
 
@@ -150,6 +151,9 @@ conditionSubform item condition =
         Condition_Revenue_Rate c ->
             wrap Revenue_Rate <| Html.map RevenueRateMsg <| RevenueRate.form c
 
+        Condition_Relative_Profit c ->
+            wrap Relative_Profit <| Html.map RelativeProfitMsg <| RelativeProfit.form c
+
         Condition_Sale_Fee c ->
             wrap Sale_Fee <| Html.map SaleFeeMsg <| SaleFee.form c
 
@@ -196,8 +200,14 @@ getVisibleLabel filteredItem conditionType =
         Region ->
             "Kraj klienta"
 
+        Relative_Profit ->
+            "Dosažený výnos"
+
         Remaining_Amount ->
             "Zbývající jistina"
+
+        Remaining_Term_Months ->
+            termConditionLabel filteredItem "(v\u{00A0}měsících)"
 
         Revenue_Rate ->
             "Optimální výnos"
@@ -207,9 +217,6 @@ getVisibleLabel filteredItem conditionType =
 
         Story ->
             "Příběh"
-
-        Remaining_Term_Months ->
-            termConditionLabel filteredItem "(v\u{00A0}měsících)"
 
         Term_Percent ->
             termConditionLabel filteredItem "(v\u{00A0}%)"
@@ -267,6 +274,7 @@ type
     | LoanAnnuityMsg LoanAnnuityMsg
     | PurposeMsg PurposeMsg
     | RegionMsg RegionMsg
+    | RelativeProfitMsg RelativeProfitMsg
     | RemainingAmountMsg RemainingAmountMsg
     | RevenueRateMsg RevenueRateMsg
     | SaleFeeMsg SaleFeeMsg
@@ -307,6 +315,9 @@ update msg =
 
         RegionMsg m ->
             C.updateRegion m
+
+        RelativeProfitMsg m ->
+            C.updateRelativeProfit m
 
         RemainingAmountMsg m ->
             C.updateRemainingAmount m
