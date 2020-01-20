@@ -45,8 +45,6 @@ strategyForm { generalSettings, portfolioStructure, primaryInvestmentOverrides, 
         |> Accordion.cards
             [ generalSettingsCard generalSettings accordionState tooltipStates generatedOn
             , PortfolioStructure.form generalSettings.portfolio portfolioStructure accordionState tooltipStates
-
-            -- TODO hide stuff when respective marketplaces disabled
             , Investment.form
                 primaryInvestmentConfig
                 (Filter.isBuyingOnPrimaryEnabled buyingConfig)

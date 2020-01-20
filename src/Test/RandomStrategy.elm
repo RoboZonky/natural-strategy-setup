@@ -14,6 +14,7 @@ import Data.Filter.Conditions.LoanAnnuity as LoanAnnuity exposing (LoanAnnuityCo
 import Data.Filter.Conditions.Purpose as Purpose exposing (PurposeCondition(..))
 import Data.Filter.Conditions.Rating as Rating exposing (Rating, RatingCondition(..))
 import Data.Filter.Conditions.Region as Region exposing (RegionCondition(..))
+import Data.Filter.Conditions.RelativeProfit as RelativeProfit exposing (RelativeProfitCondition(..))
 import Data.Filter.Conditions.RemainingAmount as RemainingAmount exposing (RemainingAmountCondition(..))
 import Data.Filter.Conditions.RemainingTermMonths as RemainingTermMonths exposing (RemainingTermMonthsCondition(..))
 import Data.Filter.Conditions.RevenueRate as RevenueRate exposing (RevenueRateCondition(..))
@@ -156,7 +157,7 @@ conditionsGen minConditions filteredItem =
                     participationSpecificConditions
 
                 Participation_To_Sell ->
-                    participationToSellSpecificCondition :: participationSpecificConditions
+                    participationToSellSpecificCondition ++ participationSpecificConditions
 
                 Loan_And_Participation ->
                     []
@@ -197,9 +198,11 @@ participationSpecificConditions =
     ]
 
 
-participationToSellSpecificCondition : Generator Condition
+participationToSellSpecificCondition : List (Generator Condition)
 participationToSellSpecificCondition =
-    Random.map Condition_Sale_Fee saleFeeConditionGen
+    [ Random.map Condition_Sale_Fee saleFeeConditionGen
+    , Random.map Condition_Relative_Profit relativeProfitConditionGen
+    ]
 
 
 regionConditionGen : Generator RegionCondition
@@ -233,6 +236,22 @@ saleFeeConditionGen : Generator SaleFeeCondition
 saleFeeConditionGen =
     Random.sample [ WithFee, NoFee ]
         |> Random.map (Maybe.withDefault NoFee >> SaleFeeCondition)
+
+
+relativeProfitConditionGen : Generator RelativeProfitCondition
+relativeProfitConditionGen =
+    let
+        minTermPercent =
+            0
+
+        maxTermPercent =
+            100
+    in
+    Random.choices (Random.map RelativeProfit.LessThan (Random.int minTermPercent maxTermPercent))
+        [ percentRangeGen |> Random.map (\( mi, mx ) -> RelativeProfit.Between mi mx)
+        , Random.map RelativeProfit.MoreThan (Random.int minTermPercent maxTermPercent)
+        ]
+        |> Random.map RelativeProfitCondition
 
 
 termMonthsConditionGen : Generator RemainingTermMonthsCondition

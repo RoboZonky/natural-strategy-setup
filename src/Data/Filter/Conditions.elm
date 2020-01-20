@@ -23,6 +23,7 @@ module Data.Filter.Conditions exposing
     , updateLoanAnnuity
     , updatePurpose
     , updateRegion
+    , updateRelativeProfit
     , updateRemainingAmount
     , updateRevenueRate
     , updateSaleFee
@@ -40,6 +41,7 @@ import Data.Filter.Conditions.Interest as Interest exposing (InterestCondition, 
 import Data.Filter.Conditions.LoanAnnuity as LoanAnnuity exposing (LoanAnnuityCondition, LoanAnnuityMsg)
 import Data.Filter.Conditions.Purpose as Purpose exposing (PurposeCondition, PurposeMsg)
 import Data.Filter.Conditions.Region as Region exposing (RegionCondition, RegionMsg)
+import Data.Filter.Conditions.RelativeProfit as RelativeProfit exposing (RelativeProfitCondition, RelativeProfitMsg)
 import Data.Filter.Conditions.RemainingAmount as RemainingAmount exposing (RemainingAmountCondition, RemainingAmountMsg)
 import Data.Filter.Conditions.RemainingTermMonths as RemainingTermMonths exposing (RemainingTermMonthsCondition, RemainingTermMonthsMsg)
 import Data.Filter.Conditions.RevenueRate as RevenueRate exposing (RevenueRateCondition, RevenueRateMsg)
@@ -68,6 +70,7 @@ type alias Conditions =
     , loanAnnuity : Maybe LoanAnnuityCondition
     , revenueRate : Maybe RevenueRateCondition
     , saleFee : Maybe SaleFeeCondition
+    , relativeProfit : Maybe RelativeProfitCondition
     }
 
 
@@ -80,13 +83,14 @@ type Condition
     | Condition_Interest InterestCondition
     | Condition_Loan_Annuity LoanAnnuityCondition
     | Condition_Purpose PurposeCondition
+    | Condition_Relative_Profit RelativeProfitCondition
     | Condition_Remaining_Amount RemainingAmountCondition
+    | Condition_Remaining_Term_Months RemainingTermMonthsCondition
     | Condition_Region RegionCondition
     | Condition_Revenue_Rate RevenueRateCondition
     | Condition_Story StoryCondition
-    | Condition_Remaining_Term_Months RemainingTermMonthsCondition
-    | Condition_Term_Percent TermPercentCondition
     | Condition_Sale_Fee SaleFeeCondition
+    | Condition_Term_Percent TermPercentCondition
 
 
 type ConditionType
@@ -98,12 +102,13 @@ type ConditionType
     | Interest
     | Loan_Annuity
     | Purpose
-    | Remaining_Amount
     | Region
+    | Relative_Profit
+    | Remaining_Amount
+    | Remaining_Term_Months
     | Revenue_Rate
     | Sale_Fee
     | Story
-    | Remaining_Term_Months
     | Term_Percent
 
 
@@ -124,6 +129,7 @@ emptyConditions =
     , loanAnnuity = Nothing
     , revenueRate = Nothing
     , saleFee = Nothing
+    , relativeProfit = Nothing
     }
 
 
@@ -160,6 +166,12 @@ renderCondition condition =
         Condition_Remaining_Amount c ->
             RemainingAmount.renderCondition c
 
+        Condition_Remaining_Term_Months c ->
+            RemainingTermMonths.renderCondition c
+
+        Condition_Relative_Profit c ->
+            RelativeProfit.renderCondition c
+
         Condition_Revenue_Rate c ->
             RevenueRate.renderCondition c
 
@@ -168,9 +180,6 @@ renderCondition condition =
 
         Condition_Story c ->
             Story.renderCondition c
-
-        Condition_Remaining_Term_Months c ->
-            RemainingTermMonths.renderCondition c
 
         Condition_Term_Percent c ->
             TermPercent.renderCondition c
@@ -214,6 +223,12 @@ conditionValidationError condition =
         Condition_Remaining_Amount c ->
             RemainingAmount.validationErrors c
 
+        Condition_Remaining_Term_Months c ->
+            RemainingTermMonths.validationErrors c
+
+        Condition_Relative_Profit c ->
+            RelativeProfit.validationErrors c
+
         Condition_Revenue_Rate c ->
             RevenueRate.validationErrors c
 
@@ -222,9 +237,6 @@ conditionValidationError condition =
 
         Condition_Story _ ->
             [{- Story condition can't be invalid -> valid. errors list always empty -}]
-
-        Condition_Remaining_Term_Months c ->
-            RemainingTermMonths.validationErrors c
 
         Condition_Term_Percent c ->
             TermPercent.validationErrors c
@@ -247,11 +259,12 @@ getDisabledConditionTypes cs =
         , addIfNothing .loanAnnuity Loan_Annuity
         , addIfNothing .purpose Purpose
         , addIfNothing .region Region
+        , addIfNothing .relativeProfit Relative_Profit
         , addIfNothing .remainingAmount Remaining_Amount
+        , addIfNothing .remainingTermMonths Remaining_Term_Months
         , addIfNothing .revenueRate Revenue_Rate
         , addIfNothing .saleFee Sale_Fee
         , addIfNothing .story Story
-        , addIfNothing .remainingTermMonths Remaining_Term_Months
         , addIfNothing .termPercent Term_Percent
         ]
 
@@ -273,6 +286,7 @@ getEnabledConditionTypes cs =
         , addIfJust .loanAnnuity Loan_Annuity
         , addIfJust .purpose Purpose
         , addIfJust .region Region
+        , addIfJust .relativeProfit Relative_Profit
         , addIfJust .remainingAmount Remaining_Amount
         , addIfJust .revenueRate Revenue_Rate
         , addIfJust .saleFee Sale_Fee
@@ -299,11 +313,12 @@ getEnabledConditions cs =
         , addIfJust .loanAnnuity Condition_Loan_Annuity
         , addIfJust .purpose Condition_Purpose
         , addIfJust .region Condition_Region
+        , addIfJust .relativeProfit Condition_Relative_Profit
         , addIfJust .remainingAmount Condition_Remaining_Amount
+        , addIfJust .remainingTermMonths Condition_Remaining_Term_Months
         , addIfJust .revenueRate Condition_Revenue_Rate
         , addIfJust .saleFee Condition_Sale_Fee
         , addIfJust .story Condition_Story
-        , addIfJust .remainingTermMonths Condition_Remaining_Term_Months
         , addIfJust .termPercent Condition_Term_Percent
         ]
 
@@ -338,8 +353,14 @@ addCondition condition cs =
         Condition_Remaining_Amount c ->
             { cs | remainingAmount = Just c }
 
+        Condition_Remaining_Term_Months c ->
+            { cs | remainingTermMonths = Just c }
+
         Condition_Region c ->
             { cs | region = Just c }
+
+        Condition_Relative_Profit c ->
+            { cs | relativeProfit = Just c }
 
         Condition_Revenue_Rate c ->
             { cs | revenueRate = Just c }
@@ -349,9 +370,6 @@ addCondition condition cs =
 
         Condition_Story c ->
             { cs | story = Just c }
-
-        Condition_Remaining_Term_Months c ->
-            { cs | remainingTermMonths = Just c }
 
         Condition_Term_Percent c ->
             { cs | termPercent = Just c }
@@ -422,6 +440,11 @@ updateRegion msg conditions =
     { conditions | region = Maybe.map (Region.update msg) conditions.region }
 
 
+updateRelativeProfit : RelativeProfitMsg -> Conditions -> Conditions
+updateRelativeProfit msg conditions =
+    { conditions | relativeProfit = Maybe.map (RelativeProfit.update msg) conditions.relativeProfit }
+
+
 updateInsurance : InsuranceMsg -> Conditions -> Conditions
 updateInsurance msg conditions =
     { conditions | insurance = Maybe.map (Insurance.update msg) conditions.insurance }
@@ -462,8 +485,14 @@ removeCondition conditionType cs =
         Region ->
             { cs | region = Nothing }
 
+        Relative_Profit ->
+            { cs | relativeProfit = Nothing }
+
         Remaining_Amount ->
             { cs | remainingAmount = Nothing }
+
+        Remaining_Term_Months ->
+            { cs | remainingTermMonths = Nothing }
 
         Revenue_Rate ->
             { cs | revenueRate = Nothing }
@@ -473,9 +502,6 @@ removeCondition conditionType cs =
 
         Story ->
             { cs | story = Nothing }
-
-        Remaining_Term_Months ->
-            { cs | remainingTermMonths = Nothing }
 
         Term_Percent ->
             { cs | termPercent = Nothing }
@@ -515,6 +541,9 @@ getDefaultCondition conditionType =
 
         Region ->
             Condition_Region Region.defaultCondition
+
+        Relative_Profit ->
+            Condition_Relative_Profit RelativeProfit.defaultCondition
 
         Remaining_Amount ->
             Condition_Remaining_Amount RemainingAmount.defaultCondition
@@ -596,6 +625,9 @@ encodeCondition condition =
         Condition_Sale_Fee c ->
             ( "P", SaleFee.encodeCondition c )
 
+        Condition_Relative_Profit c ->
+            ( "Q", RelativeProfit.encodeCondition c )
+
 
 conditionsDecoder : Decoder Conditions
 conditionsDecoder =
@@ -616,3 +648,4 @@ conditionsDecoder =
         |> andMap (optionalField "N" LoanAnnuity.conditionDecoder)
         |> andMap (optionalField "O" RevenueRate.conditionDecoder)
         |> andMap (optionalField "P" SaleFee.conditionDecoder)
+        |> andMap (optionalField "Q" RelativeProfit.conditionDecoder)
