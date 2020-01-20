@@ -17,6 +17,7 @@ module Data.Filter.Conditions exposing
     , updateAmount
     , updateElapsedTermMonths
     , updateElapsedTermPercent
+    , updateHealth
     , updateIncome
     , updateInsurance
     , updateInterest
@@ -35,6 +36,7 @@ module Data.Filter.Conditions exposing
 import Data.Filter.Conditions.Amount as Amount exposing (AmountCondition, AmountMsg)
 import Data.Filter.Conditions.ElapsedTermMonths as ElapsedTermMonths exposing (ElapsedTermMonthsCondition, ElapsedTermMonthsMsg)
 import Data.Filter.Conditions.ElapsedTermPercent as ElapsedTermPercent exposing (ElapsedTermPercentCondition, ElapsedTermPercentMsg)
+import Data.Filter.Conditions.Health as Health exposing (HealthCondition, HealthMsg)
 import Data.Filter.Conditions.Income as Income exposing (IncomeCondition, IncomeMsg)
 import Data.Filter.Conditions.Insurance as Insurance exposing (InsuranceCondition, InsuranceMsg)
 import Data.Filter.Conditions.Interest as Interest exposing (InterestCondition, InterestMsg)
@@ -71,6 +73,7 @@ type alias Conditions =
     , revenueRate : Maybe RevenueRateCondition
     , saleFee : Maybe SaleFeeCondition
     , relativeProfit : Maybe RelativeProfitCondition
+    , health : Maybe HealthCondition
     }
 
 
@@ -78,6 +81,7 @@ type Condition
     = Condition_Amount AmountCondition
     | Condition_Elapsed_Term_Months ElapsedTermMonthsCondition
     | Condition_Elapsed_Term_Percent ElapsedTermPercentCondition
+    | Condition_Health HealthCondition
     | Condition_Income IncomeCondition
     | Condition_Insurance InsuranceCondition
     | Condition_Interest InterestCondition
@@ -97,6 +101,7 @@ type ConditionType
     = Amount
     | Elapsed_Term_Months
     | Elapsed_Term_Percent
+    | Health
     | Income
     | Insurance
     | Interest
@@ -130,6 +135,7 @@ emptyConditions =
     , revenueRate = Nothing
     , saleFee = Nothing
     , relativeProfit = Nothing
+    , health = Nothing
     }
 
 
@@ -144,6 +150,9 @@ renderCondition condition =
 
         Condition_Elapsed_Term_Percent c ->
             ElapsedTermPercent.renderCondition c
+
+        Condition_Health c ->
+            Health.renderCondition c
 
         Condition_Income c ->
             Income.renderCondition c
@@ -202,6 +211,9 @@ conditionValidationError condition =
         Condition_Elapsed_Term_Percent c ->
             ElapsedTermPercent.validationErrors c
 
+        Condition_Health c ->
+            Health.validationErrors c
+
         Condition_Income c ->
             Income.validationErrors c
 
@@ -253,6 +265,7 @@ getDisabledConditionTypes cs =
         [ addIfNothing .amount Amount
         , addIfNothing .elapsedTermMonths Elapsed_Term_Months
         , addIfNothing .elapsedTermPercent Elapsed_Term_Percent
+        , addIfNothing .health Health
         , addIfNothing .income Income
         , addIfNothing .insurance Insurance
         , addIfNothing .interest Interest
@@ -280,6 +293,7 @@ getEnabledConditionTypes cs =
         [ addIfJust .amount Amount
         , addIfJust .elapsedTermMonths Elapsed_Term_Months
         , addIfJust .elapsedTermPercent Elapsed_Term_Percent
+        , addIfJust .health Health
         , addIfJust .income Income
         , addIfJust .insurance Insurance
         , addIfJust .interest Interest
@@ -288,10 +302,10 @@ getEnabledConditionTypes cs =
         , addIfJust .region Region
         , addIfJust .relativeProfit Relative_Profit
         , addIfJust .remainingAmount Remaining_Amount
+        , addIfJust .remainingTermMonths Remaining_Term_Months
         , addIfJust .revenueRate Revenue_Rate
         , addIfJust .saleFee Sale_Fee
         , addIfJust .story Story
-        , addIfJust .remainingTermMonths Remaining_Term_Months
         , addIfJust .termPercent Term_Percent
         ]
 
@@ -307,6 +321,7 @@ getEnabledConditions cs =
         [ addIfJust .amount Condition_Amount
         , addIfJust .elapsedTermMonths Condition_Elapsed_Term_Months
         , addIfJust .elapsedTermPercent Condition_Elapsed_Term_Percent
+        , addIfJust .health Condition_Health
         , addIfJust .income Condition_Income
         , addIfJust .insurance Condition_Insurance
         , addIfJust .interest Condition_Interest
@@ -334,6 +349,9 @@ addCondition condition cs =
 
         Condition_Elapsed_Term_Percent c ->
             { cs | elapsedTermPercent = Just c }
+
+        Condition_Health c ->
+            { cs | health = Just c }
 
         Condition_Income c ->
             { cs | income = Just c }
@@ -430,6 +448,11 @@ updateElapsedTermPercent msg conditions =
     { conditions | elapsedTermPercent = Maybe.map (ElapsedTermPercent.update msg) conditions.elapsedTermPercent }
 
 
+updateHealth : HealthMsg -> Conditions -> Conditions
+updateHealth msg conditions =
+    { conditions | health = Maybe.map (Health.update msg) conditions.health }
+
+
 updateIncome : IncomeMsg -> Conditions -> Conditions
 updateIncome msg conditions =
     { conditions | income = Maybe.map (Income.update msg) conditions.income }
@@ -466,6 +489,9 @@ removeCondition conditionType cs =
 
         Elapsed_Term_Percent ->
             { cs | elapsedTermPercent = Nothing }
+
+        Health ->
+            { cs | health = Nothing }
 
         Income ->
             { cs | income = Nothing }
@@ -524,6 +550,9 @@ getDefaultCondition conditionType =
         Elapsed_Term_Percent ->
             Condition_Elapsed_Term_Percent ElapsedTermPercent.defaultCondition
 
+        Health ->
+            Condition_Health Health.defaultCondition
+
         Income ->
             Condition_Income Income.defaultCondition
 
@@ -548,6 +577,9 @@ getDefaultCondition conditionType =
         Remaining_Amount ->
             Condition_Remaining_Amount RemainingAmount.defaultCondition
 
+        Remaining_Term_Months ->
+            Condition_Remaining_Term_Months RemainingTermMonths.defaultCondition
+
         Revenue_Rate ->
             Condition_Revenue_Rate RevenueRate.defaultCondition
 
@@ -556,9 +588,6 @@ getDefaultCondition conditionType =
 
         Story ->
             Condition_Story Story.defaultCondition
-
-        Remaining_Term_Months ->
-            Condition_Remaining_Term_Months RemainingTermMonths.defaultCondition
 
         Term_Percent ->
             Condition_Term_Percent TermPercent.defaultCondition
@@ -628,6 +657,9 @@ encodeCondition condition =
         Condition_Relative_Profit c ->
             ( "Q", RelativeProfit.encodeCondition c )
 
+        Condition_Health c ->
+            ( "R", Health.encodeCondition c )
+
 
 conditionsDecoder : Decoder Conditions
 conditionsDecoder =
@@ -649,3 +681,4 @@ conditionsDecoder =
         |> andMap (optionalField "O" RevenueRate.conditionDecoder)
         |> andMap (optionalField "P" SaleFee.conditionDecoder)
         |> andMap (optionalField "Q" RelativeProfit.conditionDecoder)
+        |> andMap (optionalField "R" Health.conditionDecoder)

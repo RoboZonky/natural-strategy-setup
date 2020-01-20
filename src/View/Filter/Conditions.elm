@@ -9,6 +9,7 @@ import Data.Filter.Conditions as C exposing (Condition(..), ConditionType(..), C
 import Data.Filter.Conditions.Amount as Amount exposing (Amount(..), AmountCondition(..), AmountMsg)
 import Data.Filter.Conditions.ElapsedTermMonths as ElapsedTermMonths exposing (ElapsedTermMonths(..), ElapsedTermMonthsCondition(..), ElapsedTermMonthsMsg)
 import Data.Filter.Conditions.ElapsedTermPercent as ElapsedTermPercent exposing (ElapsedTermPercent(..), ElapsedTermPercentCondition(..), ElapsedTermPercentMsg)
+import Data.Filter.Conditions.Health as Health exposing (HealthMsg)
 import Data.Filter.Conditions.Income as Income exposing (Income(..), IncomeCondition(..), IncomeMsg)
 import Data.Filter.Conditions.Insurance as Insurance exposing (Insurance(..), InsuranceCondition(..), InsuranceMsg)
 import Data.Filter.Conditions.Interest as Interest exposing (Interest(..), InterestCondition(..), InterestMsg)
@@ -66,7 +67,7 @@ conditionTypesThatApplyTo filteredItem =
             [ Amount, Interest, Purpose, Income, Story, Region, Remaining_Term_Months, Insurance, Loan_Annuity, Revenue_Rate ]
 
         commonForParticipations =
-            [ Term_Percent, Elapsed_Term_Months, Elapsed_Term_Percent, Remaining_Amount ]
+            [ Term_Percent, Elapsed_Term_Months, Elapsed_Term_Percent, Remaining_Amount, Health ]
     in
     commonForAll
         ++ (case filteredItem of
@@ -127,6 +128,9 @@ conditionSubform item condition =
         Condition_Elapsed_Term_Percent c ->
             wrap Elapsed_Term_Percent <| Html.map ElapsedTermPercentMsg <| ElapsedTermPercent.form c
 
+        Condition_Health c ->
+            wrap Health <| Html.map HealthMsg <| Health.form c
+
         Condition_Income c ->
             wrap Income <| Html.map IncomeMsg <| Income.form c
 
@@ -178,9 +182,12 @@ getVisibleLabel filteredItem conditionType =
             -- (which is then transformed into corresponding unicode char by elm-format)
             "Uhrazeno splátek (v\u{00A0}měsících)"
 
-        --
         Elapsed_Term_Percent ->
             "Uhrazeno splátek (v\u{00A0}%)"
+
+        -- TODO better name for Health condition
+        Health ->
+            "Zdraví"
 
         Income ->
             "Zdroj příjmů klienta"
@@ -268,6 +275,7 @@ type
     = AmountMsg AmountMsg
     | ElapsedTermMonthsMsg ElapsedTermMonthsMsg
     | ElapsedTermPercentMsg ElapsedTermPercentMsg
+    | HealthMsg HealthMsg
     | InsuranceMsg InsuranceMsg
     | InterestMsg InterestMsg
     | IncomeMsg IncomeMsg
@@ -297,6 +305,9 @@ update msg =
 
         ElapsedTermPercentMsg m ->
             C.updateElapsedTermPercent m
+
+        HealthMsg m ->
+            C.updateHealth m
 
         IncomeMsg m ->
             C.updateIncome m

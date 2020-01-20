@@ -155,14 +155,14 @@ form (LoanAnnuityCondition la) =
         ]
 
 
-numericInput : (String -> LoanAnnuityMsg) -> Bool -> String -> Html LoanAnnuityMsg
-numericInput =
-    View.NumericInput.numericInput 0 1000000
-
-
 unit : Html msg
 unit =
     text "Kč"
+
+
+numericInput : (String -> LoanAnnuityMsg) -> Bool -> String -> Html LoanAnnuityMsg
+numericInput =
+    View.NumericInput.numericInput 0 1000000
 
 
 loanAnnuityRadio : Bool -> LoanAnnuityMsg -> String -> DomId -> Html LoanAnnuityMsg

@@ -155,14 +155,14 @@ form (RevenueRateCondition rrc) =
         ]
 
 
-numericInput : (String -> RevenueRateMsg) -> Bool -> String -> Html RevenueRateMsg
-numericInput =
-    View.NumericInput.numericInput 0 1000000
-
-
 unit : Html msg
 unit =
     text " % p.a."
+
+
+numericInput : (String -> RevenueRateMsg) -> Bool -> String -> Html RevenueRateMsg
+numericInput =
+    View.NumericInput.numericInput 0 1000000
 
 
 revenueRateRadio : Bool -> RevenueRateMsg -> String -> DomId -> Html RevenueRateMsg
