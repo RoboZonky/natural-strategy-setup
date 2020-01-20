@@ -15,10 +15,10 @@ import Data.Filter.Conditions.Purpose as Purpose exposing (PurposeCondition(..))
 import Data.Filter.Conditions.Rating as Rating exposing (Rating, RatingCondition(..))
 import Data.Filter.Conditions.Region as Region exposing (RegionCondition(..))
 import Data.Filter.Conditions.RemainingAmount as RemainingAmount exposing (RemainingAmountCondition(..))
+import Data.Filter.Conditions.RemainingTermMonths as RemainingTermMonths exposing (RemainingTermMonthsCondition(..))
 import Data.Filter.Conditions.RevenueRate as RevenueRate exposing (RevenueRateCondition(..))
 import Data.Filter.Conditions.SaleFee exposing (SaleFee(..), SaleFeeCondition(..))
 import Data.Filter.Conditions.Story exposing (Story(..), StoryCondition(..))
-import Data.Filter.Conditions.TermMonths as TermMonths exposing (TermMonthsCondition(..))
 import Data.Filter.Conditions.TermPercent as TermPercent exposing (TermPercentCondition(..))
 import Data.Investment as Investment exposing (InvestmentsPerRating)
 import Data.Portfolio exposing (Portfolio(..))
@@ -180,7 +180,7 @@ conditionsSharedByAllFilteredItems =
     , Random.map Condition_Income incomeConditionGen
     , Random.map Condition_Purpose purposeConditionGen
     , Random.map Condition_Story storyConditionGen
-    , Random.map Condition_Term_Months termMonthsConditionGen
+    , Random.map Condition_Remaining_Term_Months termMonthsConditionGen
     , Random.map Condition_Interest interestConditionGen
     , Random.map Condition_Insurance insuranceConditionGen
     , Random.map Condition_Loan_Annuity loanAnnuityConditionGen
@@ -235,7 +235,7 @@ saleFeeConditionGen =
         |> Random.map (Maybe.withDefault NoFee >> SaleFeeCondition)
 
 
-termMonthsConditionGen : Generator TermMonthsCondition
+termMonthsConditionGen : Generator RemainingTermMonthsCondition
 termMonthsConditionGen =
     let
         minTermMonths =
@@ -244,12 +244,12 @@ termMonthsConditionGen =
         maxTermMonths =
             84
     in
-    Random.choices (Random.map TermMonths.LessThan (Random.int minTermMonths maxTermMonths))
+    Random.choices (Random.map RemainingTermMonths.LessThan (Random.int minTermMonths maxTermMonths))
         [ randomRangeGen minTermMonths maxTermMonths
-            |> Random.map (\( mi, mx ) -> TermMonths.Between mi mx)
-        , Random.map TermMonths.MoreThan (Random.int minTermMonths maxTermMonths)
+            |> Random.map (\( mi, mx ) -> RemainingTermMonths.Between mi mx)
+        , Random.map RemainingTermMonths.MoreThan (Random.int minTermMonths maxTermMonths)
         ]
-        |> Random.map TermMonthsCondition
+        |> Random.map RemainingTermMonthsCondition
 
 
 loanAnnuityConditionGen : Generator LoanAnnuityCondition

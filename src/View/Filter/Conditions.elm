@@ -16,10 +16,10 @@ import Data.Filter.Conditions.LoanAnnuity as LoanAnnuity exposing (LoanAnnuity(.
 import Data.Filter.Conditions.Purpose as Purpose exposing (Purpose(..), PurposeCondition(..), PurposeMsg)
 import Data.Filter.Conditions.Region as Region exposing (Region(..), RegionCondition(..), RegionMsg)
 import Data.Filter.Conditions.RemainingAmount as RemainingAmount exposing (RemainingAmount(..), RemainingAmountCondition(..), RemainingAmountMsg)
+import Data.Filter.Conditions.RemainingTermMonths as RemainingTermMonths exposing (RemainingTermMonths(..), RemainingTermMonthsCondition(..), RemainingTermMonthsMsg)
 import Data.Filter.Conditions.RevenueRate as RevenueRate exposing (RevenueRate(..), RevenueRateCondition(..), RevenueRateMsg)
 import Data.Filter.Conditions.SaleFee as SaleFee exposing (SaleFee(..), SaleFeeCondition(..), SaleFeeMsg(..))
 import Data.Filter.Conditions.Story as Story exposing (Story(..), StoryCondition(..), StoryMsg)
-import Data.Filter.Conditions.TermMonths as TermMonths exposing (TermMonths(..), TermMonthsCondition(..), TermMonthsMsg)
 import Data.Filter.Conditions.TermPercent as TermPercent exposing (TermPercent(..), TermPercentCondition(..), TermPercentMsg)
 import Html exposing (Html, div, span, text)
 import Html.Attributes exposing (class)
@@ -62,7 +62,7 @@ conditionTypesThatApplyTo : FilteredItem -> List ConditionType
 conditionTypesThatApplyTo filteredItem =
     let
         commonForAll =
-            [ Amount, Interest, Purpose, Income, Story, Region, Term_Months, Insurance, Loan_Annuity, Revenue_Rate ]
+            [ Amount, Interest, Purpose, Income, Story, Region, Remaining_Term_Months, Insurance, Loan_Annuity, Revenue_Rate ]
 
         commonForParticipations =
             [ Term_Percent, Elapsed_Term_Months, Elapsed_Term_Percent, Remaining_Amount ]
@@ -156,8 +156,8 @@ conditionSubform item condition =
         Condition_Story c ->
             wrap Story <| Html.map StoryMsg <| Story.form c
 
-        Condition_Term_Months c ->
-            wrap Term_Months <| Html.map TermMonthsMsg <| TermMonths.form c
+        Condition_Remaining_Term_Months c ->
+            wrap Remaining_Term_Months <| Html.map TermMonthsMsg <| RemainingTermMonths.form c
 
         Condition_Term_Percent c ->
             wrap Term_Percent <| Html.map TermPercentMsg <| TermPercent.form c
@@ -208,7 +208,7 @@ getVisibleLabel filteredItem conditionType =
         Story ->
             "Příběh"
 
-        Term_Months ->
+        Remaining_Term_Months ->
             termConditionLabel filteredItem "(v\u{00A0}měsících)"
 
         Term_Percent ->
@@ -271,7 +271,7 @@ type
     | RevenueRateMsg RevenueRateMsg
     | SaleFeeMsg SaleFeeMsg
     | StoryMsg StoryMsg
-    | TermMonthsMsg TermMonthsMsg
+    | TermMonthsMsg RemainingTermMonthsMsg
     | TermPercentMsg TermPercentMsg
       -- Control enabling / disabling conditions
     | AddCondition Condition

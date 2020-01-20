@@ -17,8 +17,8 @@ import Data.Filter.Conditions.Purpose as Purpose
 import Data.Filter.Conditions.Rating as Rating exposing (Rating(..), RatingCondition(..))
 import Data.Filter.Conditions.Region as Region
 import Data.Filter.Conditions.RemainingAmount as RemainingAmount
+import Data.Filter.Conditions.RemainingTermMonths as RemainingTermMonths
 import Data.Filter.Conditions.Story as Story
-import Data.Filter.Conditions.TermMonths as TermMonths
 import Data.Filter.Conditions.TermPercent as TermPercent
 import Data.Migration.Strategy.V1.Investment as Investment exposing (InvestmentsPerRating)
 import Data.Migration.Strategy.V1.TargetBalance as TargetBalance exposing (TargetBalance)
@@ -220,7 +220,7 @@ conditionsDecoder =
                         |> andMap (optionalField "C" Income.conditionDecoder)
                         |> andMap (optionalField "D" Purpose.conditionDecoder)
                         |> andMap (optionalField "E" Story.conditionDecoder)
-                        |> andMap (optionalField "F" TermMonths.conditionDecoder)
+                        |> andMap (optionalField "F" RemainingTermMonths.conditionDecoder)
                         |> andMap (optionalField "G" TermPercent.conditionDecoder)
                         |> andMap (optionalField "H" ElapsedTermMonths.conditionDecoder)
                         |> andMap (optionalField "I" ElapsedTermPercent.conditionDecoder)
