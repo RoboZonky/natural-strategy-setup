@@ -18,11 +18,13 @@ import Dict.Any
   - StrategyConfiguration
       - added purchaseSizeOverrides
       - changed investmentSizeOverrides from range to single numbers
-      - Buying and Selling configuration
+  - Selling configuration
+      - New option "Prodávat všechny participace bez poplatku a slevy, které odpovídají filtrům tržiště."
   - New conditions
       - Health (for Participations)
+      - Original Term Moths (for Participations)
+      - Relative Sale Discount (for Participations)
       - Relative profit (for Participations to sell)
-        -- TODO new conditions added
 
 -}
 fromV5 : V5.StrategyConfiguration -> ( StrategyConfiguration, List MigrationWarning )

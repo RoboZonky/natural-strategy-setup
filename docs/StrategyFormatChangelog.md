@@ -1,6 +1,30 @@
 # Změny formátu strategie
 
-## Robozonky 5.6.0
+## RoboZonky 5.7.0
+
+Sekce `Výše investice`, která v minulosti platila jak pro primární, tak sekundární tržiště, byla rozdělena na dvě sekce:
+`Primární tržiště - výše investice` a `Sekundární tržiště - výše nákupu`. Kromě oddělení konfigurací došlo k zásadní změně: 
+Není již možné nastavit interval od-do, ale pouze pevnou částku. 
+ 
+:warning: Pokud jste v původní strategii měli definovánu výši investic pomocí intervalu (X až Y), byla při převodu na
+ novou konfiguraci použita pouze horní hranice (Y). Výrazně doporučujeme nové nastavení překontrolovat / dle potřeby upravit.
+
+Přidali jsme několik nových podmínek, které můžete použít při tvorbě pravidel
+
+| Podmínka | Poznámka | Lze použít při tvorbě pravidel pro .. |
+| -------- | ----- | -------------- |
+| Dosažený výnos      | V procentech | Prodej participací |
+| Původní délka úvěru | V měsících   | Nákup/prodej participací|
+| Sleva               | V procentech původní částky | Nákup/prodej participací|
+| Zdraví              | Určuje zda půjčka nikdy nebyla / někdy byla / nyní je v delikvenci | Nákup/prodej participací|
+
+V sekci `Pravidla prodeje` byla přidána volba `Prodávat všechny participace bez poplatku a slevy, které odpovídají filtrům tržiště.`
+
+V sekci `Obecná nastavení` bylo odstraněno nastavení `Maximální podíl investice`.
+Pokud jste měli zvoleno `Investovat maximálně X % výše úvěru.`, bylo toto nastavení z Vaší strategie odstraněno.
+Od nynějška bude robot investovat bez ohledu na procentuální podíl investice.
+
+## RoboZonky 5.6.0
 
 Byla zjednodušena konfigurace v sekci `Struktura portfolia`. Pokud zvolíte `mnou definované` portfolio, 
 od nynějška budete moci nastavit pro každou rizikovou kategorii pouze **jednu hodnotu** požadovaného procentuálního podílu 
@@ -13,7 +37,7 @@ Stejně jako v minulosti může i nyní součet procentuálních podílu přesah
 Přesto Vám doporučujeme držet se co nejblíže součtu 100%.
 Hodnoty výrazně přesahující 100% mohou vést ke zdánlivě nepředvídatelnému chování robota při sestavování portfolia.
 
-## Robozonky 5.4.0
+## RoboZonky 5.4.0
 
 Po zavedení nové evropské směrnice [PSD2](https://cs.wikipedia.org/wiki/Sm%C4%9Brnice_PSD2) odstranilo 
 Zonky ze svých programových rozhraní informace o disponibilním zůstatku.
@@ -22,16 +46,16 @@ Tuto funkci jsme proto byli nuceni odstranit a spolu s ní i sekci `Obecná nast
 Pokud jste měli ve své strategii zapnuto nastavení `Investovat pouze pokud disponibilní zůstatek přesáhne X Kč.`,
  bylo z vaší strategie odstraněno. RoboZonky tedy odteď bude investovat vždy bez ohledu na disponibilní zůstatek.
 
-## Robozonky 5.3.0
+## RoboZonky 5.3.0
 
 Odstranili jsme podporu pro potvrzování investic mobilem.
 Pokud jste jej měli zapnutou, byla z vaší strategie odstraněna.
 
-## Robozonky 5.1.0
+## RoboZonky 5.1.0
 
 Začátkem roku 2019 odstranilo Zonky koncept ratingu půjček.
 V důsledku toho ztratily smysl všechny nastavení strategie na ratingu půjček založené.
-Ve verzi Robozonky 5.1.0 jsme proto byli nuceni provést **tři zpětně nekompatibilním změny** formátu strategie:
+Ve verzi RoboZonky 5.1.0 jsme proto byli nuceni provést **tři zpětně nekompatibilním změny** formátu strategie:
 
 1. Potvrzování investic mobilem již není založeno na podmínce podle ratingu půjček, nýbrž na podmínce podle míry úročení půjček.
 Pokud jste v původní strategii měli nastaveno potvrzování investic mobilem, bylo toto nastavení odstraněno.
