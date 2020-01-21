@@ -99,15 +99,19 @@ conditionEnablementDropdown filteredItem conditions =
 
         addCondition conditionType =
             AddCondition <| C.getDefaultCondition conditionType
+
+        getLabel : ConditionType -> String
+        getLabel =
+            getVisibleLabel filteredItem
     in
     if List.isEmpty conditionsThatCanBeEnabled then
         text ""
 
     else
         Select.from
-            { enumValues = conditionsThatCanBeEnabled
+            { enumValues = List.sortBy getLabel conditionsThatCanBeEnabled
             , valuePickedMessage = addCondition
-            , showVisibleLabel = getVisibleLabel filteredItem
+            , showVisibleLabel = getLabel
             , defaultOption = DummyOption "-- Přidat podmínku --"
             , enabled = True
             }
