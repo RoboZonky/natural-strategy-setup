@@ -26,6 +26,7 @@ module Data.Filter.Conditions exposing
     , updatePurpose
     , updateRegion
     , updateRelativeProfit
+    , updateRelativeSaleDiscount
     , updateRemainingAmount
     , updateRevenueRate
     , updateSaleFee
@@ -46,6 +47,7 @@ import Data.Filter.Conditions.OriginalTermMonths as OriginalTermMonths exposing 
 import Data.Filter.Conditions.Purpose as Purpose exposing (PurposeCondition, PurposeMsg)
 import Data.Filter.Conditions.Region as Region exposing (RegionCondition, RegionMsg)
 import Data.Filter.Conditions.RelativeProfit as RelativeProfit exposing (RelativeProfitCondition, RelativeProfitMsg)
+import Data.Filter.Conditions.RelativeSaleDiscount as RelativeSaleDiscount exposing (RelativeSaleDiscountCondition, RelativeSaleDiscountMsg)
 import Data.Filter.Conditions.RemainingAmount as RemainingAmount exposing (RemainingAmountCondition, RemainingAmountMsg)
 import Data.Filter.Conditions.RemainingTermMonths as RemainingTermMonths exposing (RemainingTermMonthsCondition, RemainingTermMonthsMsg)
 import Data.Filter.Conditions.RevenueRate as RevenueRate exposing (RevenueRateCondition, RevenueRateMsg)
@@ -77,6 +79,7 @@ type alias Conditions =
     , relativeProfit : Maybe RelativeProfitCondition
     , health : Maybe HealthCondition
     , originalTermMonths : Maybe OriginalTermMonthsCondition
+    , relativeSaleDiscount : Maybe RelativeSaleDiscountCondition
     }
 
 
@@ -92,6 +95,7 @@ type Condition
     | Condition_Original_Term_Months OriginalTermMonthsCondition
     | Condition_Purpose PurposeCondition
     | Condition_Relative_Profit RelativeProfitCondition
+    | Condition_Relative_Sale_Discount RelativeSaleDiscountCondition
     | Condition_Remaining_Amount RemainingAmountCondition
     | Condition_Remaining_Term_Months RemainingTermMonthsCondition
     | Condition_Region RegionCondition
@@ -114,6 +118,7 @@ type ConditionType
     | Purpose
     | Region
     | Relative_Profit
+    | Relative_Sale_Discount
     | Remaining_Amount
     | Remaining_Term_Months
     | Revenue_Rate
@@ -142,6 +147,7 @@ emptyConditions =
     , relativeProfit = Nothing
     , health = Nothing
     , originalTermMonths = Nothing
+    , relativeSaleDiscount = Nothing
     }
 
 
@@ -189,6 +195,9 @@ renderCondition condition =
 
         Condition_Relative_Profit c ->
             RelativeProfit.renderCondition c
+
+        Condition_Relative_Sale_Discount c ->
+            RelativeSaleDiscount.renderCondition c
 
         Condition_Revenue_Rate c ->
             RevenueRate.renderCondition c
@@ -253,6 +262,9 @@ conditionValidationError condition =
         Condition_Relative_Profit c ->
             RelativeProfit.validationErrors c
 
+        Condition_Relative_Sale_Discount c ->
+            RelativeSaleDiscount.validationErrors c
+
         Condition_Revenue_Rate c ->
             RevenueRate.validationErrors c
 
@@ -286,6 +298,7 @@ getDisabledConditionTypes cs =
         , addIfNothing .purpose Purpose
         , addIfNothing .region Region
         , addIfNothing .relativeProfit Relative_Profit
+        , addIfNothing .relativeSaleDiscount Relative_Sale_Discount
         , addIfNothing .remainingAmount Remaining_Amount
         , addIfNothing .remainingTermMonths Remaining_Term_Months
         , addIfNothing .revenueRate Revenue_Rate
@@ -315,6 +328,7 @@ getEnabledConditionTypes cs =
         , addIfJust .purpose Purpose
         , addIfJust .region Region
         , addIfJust .relativeProfit Relative_Profit
+        , addIfJust .relativeSaleDiscount Relative_Sale_Discount
         , addIfJust .remainingAmount Remaining_Amount
         , addIfJust .remainingTermMonths Remaining_Term_Months
         , addIfJust .revenueRate Revenue_Rate
@@ -344,6 +358,7 @@ getEnabledConditions cs =
         , addIfJust .purpose Condition_Purpose
         , addIfJust .region Condition_Region
         , addIfJust .relativeProfit Condition_Relative_Profit
+        , addIfJust .relativeSaleDiscount Condition_Relative_Sale_Discount
         , addIfJust .remainingAmount Condition_Remaining_Amount
         , addIfJust .remainingTermMonths Condition_Remaining_Term_Months
         , addIfJust .revenueRate Condition_Revenue_Rate
@@ -397,6 +412,9 @@ addCondition condition cs =
 
         Condition_Relative_Profit c ->
             { cs | relativeProfit = Just c }
+
+        Condition_Relative_Sale_Discount c ->
+            { cs | relativeSaleDiscount = Just c }
 
         Condition_Revenue_Rate c ->
             { cs | revenueRate = Just c }
@@ -501,6 +519,11 @@ updateOriginalTermMonths msg conditions =
     { conditions | originalTermMonths = Maybe.map (OriginalTermMonths.update msg) conditions.originalTermMonths }
 
 
+updateRelativeSaleDiscount : RelativeSaleDiscountMsg -> Conditions -> Conditions
+updateRelativeSaleDiscount msg conditions =
+    { conditions | relativeSaleDiscount = Maybe.map (RelativeSaleDiscount.update msg) conditions.relativeSaleDiscount }
+
+
 removeCondition : ConditionType -> Conditions -> Conditions
 removeCondition conditionType cs =
     case conditionType of
@@ -539,6 +562,9 @@ removeCondition conditionType cs =
 
         Relative_Profit ->
             { cs | relativeProfit = Nothing }
+
+        Relative_Sale_Discount ->
+            { cs | relativeSaleDiscount = Nothing }
 
         Remaining_Amount ->
             { cs | remainingAmount = Nothing }
@@ -602,6 +628,9 @@ getDefaultCondition conditionType =
 
         Relative_Profit ->
             Condition_Relative_Profit RelativeProfit.defaultCondition
+
+        Relative_Sale_Discount ->
+            Condition_Relative_Sale_Discount RelativeSaleDiscount.defaultCondition
 
         Remaining_Amount ->
             Condition_Remaining_Amount RemainingAmount.defaultCondition
@@ -692,6 +721,9 @@ encodeCondition condition =
         Condition_Original_Term_Months c ->
             ( "S", OriginalTermMonths.encodeCondition c )
 
+        Condition_Relative_Sale_Discount c ->
+            ( "T", RelativeSaleDiscount.encodeCondition c )
+
 
 conditionsDecoder : Decoder Conditions
 conditionsDecoder =
@@ -715,3 +747,4 @@ conditionsDecoder =
         |> andMap (optionalField "Q" RelativeProfit.conditionDecoder)
         |> andMap (optionalField "R" Health.conditionDecoder)
         |> andMap (optionalField "S" OriginalTermMonths.conditionDecoder)
+        |> andMap (optionalField "T" RelativeSaleDiscount.conditionDecoder)
