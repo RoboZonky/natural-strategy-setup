@@ -22,6 +22,7 @@ module Data.Filter.Conditions exposing
     , updateInsurance
     , updateInterest
     , updateLoanAnnuity
+    , updateOriginalTermMonths
     , updatePurpose
     , updateRegion
     , updateRelativeProfit
@@ -41,6 +42,7 @@ import Data.Filter.Conditions.Income as Income exposing (IncomeCondition, Income
 import Data.Filter.Conditions.Insurance as Insurance exposing (InsuranceCondition, InsuranceMsg)
 import Data.Filter.Conditions.Interest as Interest exposing (InterestCondition, InterestMsg)
 import Data.Filter.Conditions.LoanAnnuity as LoanAnnuity exposing (LoanAnnuityCondition, LoanAnnuityMsg)
+import Data.Filter.Conditions.OriginalTermMonths as OriginalTermMonths exposing (OriginalTermMonthsCondition, OriginalTermMonthsMsg)
 import Data.Filter.Conditions.Purpose as Purpose exposing (PurposeCondition, PurposeMsg)
 import Data.Filter.Conditions.Region as Region exposing (RegionCondition, RegionMsg)
 import Data.Filter.Conditions.RelativeProfit as RelativeProfit exposing (RelativeProfitCondition, RelativeProfitMsg)
@@ -74,6 +76,7 @@ type alias Conditions =
     , saleFee : Maybe SaleFeeCondition
     , relativeProfit : Maybe RelativeProfitCondition
     , health : Maybe HealthCondition
+    , originalTermMonths : Maybe OriginalTermMonthsCondition
     }
 
 
@@ -86,6 +89,7 @@ type Condition
     | Condition_Insurance InsuranceCondition
     | Condition_Interest InterestCondition
     | Condition_Loan_Annuity LoanAnnuityCondition
+    | Condition_Original_Term_Months OriginalTermMonthsCondition
     | Condition_Purpose PurposeCondition
     | Condition_Relative_Profit RelativeProfitCondition
     | Condition_Remaining_Amount RemainingAmountCondition
@@ -105,6 +109,7 @@ type ConditionType
     | Income
     | Insurance
     | Interest
+    | Original_Term_Months
     | Loan_Annuity
     | Purpose
     | Region
@@ -136,6 +141,7 @@ emptyConditions =
     , saleFee = Nothing
     , relativeProfit = Nothing
     , health = Nothing
+    , originalTermMonths = Nothing
     }
 
 
@@ -165,6 +171,9 @@ renderCondition condition =
 
         Condition_Loan_Annuity c ->
             LoanAnnuity.renderCondition c
+
+        Condition_Original_Term_Months c ->
+            OriginalTermMonths.renderCondition c
 
         Condition_Purpose c ->
             Purpose.renderCondition c
@@ -223,6 +232,9 @@ conditionValidationError condition =
         Condition_Interest c ->
             Interest.validationErrors c
 
+        Condition_Original_Term_Months c ->
+            OriginalTermMonths.validationErrors c
+
         Condition_Loan_Annuity c ->
             LoanAnnuity.validationErrors c
 
@@ -269,6 +281,7 @@ getDisabledConditionTypes cs =
         , addIfNothing .income Income
         , addIfNothing .insurance Insurance
         , addIfNothing .interest Interest
+        , addIfNothing .originalTermMonths Original_Term_Months
         , addIfNothing .loanAnnuity Loan_Annuity
         , addIfNothing .purpose Purpose
         , addIfNothing .region Region
@@ -297,6 +310,7 @@ getEnabledConditionTypes cs =
         , addIfJust .income Income
         , addIfJust .insurance Insurance
         , addIfJust .interest Interest
+        , addIfJust .originalTermMonths Original_Term_Months
         , addIfJust .loanAnnuity Loan_Annuity
         , addIfJust .purpose Purpose
         , addIfJust .region Region
@@ -325,6 +339,7 @@ getEnabledConditions cs =
         , addIfJust .income Condition_Income
         , addIfJust .insurance Condition_Insurance
         , addIfJust .interest Condition_Interest
+        , addIfJust .originalTermMonths Condition_Original_Term_Months
         , addIfJust .loanAnnuity Condition_Loan_Annuity
         , addIfJust .purpose Condition_Purpose
         , addIfJust .region Condition_Region
@@ -364,6 +379,9 @@ addCondition condition cs =
 
         Condition_Loan_Annuity c ->
             { cs | loanAnnuity = Just c }
+
+        Condition_Original_Term_Months c ->
+            { cs | originalTermMonths = Just c }
 
         Condition_Purpose c ->
             { cs | purpose = Just c }
@@ -478,6 +496,11 @@ updateLoanAnnuity msg conditions =
     { conditions | loanAnnuity = Maybe.map (LoanAnnuity.update msg) conditions.loanAnnuity }
 
 
+updateOriginalTermMonths : OriginalTermMonthsMsg -> Conditions -> Conditions
+updateOriginalTermMonths msg conditions =
+    { conditions | originalTermMonths = Maybe.map (OriginalTermMonths.update msg) conditions.originalTermMonths }
+
+
 removeCondition : ConditionType -> Conditions -> Conditions
 removeCondition conditionType cs =
     case conditionType of
@@ -501,6 +524,9 @@ removeCondition conditionType cs =
 
         Interest ->
             { cs | interest = Nothing }
+
+        Original_Term_Months ->
+            { cs | originalTermMonths = Nothing }
 
         Loan_Annuity ->
             { cs | loanAnnuity = Nothing }
@@ -561,6 +587,9 @@ getDefaultCondition conditionType =
 
         Interest ->
             Condition_Interest Interest.defaultCondition
+
+        Original_Term_Months ->
+            Condition_Original_Term_Months OriginalTermMonths.defaultCondition
 
         Loan_Annuity ->
             Condition_Loan_Annuity LoanAnnuity.defaultCondition
@@ -660,6 +689,9 @@ encodeCondition condition =
         Condition_Health c ->
             ( "R", Health.encodeCondition c )
 
+        Condition_Original_Term_Months c ->
+            ( "S", OriginalTermMonths.encodeCondition c )
+
 
 conditionsDecoder : Decoder Conditions
 conditionsDecoder =
@@ -682,3 +714,4 @@ conditionsDecoder =
         |> andMap (optionalField "P" SaleFee.conditionDecoder)
         |> andMap (optionalField "Q" RelativeProfit.conditionDecoder)
         |> andMap (optionalField "R" Health.conditionDecoder)
+        |> andMap (optionalField "S" OriginalTermMonths.conditionDecoder)

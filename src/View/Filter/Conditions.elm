@@ -14,6 +14,7 @@ import Data.Filter.Conditions.Income as Income exposing (Income(..), IncomeCondi
 import Data.Filter.Conditions.Insurance as Insurance exposing (Insurance(..), InsuranceCondition(..), InsuranceMsg)
 import Data.Filter.Conditions.Interest as Interest exposing (Interest(..), InterestCondition(..), InterestMsg)
 import Data.Filter.Conditions.LoanAnnuity as LoanAnnuity exposing (LoanAnnuity(..), LoanAnnuityCondition(..), LoanAnnuityMsg)
+import Data.Filter.Conditions.OriginalTermMonths as OriginalTermMonths exposing (OriginalTermMonthsMsg)
 import Data.Filter.Conditions.Purpose as Purpose exposing (Purpose(..), PurposeCondition(..), PurposeMsg)
 import Data.Filter.Conditions.Region as Region exposing (Region(..), RegionCondition(..), RegionMsg)
 import Data.Filter.Conditions.RelativeProfit as RelativeProfit exposing (RelativeProfitMsg)
@@ -67,7 +68,7 @@ conditionTypesThatApplyTo filteredItem =
             [ Amount, Interest, Purpose, Income, Story, Region, Remaining_Term_Months, Insurance, Loan_Annuity, Revenue_Rate ]
 
         commonForParticipations =
-            [ Term_Percent, Elapsed_Term_Months, Elapsed_Term_Percent, Remaining_Amount, Health ]
+            [ Term_Percent, Elapsed_Term_Months, Elapsed_Term_Percent, Remaining_Amount, Health, Original_Term_Months ]
     in
     commonForAll
         ++ (case filteredItem of
@@ -143,6 +144,9 @@ conditionSubform item condition =
         Condition_Loan_Annuity c ->
             wrap Loan_Annuity <| Html.map LoanAnnuityMsg <| LoanAnnuity.form c
 
+        Condition_Original_Term_Months c ->
+            wrap Original_Term_Months <| Html.map OriginalTermMonthsMsg <| OriginalTermMonths.form c
+
         Condition_Purpose c ->
             wrap Purpose <| Html.map PurposeMsg <| Purpose.form c
 
@@ -197,6 +201,9 @@ getVisibleLabel filteredItem conditionType =
 
         Interest ->
             "Úrok"
+
+        Original_Term_Months ->
+            "Původní délka úvěru"
 
         Loan_Annuity ->
             "Měsíční splátka"
@@ -279,6 +286,7 @@ type
     | InsuranceMsg InsuranceMsg
     | InterestMsg InterestMsg
     | IncomeMsg IncomeMsg
+    | OriginalTermMonthsMsg OriginalTermMonthsMsg
     | LoanAnnuityMsg LoanAnnuityMsg
     | PurposeMsg PurposeMsg
     | RegionMsg RegionMsg
@@ -317,6 +325,9 @@ update msg =
 
         InterestMsg m ->
             C.updateInterest m
+
+        OriginalTermMonthsMsg m ->
+            C.updateOriginalTermMonths m
 
         LoanAnnuityMsg m ->
             C.updateLoanAnnuity m
