@@ -12,6 +12,7 @@ import Data.Filter.Conditions.Income as Income exposing (IncomeCondition(..))
 import Data.Filter.Conditions.Insurance exposing (Insurance(..), InsuranceCondition(..))
 import Data.Filter.Conditions.Interest as Interest exposing (InterestCondition(..))
 import Data.Filter.Conditions.LoanAnnuity as LoanAnnuity exposing (LoanAnnuityCondition(..))
+import Data.Filter.Conditions.OriginalTermMonths as OriginalTermMonths exposing (OriginalTermMonthsCondition(..))
 import Data.Filter.Conditions.Purpose as Purpose exposing (PurposeCondition(..))
 import Data.Filter.Conditions.Rating as Rating exposing (Rating, RatingCondition(..))
 import Data.Filter.Conditions.Region as Region exposing (RegionCondition(..))
@@ -197,6 +198,7 @@ participationSpecificConditions =
     , Random.map Condition_Elapsed_Term_Percent elapsedTermPercentConditionGen
     , Random.map Condition_Remaining_Amount remainingAmountConditionGen
     , Random.map Condition_Health healthConditionGen
+    , Random.map Condition_Original_Term_Months originalTermMonthsConditionGen
     ]
 
 
@@ -338,6 +340,23 @@ elapsedTermMonthsConditionGen =
         , Random.map ElapsedTermMonths.MoreThan (Random.int minTermMonths maxTermMonths)
         ]
         |> Random.map ElapsedTermMonthsCondition
+
+
+originalTermMonthsConditionGen : Generator OriginalTermMonthsCondition
+originalTermMonthsConditionGen =
+    let
+        minTermMonths =
+            0
+
+        maxTermMonths =
+            84
+    in
+    Random.choices (Random.map OriginalTermMonths.LessThan (Random.int minTermMonths maxTermMonths))
+        [ randomRangeGen minTermMonths maxTermMonths
+            |> Random.map (\( mi, mx ) -> OriginalTermMonths.Between mi mx)
+        , Random.map OriginalTermMonths.MoreThan (Random.int minTermMonths maxTermMonths)
+        ]
+        |> Random.map OriginalTermMonthsCondition
 
 
 elapsedTermPercentConditionGen : Generator ElapsedTermPercentCondition
