@@ -18,6 +18,7 @@ import Data.Filter.Conditions.OriginalTermMonths as OriginalTermMonths exposing 
 import Data.Filter.Conditions.Purpose as Purpose exposing (Purpose(..), PurposeCondition(..), PurposeMsg)
 import Data.Filter.Conditions.Region as Region exposing (Region(..), RegionCondition(..), RegionMsg)
 import Data.Filter.Conditions.RelativeProfit as RelativeProfit exposing (RelativeProfitMsg)
+import Data.Filter.Conditions.RelativeSaleDiscount as RelativeSaleDiscount exposing (RelativeSaleDiscountMsg)
 import Data.Filter.Conditions.RemainingAmount as RemainingAmount exposing (RemainingAmount(..), RemainingAmountCondition(..), RemainingAmountMsg)
 import Data.Filter.Conditions.RemainingTermMonths as RemainingTermMonths exposing (RemainingTermMonths(..), RemainingTermMonthsCondition(..), RemainingTermMonthsMsg)
 import Data.Filter.Conditions.RevenueRate as RevenueRate exposing (RevenueRate(..), RevenueRateCondition(..), RevenueRateMsg)
@@ -68,7 +69,7 @@ conditionTypesThatApplyTo filteredItem =
             [ Amount, Interest, Purpose, Income, Story, Region, Remaining_Term_Months, Insurance, Loan_Annuity, Revenue_Rate ]
 
         commonForParticipations =
-            [ Term_Percent, Elapsed_Term_Months, Elapsed_Term_Percent, Remaining_Amount, Health, Original_Term_Months ]
+            [ Term_Percent, Elapsed_Term_Months, Elapsed_Term_Percent, Remaining_Amount, Health, Original_Term_Months, Relative_Sale_Discount ]
     in
     commonForAll
         ++ (case filteredItem of
@@ -166,6 +167,9 @@ conditionSubform item condition =
         Condition_Relative_Profit c ->
             wrap Relative_Profit <| Html.map RelativeProfitMsg <| RelativeProfit.form c
 
+        Condition_Relative_Sale_Discount c ->
+            wrap Relative_Sale_Discount <| Html.map RelativeSaleDiscountMsg <| RelativeSaleDiscount.form c
+
         Condition_Sale_Fee c ->
             wrap Sale_Fee <| Html.map SaleFeeMsg <| SaleFee.form c
 
@@ -220,6 +224,9 @@ getVisibleLabel filteredItem conditionType =
 
         Relative_Profit ->
             "Dosažený výnos"
+
+        Relative_Sale_Discount ->
+            "Sleva"
 
         Remaining_Amount ->
             "Zbývající jistina"
@@ -295,6 +302,7 @@ type
     | PurposeMsg PurposeMsg
     | RegionMsg RegionMsg
     | RelativeProfitMsg RelativeProfitMsg
+    | RelativeSaleDiscountMsg RelativeSaleDiscountMsg
     | RemainingAmountMsg RemainingAmountMsg
     | RevenueRateMsg RevenueRateMsg
     | SaleFeeMsg SaleFeeMsg
@@ -344,6 +352,9 @@ update msg =
 
         RelativeProfitMsg m ->
             C.updateRelativeProfit m
+
+        RelativeSaleDiscountMsg m ->
+            C.updateRelativeSaleDiscount m
 
         RemainingAmountMsg m ->
             C.updateRemainingAmount m

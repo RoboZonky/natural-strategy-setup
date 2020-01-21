@@ -235,7 +235,8 @@ conditionsDecoder =
                         |> andMap (Decode.succeed Nothing)
                         -- Sale Fee condition was added in RoboZonky 5.2.0
                         |> andMap (Decode.succeed Nothing)
-                        -- Relative Profit, Health and Original Term Months conditions added in RoboZonky 5.7.0
+                        -- Relative Profit, Health, Original Term Months and Relative Sale Discount conditions added in RoboZonky 5.7.0
+                        |> andMap (Decode.succeed Nothing)
                         |> andMap (Decode.succeed Nothing)
                         |> andMap (Decode.succeed Nothing)
                         |> andMap (Decode.succeed Nothing)

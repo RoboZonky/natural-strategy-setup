@@ -17,6 +17,7 @@ import Data.Filter.Conditions.Purpose as Purpose exposing (PurposeCondition(..))
 import Data.Filter.Conditions.Rating as Rating exposing (Rating, RatingCondition(..))
 import Data.Filter.Conditions.Region as Region exposing (RegionCondition(..))
 import Data.Filter.Conditions.RelativeProfit as RelativeProfit exposing (RelativeProfitCondition(..))
+import Data.Filter.Conditions.RelativeSaleDiscount as RelativeSaleDiscount exposing (RelativeSaleDiscountCondition(..))
 import Data.Filter.Conditions.RemainingAmount as RemainingAmount exposing (RemainingAmountCondition(..))
 import Data.Filter.Conditions.RemainingTermMonths as RemainingTermMonths exposing (RemainingTermMonthsCondition(..))
 import Data.Filter.Conditions.RevenueRate as RevenueRate exposing (RevenueRateCondition(..))
@@ -199,6 +200,7 @@ participationSpecificConditions =
     , Random.map Condition_Remaining_Amount remainingAmountConditionGen
     , Random.map Condition_Health healthConditionGen
     , Random.map Condition_Original_Term_Months originalTermMonthsConditionGen
+    , Random.map Condition_Relative_Sale_Discount relativeSaleDiscountConditionGen
     ]
 
 
@@ -373,6 +375,24 @@ elapsedTermPercentConditionGen =
         , Random.map ElapsedTermPercent.MoreThan (Random.int minTermPercent maxTermPercent)
         ]
         |> Random.map ElapsedTermPercentCondition
+
+
+relativeSaleDiscountConditionGen : Generator RelativeSaleDiscountCondition
+relativeSaleDiscountConditionGen =
+    let
+        minTermPercent =
+            0
+
+        maxTermPercent =
+            100
+    in
+    Random.choices (Random.map RelativeSaleDiscount.LessThan (Random.int minTermPercent maxTermPercent))
+        [ percentRangeGen |> Random.map (\( mi, mx ) -> RelativeSaleDiscount.Between mi mx)
+        , Random.map RelativeSaleDiscount.MoreThan (Random.int minTermPercent maxTermPercent)
+        , Random.constant RelativeSaleDiscount.WithDiscount
+        , Random.constant RelativeSaleDiscount.WithoutDiscount
+        ]
+        |> Random.map RelativeSaleDiscountCondition
 
 
 amountConditionGen : Generator AmountCondition
