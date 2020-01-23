@@ -197,9 +197,8 @@ getVisibleLabel filteredItem conditionType =
         Elapsed_Term_Percent ->
             "Uhrazeno splátek (v\u{00A0}%)"
 
-        -- TODO better name for Health condition
         Health ->
-            "Zdraví"
+            "Historie splácení"
 
         Income ->
             "Zdroj příjmů klienta"
