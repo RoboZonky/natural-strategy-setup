@@ -93,7 +93,7 @@ update msg (Size _) =
 
 renderSizePrimary : Size -> String
 renderSizePrimary size =
-    "Robot má investovat do úvěrů po " ++ toCzkString size ++ "."
+    "Robot má investovat do půjček po " ++ toCzkString size ++ "."
 
 
 renderSizeSecondary : Size -> String
@@ -103,7 +103,7 @@ renderSizeSecondary size =
 
 renderSizePerRatingPrimary : ( Rating, Size ) -> String
 renderSizePerRatingPrimary ( rating, size ) =
-    "Do úvěrů s úročením " ++ Rating.showInterestPercent rating ++ " investovat po " ++ toCzkString size ++ "."
+    "Do půjček s úročením " ++ Rating.showInterestPercent rating ++ " investovat po " ++ toCzkString size ++ "."
 
 
 renderSizePerRatingSecondary : ( Rating, Size ) -> String
