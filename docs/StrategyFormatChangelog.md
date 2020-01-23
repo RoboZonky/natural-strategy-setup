@@ -2,17 +2,25 @@
 
 ## RoboZonky 5.7.0
 
-Sekce `Výše investice`, která v minulosti platila jak pro primární, tak sekundární tržiště, byla rozdělena na dvě sekce:
-`Primární tržiště - výše investice` a `Sekundární tržiště - výše nákupu`. Kromě oddělení konfigurací došlo k zásadní změně: 
-Není již možné nastavit interval od-do, ale pouze pevnou částku. 
+Došlo Sekce `Výše investice`, která v minulosti platila jak pro primární, tak sekundární tržiště
+
+### Dříve
+- sekce `Výše investice` sloužila ke konfiguraci investic pro primární i sekundární tržiště
+- výše investic jste mohli nastavit pomocí rozsahu (minimum až maximum)
+
+### Nyní
+- konfigurace pro primární a sekundární tržiště byly rozděleny (`Primární tržiště - výše investice ` / `Sekundární tržiště - výše nákupu`)
+- již není možné používat rozsahy, ale částky jsou vždy určeny pouze jedním číslem:
+   - na primárním tržišti toto číslo určuje fixní částku, která bude investována do každé půjčky
+   - na sekundárním tržišti toto číslo určuje horní hranici intervalu, který vždy začíná od 1 Kč
  
 :warning: Pokud jste v původní strategii měli definovánu výši investic pomocí intervalu (X až Y), byla při převodu na
  novou konfiguraci použita pouze horní hranice (Y). Výrazně doporučujeme nové nastavení překontrolovat / dle potřeby upravit.
 
 Přidali jsme několik nových podmínek, které můžete použít při tvorbě pravidel
 
-| Podmínka | Poznámka | Lze použít při tvorbě pravidel pro .. |
-| -------- | ----- | -------------- |
+| Podmínka            | Poznámka | Lze použít při tvorbě pravidel pro .. |
+| ------------------- | -------- | ------------------------------------- |
 | Dosažený výnos      | V procentech | Prodej participací |
 | Původní délka úvěru | V měsících   | Nákup/prodej participací|
 | Sleva               | V procentech původní částky | Nákup/prodej participací|

@@ -1,4 +1,4 @@
-module Data.Migration.Strategy.V6 exposing (fromV5)
+module Data.Migration.Strategy.V6 exposing (fromV5, investmentSizeWarning)
 
 import Data.Investment as Investment
 import Data.Migration.Migration exposing (MigrationWarning)
@@ -49,18 +49,16 @@ fromV5 old =
                 V5IS.NotSpecified ->
                     []
 
-                -- TODO is this error consistent with others
-                -- TODO add test for this warning
                 notDefault ->
-                    [ "Vaše strategie měla nastaveno '"
+                    [ "strategie obsahovala nastavení '"
                         ++ V5IS.render notDefault
-                        ++ "'. Podpora pro toto nastavení býla v odstraněna v RoboZonky 5.7.0"
+                        ++ "', které muselo být odstraněno."
                     ]
 
-        ( newDefaultInvestmentSize, diSizeWarning ) =
+        newDefaultInvestmentSize =
             migrateInvestment oldGS.defaultInvestmentSize
 
-        ( newInvestmentSizeOverrides, ispWarning ) =
+        newInvestmentSizeOverrides =
             migrateInvestmentsPerRating old.investmentSizeOverrides
     in
     ( { generalSettings = newGeneralSettings
@@ -72,22 +70,24 @@ fromV5 old =
       , buyingConfig = old.buyingConfig
       , sellingConfig = old.sellingConfig
       }
-    , diShareWarning ++ diSizeWarning ++ ispWarning
+    , investmentSizeWarning :: diShareWarning
     )
 
 
-migrateInvestment : V1Investment.Size -> ( Investment.Size, List MigrationWarning )
+investmentSizeWarning : String
+investmentSizeWarning =
+    "došlo k rozdělení konfigurace výše investic pro primární a sekundárni tržiště."
+        ++ " Důrazně doporučujeme přečíst si o změně v dokumentaci a toto nastavení si překontrolovat."
+
+
+migrateInvestment : V1Investment.Size -> Investment.Size
 migrateInvestment oldSize =
-    ( migrateSize oldSize
-    , [{- TODO warnings -}]
-    )
+    migrateSize oldSize
 
 
-migrateInvestmentsPerRating : V1Investment.InvestmentsPerRating -> ( Investment.InvestmentsPerRating, List MigrationWarning )
+migrateInvestmentsPerRating : V1Investment.InvestmentsPerRating -> Investment.InvestmentsPerRating
 migrateInvestmentsPerRating oldIpr =
-    ( Dict.Any.map (\_ range -> migrateSize range) oldIpr
-    , [{- TODO warnings -}]
-    )
+    Dict.Any.map (\_ range -> migrateSize range) oldIpr
 
 
 migrateSize : V1Investment.Size -> Investment.Size
