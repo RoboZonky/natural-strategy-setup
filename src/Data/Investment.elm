@@ -249,8 +249,6 @@ warningWhenSizeExceeds5K invDefault invOverrides =
     if anyInvestmentExceeds5k invDefault invOverrides then
         Alert.simpleDanger []
             [ strong [] [ text "Upozornění. " ]
-
-            -- TODO parametrize this text
             , text "Maximální výše investice na Zonky se řídí"
             , a [ href "https://zonky.cz/downloads/Zonky_Parametry_castek_pro_investovani.pdf" ] [ text " následujícími pravidly" ]
             , text ". Nastavíte-li částku vyšší, robot bude investovat pouze maximální povolenou částku."
