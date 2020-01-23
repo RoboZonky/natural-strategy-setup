@@ -15,6 +15,7 @@ module Data.Filter.Conditions.Health exposing
 import Bootstrap.Form.Checkbox as Checkbox
 import Data.Validate as Validate
 import Html exposing (Html, div)
+import Html.Attributes as Attr
 import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as Encode exposing (Value)
 import Util
@@ -63,8 +64,7 @@ renderCondition (HealthList list) =
 
 validationErrors : HealthCondition -> List String
 validationErrors (HealthList rlist) =
-    -- TODO better name for Health condition
-    Validate.isNotEmpty "Zdraví" rlist
+    Validate.isNotEmpty "Historie splácení" rlist
 
 
 type HealthMsg
@@ -88,7 +88,12 @@ form (HealthList ilist) =
         (List.indexedMap
             (\index income -> healthCheckbox index income (List.member income ilist))
             allHealths
-            ++ [ Html.text " - po splatnosti" ]
+            ++ [ Html.span
+                    [ Attr.style "position" "relative"
+                    , Attr.style "bottom" "2px"
+                    ]
+                    [ Html.text "... po splatnosti" ]
+               ]
         )
 
 
