@@ -2,7 +2,7 @@
 
 ## RoboZonky 5.7.0
 
-Došlo Sekce `Výše investice`, která v minulosti platila jak pro primární, tak sekundární tržiště
+Došlo k zásadní změně v sekci `Výše investice`
 
 ### Dříve
 - sekce `Výše investice` sloužila ke konfiguraci investic pro primární i sekundární tržiště
@@ -24,7 +24,7 @@ Přidali jsme několik nových podmínek, které můžete použít při tvorbě 
 | Dosažený výnos      | V procentech | Prodej participací |
 | Původní délka úvěru | V měsících   | Nákup/prodej participací|
 | Sleva               | V procentech původní částky | Nákup/prodej participací|
-| Zdraví              | Určuje zda půjčka nikdy nebyla / někdy byla / nyní je v delikvenci | Nákup/prodej participací|
+| Historie splácení   | Určuje zda půjčka nikdy nebyla / někdy byla / nyní je v delikvenci | Nákup/prodej participací|
 
 V sekci `Pravidla prodeje` byla přidána volba `Prodávat všechny participace bez poplatku a slevy, které odpovídají filtrům tržiště.`
 
