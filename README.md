@@ -24,13 +24,13 @@ cd RoboZonky
 mvn clean install -DskipTests -Dgpg.skip=true
 ```
 
-You also need to install simple web server (sws) binary which is used to serve the app for selenium tests
+You also need `warp` (web server) binary which is used to serve the app for selenium tests.
 
 ```bash
-stack install sws
+stack install wai-app-static --resolver lts-14.20
 ```
 
-After you have `elm-test` and `sws` binaries installed and robozonky artifacts built in your m2 repo you can run all tests using:
+After you have `elm-test` and `warp` binaries installed and robozonky artifacts built in your m2 repo you can run all tests using:
 
 ```bash
 ./test.sh

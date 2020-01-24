@@ -16,9 +16,9 @@ fi
 
 ./build.sh
 # Run NSS app in web server
-sws --dev-mode dist/ &
-SWS_PID=$!
+warp --docroot dist &
+WARP_PID=$!
 elm make src/Test/TestApp.elm --optimize --output ${TESTS_DIR}/target/testApp.html
 cd ${TESTS_DIR}
 mvn test || true
-kill $SWS_PID
+kill $WARP_PID
