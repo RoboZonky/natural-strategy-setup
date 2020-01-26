@@ -1,5 +1,6 @@
 module Data.Filter.Conditions exposing
     ( Condition(..)
+    , ConditionCont
     , ConditionType(..)
     , Conditions
     , addCondition
@@ -11,6 +12,7 @@ module Data.Filter.Conditions exposing
     , getDisabledConditionTypes
     , getEnabledConditionTypes
     , getEnabledConditions
+    , processCondition
     , removeCondition
     , removeConditions
     , renderCondition
@@ -83,6 +85,30 @@ type alias Conditions =
     }
 
 
+emptyConditions : Conditions
+emptyConditions =
+    { region = Nothing
+    , income = Nothing
+    , purpose = Nothing
+    , story = Nothing
+    , remainingTermMonths = Nothing
+    , termPercent = Nothing
+    , elapsedTermMonths = Nothing
+    , elapsedTermPercent = Nothing
+    , interest = Nothing
+    , amount = Nothing
+    , insurance = Nothing
+    , remainingAmount = Nothing
+    , loanAnnuity = Nothing
+    , revenueRate = Nothing
+    , saleFee = Nothing
+    , relativeProfit = Nothing
+    , health = Nothing
+    , originalTermMonths = Nothing
+    , relativeSaleDiscount = Nothing
+    }
+
+
 type Condition
     = Condition_Amount AmountCondition
     | Condition_Elapsed_Term_Months ElapsedTermMonthsCondition
@@ -113,8 +139,8 @@ type ConditionType
     | Income
     | Insurance
     | Interest
-    | Original_Term_Months
     | Loan_Annuity
+    | Original_Term_Months
     | Purpose
     | Region
     | Relative_Profit
@@ -127,155 +153,193 @@ type ConditionType
     | Term_Percent
 
 
-emptyConditions : Conditions
-emptyConditions =
-    { region = Nothing
-    , income = Nothing
-    , purpose = Nothing
-    , story = Nothing
-    , remainingTermMonths = Nothing
-    , termPercent = Nothing
-    , elapsedTermMonths = Nothing
-    , elapsedTermPercent = Nothing
-    , interest = Nothing
-    , amount = Nothing
-    , insurance = Nothing
-    , remainingAmount = Nothing
-    , loanAnnuity = Nothing
-    , revenueRate = Nothing
-    , saleFee = Nothing
-    , relativeProfit = Nothing
-    , health = Nothing
-    , originalTermMonths = Nothing
-    , relativeSaleDiscount = Nothing
+type alias ConditionCont a =
+    { amount : AmountCondition -> a
+    , elapsedTermMonths : ElapsedTermMonthsCondition -> a
+    , elapsedTermPercent : ElapsedTermPercentCondition -> a
+    , health : HealthCondition -> a
+    , income : IncomeCondition -> a
+    , insurance : InsuranceCondition -> a
+    , interest : InterestCondition -> a
+    , loanAnnuity : LoanAnnuityCondition -> a
+    , originalTermMonths : OriginalTermMonthsCondition -> a
+    , purpose : PurposeCondition -> a
+    , region : RegionCondition -> a
+    , relativeProfit : RelativeProfitCondition -> a
+    , relativeSaleDiscount : RelativeSaleDiscountCondition -> a
+    , remainingAmount : RemainingAmountCondition -> a
+    , remainingTermMonths : RemainingTermMonthsCondition -> a
+    , revenueRate : RevenueRateCondition -> a
+    , saleFee : SaleFeeCondition -> a
+    , story : StoryCondition -> a
+    , termPercent : TermPercentCondition -> a
     }
 
 
+processCondition : ConditionCont a -> Condition -> a
+processCondition cont c =
+    case c of
+        Condition_Amount x ->
+            cont.amount x
+
+        Condition_Elapsed_Term_Months x ->
+            cont.elapsedTermMonths x
+
+        Condition_Elapsed_Term_Percent x ->
+            cont.elapsedTermPercent x
+
+        Condition_Health x ->
+            cont.health x
+
+        Condition_Income x ->
+            cont.income x
+
+        Condition_Insurance x ->
+            cont.insurance x
+
+        Condition_Interest x ->
+            cont.interest x
+
+        Condition_Loan_Annuity x ->
+            cont.loanAnnuity x
+
+        Condition_Original_Term_Months x ->
+            cont.originalTermMonths x
+
+        Condition_Purpose x ->
+            cont.purpose x
+
+        Condition_Relative_Profit x ->
+            cont.relativeProfit x
+
+        Condition_Relative_Sale_Discount x ->
+            cont.relativeSaleDiscount x
+
+        Condition_Remaining_Amount x ->
+            cont.remainingAmount x
+
+        Condition_Remaining_Term_Months x ->
+            cont.remainingTermMonths x
+
+        Condition_Region x ->
+            cont.region x
+
+        Condition_Revenue_Rate x ->
+            cont.revenueRate x
+
+        Condition_Story x ->
+            cont.story x
+
+        Condition_Sale_Fee x ->
+            cont.saleFee x
+
+        Condition_Term_Percent x ->
+            cont.termPercent x
+
+
+getType : Condition -> ConditionType
+getType =
+    processCondition
+        { amount = always Amount
+        , elapsedTermMonths = always Elapsed_Term_Months
+        , elapsedTermPercent = always Elapsed_Term_Percent
+        , health = always Health
+        , income = always Income
+        , insurance = always Insurance
+        , interest = always Interest
+        , loanAnnuity = always Loan_Annuity
+        , originalTermMonths = always Original_Term_Months
+        , purpose = always Purpose
+        , region = always Region
+        , relativeProfit = always Relative_Profit
+        , relativeSaleDiscount = always Relative_Sale_Discount
+        , remainingAmount = always Remaining_Amount
+        , remainingTermMonths = always Remaining_Term_Months
+        , revenueRate = always Revenue_Rate
+        , saleFee = always Sale_Fee
+        , story = always Story
+        , termPercent = always Term_Percent
+        }
+
+
 renderCondition : Condition -> String
-renderCondition condition =
-    case condition of
-        Condition_Amount c ->
-            Amount.renderCondition c
+renderCondition =
+    processCondition
+        { amount = Amount.renderCondition
+        , elapsedTermMonths = ElapsedTermMonths.renderCondition
+        , elapsedTermPercent = ElapsedTermPercent.renderCondition
+        , health = Health.renderCondition
+        , income = Income.renderCondition
+        , insurance = Insurance.renderCondition
+        , interest = Interest.renderCondition
+        , loanAnnuity = LoanAnnuity.renderCondition
+        , originalTermMonths = OriginalTermMonths.renderCondition
+        , purpose = Purpose.renderCondition
+        , region = Region.renderCondition
+        , relativeProfit = RelativeProfit.renderCondition
+        , relativeSaleDiscount = RelativeSaleDiscount.renderCondition
+        , remainingAmount = RemainingAmount.renderCondition
+        , remainingTermMonths = RemainingTermMonths.renderCondition
+        , revenueRate = RevenueRate.renderCondition
+        , saleFee = SaleFee.renderCondition
+        , story = Story.renderCondition
+        , termPercent = TermPercent.renderCondition
+        }
 
-        Condition_Elapsed_Term_Months c ->
-            ElapsedTermMonths.renderCondition c
 
-        Condition_Elapsed_Term_Percent c ->
-            ElapsedTermPercent.renderCondition c
+conditionValidationError : Condition -> List String
+conditionValidationError =
+    processCondition
+        { amount = Amount.validationErrors
+        , elapsedTermMonths = ElapsedTermMonths.validationErrors
+        , elapsedTermPercent = ElapsedTermPercent.validationErrors
+        , health = Health.validationErrors
+        , income = Income.validationErrors
+        , insurance = always [{- Insurance condition can't be invalid -> valid. errors list always empty -}]
+        , interest = Interest.validationErrors
+        , originalTermMonths = OriginalTermMonths.validationErrors
+        , loanAnnuity = LoanAnnuity.validationErrors
+        , purpose = Purpose.validationErrors
+        , region = Region.validationErrors
+        , remainingAmount = RemainingAmount.validationErrors
+        , remainingTermMonths = RemainingTermMonths.validationErrors
+        , relativeProfit = RelativeProfit.validationErrors
+        , relativeSaleDiscount = RelativeSaleDiscount.validationErrors
+        , revenueRate = RevenueRate.validationErrors
+        , saleFee = always [{- Sale fee condition can't be invalid -> valid. errors list always empty -}]
+        , story = always [{- Story condition can't be invalid -> valid. errors list always empty -}]
+        , termPercent = TermPercent.validationErrors
+        }
 
-        Condition_Health c ->
-            Health.renderCondition c
 
-        Condition_Income c ->
-            Income.renderCondition c
-
-        Condition_Insurance c ->
-            Insurance.renderCondition c
-
-        Condition_Interest c ->
-            Interest.renderCondition c
-
-        Condition_Loan_Annuity c ->
-            LoanAnnuity.renderCondition c
-
-        Condition_Original_Term_Months c ->
-            OriginalTermMonths.renderCondition c
-
-        Condition_Purpose c ->
-            Purpose.renderCondition c
-
-        Condition_Region c ->
-            Region.renderCondition c
-
-        Condition_Remaining_Amount c ->
-            RemainingAmount.renderCondition c
-
-        Condition_Remaining_Term_Months c ->
-            RemainingTermMonths.renderCondition c
-
-        Condition_Relative_Profit c ->
-            RelativeProfit.renderCondition c
-
-        Condition_Relative_Sale_Discount c ->
-            RelativeSaleDiscount.renderCondition c
-
-        Condition_Revenue_Rate c ->
-            RevenueRate.renderCondition c
-
-        Condition_Sale_Fee c ->
-            SaleFee.renderCondition c
-
-        Condition_Story c ->
-            Story.renderCondition c
-
-        Condition_Term_Percent c ->
-            TermPercent.renderCondition c
+addCondition : Condition -> Conditions -> Conditions
+addCondition =
+    processCondition
+        { amount = \c cs -> { cs | amount = Just c }
+        , elapsedTermMonths = \c cs -> { cs | elapsedTermMonths = Just c }
+        , elapsedTermPercent = \c cs -> { cs | elapsedTermPercent = Just c }
+        , health = \c cs -> { cs | health = Just c }
+        , income = \c cs -> { cs | income = Just c }
+        , insurance = \c cs -> { cs | insurance = Just c }
+        , interest = \c cs -> { cs | interest = Just c }
+        , loanAnnuity = \c cs -> { cs | loanAnnuity = Just c }
+        , originalTermMonths = \c cs -> { cs | originalTermMonths = Just c }
+        , purpose = \c cs -> { cs | purpose = Just c }
+        , region = \c cs -> { cs | region = Just c }
+        , relativeProfit = \c cs -> { cs | relativeProfit = Just c }
+        , relativeSaleDiscount = \c cs -> { cs | relativeSaleDiscount = Just c }
+        , remainingAmount = \c cs -> { cs | remainingAmount = Just c }
+        , remainingTermMonths = \c cs -> { cs | remainingTermMonths = Just c }
+        , revenueRate = \c cs -> { cs | revenueRate = Just c }
+        , saleFee = \c cs -> { cs | saleFee = Just c }
+        , story = \c cs -> { cs | story = Just c }
+        , termPercent = \c cs -> { cs | termPercent = Just c }
+        }
 
 
 conditionsValidationErrors : String -> Conditions -> List String
 conditionsValidationErrors errorPrefix =
-    List.map (\e -> errorPrefix ++ e) << List.concat << List.map conditionValidationError << getEnabledConditions
-
-
-conditionValidationError : Condition -> List String
-conditionValidationError condition =
-    case condition of
-        Condition_Amount c ->
-            Amount.validationErrors c
-
-        Condition_Elapsed_Term_Months c ->
-            ElapsedTermMonths.validationErrors c
-
-        Condition_Elapsed_Term_Percent c ->
-            ElapsedTermPercent.validationErrors c
-
-        Condition_Health c ->
-            Health.validationErrors c
-
-        Condition_Income c ->
-            Income.validationErrors c
-
-        Condition_Insurance _ ->
-            [{- Insurance condition can't be invalid -> valid. errors list always empty -}]
-
-        Condition_Interest c ->
-            Interest.validationErrors c
-
-        Condition_Original_Term_Months c ->
-            OriginalTermMonths.validationErrors c
-
-        Condition_Loan_Annuity c ->
-            LoanAnnuity.validationErrors c
-
-        Condition_Purpose c ->
-            Purpose.validationErrors c
-
-        Condition_Region c ->
-            Region.validationErrors c
-
-        Condition_Remaining_Amount c ->
-            RemainingAmount.validationErrors c
-
-        Condition_Remaining_Term_Months c ->
-            RemainingTermMonths.validationErrors c
-
-        Condition_Relative_Profit c ->
-            RelativeProfit.validationErrors c
-
-        Condition_Relative_Sale_Discount c ->
-            RelativeSaleDiscount.validationErrors c
-
-        Condition_Revenue_Rate c ->
-            RevenueRate.validationErrors c
-
-        Condition_Sale_Fee _ ->
-            [{- Sale fee condition can't be invalid -> valid. errors list always empty -}]
-
-        Condition_Story _ ->
-            [{- Story condition can't be invalid -> valid. errors list always empty -}]
-
-        Condition_Term_Percent c ->
-            TermPercent.validationErrors c
+    List.map (\e -> errorPrefix ++ e) << List.concatMap conditionValidationError << getEnabledConditions
 
 
 getDisabledConditionTypes : Conditions -> List ConditionType
@@ -308,125 +372,34 @@ getDisabledConditionTypes cs =
         ]
 
 
-getEnabledConditionTypes : Conditions -> List ConditionType
-getEnabledConditionTypes cs =
-    let
-        addIfJust : (Conditions -> Maybe a) -> ConditionType -> List ConditionType
-        addIfJust field conditionType =
-            Maybe.withDefault [] <| Maybe.map (always [ conditionType ]) <| field cs
-    in
-    List.concat
-        [ addIfJust .amount Amount
-        , addIfJust .elapsedTermMonths Elapsed_Term_Months
-        , addIfJust .elapsedTermPercent Elapsed_Term_Percent
-        , addIfJust .health Health
-        , addIfJust .income Income
-        , addIfJust .insurance Insurance
-        , addIfJust .interest Interest
-        , addIfJust .originalTermMonths Original_Term_Months
-        , addIfJust .loanAnnuity Loan_Annuity
-        , addIfJust .purpose Purpose
-        , addIfJust .region Region
-        , addIfJust .relativeProfit Relative_Profit
-        , addIfJust .relativeSaleDiscount Relative_Sale_Discount
-        , addIfJust .remainingAmount Remaining_Amount
-        , addIfJust .remainingTermMonths Remaining_Term_Months
-        , addIfJust .revenueRate Revenue_Rate
-        , addIfJust .saleFee Sale_Fee
-        , addIfJust .story Story
-        , addIfJust .termPercent Term_Percent
-        ]
-
-
 getEnabledConditions : Conditions -> List Condition
 getEnabledConditions cs =
-    let
-        addIfJust : (Conditions -> Maybe a) -> (a -> Condition) -> List Condition
-        addIfJust field wrap =
-            Maybe.withDefault [] <| Maybe.map (List.singleton << wrap) <| field cs
-    in
-    List.concat
-        [ addIfJust .amount Condition_Amount
-        , addIfJust .elapsedTermMonths Condition_Elapsed_Term_Months
-        , addIfJust .elapsedTermPercent Condition_Elapsed_Term_Percent
-        , addIfJust .health Condition_Health
-        , addIfJust .income Condition_Income
-        , addIfJust .insurance Condition_Insurance
-        , addIfJust .interest Condition_Interest
-        , addIfJust .originalTermMonths Condition_Original_Term_Months
-        , addIfJust .loanAnnuity Condition_Loan_Annuity
-        , addIfJust .purpose Condition_Purpose
-        , addIfJust .region Condition_Region
-        , addIfJust .relativeProfit Condition_Relative_Profit
-        , addIfJust .relativeSaleDiscount Condition_Relative_Sale_Discount
-        , addIfJust .remainingAmount Condition_Remaining_Amount
-        , addIfJust .remainingTermMonths Condition_Remaining_Term_Months
-        , addIfJust .revenueRate Condition_Revenue_Rate
-        , addIfJust .saleFee Condition_Sale_Fee
-        , addIfJust .story Condition_Story
-        , addIfJust .termPercent Condition_Term_Percent
+    List.filterMap identity
+        [ Maybe.map Condition_Amount cs.amount
+        , Maybe.map Condition_Elapsed_Term_Months cs.elapsedTermMonths
+        , Maybe.map Condition_Elapsed_Term_Percent cs.elapsedTermPercent
+        , Maybe.map Condition_Health cs.health
+        , Maybe.map Condition_Income cs.income
+        , Maybe.map Condition_Insurance cs.insurance
+        , Maybe.map Condition_Interest cs.interest
+        , Maybe.map Condition_Loan_Annuity cs.loanAnnuity
+        , Maybe.map Condition_Original_Term_Months cs.originalTermMonths
+        , Maybe.map Condition_Purpose cs.purpose
+        , Maybe.map Condition_Region cs.region
+        , Maybe.map Condition_Relative_Profit cs.relativeProfit
+        , Maybe.map Condition_Relative_Sale_Discount cs.relativeSaleDiscount
+        , Maybe.map Condition_Remaining_Amount cs.remainingAmount
+        , Maybe.map Condition_Remaining_Term_Months cs.remainingTermMonths
+        , Maybe.map Condition_Revenue_Rate cs.revenueRate
+        , Maybe.map Condition_Sale_Fee cs.saleFee
+        , Maybe.map Condition_Story cs.story
+        , Maybe.map Condition_Term_Percent cs.termPercent
         ]
 
 
-addCondition : Condition -> Conditions -> Conditions
-addCondition condition cs =
-    case condition of
-        Condition_Amount c ->
-            { cs | amount = Just c }
-
-        Condition_Elapsed_Term_Months c ->
-            { cs | elapsedTermMonths = Just c }
-
-        Condition_Elapsed_Term_Percent c ->
-            { cs | elapsedTermPercent = Just c }
-
-        Condition_Health c ->
-            { cs | health = Just c }
-
-        Condition_Income c ->
-            { cs | income = Just c }
-
-        Condition_Insurance c ->
-            { cs | insurance = Just c }
-
-        Condition_Interest c ->
-            { cs | interest = Just c }
-
-        Condition_Loan_Annuity c ->
-            { cs | loanAnnuity = Just c }
-
-        Condition_Original_Term_Months c ->
-            { cs | originalTermMonths = Just c }
-
-        Condition_Purpose c ->
-            { cs | purpose = Just c }
-
-        Condition_Remaining_Amount c ->
-            { cs | remainingAmount = Just c }
-
-        Condition_Remaining_Term_Months c ->
-            { cs | remainingTermMonths = Just c }
-
-        Condition_Region c ->
-            { cs | region = Just c }
-
-        Condition_Relative_Profit c ->
-            { cs | relativeProfit = Just c }
-
-        Condition_Relative_Sale_Discount c ->
-            { cs | relativeSaleDiscount = Just c }
-
-        Condition_Revenue_Rate c ->
-            { cs | revenueRate = Just c }
-
-        Condition_Sale_Fee c ->
-            { cs | saleFee = Just c }
-
-        Condition_Story c ->
-            { cs | story = Just c }
-
-        Condition_Term_Percent c ->
-            { cs | termPercent = Just c }
+getEnabledConditionTypes : Conditions -> List ConditionType
+getEnabledConditionTypes =
+    List.map getType << getEnabledConditions
 
 
 updateInterest : InterestMsg -> Conditions -> Conditions
@@ -663,66 +636,28 @@ encodeConditions conditions =
 
 
 encodeCondition : Condition -> ( String, Value )
-encodeCondition condition =
-    case condition of
-        Condition_Region c ->
-            ( "A", Region.encodeCondition c )
-
-        -- Condition_Rating c ->
-        --     ( "B", Rating.encodeCondition c )
-        Condition_Income c ->
-            ( "C", Income.encodeCondition c )
-
-        Condition_Purpose c ->
-            ( "D", Purpose.encodeCondition c )
-
-        Condition_Story c ->
-            ( "E", Story.encodeCondition c )
-
-        Condition_Remaining_Term_Months c ->
-            ( "F", RemainingTermMonths.encodeCondition c )
-
-        Condition_Term_Percent c ->
-            ( "G", TermPercent.encodeCondition c )
-
-        Condition_Elapsed_Term_Months c ->
-            ( "H", ElapsedTermMonths.encodeCondition c )
-
-        Condition_Elapsed_Term_Percent c ->
-            ( "I", ElapsedTermPercent.encodeCondition c )
-
-        Condition_Interest c ->
-            ( "J", Interest.encodeCondition c )
-
-        Condition_Amount c ->
-            ( "K", Amount.encodeCondition c )
-
-        Condition_Insurance c ->
-            ( "L", Insurance.encodeCondition c )
-
-        Condition_Remaining_Amount c ->
-            ( "M", RemainingAmount.encodeCondition c )
-
-        Condition_Loan_Annuity c ->
-            ( "N", LoanAnnuity.encodeCondition c )
-
-        Condition_Revenue_Rate c ->
-            ( "O", RevenueRate.encodeCondition c )
-
-        Condition_Sale_Fee c ->
-            ( "P", SaleFee.encodeCondition c )
-
-        Condition_Relative_Profit c ->
-            ( "Q", RelativeProfit.encodeCondition c )
-
-        Condition_Health c ->
-            ( "R", Health.encodeCondition c )
-
-        Condition_Original_Term_Months c ->
-            ( "S", OriginalTermMonths.encodeCondition c )
-
-        Condition_Relative_Sale_Discount c ->
-            ( "T", RelativeSaleDiscount.encodeCondition c )
+encodeCondition =
+    processCondition
+        { amount = Tuple.pair "K" << Amount.encodeCondition
+        , elapsedTermMonths = Tuple.pair "H" << ElapsedTermMonths.encodeCondition
+        , elapsedTermPercent = Tuple.pair "I" << ElapsedTermPercent.encodeCondition
+        , health = Tuple.pair "R" << Health.encodeCondition
+        , income = Tuple.pair "C" << Income.encodeCondition
+        , insurance = Tuple.pair "L" << Insurance.encodeCondition
+        , interest = Tuple.pair "J" << Interest.encodeCondition
+        , loanAnnuity = Tuple.pair "N" << LoanAnnuity.encodeCondition
+        , originalTermMonths = Tuple.pair "S" << OriginalTermMonths.encodeCondition
+        , purpose = Tuple.pair "D" << Purpose.encodeCondition
+        , region = Tuple.pair "A" << Region.encodeCondition
+        , relativeProfit = Tuple.pair "Q" << RelativeProfit.encodeCondition
+        , relativeSaleDiscount = Tuple.pair "T" << RelativeSaleDiscount.encodeCondition
+        , remainingAmount = Tuple.pair "M" << RemainingAmount.encodeCondition
+        , remainingTermMonths = Tuple.pair "F" << RemainingTermMonths.encodeCondition
+        , revenueRate = Tuple.pair "O" << RevenueRate.encodeCondition
+        , saleFee = Tuple.pair "P" << SaleFee.encodeCondition
+        , story = Tuple.pair "E" << Story.encodeCondition
+        , termPercent = Tuple.pair "G" << TermPercent.encodeCondition
+        }
 
 
 conditionsDecoder : Decoder Conditions

@@ -5,7 +5,7 @@ import Bootstrap.Grid.Col as Col
 import Bootstrap.Grid.Row as Row
 import Data.Filter exposing (FilteredItem(..))
 import Data.Filter.Complexity exposing (FilterComplexity(..))
-import Data.Filter.Conditions as C exposing (Condition(..), ConditionType(..), Conditions)
+import Data.Filter.Conditions as C exposing (Condition(..), ConditionType(..), Conditions, processCondition)
 import Data.Filter.Conditions.Amount as Amount exposing (Amount(..), AmountCondition(..), AmountMsg)
 import Data.Filter.Conditions.ElapsedTermMonths as ElapsedTermMonths exposing (ElapsedTermMonths(..), ElapsedTermMonthsCondition(..), ElapsedTermMonthsMsg)
 import Data.Filter.Conditions.ElapsedTermPercent as ElapsedTermPercent exposing (ElapsedTermPercent(..), ElapsedTermPercentCondition(..), ElapsedTermPercentMsg)
@@ -119,68 +119,32 @@ conditionEnablementDropdown filteredItem conditions =
 
 
 conditionSubform : FilteredItem -> Condition -> Html Msg
-conditionSubform item condition =
+conditionSubform item =
     let
         wrap =
             closeableWrapper item
     in
-    case condition of
-        Condition_Amount c ->
-            wrap Amount <| Html.map AmountMsg <| Amount.form c
-
-        Condition_Elapsed_Term_Months c ->
-            wrap Elapsed_Term_Months <| Html.map ElapsedTermMonthsMsg <| ElapsedTermMonths.form c
-
-        Condition_Elapsed_Term_Percent c ->
-            wrap Elapsed_Term_Percent <| Html.map ElapsedTermPercentMsg <| ElapsedTermPercent.form c
-
-        Condition_Health c ->
-            wrap Health <| Html.map HealthMsg <| Health.form c
-
-        Condition_Income c ->
-            wrap Income <| Html.map IncomeMsg <| Income.form c
-
-        Condition_Insurance c ->
-            wrap Insurance <| Html.map InsuranceConditionChanged <| Insurance.form c
-
-        Condition_Interest c ->
-            wrap Interest <| Html.map InterestMsg <| Interest.form c
-
-        Condition_Loan_Annuity c ->
-            wrap Loan_Annuity <| Html.map LoanAnnuityMsg <| LoanAnnuity.form c
-
-        Condition_Original_Term_Months c ->
-            wrap Original_Term_Months <| Html.map OriginalTermMonthsMsg <| OriginalTermMonths.form c
-
-        Condition_Purpose c ->
-            wrap Purpose <| Html.map PurposeMsg <| Purpose.form c
-
-        Condition_Region c ->
-            wrap Region <| Html.map RegionMsg <| Region.form c
-
-        Condition_Remaining_Amount c ->
-            wrap Remaining_Amount <| Html.map RemainingAmountMsg <| RemainingAmount.form c
-
-        Condition_Revenue_Rate c ->
-            wrap Revenue_Rate <| Html.map RevenueRateMsg <| RevenueRate.form c
-
-        Condition_Relative_Profit c ->
-            wrap Relative_Profit <| Html.map RelativeProfitMsg <| RelativeProfit.form c
-
-        Condition_Relative_Sale_Discount c ->
-            wrap Relative_Sale_Discount <| Html.map RelativeSaleDiscountMsg <| RelativeSaleDiscount.form c
-
-        Condition_Sale_Fee c ->
-            wrap Sale_Fee <| Html.map SaleFeeConditionChanged <| SaleFee.form c
-
-        Condition_Story c ->
-            wrap Story <| Html.map StoryConditionChanged <| Story.form c
-
-        Condition_Remaining_Term_Months c ->
-            wrap Remaining_Term_Months <| Html.map TermMonthsMsg <| RemainingTermMonths.form c
-
-        Condition_Term_Percent c ->
-            wrap Term_Percent <| Html.map TermPercentMsg <| TermPercent.form c
+    processCondition
+        { amount = wrap Amount << Html.map AmountMsg << Amount.form
+        , elapsedTermMonths = wrap Elapsed_Term_Months << Html.map ElapsedTermMonthsMsg << ElapsedTermMonths.form
+        , elapsedTermPercent = wrap Elapsed_Term_Percent << Html.map ElapsedTermPercentMsg << ElapsedTermPercent.form
+        , health = wrap Health << Html.map HealthMsg << Health.form
+        , income = wrap Income << Html.map IncomeMsg << Income.form
+        , insurance = wrap Insurance << Html.map InsuranceConditionChanged << Insurance.form
+        , interest = wrap Interest << Html.map InterestMsg << Interest.form
+        , loanAnnuity = wrap Loan_Annuity << Html.map LoanAnnuityMsg << LoanAnnuity.form
+        , originalTermMonths = wrap Original_Term_Months << Html.map OriginalTermMonthsMsg << OriginalTermMonths.form
+        , purpose = wrap Purpose << Html.map PurposeMsg << Purpose.form
+        , region = wrap Region << Html.map RegionMsg << Region.form
+        , relativeProfit = wrap Relative_Profit << Html.map RelativeProfitMsg << RelativeProfit.form
+        , relativeSaleDiscount = wrap Relative_Sale_Discount << Html.map RelativeSaleDiscountMsg << RelativeSaleDiscount.form
+        , remainingAmount = wrap Remaining_Amount << Html.map RemainingAmountMsg << RemainingAmount.form
+        , remainingTermMonths = wrap Remaining_Term_Months << Html.map TermMonthsMsg << RemainingTermMonths.form
+        , revenueRate = wrap Revenue_Rate << Html.map RevenueRateMsg << RevenueRate.form
+        , saleFee = wrap Sale_Fee << Html.map SaleFeeConditionChanged << SaleFee.form
+        , story = wrap Story << Html.map StoryConditionChanged << Story.form
+        , termPercent = wrap Term_Percent << Html.map TermPercentMsg << TermPercent.form
+        }
 
 
 getVisibleLabel : FilteredItem -> ConditionType -> String
