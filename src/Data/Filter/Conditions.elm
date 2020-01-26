@@ -14,12 +14,14 @@ module Data.Filter.Conditions exposing
     , removeCondition
     , removeConditions
     , renderCondition
+    , setInsuranceCondition
+    , setSaleFeeCondition
+    , setStoryCondition
     , updateAmount
     , updateElapsedTermMonths
     , updateElapsedTermPercent
     , updateHealth
     , updateIncome
-    , updateInsurance
     , updateInterest
     , updateLoanAnnuity
     , updateOriginalTermMonths
@@ -29,8 +31,6 @@ module Data.Filter.Conditions exposing
     , updateRelativeSaleDiscount
     , updateRemainingAmount
     , updateRevenueRate
-    , updateSaleFee
-    , updateStory
     , updateTermMonths
     , updateTermPercent
     )
@@ -40,7 +40,7 @@ import Data.Filter.Conditions.ElapsedTermMonths as ElapsedTermMonths exposing (E
 import Data.Filter.Conditions.ElapsedTermPercent as ElapsedTermPercent exposing (ElapsedTermPercentCondition, ElapsedTermPercentMsg)
 import Data.Filter.Conditions.Health as Health exposing (HealthCondition, HealthMsg)
 import Data.Filter.Conditions.Income as Income exposing (IncomeCondition, IncomeMsg)
-import Data.Filter.Conditions.Insurance as Insurance exposing (InsuranceCondition, InsuranceMsg)
+import Data.Filter.Conditions.Insurance as Insurance exposing (InsuranceCondition)
 import Data.Filter.Conditions.Interest as Interest exposing (InterestCondition, InterestMsg)
 import Data.Filter.Conditions.LoanAnnuity as LoanAnnuity exposing (LoanAnnuityCondition, LoanAnnuityMsg)
 import Data.Filter.Conditions.OriginalTermMonths as OriginalTermMonths exposing (OriginalTermMonthsCondition, OriginalTermMonthsMsg)
@@ -51,8 +51,8 @@ import Data.Filter.Conditions.RelativeSaleDiscount as RelativeSaleDiscount expos
 import Data.Filter.Conditions.RemainingAmount as RemainingAmount exposing (RemainingAmountCondition, RemainingAmountMsg)
 import Data.Filter.Conditions.RemainingTermMonths as RemainingTermMonths exposing (RemainingTermMonthsCondition, RemainingTermMonthsMsg)
 import Data.Filter.Conditions.RevenueRate as RevenueRate exposing (RevenueRateCondition, RevenueRateMsg)
-import Data.Filter.Conditions.SaleFee as SaleFee exposing (SaleFeeCondition, SaleFeeMsg)
-import Data.Filter.Conditions.Story as Story exposing (StoryCondition, StoryMsg)
+import Data.Filter.Conditions.SaleFee as SaleFee exposing (SaleFeeCondition)
+import Data.Filter.Conditions.Story as Story exposing (StoryCondition)
 import Data.Filter.Conditions.TermPercent as TermPercent exposing (TermPercentCondition, TermPercentMsg)
 import Json.Decode as Decode exposing (Decoder)
 import Json.Decode.Extra exposing (andMap, optionalField)
@@ -449,16 +449,6 @@ updateRevenueRate msg conditions =
     { conditions | revenueRate = Maybe.map (RevenueRate.update msg) conditions.revenueRate }
 
 
-updateSaleFee : SaleFeeMsg -> Conditions -> Conditions
-updateSaleFee msg conditions =
-    { conditions | saleFee = Maybe.map (SaleFee.update msg) conditions.saleFee }
-
-
-updateStory : StoryMsg -> Conditions -> Conditions
-updateStory msg conditions =
-    { conditions | story = Maybe.map (Story.update msg) conditions.story }
-
-
 updatePurpose : PurposeMsg -> Conditions -> Conditions
 updatePurpose msg conditions =
     { conditions | purpose = Maybe.map (Purpose.update msg) conditions.purpose }
@@ -504,11 +494,6 @@ updateRelativeProfit msg conditions =
     { conditions | relativeProfit = Maybe.map (RelativeProfit.update msg) conditions.relativeProfit }
 
 
-updateInsurance : InsuranceMsg -> Conditions -> Conditions
-updateInsurance msg conditions =
-    { conditions | insurance = Maybe.map (Insurance.update msg) conditions.insurance }
-
-
 updateLoanAnnuity : LoanAnnuityMsg -> Conditions -> Conditions
 updateLoanAnnuity msg conditions =
     { conditions | loanAnnuity = Maybe.map (LoanAnnuity.update msg) conditions.loanAnnuity }
@@ -522,6 +507,21 @@ updateOriginalTermMonths msg conditions =
 updateRelativeSaleDiscount : RelativeSaleDiscountMsg -> Conditions -> Conditions
 updateRelativeSaleDiscount msg conditions =
     { conditions | relativeSaleDiscount = Maybe.map (RelativeSaleDiscount.update msg) conditions.relativeSaleDiscount }
+
+
+setInsuranceCondition : InsuranceCondition -> Conditions -> Conditions
+setInsuranceCondition insuranceCondition conditions =
+    { conditions | insurance = Just insuranceCondition }
+
+
+setSaleFeeCondition : SaleFeeCondition -> Conditions -> Conditions
+setSaleFeeCondition saleFeeCondition conditions =
+    { conditions | saleFee = Just saleFeeCondition }
+
+
+setStoryCondition : StoryCondition -> Conditions -> Conditions
+setStoryCondition storyCondition conditions =
+    { conditions | story = Just storyCondition }
 
 
 removeCondition : ConditionType -> Conditions -> Conditions

@@ -1,7 +1,6 @@
 module Data.Filter.Conditions.SaleFee exposing
     ( SaleFee(..)
     , SaleFeeCondition(..)
-    , SaleFeeMsg(..)
     , conditionDecoder
     , defaultCondition
     , encodeCondition
@@ -9,7 +8,6 @@ module Data.Filter.Conditions.SaleFee exposing
     , form
     , insuranceDecoder
     , renderCondition
-    , update
     )
 
 import Bootstrap.Form.Checkbox as Checkbox
@@ -32,6 +30,15 @@ defaultCondition =
     SaleFeeCondition NoFee
 
 
+fromBool : Bool -> SaleFee
+fromBool withFee =
+    if withFee then
+        WithFee
+
+    else
+        NoFee
+
+
 renderCondition : SaleFeeCondition -> String
 renderCondition (SaleFeeCondition saleFee) =
     let
@@ -46,45 +53,25 @@ renderCondition (SaleFeeCondition saleFee) =
     String.join " " [ "prodej", verb, "zpoplatněn" ]
 
 
-type SaleFeeMsg
-    = SetSaleFee SaleFee
-
-
-update : SaleFeeMsg -> SaleFeeCondition -> SaleFeeCondition
-update (SetSaleFee sf) _ =
-    SaleFeeCondition sf
-
-
-form : SaleFeeCondition -> Html SaleFeeMsg
+form : SaleFeeCondition -> Html SaleFeeCondition
 form (SaleFeeCondition sf) =
     Checkbox.checkbox
         [ Checkbox.id "sale_fee"
         , Checkbox.checked (sf == WithFee)
         , Checkbox.inline
-        , Checkbox.onCheck
-            (\checked ->
-                if checked then
-                    SetSaleFee WithFee
-
-                else
-                    SetSaleFee NoFee
-            )
+        , Checkbox.onCheck (SaleFeeCondition << fromBool)
         ]
         "prodej je zpoplatněn"
-
-
-
--- JSON
 
 
 encodeInsurance : SaleFee -> Value
 encodeInsurance saleFee =
     case saleFee of
-        NoFee ->
-            Encode.bool False
-
         WithFee ->
             Encode.bool True
+
+        NoFee ->
+            Encode.bool False
 
 
 encodeCondition : SaleFeeCondition -> Value
@@ -94,15 +81,7 @@ encodeCondition (SaleFeeCondition c) =
 
 insuranceDecoder : Decoder SaleFee
 insuranceDecoder =
-    Decode.bool
-        |> Decode.map
-            (\b ->
-                if b then
-                    WithFee
-
-                else
-                    NoFee
-            )
+    Decode.map fromBool Decode.bool
 
 
 conditionDecoder : Decoder SaleFeeCondition

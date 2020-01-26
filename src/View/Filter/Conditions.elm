@@ -11,7 +11,7 @@ import Data.Filter.Conditions.ElapsedTermMonths as ElapsedTermMonths exposing (E
 import Data.Filter.Conditions.ElapsedTermPercent as ElapsedTermPercent exposing (ElapsedTermPercent(..), ElapsedTermPercentCondition(..), ElapsedTermPercentMsg)
 import Data.Filter.Conditions.Health as Health exposing (HealthMsg)
 import Data.Filter.Conditions.Income as Income exposing (Income(..), IncomeCondition(..), IncomeMsg)
-import Data.Filter.Conditions.Insurance as Insurance exposing (Insurance(..), InsuranceCondition(..), InsuranceMsg)
+import Data.Filter.Conditions.Insurance as Insurance exposing (Insurance(..), InsuranceCondition(..))
 import Data.Filter.Conditions.Interest as Interest exposing (Interest(..), InterestCondition(..), InterestMsg)
 import Data.Filter.Conditions.LoanAnnuity as LoanAnnuity exposing (LoanAnnuity(..), LoanAnnuityCondition(..), LoanAnnuityMsg)
 import Data.Filter.Conditions.OriginalTermMonths as OriginalTermMonths exposing (OriginalTermMonthsMsg)
@@ -22,8 +22,8 @@ import Data.Filter.Conditions.RelativeSaleDiscount as RelativeSaleDiscount expos
 import Data.Filter.Conditions.RemainingAmount as RemainingAmount exposing (RemainingAmount(..), RemainingAmountCondition(..), RemainingAmountMsg)
 import Data.Filter.Conditions.RemainingTermMonths as RemainingTermMonths exposing (RemainingTermMonths(..), RemainingTermMonthsCondition(..), RemainingTermMonthsMsg)
 import Data.Filter.Conditions.RevenueRate as RevenueRate exposing (RevenueRate(..), RevenueRateCondition(..), RevenueRateMsg)
-import Data.Filter.Conditions.SaleFee as SaleFee exposing (SaleFee(..), SaleFeeCondition(..), SaleFeeMsg(..))
-import Data.Filter.Conditions.Story as Story exposing (Story(..), StoryCondition(..), StoryMsg)
+import Data.Filter.Conditions.SaleFee as SaleFee exposing (SaleFee(..), SaleFeeCondition(..))
+import Data.Filter.Conditions.Story as Story exposing (Story(..), StoryCondition(..))
 import Data.Filter.Conditions.TermPercent as TermPercent exposing (TermPercent(..), TermPercentCondition(..), TermPercentMsg)
 import Html exposing (Html, div, span, text)
 import Html.Attributes exposing (class)
@@ -141,7 +141,7 @@ conditionSubform item condition =
             wrap Income <| Html.map IncomeMsg <| Income.form c
 
         Condition_Insurance c ->
-            wrap Insurance <| Html.map InsuranceMsg <| Insurance.form c
+            wrap Insurance <| Html.map InsuranceConditionChanged <| Insurance.form c
 
         Condition_Interest c ->
             wrap Interest <| Html.map InterestMsg <| Interest.form c
@@ -171,10 +171,10 @@ conditionSubform item condition =
             wrap Relative_Sale_Discount <| Html.map RelativeSaleDiscountMsg <| RelativeSaleDiscount.form c
 
         Condition_Sale_Fee c ->
-            wrap Sale_Fee <| Html.map SaleFeeMsg <| SaleFee.form c
+            wrap Sale_Fee <| Html.map SaleFeeConditionChanged <| SaleFee.form c
 
         Condition_Story c ->
-            wrap Story <| Html.map StoryMsg <| Story.form c
+            wrap Story <| Html.map StoryConditionChanged <| Story.form c
 
         Condition_Remaining_Term_Months c ->
             wrap Remaining_Term_Months <| Html.map TermMonthsMsg <| RemainingTermMonths.form c
@@ -293,7 +293,7 @@ type
     | ElapsedTermMonthsMsg ElapsedTermMonthsMsg
     | ElapsedTermPercentMsg ElapsedTermPercentMsg
     | HealthMsg HealthMsg
-    | InsuranceMsg InsuranceMsg
+    | InsuranceConditionChanged InsuranceCondition
     | InterestMsg InterestMsg
     | IncomeMsg IncomeMsg
     | OriginalTermMonthsMsg OriginalTermMonthsMsg
@@ -304,8 +304,8 @@ type
     | RelativeSaleDiscountMsg RelativeSaleDiscountMsg
     | RemainingAmountMsg RemainingAmountMsg
     | RevenueRateMsg RevenueRateMsg
-    | SaleFeeMsg SaleFeeMsg
-    | StoryMsg StoryMsg
+    | SaleFeeConditionChanged SaleFeeCondition
+    | StoryConditionChanged StoryCondition
     | TermMonthsMsg RemainingTermMonthsMsg
     | TermPercentMsg TermPercentMsg
       -- Control enabling / disabling conditions
@@ -331,8 +331,8 @@ update msg =
         IncomeMsg m ->
             C.updateIncome m
 
-        InsuranceMsg m ->
-            C.updateInsurance m
+        InsuranceConditionChanged c ->
+            C.setInsuranceCondition c
 
         InterestMsg m ->
             C.updateInterest m
@@ -361,11 +361,11 @@ update msg =
         RevenueRateMsg m ->
             C.updateRevenueRate m
 
-        SaleFeeMsg m ->
-            C.updateSaleFee m
+        SaleFeeConditionChanged c ->
+            C.setSaleFeeCondition c
 
-        StoryMsg m ->
-            C.updateStory m
+        StoryConditionChanged c ->
+            C.setStoryCondition c
 
         TermMonthsMsg m ->
             C.updateTermMonths m

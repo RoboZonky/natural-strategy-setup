@@ -1,13 +1,11 @@
 module Data.Filter.Conditions.Insurance exposing
     ( Insurance(..)
     , InsuranceCondition(..)
-    , InsuranceMsg
     , conditionDecoder
     , defaultCondition
     , encodeCondition
     , form
     , renderCondition
-    , update
     )
 
 import Bootstrap.Form.Checkbox as Checkbox
@@ -30,6 +28,15 @@ defaultCondition =
     InsuranceCondition Active
 
 
+fromBool : Bool -> Insurance
+fromBool isActive =
+    if isActive then
+        Active
+
+    else
+        Inactive
+
+
 renderCondition : InsuranceCondition -> String
 renderCondition (InsuranceCondition insurance) =
     let
@@ -44,35 +51,15 @@ renderCondition (InsuranceCondition insurance) =
     String.join " " [ "pojištění", verb, "aktivní" ]
 
 
-type InsuranceMsg
-    = SetInsurance Insurance
-
-
-update : InsuranceMsg -> InsuranceCondition -> InsuranceCondition
-update (SetInsurance i) _ =
-    InsuranceCondition i
-
-
-form : InsuranceCondition -> Html InsuranceMsg
+form : InsuranceCondition -> Html InsuranceCondition
 form (InsuranceCondition i) =
     Checkbox.checkbox
         [ Checkbox.id "insurance"
         , Checkbox.checked (i == Active)
         , Checkbox.inline
-        , Checkbox.onCheck
-            (\checked ->
-                if checked then
-                    SetInsurance Active
-
-                else
-                    SetInsurance Inactive
-            )
+        , Checkbox.onCheck (InsuranceCondition << fromBool)
         ]
         "pojištění je aktivní"
-
-
-
--- JSON
 
 
 encodeInsurance : Insurance -> Value
@@ -92,15 +79,7 @@ encodeCondition (InsuranceCondition c) =
 
 insuranceDecoder : Decoder Insurance
 insuranceDecoder =
-    Decode.bool
-        |> Decode.map
-            (\b ->
-                if b then
-                    Active
-
-                else
-                    Inactive
-            )
+    Decode.map fromBool Decode.bool
 
 
 conditionDecoder : Decoder InsuranceCondition

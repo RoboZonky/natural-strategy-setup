@@ -1,13 +1,11 @@
 module Data.Filter.Conditions.Story exposing
     ( Story(..)
     , StoryCondition(..)
-    , StoryMsg
     , conditionDecoder
     , defaultCondition
     , encodeCondition
     , form
     , renderCondition
-    , update
     )
 
 import Bootstrap.Form.Radio as Radio
@@ -63,35 +61,22 @@ renderCondition (StoryCondition story) =
     "příběh je " ++ storyToString story
 
 
-type StoryMsg
-    = SetStory Story
-
-
-update : StoryMsg -> StoryCondition -> StoryCondition
-update (SetStory s) _ =
-    StoryCondition s
-
-
-form : StoryCondition -> Html StoryMsg
+form : StoryCondition -> Html StoryCondition
 form (StoryCondition currentStory) =
     allStories
         |> List.indexedMap (\index story -> storyRadio index currentStory story)
         |> div []
 
 
-storyRadio : Int -> Story -> Story -> Html StoryMsg
+storyRadio : Int -> Story -> Story -> Html StoryCondition
 storyRadio index currentStory thisRadiosStory =
     Radio.radio
         [ Radio.id ("story_" ++ String.fromInt index)
         , Radio.name "story"
         , Radio.checked (currentStory == thisRadiosStory)
-        , Radio.onClick (SetStory thisRadiosStory)
+        , Radio.onClick (StoryCondition thisRadiosStory)
         ]
         (storyToString thisRadiosStory)
-
-
-
--- JSON
 
 
 encodeStory : Story -> Value
