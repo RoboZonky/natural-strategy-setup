@@ -4,11 +4,13 @@ Web configuration of investment strategy for [RoboZonky](https://robozonky.githu
 
 ## Run in development mode
 
-Use [elm-live](https://github.com/wking-io/elm-live) to start the development server and open the running app in the browser.
+Install [elm-live](https://github.com/wking-io/elm-live) and run 
 
 ```bash
-elm-live --dir dist --open -- src/Main.elm --output dist/js/elm.js
+./shake.hs dev-server
 ```
+
+This starts a development server which opens the running app in the browser and live-reloads it on any change to elm files.
 
 ## Run tests
 
@@ -27,13 +29,13 @@ mvn clean install -DskipTests -Dgpg.skip=true
 You also need `warp` (web server) binary which is used to serve the app for selenium tests.
 
 ```bash
-stack install wai-app-static --resolver lts-14.20
+stack install wai-app-static --resolver lts-14.22
 ```
 
 After you have `elm-test` and `warp` binaries installed and robozonky artifacts built in your m2 repo you can run all tests using:
 
 ```bash
-./test.sh
+./shake.hs itest
 ```
 
 ## Release new strategy version
