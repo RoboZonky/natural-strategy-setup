@@ -1,6 +1,5 @@
 module Data.ReservationSetting exposing
     ( ReservationSetting(..)
-    , allSettings
     , decoder
     , defaultSetting
     , encode

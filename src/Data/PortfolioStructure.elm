@@ -4,7 +4,6 @@ module Data.PortfolioStructure exposing
     , balancedShares
     , conservative
     , conservativeShares
-    , decoder
     , decoderFromPortfolio
     , encode
     , fromPercentageList

@@ -12,7 +12,6 @@ module Data.Tooltip exposing
     , sellFilterListTip
     , sellofDateTip
     , update
-    , zonkoidTip
     )
 
 import Bootstrap.Popover as Popover

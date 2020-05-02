@@ -1,8 +1,6 @@
 module StrategyHashDecoding exposing
     ( invalidBase64encoding
     , invalidHashData
-    , strategyFromHashTest
-    , testData
     , validHashData
     )
 

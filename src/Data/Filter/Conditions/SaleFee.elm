@@ -4,9 +4,7 @@ module Data.Filter.Conditions.SaleFee exposing
     , conditionDecoder
     , defaultCondition
     , encodeCondition
-    , encodeInsurance
     , form
-    , insuranceDecoder
     , renderCondition
     )
 

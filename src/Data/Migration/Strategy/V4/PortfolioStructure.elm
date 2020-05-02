@@ -1,12 +1,7 @@
 module Data.Migration.Strategy.V4.PortfolioStructure exposing
-    ( PortfolioShare
-    , PortfolioShares
-    , balanced
-    , conservative
+    ( PortfolioShares
     , decoder
     , decoderFromPortfolio
-    , percentageShare
-    , progressive
     , toIntRange
     )
 
@@ -21,10 +16,6 @@ import RangeSlider exposing (RangeSlider, setDimensions, setExtents, setFormatte
 
 type alias PortfolioShares =
     AnyDict Int Rating Share
-
-
-type alias PortfolioShare =
-    ( Rating, Share )
 
 
 type alias Share =

@@ -1,4 +1,10 @@
-module StrategyEncodingDecoding exposing (amountCondition, amountConditionFuzzer, conditions, encodeAndDecode, hundredRandomConditions, interestCondition, interestConditionFuzzer, investmentsPerRating, portfolio)
+module StrategyEncodingDecoding exposing
+    ( amountCondition
+    , conditions
+    , interestCondition
+    , investmentsPerRating
+    , portfolio
+    )
 
 import Data.Filter exposing (FilteredItem(..))
 import Data.Filter.Conditions as Conditions exposing (Conditions)

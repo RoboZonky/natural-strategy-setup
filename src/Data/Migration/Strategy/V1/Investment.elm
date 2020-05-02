@@ -2,7 +2,6 @@ module Data.Migration.Strategy.V1.Investment exposing
     ( InvestmentsPerRating
     , Size
     , decoder
-    , mkSize
     , sizeDecoder
     , toIntRange
     )

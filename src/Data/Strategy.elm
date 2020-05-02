@@ -4,7 +4,6 @@ module Data.Strategy exposing
     , addBuyFilter
     , addSellFilter
     , defaultStrategyConfiguration
-    , generalSettingsDecoder
     , removeBuyFilter
     , removeSellFilter
     , renderStrategyConfiguration
