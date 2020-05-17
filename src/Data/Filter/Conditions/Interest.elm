@@ -134,17 +134,17 @@ update msg (InterestCondition i) =
                 i
 
 
-type alias InterestDropdowns =
-    { extactly : Html InterestMsg
+type alias InterestDropDowns =
+    { exactly : Html InterestMsg
     , lessThan : Html InterestMsg
     , between : ( Html InterestMsg, Html InterestMsg )
     , moreThan : Html InterestMsg
     }
 
 
-defaultDropdowns : InterestDropdowns
-defaultDropdowns =
-    InterestDropdowns disabledDropdown disabledDropdown ( disabledDropdown, disabledDropdown ) disabledDropdown
+defaultDropDowns : InterestDropDowns
+defaultDropDowns =
+    InterestDropDowns disabledDropDown disabledDropDown ( disabledDropDown, disabledDropDown ) disabledDropDown
 
 
 form : InterestCondition -> Html InterestMsg
@@ -153,46 +153,46 @@ form (InterestCondition interest) =
         interestEnum =
             toEnum interest
 
-        dropdowns =
+        dropDowns =
             case interest of
                 Exactly x ->
-                    { defaultDropdowns | extactly = ratingDropdown True (DefaultOption x) SetExactly }
+                    { defaultDropDowns | exactly = ratingDropDown True (DefaultOption x) SetExactly }
 
                 LessThan x ->
-                    { defaultDropdowns | lessThan = ratingDropdownWithValues allRatingsExceptSmallest True (DefaultOption x) SetLessThan }
+                    { defaultDropDowns | lessThan = ratingDropDownWithValues allRatingsExceptSmallest True (DefaultOption x) SetLessThan }
 
                 Between mi ma ->
-                    { defaultDropdowns
+                    { defaultDropDowns
                         | between =
-                            ( ratingDropdown True (DefaultOption mi) (\mi1 -> SetBetween mi1 ma)
-                            , ratingDropdown True (DefaultOption ma) (\ma1 -> SetBetween mi ma1)
+                            ( ratingDropDown True (DefaultOption mi) (\mi1 -> SetBetween mi1 ma)
+                            , ratingDropDown True (DefaultOption ma) (\ma1 -> SetBetween mi ma1)
                             )
                     }
 
                 MoreThan x ->
-                    { defaultDropdowns | moreThan = ratingDropdownWithValues allRatingsExceptLargest True (DefaultOption x) SetMoreThan }
+                    { defaultDropDowns | moreThan = ratingDropDownWithValues allRatingsExceptLargest True (DefaultOption x) SetMoreThan }
     in
     Html.div []
         [ Form.formInline [ onSubmit InterestNoOp ]
             [ interestRadio (interestEnum == EX) (SetExactly Rating.D) "je přesně\u{00A0}" "interest0"
-            , dropdowns.extactly
+            , dropDowns.exactly
             , unit
             ]
         , Form.formInline [ onSubmit InterestNoOp ]
             [ interestRadio (interestEnum == LT) (SetLessThan Rating.D) "nedosahuje\u{00A0}" "interest1"
-            , dropdowns.lessThan
+            , dropDowns.lessThan
             , unit
             ]
         , Form.formInline [ onSubmit InterestNoOp ]
             [ interestRadio (interestEnum == BTW) (SetBetween Rating.AAAAA Rating.D) "je\u{00A0}" "interest2"
-            , Tuple.first dropdowns.between
+            , Tuple.first dropDowns.between
             , Html.text "\u{00A0}až\u{00A0}"
-            , Tuple.second dropdowns.between
+            , Tuple.second dropDowns.between
             , unit
             ]
         , Form.formInline [ onSubmit InterestNoOp ]
             [ interestRadio (interestEnum == MT) (SetMoreThan Rating.AAAAA) "přesahuje\u{00A0}" "interest3"
-            , dropdowns.moreThan
+            , dropDowns.moreThan
             , unit
             ]
         ]
@@ -203,13 +203,13 @@ unit =
     Html.text "\u{00A0}% p.a."
 
 
-ratingDropdown : Bool -> DefaultOptionConfig Rating -> (Rating -> InterestMsg) -> Html InterestMsg
-ratingDropdown =
-    ratingDropdownWithValues Rating.allRatings
+ratingDropDown : Bool -> DefaultOptionConfig Rating -> (Rating -> InterestMsg) -> Html InterestMsg
+ratingDropDown =
+    ratingDropDownWithValues Rating.allRatings
 
 
-ratingDropdownWithValues : List Rating -> Bool -> DefaultOptionConfig Rating -> (Rating -> InterestMsg) -> Html InterestMsg
-ratingDropdownWithValues ratings enabled defaultOption toMsg =
+ratingDropDownWithValues : List Rating -> Bool -> DefaultOptionConfig Rating -> (Rating -> InterestMsg) -> Html InterestMsg
+ratingDropDownWithValues ratings enabled defaultOption toMsg =
     EnumSelect.from
         { enumValues = ratings
         , valuePickedMessage = toMsg
@@ -233,9 +233,9 @@ allRatingsExceptSmallest =
         |> Maybe.withDefault []
 
 
-disabledDropdown : Html InterestMsg
-disabledDropdown =
-    ratingDropdown False (DummyOption "") (always InterestNoOp)
+disabledDropDown : Html InterestMsg
+disabledDropDown =
+    ratingDropDown False (DummyOption "") (always InterestNoOp)
 
 
 interestRadio : Bool -> InterestMsg -> String -> DomId -> Html InterestMsg

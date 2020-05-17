@@ -19,7 +19,7 @@ type alias EnumSelectConfig enum msg =
     -- Message to be fired when valid option picked
     , valuePickedMessage : enum -> msg
 
-    --| How to display the value in the dropdown
+    --| How to display the value in the dropDown
     , showVisibleLabel : enum -> String
     , defaultOption : DefaultOptionConfig enum
     , enabled : Bool

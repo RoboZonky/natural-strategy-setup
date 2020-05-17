@@ -35,7 +35,7 @@ type alias Model =
     { editedFilter : MarketplaceFilter
     , allowedFilteredItems : List FilteredItem
     , filterComplexity : FilterComplexity
-    , editingPositiveSubform : Bool
+    , editingPositiveSubForm : Bool
     , openCloseState : Modal.Visibility
 
     -- Switching FilteredItem might require removing conditions that users enabled that don't apply to the target FilteredItem
@@ -61,7 +61,7 @@ init =
     { editedFilter = Filter.emptyFilter
     , allowedFilteredItems = []
     , filterComplexity = Simple
-    , editingPositiveSubform = True
+    , editingPositiveSubForm = True
     , openCloseState = Modal.hidden
     , confirmRemoval = Nothing
     }
@@ -95,7 +95,7 @@ updateHelp msg model =
                 | editedFilter = setFilteredItem filteredItem Filter.emptyFilter
                 , allowedFilteredItems = allowedFilteredItems
                 , filterComplexity = filterComplexity
-                , editingPositiveSubform = True
+                , editingPositiveSubForm = True
                 , openCloseState = Modal.shown
                 , confirmRemoval = Nothing
             }
@@ -136,7 +136,7 @@ updateHelp msg model =
             { model | confirmRemoval = Nothing }
 
         TogglePositiveNegativeSubForm ->
-            { model | editingPositiveSubform = not model.editingPositiveSubform }
+            { model | editingPositiveSubForm = not model.editingPositiveSubForm }
 
         PositiveConditionsChange condMsg ->
             { model | editedFilter = Filter.updatePositiveConditions (Conditions.update condMsg) model.editedFilter }
@@ -155,7 +155,7 @@ updateHelp msg model =
 
 
 view : Config msg -> Model -> Tooltip.States -> Html msg
-view config { editedFilter, openCloseState, editingPositiveSubform, allowedFilteredItems, filterComplexity, confirmRemoval } tooltipStates =
+view config { editedFilter, openCloseState, editingPositiveSubForm, allowedFilteredItems, filterComplexity, confirmRemoval } tooltipStates =
     let
         ( modalTitle, tooltipKey ) =
             case editedFilter.whatToFilter of
@@ -168,7 +168,7 @@ view config { editedFilter, openCloseState, editingPositiveSubform, allowedFilte
         ( modalBody, modalFooter ) =
             case confirmRemoval of
                 Nothing ->
-                    ( marketplaceFilterEditor editedFilter filterComplexity editingPositiveSubform allowedFilteredItems
+                    ( marketplaceFilterEditor editedFilter filterComplexity editingPositiveSubForm allowedFilteredItems
                     , [ Button.button
                             [ Button.danger
                             , Button.onClick CloseModal
@@ -180,7 +180,7 @@ view config { editedFilter, openCloseState, editingPositiveSubform, allowedFilte
                             , Button.onClick SaveFilter
                             ]
                             [ Html.text "Uložit" ]
-                      , exceptionButtonWhenFilterComplex filterComplexity editingPositiveSubform
+                      , exceptionButtonWhenFilterComplex filterComplexity editingPositiveSubForm
                       ]
                     )
 
@@ -226,10 +226,10 @@ askForConfirmationOfRemoval filteredItem conditionsToBeRemoved conditionsToBeRem
 {-| Simple filters don't allow exception definition
 -}
 exceptionButtonWhenFilterComplex : FilterComplexity -> Bool -> Html Msg
-exceptionButtonWhenFilterComplex filterComplexity editingPositiveSubform =
+exceptionButtonWhenFilterComplex filterComplexity editingPositiveSubForm =
     let
         exceptionButtonText =
-            if editingPositiveSubform then
+            if editingPositiveSubForm then
                 "Přidat Výjimku >>"
 
             else
@@ -248,7 +248,7 @@ exceptionButtonWhenFilterComplex filterComplexity editingPositiveSubform =
 
 
 marketplaceFilterEditor : MarketplaceFilter -> FilterComplexity -> Bool -> List FilteredItem -> Html Msg
-marketplaceFilterEditor mf filterComplexity editingPositiveSubform allowedFilteredItems =
+marketplaceFilterEditor mf filterComplexity editingPositiveSubForm allowedFilteredItems =
     let
         validationErrors =
             Filter.marketplaceFilterValidationErrors mf
@@ -261,8 +261,8 @@ marketplaceFilterEditor mf filterComplexity editingPositiveSubform allowedFilter
                 Html.ul [ style "color" "red" ] <|
                     List.map (\e -> Html.li [] [ Html.text e ]) validationErrors
 
-        conditionsSubform =
-            if editingPositiveSubform then
+        conditionsSubForm =
+            if editingPositiveSubForm then
                 Html.map PositiveConditionsChange <| Conditions.form filterComplexity mf.whatToFilter mf.ignoreWhen
 
             else
@@ -274,8 +274,8 @@ marketplaceFilterEditor mf filterComplexity editingPositiveSubform allowedFilter
                 [ Col.xs12 ]
                 [ Html.div []
                     [ filteredItemRadios allowedFilteredItems mf.whatToFilter
-                    , conditionsOrExceptionTitle editingPositiveSubform
-                    , conditionsSubform
+                    , conditionsOrExceptionTitle editingPositiveSubForm
+                    , conditionsSubForm
                     ]
                 , Html.hr [] []
                 , previewOrValidationErrors
@@ -319,9 +319,9 @@ filteredItemRadio currentFilteredItem index filteredItem =
 
 
 conditionsOrExceptionTitle : Bool -> Html a
-conditionsOrExceptionTitle editingPositiveSubform =
+conditionsOrExceptionTitle editingPositiveSubForm =
     Html.text <|
-        if editingPositiveSubform then
+        if editingPositiveSubForm then
             ""
 
         else

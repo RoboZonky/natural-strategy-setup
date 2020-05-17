@@ -33,7 +33,7 @@ public class BackwardCompatibilityTest {
     public TestApp.Deployment legacyDeployment;
 
     @Parameters
-    public static Iterable<? extends Object> data() {
+    public static Iterable<?> data() {
         return Arrays.asList(
                 TestApp.Deployment.V1,
                 TestApp.Deployment.V2,

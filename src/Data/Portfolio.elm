@@ -64,7 +64,7 @@ toUiLabel pt =
             "mnou definované"
 
 
-{-| Used as value in portfolio dropdown.
+{-| Used as value in portfolio dropDown.
 Must be inverse of fromString.
 -}
 toString : Portfolio -> String

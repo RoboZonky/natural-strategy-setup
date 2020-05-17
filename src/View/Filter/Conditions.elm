@@ -49,16 +49,16 @@ form filterComplexity filteredItem conditions =
         enabledConditions =
             C.getEnabledConditions conditions
 
-        dropdownWhenFilterComplexOrConditionsEmpty =
+        dropDownWhenFilterComplexOrConditionsEmpty =
             if {- Simple rules can only have one condition -} filterComplexity == Complex || List.isEmpty enabledConditions then
-                conditionEnablementDropdown filteredItem conditions
+                conditionEnablementDropDown filteredItem conditions
 
             else
                 Html.text ""
     in
     Html.div [ class "condition-subform-container" ]
-        (List.map (conditionSubform filteredItem) enabledConditions
-            ++ [ dropdownWhenFilterComplexOrConditionsEmpty ]
+        (List.map (conditionSubForm filteredItem) enabledConditions
+            ++ [ dropDownWhenFilterComplexOrConditionsEmpty ]
         )
 
 
@@ -104,10 +104,10 @@ conditionTypesThatApplyTo filteredItem =
            )
 
 
-{-| Dropdown for enabling conditions that are currently disabled, but can be enabled for given FilteredItem
+{-| DropDown for enabling conditions that are currently disabled, but can be enabled for given FilteredItem
 -}
-conditionEnablementDropdown : FilteredItem -> Conditions -> Html Msg
-conditionEnablementDropdown filteredItem conditions =
+conditionEnablementDropDown : FilteredItem -> Conditions -> Html Msg
+conditionEnablementDropDown filteredItem conditions =
     let
         validConditions =
             conditionTypesThatApplyTo filteredItem
@@ -135,8 +135,8 @@ conditionEnablementDropdown filteredItem conditions =
             }
 
 
-conditionSubform : FilteredItem -> Condition -> Html Msg
-conditionSubform item =
+conditionSubForm : FilteredItem -> Condition -> Html Msg
+conditionSubForm item =
     let
         wrap =
             closeableWrapper item
@@ -269,7 +269,7 @@ closeableWrapper filteredItem conditionType subform =
 
 type
     Msg
-    -- Forwarding messages to individual condition subforms
+    -- Forwarding messages to individual condition sub-forms
     = AmountMsg AmountMsg
     | ElapsedTermMonthsMsg ElapsedTermMonthsMsg
     | ElapsedTermPercentMsg ElapsedTermPercentMsg

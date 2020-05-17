@@ -17,7 +17,7 @@ This starts a development server which opens the running app in the browser and 
 There is [elm-test](https://package.elm-lang.org/packages/elm-explorations/test/latest/) based suite of unit tests in `tests` folder,
 which can be run from the root of the project using `elm-test`.
 
-There is Java maven based suite of selenium integration tests in `integration-tests`.
+There is a Java maven based suite of selenium integration tests in `integration-tests`.
 This one requires `robozonky-strategy-natural` jar of corresponding version (see integration-tests/pom.xml) to be installed in local m2 repo:
 
 ```bash
