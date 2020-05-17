@@ -71,7 +71,7 @@ validationErrors (RevenueRateCondition a) =
 
 positive : Float -> List String
 positive =
-    Validate.positive "Optimální výnos"
+    Validate.notNegative "Optimální výnos"
 
 
 minNotGtMax : Float -> Float -> List String

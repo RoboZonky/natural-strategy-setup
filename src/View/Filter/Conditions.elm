@@ -7,6 +7,8 @@ import Data.Filter exposing (FilteredItem(..))
 import Data.Filter.Complexity exposing (FilterComplexity(..))
 import Data.Filter.Conditions as C exposing (Condition(..), ConditionType(..), Conditions, processCondition)
 import Data.Filter.Conditions.Amount as Amount exposing (Amount(..), AmountCondition(..), AmountMsg)
+import Data.Filter.Conditions.CurrentDaysPastDue as CurrentDaysPastDue exposing (CurrentDaysPastDueMsg)
+import Data.Filter.Conditions.DaysSinceLastPastDue as DaysSinceLastPastDue exposing (DaysSinceLastPastDueMsg)
 import Data.Filter.Conditions.ElapsedTermMonths as ElapsedTermMonths exposing (ElapsedTermMonths(..), ElapsedTermMonthsCondition(..), ElapsedTermMonthsMsg)
 import Data.Filter.Conditions.ElapsedTermPercent as ElapsedTermPercent exposing (ElapsedTermPercent(..), ElapsedTermPercentCondition(..), ElapsedTermPercentMsg)
 import Data.Filter.Conditions.Health as Health exposing (HealthMsg)
@@ -14,6 +16,7 @@ import Data.Filter.Conditions.Income as Income exposing (Income(..), IncomeCondi
 import Data.Filter.Conditions.Insurance as Insurance exposing (Insurance(..), InsuranceCondition(..))
 import Data.Filter.Conditions.Interest as Interest exposing (Interest(..), InterestCondition(..), InterestMsg)
 import Data.Filter.Conditions.LoanAnnuity as LoanAnnuity exposing (LoanAnnuity(..), LoanAnnuityCondition(..), LoanAnnuityMsg)
+import Data.Filter.Conditions.LongestDaysPastDue as LongestDaysPastDue exposing (LongestDaysPastDueMsg)
 import Data.Filter.Conditions.OriginalTermMonths as OriginalTermMonths exposing (OriginalTermMonthsMsg)
 import Data.Filter.Conditions.Purpose as Purpose exposing (Purpose(..), PurposeCondition(..), PurposeMsg)
 import Data.Filter.Conditions.Region as Region exposing (Region(..), RegionCondition(..), RegionMsg)
@@ -86,6 +89,9 @@ conditionTypesThatApplyTo filteredItem =
             , Health
             , Original_Term_Months
             , Relative_Sale_Discount
+            , Current_Days_Past_Due
+            , Days_Since_Last_Past_Due
+            , Longest_Days_Past_Due
             ]
     in
     commonForAll
@@ -143,6 +149,8 @@ conditionSubForm item =
     in
     processCondition
         { amount = wrap Amount << Html.map AmountMsg << Amount.form
+        , currentDaysPastDue = wrap Current_Days_Past_Due << Html.map CurrentDaysPastDueMsg << CurrentDaysPastDue.form
+        , daysSinceLastPastDue = wrap Days_Since_Last_Past_Due << Html.map DaysSinceLastPastDueMsg << DaysSinceLastPastDue.form
         , elapsedTermMonths = wrap Elapsed_Term_Months << Html.map ElapsedTermMonthsMsg << ElapsedTermMonths.form
         , elapsedTermPercent = wrap Elapsed_Term_Percent << Html.map ElapsedTermPercentMsg << ElapsedTermPercent.form
         , health = wrap Health << Html.map HealthMsg << Health.form
@@ -150,6 +158,7 @@ conditionSubForm item =
         , insurance = wrap Insurance << Html.map InsuranceConditionChanged << Insurance.form
         , interest = wrap Interest << Html.map InterestMsg << Interest.form
         , loanAnnuity = wrap Loan_Annuity << Html.map LoanAnnuityMsg << LoanAnnuity.form
+        , longestDaysPastDue = wrap Longest_Days_Past_Due << Html.map LongestDaysPastDueMsg << LongestDaysPastDue.form
         , originalTermMonths = wrap Original_Term_Months << Html.map OriginalTermMonthsMsg << OriginalTermMonths.form
         , purpose = wrap Purpose << Html.map PurposeMsg << Purpose.form
         , region = wrap Region << Html.map RegionMsg << Region.form
@@ -169,6 +178,12 @@ getVisibleLabel filteredItem conditionType =
     case conditionType of
         Amount ->
             amountConditionLabel filteredItem
+
+        Current_Days_Past_Due ->
+            "Aktuální doba po splatnosti (ve dnech)"
+
+        Days_Since_Last_Past_Due ->
+            "Doba od posledního dne po splatnosti (ve dnech)"
 
         Elapsed_Term_Months ->
             -- Note that this string contains &nbsp; entered by pasting escape sequence "\x00A0"
@@ -195,6 +210,9 @@ getVisibleLabel filteredItem conditionType =
 
         Loan_Annuity ->
             "Měsíční splátka"
+
+        Longest_Days_Past_Due ->
+            "Nejdelší doba po splatnosti (ve dnech)"
 
         Purpose ->
             "Účel úvěru"
@@ -271,6 +289,8 @@ type
     Msg
     -- Forwarding messages to individual condition sub-forms
     = AmountMsg AmountMsg
+    | CurrentDaysPastDueMsg CurrentDaysPastDueMsg
+    | DaysSinceLastPastDueMsg DaysSinceLastPastDueMsg
     | ElapsedTermMonthsMsg ElapsedTermMonthsMsg
     | ElapsedTermPercentMsg ElapsedTermPercentMsg
     | HealthMsg HealthMsg
@@ -279,6 +299,7 @@ type
     | IncomeMsg IncomeMsg
     | OriginalTermMonthsMsg OriginalTermMonthsMsg
     | LoanAnnuityMsg LoanAnnuityMsg
+    | LongestDaysPastDueMsg LongestDaysPastDueMsg
     | PurposeMsg PurposeMsg
     | RegionMsg RegionMsg
     | RelativeProfitMsg RelativeProfitMsg
@@ -299,6 +320,12 @@ update msg =
     case msg of
         AmountMsg m ->
             C.updateAmount m
+
+        CurrentDaysPastDueMsg m ->
+            C.updateCurrentDaysPastDueMsg m
+
+        DaysSinceLastPastDueMsg m ->
+            C.updateDaysSinceLastPastDue m
 
         ElapsedTermMonthsMsg m ->
             C.updateElapsedTermMonths m
@@ -323,6 +350,9 @@ update msg =
 
         LoanAnnuityMsg m ->
             C.updateLoanAnnuity m
+
+        LongestDaysPastDueMsg m ->
+            C.updateLongestDaysPastDue m
 
         PurposeMsg m ->
             C.updatePurpose m

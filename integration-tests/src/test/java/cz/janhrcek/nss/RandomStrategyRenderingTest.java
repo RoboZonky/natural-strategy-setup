@@ -51,11 +51,11 @@ public class RandomStrategyRenderingTest {
         OptionalDouble averageLengthOfUrlEncodedStrategy = encodedStrategyLengths.stream()
                 .mapToInt(Integer::intValue)
                 .average();
-        final double expectedEncodedStrategyLengh = 2300;
+        final double expectedEncodedStrategyLength = 2500;
         assertThat(averageLengthOfUrlEncodedStrategy)
-                .as("Average length of strategy encoded in URL should be around " + expectedEncodedStrategyLengh + " characters")
+                .as("Average length of strategy encoded in URL should be around " + expectedEncodedStrategyLength + " characters")
                 .isNotEmpty()
-                .hasValueCloseTo(expectedEncodedStrategyLengh, Offset.offset(100.0));
+                .hasValueCloseTo(expectedEncodedStrategyLength, Offset.offset(100.0));
 
         List<LogEntry> errorsAndWarnings = testApp.getBrowserConsoleLogs().filter(Level.WARNING);
         assertThat(errorsAndWarnings)

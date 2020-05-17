@@ -71,7 +71,7 @@ validationErrors (LoanAnnuityCondition a) =
 
 positive : Int -> List String
 positive =
-    Validate.positive "Měsíční splátka"
+    Validate.notNegative "Měsíční splátka"
 
 
 minNotGtMax : Int -> Int -> List String

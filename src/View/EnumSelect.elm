@@ -1,6 +1,6 @@
 module View.EnumSelect exposing
-    ( DefaultOptionConfig(..)
-    , EnumSelectConfig
+    ( Config
+    , DefaultOptionConfig(..)
     , from
     )
 
@@ -12,7 +12,7 @@ import Html.Keyed as Keyed
 import Json.Decode as Decode exposing (Decoder)
 
 
-type alias EnumSelectConfig enum msg =
+type alias Config enum msg =
     { -- List of enum values to pick from
       enumValues : List enum
 
@@ -31,7 +31,7 @@ type DefaultOptionConfig enum
     | DefaultOption enum
 
 
-from : EnumSelectConfig enum msg -> Html msg
+from : Config enum msg -> Html msg
 from { enumValues, valuePickedMessage, showVisibleLabel, defaultOption, enabled } =
     let
         toOption : Int -> enum -> ( String, Html msg )

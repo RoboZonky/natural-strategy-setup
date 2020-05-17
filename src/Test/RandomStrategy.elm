@@ -5,6 +5,8 @@ import Data.ExitConfig as ExitConfig
 import Data.Filter as Filter exposing (BuyingConfiguration, FilteredItem(..), MarketplaceEnablement, MarketplaceFilter, SellingConfiguration)
 import Data.Filter.Conditions exposing (Condition(..), Conditions, addCondition, emptyConditions)
 import Data.Filter.Conditions.Amount as Amount exposing (AmountCondition(..))
+import Data.Filter.Conditions.CurrentDaysPastDue as CurrentDaysPastDue exposing (CurrentDaysPastDueCondition(..))
+import Data.Filter.Conditions.DaysSinceLastPastDue as DaysSinceLastPastDue exposing (DaysSinceLastPastDueCondition(..))
 import Data.Filter.Conditions.ElapsedTermMonths as ElapsedTermMonths exposing (ElapsedTermMonthsCondition(..))
 import Data.Filter.Conditions.ElapsedTermPercent as ElapsedTermPercent exposing (ElapsedTermPercentCondition(..))
 import Data.Filter.Conditions.Health as Health exposing (Health(..), HealthCondition(..))
@@ -12,6 +14,7 @@ import Data.Filter.Conditions.Income as Income exposing (IncomeCondition(..))
 import Data.Filter.Conditions.Insurance exposing (Insurance(..), InsuranceCondition(..))
 import Data.Filter.Conditions.Interest as Interest exposing (InterestCondition(..))
 import Data.Filter.Conditions.LoanAnnuity as LoanAnnuity exposing (LoanAnnuityCondition(..))
+import Data.Filter.Conditions.LongestDaysPastDue as LongestDaysPastDue exposing (LongestDaysPastDueCondition(..))
 import Data.Filter.Conditions.OriginalTermMonths as OriginalTermMonths exposing (OriginalTermMonthsCondition(..))
 import Data.Filter.Conditions.Purpose as Purpose exposing (PurposeCondition(..))
 import Data.Filter.Conditions.Rating as Rating exposing (Rating, RatingCondition(..))
@@ -24,6 +27,7 @@ import Data.Filter.Conditions.RevenueRate as RevenueRate exposing (RevenueRateCo
 import Data.Filter.Conditions.SaleFee exposing (SaleFee(..), SaleFeeCondition(..))
 import Data.Filter.Conditions.Story exposing (Story(..), StoryCondition(..))
 import Data.Filter.Conditions.TermPercent as TermPercent exposing (TermPercentCondition(..))
+import Data.Filter.Constants as Constants
 import Data.Investment as Investment exposing (InvestmentsPerRating)
 import Data.Portfolio exposing (Portfolio(..))
 import Data.PortfolioStructure as PortfolioStructure exposing (PortfolioStructure)
@@ -201,6 +205,9 @@ participationSpecificConditions =
     , Random.map Condition_Health healthConditionGen
     , Random.map Condition_Original_Term_Months originalTermMonthsConditionGen
     , Random.map Condition_Relative_Sale_Discount relativeSaleDiscountConditionGen
+    , Random.map Condition_Current_Days_Past_Due currentDaysPastDueConditionGen
+    , Random.map Condition_Days_Since_Last_Past_Due daysSinceLastPastDueConditionGen
+    , Random.map Condition_Longest_Days_Past_Due longestDaysPastDueConditionGen
     ]
 
 
@@ -393,6 +400,54 @@ relativeSaleDiscountConditionGen =
         , Random.constant RelativeSaleDiscount.WithoutDiscount
         ]
         |> Random.map RelativeSaleDiscountCondition
+
+
+currentDaysPastDueConditionGen : Generator CurrentDaysPastDueCondition
+currentDaysPastDueConditionGen =
+    let
+        minDays =
+            0
+
+        maxDays =
+            Constants.maxDaysDue
+    in
+    Random.choices (Random.map CurrentDaysPastDue.LessThan (Random.int minDays maxDays))
+        [ Random.map (\( mi, mx ) -> CurrentDaysPastDue.Between mi mx) <| randomRangeGen minDays maxDays
+        , Random.map CurrentDaysPastDue.MoreThan (Random.int minDays maxDays)
+        ]
+        |> Random.map CurrentDaysPastDueCondition
+
+
+daysSinceLastPastDueConditionGen : Generator DaysSinceLastPastDueCondition
+daysSinceLastPastDueConditionGen =
+    let
+        minDays =
+            0
+
+        maxDays =
+            Constants.maxDaysDue
+    in
+    Random.choices (Random.map DaysSinceLastPastDue.LessThan (Random.int minDays maxDays))
+        [ Random.map (\( mi, mx ) -> DaysSinceLastPastDue.Between mi mx) <| randomRangeGen minDays maxDays
+        , Random.map DaysSinceLastPastDue.MoreThan (Random.int minDays maxDays)
+        ]
+        |> Random.map DaysSinceLastPastDueCondition
+
+
+longestDaysPastDueConditionGen : Generator LongestDaysPastDueCondition
+longestDaysPastDueConditionGen =
+    let
+        minDays =
+            0
+
+        maxDays =
+            Constants.maxDaysDue
+    in
+    Random.choices (Random.map LongestDaysPastDue.LessThan (Random.int minDays maxDays))
+        [ Random.map (\( mi, mx ) -> LongestDaysPastDue.Between mi mx) <| randomRangeGen minDays maxDays
+        , Random.map LongestDaysPastDue.MoreThan (Random.int minDays maxDays)
+        ]
+        |> Random.map LongestDaysPastDueCondition
 
 
 amountConditionGen : Generator AmountCondition

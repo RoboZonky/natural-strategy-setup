@@ -71,7 +71,7 @@ validationErrors (RemainingAmountCondition a) =
 
 positive : Int -> List String
 positive =
-    Validate.positive "Zbývající jistina"
+    Validate.notNegative "Zbývající jistina"
 
 
 minNotGtMax : Int -> Int -> List String

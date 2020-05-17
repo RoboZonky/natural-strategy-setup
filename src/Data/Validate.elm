@@ -2,7 +2,7 @@ module Data.Validate exposing
     ( intInRange
     , isNotEmpty
     , minNotGtMax
-    , positive
+    , notNegative
     , validate
     )
 
@@ -16,10 +16,10 @@ validate errorCondition error =
         []
 
 
-positive : String -> number -> List String
-positive what x =
+notNegative : String -> number -> List String
+notNegative what x =
     validate (x < 0)
-        (what ++ ": musí být kladné číslo")
+        (what ++ ": nesmí být záporné číslo")
 
 
 minNotGtMax : String -> number -> number -> List String

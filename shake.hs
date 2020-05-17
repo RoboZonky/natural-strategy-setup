@@ -26,6 +26,9 @@ main = shakeArgs options $ do
     cmd_ ("sed -i s/COMMIT_HASH_PLACEHOLDER/" <> commitHash <> "/") out
 
   testApp %> \_ -> do
+    StdoutTrim elmFiles <- command [] "git" ["ls-files", "src"]
+    need $ lines elmFiles
+
     cmd_ "elm make src/Test/TestApp.elm --optimize --output" testApp
 
   chromedriverZip %> \_ -> do

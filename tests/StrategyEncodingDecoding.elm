@@ -93,8 +93,21 @@ hundredRandomConditions : List Conditions
 hundredRandomConditions =
     Tuple.first <|
         Random.step
-            (Random.list 100 (RS.conditionsGen 0 Loan))
+            (Random.list 100
+                (filteredItemGen
+                    |> Random.andThen (RS.conditionsGen 0)
+                )
+            )
             (Random.initialSeed 0)
+
+
+filteredItemGen : Random.Generator FilteredItem
+filteredItemGen =
+    Random.uniform Loan
+        [ Participation
+        , Loan_And_Participation
+        , Participation_To_Sell
+        ]
 
 
 conditions : Test

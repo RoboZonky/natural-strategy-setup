@@ -240,5 +240,9 @@ conditionsDecoder =
                         |> andMap (Decode.succeed Nothing)
                         |> andMap (Decode.succeed Nothing)
                         |> andMap (Decode.succeed Nothing)
+                        -- Due conditions added in RoboZonky 5.9.0
+                        |> andMap (Decode.succeed Nothing)
+                        |> andMap (Decode.succeed Nothing)
+                        |> andMap (Decode.succeed Nothing)
                         |> Decode.map Just
             )
