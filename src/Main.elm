@@ -10,7 +10,7 @@ import Data.Strategy as Strategy exposing (StrategyConfiguration)
 import Data.TargetPortfolioSize as TargetPortfolioSize exposing (TargetPortfolioSize(..))
 import Data.Tooltip as Tooltip
 import Data.VersionedStrategy as VersionedStrategy
-import Html exposing (Html, a, footer, h1, text)
+import Html exposing (Html)
 import Html.Attributes exposing (class, href, style, target)
 import Task
 import Time exposing (Posix)
@@ -263,7 +263,7 @@ viewDocument model =
 view : Model -> Html Msg
 view { strategyConfig, accordionState, filterCreationState, filterDeletionState, tooltipStates, generatedOn, baseUrl, alert } =
     Grid.containerFluid []
-        [ h1 [] [ text "Konfigurace strategie" ]
+        [ Html.h1 [] [ Html.text "Konfigurace strategie" ]
         , Alert.view alert
         , Grid.row []
             [ Strategy.form strategyConfig accordionState filterCreationState filterDeletionState tooltipStates generatedOn
@@ -275,21 +275,21 @@ view { strategyConfig, accordionState, filterCreationState, filterDeletionState,
 
 infoFooter : Html Msg
 infoFooter =
-    footer
+    Html.footer
         [ class "fixed-bottom text-center py-3 container"
         , style "color" "gray"
         ]
-        [ text "Autor "
-        , a
+        [ Html.text "Autor "
+        , Html.a
             [ href "http://janhrcek.cz", target "_blank" ]
-            [ text "Jan Hrček" ]
-        , text ". Běžící verze "
-        , a [ href Version.githubCommitLink, target "_blank" ]
-            [ text Version.commitHash ]
-        , text ". Nahlásit chybu na "
-        , a
+            [ Html.text "Jan Hrček" ]
+        , Html.text ". Běžící verze "
+        , Html.a [ href Version.githubCommitLink, target "_blank" ]
+            [ Html.text Version.commitHash ]
+        , Html.text ". Nahlásit chybu na "
+        , Html.a
             [ href "https://github.com/RoboZonky/natural-strategy-setup/issues", target "_blank" ]
-            [ text "stránce projektu" ]
+            [ Html.text "stránce projektu" ]
         ]
 
 

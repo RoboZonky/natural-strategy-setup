@@ -14,7 +14,7 @@ module Data.Filter.Conditions.Health exposing
 
 import Bootstrap.Form.Checkbox as Checkbox
 import Data.Validate as Validate
-import Html exposing (Html, div)
+import Html exposing (Html)
 import Html.Attributes as Attr
 import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as Encode exposing (Value)
@@ -84,7 +84,7 @@ update msg (HealthList ilist) =
 
 form : HealthCondition -> Html HealthMsg
 form (HealthList ilist) =
-    div []
+    Html.div []
         (List.indexedMap
             (\index income -> healthCheckbox index income (List.member income ilist))
             allHealths

@@ -8,7 +8,7 @@ import Bootstrap.Utilities.Spacing as Spacing
 import Data.Filter exposing (FilteredItem(..), SellingConfiguration(..), validateSellingConfiguration)
 import Data.Filter.Complexity exposing (FilterComplexity(..), complexityButtonLabel)
 import Data.Tooltip as Tooltip
-import Html exposing (Html, div, text)
+import Html exposing (Html)
 import Types exposing (CreationModalMsg(..), Msg(..))
 import Util
 import Version exposing (filtersHowToLink)
@@ -27,7 +27,7 @@ form sellingConfiguration accordionState tooltipStates =
         { id = cardId
         , options = [ markOpenedAccordionCard cardId accordionState ]
         , header =
-            Accordion.headerH4 [] (Accordion.toggle [] [ text "Pravidla prodeje" ])
+            Accordion.headerH4 [] (Accordion.toggle [] [ Html.text "Pravidla prodeje" ])
                 |> Accordion.appendHeader [ Tooltip.popoverTip Tooltip.sellFilterListTip tooltipStates ]
         , blocks =
             [ Accordion.block [] [ viewSellingConfiguration sellingConfiguration ] ]
@@ -37,7 +37,7 @@ form sellingConfiguration accordionState tooltipStates =
 viewSellingConfiguration : SellingConfiguration -> CardBlock.Item Msg
 viewSellingConfiguration sellingConfiguration =
     CardBlock.custom <|
-        div []
+        Html.div []
             [ Radio.radio
                 [ Radio.id "sc1"
                 , radioName
@@ -86,25 +86,25 @@ filterListControls : SellingConfiguration -> Html Msg
 filterListControls sellingConfiguration =
     case sellingConfiguration of
         SellSomething filters ->
-            div []
+            Html.div []
                 [ filterListView RemoveSellFilter filters
                 , filterCreationButtons
                 , Util.viewErrors <| validateSellingConfiguration sellingConfiguration
                 ]
 
         SellWithoutChargeAndDiscount ->
-            text ""
+            Html.text ""
 
         SellWithoutCharge ->
-            text ""
+            Html.text ""
 
         SellNothing ->
-            text ""
+            Html.text ""
 
 
 filterCreationButtons : Html Msg
 filterCreationButtons =
-    div []
+    Html.div []
         [ filterCreationButton Simple Button.primary
         , filterCreationButton Complex Button.outlineSecondary
         , filtersHowToLink
@@ -119,7 +119,7 @@ filterCreationButton filterComplexity buttonType =
         , Button.attrs [ Spacing.mx1 ]
         , Button.small
         ]
-        [ text <| complexityButtonLabel filterComplexity ]
+        [ Html.text <| complexityButtonLabel filterComplexity ]
 
 
 type SellConfigEnum

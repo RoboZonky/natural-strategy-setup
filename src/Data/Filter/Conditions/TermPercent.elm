@@ -15,7 +15,7 @@ import Bootstrap.Form as Form
 import Bootstrap.Form.Radio as Radio
 import Data.Validate as Validate
 import DomId exposing (DomId)
-import Html exposing (Html, text)
+import Html exposing (Html)
 import Html.Events exposing (onSubmit)
 import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as Encode exposing (Value)
@@ -160,7 +160,7 @@ form (TermPercentCondition termPercent) =
         , Form.formInline [ onSubmit TermPercentNoOp ]
             [ termPercentRadio btwEnabled (SetBetween "0" "0") "je" "tp2"
             , numericInput (\x -> SetBetween x values.betweenMax) btwEnabled values.betweenMin
-            , text "až"
+            , Html.text "až"
             , numericInput (\y -> SetBetween values.betweenMin y) btwEnabled values.betweenMax
             , unit
             ]
@@ -174,7 +174,7 @@ form (TermPercentCondition termPercent) =
 
 unit : Html msg
 unit =
-    text "% původní délky"
+    Html.text "% původní délky"
 
 
 numericInput : (String -> TermPercentMsg) -> Bool -> String -> Html TermPercentMsg

@@ -25,7 +25,7 @@ import Data.Filter.Conditions.RevenueRate as RevenueRate exposing (RevenueRate(.
 import Data.Filter.Conditions.SaleFee as SaleFee exposing (SaleFee(..), SaleFeeCondition(..))
 import Data.Filter.Conditions.Story as Story exposing (Story(..), StoryCondition(..))
 import Data.Filter.Conditions.TermPercent as TermPercent exposing (TermPercent(..), TermPercentCondition(..), TermPercentMsg)
-import Html exposing (Html, div, span, text)
+import Html exposing (Html)
 import Html.Attributes exposing (class)
 import Html.Events exposing (onClick)
 import View.EnumSelect as Select exposing (DefaultOptionConfig(..))
@@ -54,9 +54,9 @@ form filterComplexity filteredItem conditions =
                 conditionEnablementDropdown filteredItem conditions
 
             else
-                text ""
+                Html.text ""
     in
-    div [ class "condition-subform-container" ]
+    Html.div [ class "condition-subform-container" ]
         (List.map (conditionSubform filteredItem) enabledConditions
             ++ [ dropdownWhenFilterComplexOrConditionsEmpty ]
         )
@@ -106,7 +106,7 @@ conditionEnablementDropdown filteredItem conditions =
             getVisibleLabel filteredItem
     in
     if List.isEmpty conditionsThatCanBeEnabled then
-        text ""
+        Html.text ""
 
     else
         Select.from
@@ -234,10 +234,10 @@ closeableWrapper : FilteredItem -> ConditionType -> Html Msg -> Html Msg
 closeableWrapper filteredItem conditionType subform =
     let
         removeButton =
-            span [ onClick (RemoveCondition conditionType), class "float-right" ] [ text "✖" ]
+            Html.span [ onClick (RemoveCondition conditionType), class "float-right" ] [ Html.text "✖" ]
 
         conditionLabel =
-            text <| getVisibleLabel filteredItem conditionType
+            Html.text <| getVisibleLabel filteredItem conditionType
     in
     Grid.row [ Row.attrs [ class "condition-subform" ] ]
         [ Grid.col [ Col.xs3 ] [ conditionLabel ]

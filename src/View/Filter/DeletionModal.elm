@@ -10,7 +10,7 @@ module View.Filter.DeletionModal exposing
 import Bootstrap.Button as Button
 import Bootstrap.Modal as Modal
 import Data.Filter as Filter exposing (BuyingConfiguration, MarketplaceFilter, SellingConfiguration)
-import Html exposing (Html, text)
+import Html exposing (Html)
 
 
 type alias Model =
@@ -90,24 +90,24 @@ view config { changeToConfirm, openCloseState } =
         Just change ->
             Modal.config (cancelDeletion config change)
                 |> Modal.large
-                |> Modal.h5 [] [ text "Potvrďte odstranění filtrů" ]
+                |> Modal.h5 [] [ Html.text "Potvrďte odstranění filtrů" ]
                 |> Modal.body [] [ modalBody change ]
                 |> Modal.footer []
                     [ Button.button
                         [ Button.danger
                         , Button.onClick (confirmDeletion config change)
                         ]
-                        [ text "Ano, odstranit" ]
+                        [ Html.text "Ano, odstranit" ]
                     , Button.button
                         [ Button.success
                         , Button.onClick (cancelDeletion config change)
                         ]
-                        [ text "Zrušit změnu" ]
+                        [ Html.text "Zrušit změnu" ]
                     ]
                 |> Modal.view openCloseState
 
         Nothing ->
-            text ""
+            Html.text ""
 
 
 modalBody : ChangeToConfirm -> Html a
@@ -123,7 +123,7 @@ modalBody change =
 viewFiltersToBeDeleted : List MarketplaceFilter -> String -> Html a
 viewFiltersToBeDeleted filters itemBeingChanged =
     Html.div []
-        [ text <| "Tato změna pravidel " ++ itemBeingChanged ++ " vyžaduje odstranění následujících filtrů"
+        [ Html.text <| "Tato změna pravidel " ++ itemBeingChanged ++ " vyžaduje odstranění následujících filtrů"
         , Html.ul [] <|
             List.map viewFilter filters
         ]

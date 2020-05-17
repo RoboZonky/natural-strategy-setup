@@ -14,7 +14,7 @@ module Data.Filter.Conditions.Purpose exposing
 
 import Bootstrap.Form.Checkbox as Checkbox
 import Data.Validate as Validate
-import Html exposing (Html, div)
+import Html exposing (Html)
 import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as Encode exposing (Value)
 import Util
@@ -120,7 +120,7 @@ form : PurposeCondition -> Html PurposeMsg
 form (PurposeList plist) =
     allPurposes
         |> List.indexedMap (\index purpose -> purposeCheckbox index purpose (List.member purpose plist))
-        |> div []
+        |> Html.div []
 
 
 purposeCheckbox : Int -> Purpose -> Bool -> Html PurposeMsg

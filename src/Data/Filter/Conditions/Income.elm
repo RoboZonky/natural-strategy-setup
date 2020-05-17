@@ -14,7 +14,7 @@ module Data.Filter.Conditions.Income exposing
 
 import Bootstrap.Form.Checkbox as Checkbox
 import Data.Validate as Validate
-import Html exposing (Html, div)
+import Html exposing (Html)
 import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as Encode exposing (Value)
 import Util
@@ -115,7 +115,7 @@ form : IncomeCondition -> Html IncomeMsg
 form (IncomeList ilist) =
     allIncomes
         |> List.indexedMap (\index income -> incomeCheckbox index income (List.member income ilist))
-        |> div []
+        |> Html.div []
 
 
 incomeCheckbox : Int -> Income -> Bool -> Html IncomeMsg

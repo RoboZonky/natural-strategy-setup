@@ -9,7 +9,7 @@ module Data.Filter.Conditions.Story exposing
     )
 
 import Bootstrap.Form.Radio as Radio
-import Html exposing (Html, div)
+import Html exposing (Html)
 import Json.Decode as Decode exposing (Decoder)
 import Json.Encode exposing (Value)
 import Util
@@ -65,7 +65,7 @@ form : StoryCondition -> Html StoryCondition
 form (StoryCondition currentStory) =
     allStories
         |> List.indexedMap (\index story -> storyRadio index currentStory story)
-        |> div []
+        |> Html.div []
 
 
 storyRadio : Int -> Story -> Story -> Html StoryCondition

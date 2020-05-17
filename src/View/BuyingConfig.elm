@@ -9,7 +9,7 @@ import Data.Filter as Filter exposing (BuyingConfiguration, FilteredItem(..), Ma
 import Data.Filter.Complexity exposing (FilterComplexity(..), complexityButtonLabel)
 import Data.Tooltip as Tooltip
 import DomId exposing (DomId)
-import Html exposing (Html, div, text)
+import Html exposing (Html)
 import Types exposing (CreationModalMsg(..), Msg(..))
 import Version exposing (filtersHowToLink)
 import View.CardHeightWorkaround exposing (markOpenedAccordionCard)
@@ -27,7 +27,7 @@ form buyingConfiguration accordionState tooltipStates =
         { id = cardId
         , options = [ markOpenedAccordionCard cardId accordionState ]
         , header =
-            Accordion.headerH4 [] (Accordion.toggle [] [ text "Pravidla nákupu" ])
+            Accordion.headerH4 [] (Accordion.toggle [] [ Html.text "Pravidla nákupu" ])
                 |> Accordion.appendHeader [ Tooltip.popoverTip Tooltip.buyFilterListTip tooltipStates ]
         , blocks =
             [ Accordion.block [] [ viewBuyingConfiguration buyingConfiguration ] ]
@@ -54,14 +54,14 @@ viewBuyingConfiguration buyingConfiguration =
                     []
     in
     CardBlock.custom <|
-        div [] <|
+        Html.div [] <|
             primarySecondaryEnablementCheckboxes enablement
                 :: additionalControls
 
 
 primarySecondaryEnablementCheckboxes : MarketplaceEnablement -> Html Msg
 primarySecondaryEnablementCheckboxes enablement =
-    div []
+    Html.div []
         [ marketplaceEnablementCheckbox TogglePrimaryMarket (not enablement.primaryEnabled) "me1" "Ignorovat všechny půjčky."
         , marketplaceEnablementCheckbox ToggleSecondaryMarket (not enablement.secondaryEnabled) "me2" "Ignorovat všechny participace."
         ]
@@ -83,7 +83,7 @@ filterCreationButtons marketplaceEnablement =
         allowedFilteredItems =
             Filter.getAllowedFilterItems marketplaceEnablement
     in
-    div []
+    Html.div []
         [ filterCreationButton allowedFilteredItems Simple Button.primary
         , filterCreationButton allowedFilteredItems Complex Button.outlineSecondary
         , filtersHowToLink
@@ -98,4 +98,4 @@ filterCreationButton allowedFilteredItems filterComplexity buttonType =
         , Button.onClick <| CreationModalMsg <| OpenCreationModal filterComplexity allowedFilteredItems
         , Button.attrs [ Spacing.mx1 ]
         ]
-        [ text <| complexityButtonLabel filterComplexity ]
+        [ Html.text <| complexityButtonLabel filterComplexity ]

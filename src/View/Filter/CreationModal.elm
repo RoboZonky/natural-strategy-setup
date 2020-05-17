@@ -11,7 +11,7 @@ import Data.Filter as Filter exposing (FilteredItem(..), MarketplaceFilter, setF
 import Data.Filter.Complexity exposing (FilterComplexity(..))
 import Data.Filter.Conditions exposing (ConditionType, Conditions, getEnabledConditionTypes, removeConditions)
 import Data.Tooltip as Tooltip
-import Html exposing (Html, div, hr, li, text, ul)
+import Html exposing (Html)
 import Html.Attributes exposing (style)
 import Html.Events exposing (onSubmit)
 import Types exposing (CreationModalMsg(..))
@@ -152,13 +152,13 @@ view { editedFilter, openCloseState, editingPositiveSubform, allowedFilteredItem
                             [ Button.danger
                             , Button.onClick CloseModal
                             ]
-                            [ text "Zrušit" ]
+                            [ Html.text "Zrušit" ]
                       , Button.button
                             [ Button.success
                             , Button.disabled (not <| Filter.isValid editedFilter)
                             , Button.onClick SaveFilter
                             ]
-                            [ text "Uložit" ]
+                            [ Html.text "Uložit" ]
                       , exceptionButtonWhenFilterComplex filterComplexity editingPositiveSubform
                       ]
                     )
@@ -169,19 +169,19 @@ view { editedFilter, openCloseState, editingPositiveSubform, allowedFilteredItem
                             [ Button.success
                             , Button.onClick ConfirmConditionsRemoval
                             ]
-                            [ text "Ano, provést změnu" ]
+                            [ Html.text "Ano, provést změnu" ]
                       , Button.button
                             [ Button.danger
                             , Button.onClick CancelConditionsRemoval
                             ]
-                            [ text "Ne, zrušit změnu" ]
+                            [ Html.text "Ne, zrušit změnu" ]
                       ]
                     )
     in
     Modal.config CloseModal
         |> Modal.large
         |> Modal.h5 []
-            [ text modalTitle
+            [ Html.text modalTitle
             , Tooltip.popoverTipForModal tooltipKey tooltipStates
             ]
         |> Modal.body [] [ modalBody ]
@@ -191,13 +191,13 @@ view { editedFilter, openCloseState, editingPositiveSubform, allowedFilteredItem
 
 askForConfirmationOfRemoval : FilteredItem -> List ConditionType -> List ConditionType -> Html CreationModalMsg
 askForConfirmationOfRemoval filteredItem conditionsToBeRemoved conditionsToBeRemovedFromException =
-    div []
-        [ text <|
+    Html.div []
+        [ Html.text <|
             "Chystáte se změnit pravidlo, aby sloužilo k filtrování "
                 ++ Filter.itemToPluralStringGenitive filteredItem
                 ++ ". Tato změna vyžaduje odstranění následujících podmínek pravidla či výjimky, které jste dříve přidali:"
-        , ul [] <|
-            List.map (\condToRemove -> li [] [ text <| Conditions.getVisibleLabel filteredItem condToRemove ])
+        , Html.ul [] <|
+            List.map (\condToRemove -> Html.li [] [ Html.text <| Conditions.getVisibleLabel filteredItem condToRemove ])
                 (conditionsToBeRemoved ++ conditionsToBeRemovedFromException)
         ]
 
@@ -216,14 +216,14 @@ exceptionButtonWhenFilterComplex filterComplexity editingPositiveSubform =
     in
     case filterComplexity of
         Simple ->
-            text ""
+            Html.text ""
 
         Complex ->
             Button.button
                 [ Button.secondary
                 , Button.onClick TogglePositiveNegativeSubform
                 ]
-                [ text exceptionButtonText ]
+                [ Html.text exceptionButtonText ]
 
 
 marketplaceFilterEditor : MarketplaceFilter -> FilterComplexity -> Bool -> List FilteredItem -> Html CreationModalMsg
@@ -237,8 +237,8 @@ marketplaceFilterEditor mf filterComplexity editingPositiveSubform allowedFilter
                 Filter.filterTextView mf
 
             else
-                ul [ style "color" "red" ] <|
-                    List.map (\e -> li [] [ text e ]) validationErrors
+                Html.ul [ style "color" "red" ] <|
+                    List.map (\e -> Html.li [] [ Html.text e ]) validationErrors
 
         conditionsSubform =
             if editingPositiveSubform then
@@ -251,12 +251,12 @@ marketplaceFilterEditor mf filterComplexity editingPositiveSubform allowedFilter
         [ Grid.row []
             [ Grid.col
                 [ Col.xs12 ]
-                [ div []
+                [ Html.div []
                     [ filteredItemRadios allowedFilteredItems mf.whatToFilter
                     , conditionsOrExceptionTitle editingPositiveSubform
                     , conditionsSubform
                     ]
-                , hr [] []
+                , Html.hr [] []
                 , previewOrValidationErrors
                 ]
             ]
@@ -267,10 +267,10 @@ filteredItemRadios : List FilteredItem -> FilteredItem -> Html CreationModalMsg
 filteredItemRadios allowedFilteredItems currentFilteredItem =
     case allowedFilteredItems of
         [] ->
-            text ""
+            Html.text ""
 
         [ _ {- only one item - just toString it without showing radios -} ] ->
-            text <|
+            Html.text <|
                 case currentFilteredItem of
                     Participation_To_Sell ->
                         "Pravidlo pro prodej " ++ Filter.itemToPluralStringGenitive currentFilteredItem
@@ -280,7 +280,7 @@ filteredItemRadios allowedFilteredItems currentFilteredItem =
 
         moreFilteredItems ->
             Form.formInline [ onSubmit ModalNoOp ]
-                (text "Pravidlo pro nákup "
+                (Html.text "Pravidlo pro nákup "
                     :: List.indexedMap (filteredItemRadio currentFilteredItem) moreFilteredItems
                 )
 
@@ -299,7 +299,7 @@ filteredItemRadio currentFilteredItem index filteredItem =
 
 conditionsOrExceptionTitle : Bool -> Html a
 conditionsOrExceptionTitle editingPositiveSubform =
-    text <|
+    Html.text <|
         if editingPositiveSubform then
             ""
 

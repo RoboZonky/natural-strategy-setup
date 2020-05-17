@@ -15,7 +15,7 @@ import Bootstrap.Form as Form
 import Bootstrap.Form.Radio as Radio
 import Data.Validate as Validate
 import DomId exposing (DomId)
-import Html exposing (Html, text)
+import Html exposing (Html)
 import Html.Events exposing (onSubmit)
 import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as Encode exposing (Value)
@@ -210,7 +210,7 @@ form (RelativeSaleDiscountCondition relativeSaleDiscount) =
         , Form.formInline [ onSubmit RelativeSaleDiscountNoOp ]
             [ relativeSaleDiscountRadio btwEnabled (SetBetween "0" "0") "je" "rsd2"
             , numericInput (\x -> SetBetween x values.betweenMax) btwEnabled values.betweenMin
-            , text "až"
+            , Html.text "až"
             , numericInput (\y -> SetBetween values.betweenMin y) btwEnabled values.betweenMax
             , unit
             ]
@@ -228,7 +228,7 @@ form (RelativeSaleDiscountCondition relativeSaleDiscount) =
 
 unit : Html msg
 unit =
-    text "% zbývající jistiny"
+    Html.text "% zbývající jistiny"
 
 
 numericInput : (String -> RelativeSaleDiscountMsg) -> Bool -> String -> Html RelativeSaleDiscountMsg

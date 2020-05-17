@@ -1,7 +1,7 @@
 module View.Alert exposing (AlertData(..), view)
 
 import Bootstrap.Alert
-import Html exposing (Html, a, button, div, li, span, text, ul)
+import Html exposing (Html)
 import Html.Attributes exposing (class, href, target, type_)
 import Html.Events exposing (onClick)
 import Types exposing (Msg(..))
@@ -20,43 +20,43 @@ view maybeAlert =
     case maybeAlert of
         SuccessAlert successText ->
             Bootstrap.Alert.simpleSuccess []
-                [ text successText
+                [ Html.text successText
                 , closeAlertButton
                 ]
 
         ErrorAlert error ->
             Bootstrap.Alert.simpleDanger []
-                [ text "Pokus o načtení strategie z URL se nezdařil. Prosím nahlašte chybu na stránce projektu kliknutím na tento "
-                , a [ href (openIssueUrl error) ] [ text "odkaz" ]
+                [ Html.text "Pokus o načtení strategie z URL se nezdařil. Prosím nahlašte chybu na stránce projektu kliknutím na tento "
+                , Html.a [ href (openIssueUrl error) ] [ Html.text "odkaz" ]
                 , closeAlertButton
                 ]
 
         WarningAlert warnings ->
             Bootstrap.Alert.simpleWarning []
                 [ closeAlertButton
-                , div [] [ text <| "Upozornění: Strategii se podařilo obnovit z URL jen částečně." ]
-                , div []
-                    [ text "Došlo k několika zpětně nekompatibilním změnám ve formátu strategie (viz "
-                    , a
+                , Html.div [] [ Html.text <| "Upozornění: Strategii se podařilo obnovit z URL jen částečně." ]
+                , Html.div []
+                    [ Html.text "Došlo k několika zpětně nekompatibilním změnám ve formátu strategie (viz "
+                    , Html.a
                         [ href "https://github.com/RoboZonky/natural-strategy-setup/blob/master/docs/StrategyFormatChangelog.md"
                         , target "_blank"
                         ]
-                        [ text "dokumentace" ]
-                    , text ")"
+                        [ Html.text "dokumentace" ]
+                    , Html.text ")"
                     ]
-                , div [] [ text "V důsledku toho musely být některé části vaší konfigurace odstraněny." ]
-                , ul [] <| List.map (\warning -> li [] [ text warning ]) warnings
+                , Html.div [] [ Html.text "V důsledku toho musely být některé části vaší konfigurace odstraněny." ]
+                , Html.ul [] <| List.map (\warning -> Html.li [] [ Html.text warning ]) warnings
                 ]
 
         NoAlert ->
-            text ""
+            Html.text ""
 
 
 closeAlertButton : Html Msg
 closeAlertButton =
-    button
+    Html.button
         [ type_ "button", class "close", onClick DismissAlert ]
-        [ span [] [ text "×" ] ]
+        [ Html.span [] [ Html.text "×" ] ]
 
 
 openIssueUrl : String -> String

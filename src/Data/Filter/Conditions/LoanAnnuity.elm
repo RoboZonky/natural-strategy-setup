@@ -15,7 +15,7 @@ import Bootstrap.Form as Form
 import Bootstrap.Form.Radio as Radio
 import Data.Validate as Validate
 import DomId exposing (DomId)
-import Html exposing (Html, text)
+import Html exposing (Html)
 import Html.Events exposing (onSubmit)
 import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as Encode exposing (Value)
@@ -143,7 +143,7 @@ form (LoanAnnuityCondition la) =
         , Form.formInline [ onSubmit LoanAnnuityNoOp ]
             [ loanAnnuityRadio btwEnabled (SetBetween "0" "0") "je" "annuity2"
             , numericInput (\x -> SetBetween x values.betweenMax) btwEnabled values.betweenMin
-            , text "až"
+            , Html.text "až"
             , numericInput (\y -> SetBetween values.betweenMin y) btwEnabled values.betweenMax
             , unit
             ]
@@ -157,7 +157,7 @@ form (LoanAnnuityCondition la) =
 
 unit : Html msg
 unit =
-    text "Kč"
+    Html.text "Kč"
 
 
 numericInput : (String -> LoanAnnuityMsg) -> Bool -> String -> Html LoanAnnuityMsg

@@ -3,7 +3,7 @@ module Test.TestApp exposing (main)
 import Browser
 import Data.Strategy as Strategy exposing (StrategyConfiguration)
 import Data.VersionedStrategy as VersionedStrategy
-import Html exposing (Html, button, div, input, span, text, textarea)
+import Html exposing (Html)
 import Html.Attributes exposing (cols, id, readonly, rows, type_, value)
 import Html.Events exposing (onClick, onInput)
 import Random
@@ -56,8 +56,8 @@ view seed =
         strategyString =
             Strategy.renderStrategyConfiguration "dummy" dummyGeneratedOn randomStrategyConfig
     in
-    div []
-        [ textarea
+    Html.div []
+        [ Html.textarea
             [ value strategyString
             , readonly True
             , rows 50
@@ -65,18 +65,20 @@ view seed =
             , id "renderedStrategy"
             ]
             []
-        , div []
-            [ button [ onClick PrevSeed ] [ text "Previous Seed" ]
-            , input [ onInput SetSeed, type_ "text", value (String.fromInt seed), id "seed" ] []
-            , button [ onClick NextSeed, id "nextSeedButton" ] [ text "Next Seed" ]
+        , Html.div []
+            [ Html.button [ onClick PrevSeed ] [ Html.text "Previous Seed" ]
+            , Html.input [ onInput SetSeed, type_ "text", value (String.fromInt seed), id "seed" ] []
+            , Html.button [ onClick NextSeed, id "nextSeedButton" ] [ Html.text "Next Seed" ]
             ]
-        , div []
-            [ text <| "Strategy validation errors: "
-            , span [ id "validationErrors" ] [ text <| Util.stringListToString <| Strategy.validateStrategyConfiguration randomStrategyConfig ]
+        , Html.div []
+            [ Html.text <| "Strategy validation errors: "
+            , Html.span [ id "validationErrors" ]
+                [ Html.text <| Util.stringListToString <| Strategy.validateStrategyConfiguration randomStrategyConfig ]
             ]
-        , div []
-            [ text "JSON encode / decode roundtrip: "
-            , span [ id "encodingDecodingResult" ] [ text <| testEncodeDecodeDoesntChangeStrategy randomStrategyConfig ]
+        , Html.div []
+            [ Html.text "JSON encode / decode roundtrip: "
+            , Html.span [ id "encodingDecodingResult" ]
+                [ Html.text <| testEncodeDecodeDoesntChangeStrategy randomStrategyConfig ]
             ]
         ]
 

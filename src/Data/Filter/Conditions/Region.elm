@@ -14,7 +14,7 @@ module Data.Filter.Conditions.Region exposing
 
 import Bootstrap.Form.Checkbox as Checkbox
 import Data.Validate as Validate
-import Html exposing (Html, div)
+import Html exposing (Html)
 import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as Encode exposing (Value)
 import Util
@@ -145,7 +145,7 @@ form : RegionCondition -> Html RegionMsg
 form (RegionList rlist) =
     allRegions
         |> List.indexedMap (\index region -> regionCheckbox index region (List.member region rlist))
-        |> div []
+        |> Html.div []
 
 
 regionCheckbox : Int -> Region -> Bool -> Html RegionMsg

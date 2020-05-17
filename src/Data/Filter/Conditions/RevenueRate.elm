@@ -15,7 +15,7 @@ import Bootstrap.Form as Form
 import Bootstrap.Form.Radio as Radio
 import Data.Validate as Validate
 import DomId exposing (DomId)
-import Html exposing (Html, text)
+import Html exposing (Html)
 import Html.Events exposing (onSubmit)
 import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as Encode exposing (Value)
@@ -143,7 +143,7 @@ form (RevenueRateCondition rrc) =
         , Form.formInline [ onSubmit RevenueRateNoOp ]
             [ revenueRateRadio btwEnabled (SetBetween "0" "0") "je" "revenueRate2"
             , numericInput (\x -> SetBetween x values.betweenMax) btwEnabled values.betweenMin
-            , text "až"
+            , Html.text "až"
             , numericInput (\y -> SetBetween values.betweenMin y) btwEnabled values.betweenMax
             , unit
             ]
@@ -157,7 +157,7 @@ form (RevenueRateCondition rrc) =
 
 unit : Html msg
 unit =
-    text " % p.a."
+    Html.text " % p.a."
 
 
 numericInput : (String -> RevenueRateMsg) -> Bool -> String -> Html RevenueRateMsg

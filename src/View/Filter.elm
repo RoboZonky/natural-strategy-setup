@@ -7,7 +7,7 @@ import Bootstrap.Grid as Grid
 import Bootstrap.Grid.Col as Col
 import Bootstrap.Utilities.Spacing as Spacing
 import Data.Filter as Filter exposing (FilteredItem(..), MarketplaceFilter)
-import Html exposing (Html, div, span, text)
+import Html exposing (Html)
 import Html.Attributes exposing (class)
 import Html.Events exposing (onClick)
 import Types exposing (Msg)
@@ -17,19 +17,20 @@ filterListView : (Int -> Msg) -> List MarketplaceFilter -> Html Msg
 filterListView removeFilterByIndexMsg filters =
     case filters of
         [] ->
-            text ""
+            Html.text ""
 
         nonEmptyList ->
             List.indexedMap (viewFilter removeFilterByIndexMsg) nonEmptyList
                 |> List.intersperse orConnective
-                |> div [ Spacing.p2 ]
+                |> Html.div [ Spacing.p2 ]
 
 
 viewFilter : (Int -> Msg) -> Int -> MarketplaceFilter -> Html Msg
 viewFilter removeFilterByIndexMsg index mf =
     let
         removeButton =
-            span [ onClick (removeFilterByIndexMsg index), class "float-right" ] [ text "✖" ]
+            Html.span [ onClick (removeFilterByIndexMsg index), class "float-right" ]
+                [ Html.text "✖" ]
 
         filterText =
             Filter.filterTextView mf
@@ -47,6 +48,6 @@ viewFilter removeFilterByIndexMsg index mf =
 
 orConnective : Html a
 orConnective =
-    div [ class "or-connective" ]
-        [ Badge.pillSecondary [] [ text "a nebo" ]
+    Html.div [ class "or-connective" ]
+        [ Badge.pillSecondary [] [ Html.text "a nebo" ]
         ]

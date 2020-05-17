@@ -18,7 +18,7 @@ module Util exposing
 
 import FormatNumber
 import FormatNumber.Locales exposing (Locale)
-import Html exposing (Html, div, text)
+import Html exposing (Html)
 import Html.Attributes exposing (style)
 import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as Encode exposing (Value)
@@ -106,10 +106,10 @@ and =
 viewErrors : List String -> Html a
 viewErrors errors =
     if List.isEmpty errors then
-        text ""
+        Html.text ""
 
     else
-        div [ style "color" "red" ] [ text <| String.join ";" errors ]
+        Html.div [ style "color" "red" ] [ Html.text <| String.join ";" errors ]
 
 
 intListToString : List Int -> String

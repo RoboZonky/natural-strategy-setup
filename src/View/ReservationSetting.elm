@@ -5,7 +5,7 @@ import Bootstrap.Form.Fieldset as Fieldset
 import Bootstrap.Form.Radio as Radio
 import Data.ReservationSetting as ReservationSetting exposing (ReservationSetting(..))
 import DomId exposing (DomId)
-import Html exposing (Html, a, text)
+import Html exposing (Html)
 import Html.Attributes exposing (class, href, target)
 import Types exposing (Msg(..))
 
@@ -14,7 +14,7 @@ form : ReservationSetting -> CardBlock.Item Msg
 form reservationSetting =
     Fieldset.config
         |> Fieldset.asGroup
-        |> Fieldset.legend [] [ text "Rezervační systém ", helpLink ]
+        |> Fieldset.legend [] [ Html.text "Rezervační systém ", helpLink ]
         |> Fieldset.children
             [ reservationRadio "reservationIgnore" Ignore reservationSetting
             , reservationRadio "reservationAcceptMatching" AcceptMatching reservationSetting
@@ -25,12 +25,12 @@ form reservationSetting =
 
 helpLink : Html a
 helpLink =
-    a
+    Html.a
         [ href "https://github.com/RoboZonky/natural-strategy-setup/blob/master/docs/ReservationSystem.md"
         , class "fieldset-legend-help"
         , target "_blank"
         ]
-        [ text "Nápověda" ]
+        [ Html.text "Nápověda" ]
 
 
 reservationRadio : DomId -> ReservationSetting -> ReservationSetting -> Html Msg

@@ -5,7 +5,7 @@ module View.EnumSelect exposing
     )
 
 import Dict
-import Html exposing (Html, option, text)
+import Html exposing (Html)
 import Html.Attributes exposing (class, disabled, selected, value)
 import Html.Events exposing (stopPropagationOn, targetValue)
 import Html.Keyed as Keyed
@@ -41,9 +41,9 @@ from { enumValues, valuePickedMessage, showVisibleLabel, defaultOption, enabled 
                     String.fromInt index
             in
             ( key
-            , option
+            , Html.option
                 [ value key ]
-                [ text (showVisibleLabel enum) ]
+                [ Html.text (showVisibleLabel enum) ]
             )
 
         toOptionWithDefault : enum -> Int -> enum -> ( String, Html msg )
@@ -53,9 +53,9 @@ from { enumValues, valuePickedMessage, showVisibleLabel, defaultOption, enabled 
                     String.fromInt index
             in
             ( key
-            , option
+            , Html.option
                 [ value key, selected (enum == defaultVal) ]
-                [ text (showVisibleLabel enum) ]
+                [ Html.text (showVisibleLabel enum) ]
             )
 
         stringToEnum : String -> Maybe enum
@@ -96,9 +96,9 @@ from { enumValues, valuePickedMessage, showVisibleLabel, defaultOption, enabled 
 dummyOption : String -> ( String, Html msg )
 dummyOption info =
     ( "dummyInformativeOption"
-    , option
+    , Html.option
         [ selected True ]
-        [ text info ]
+        [ Html.text info ]
     )
 
 

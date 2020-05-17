@@ -3,7 +3,7 @@ module View.Tooltip exposing (popoverTip, popoverTipForModal)
 import Bootstrap.Popover as Popover
 import Bootstrap.Utilities.Spacing as Spacing
 import Data.Tooltip as Tooltip exposing (TipId)
-import Html exposing (Html, div, i, text)
+import Html exposing (Html)
 import Html.Attributes exposing (class, style)
 import Html.Events exposing (stopPropagationOn)
 import Json.Decode
@@ -12,7 +12,7 @@ import Types exposing (CreationModalMsg(..), Msg(..))
 
 icon : Html a
 icon =
-    i
+    Html.i
         [ class "fa fa-question-circle"
         , style "font-size" "18px"
         , style "color" "gray"
@@ -42,9 +42,9 @@ popover tipMsg noOpMsg elementToHoverOn tipId tooltipStates =
         popoverText =
             Tooltip.getTooltipText tipId
     in
-    Popover.config (div (Popover.onHover popoverState (tipMsg tipId) ++ [ onClickNoOp noOpMsg ]) [ elementToHoverOn ])
+    Popover.config (Html.div (Popover.onHover popoverState (tipMsg tipId) ++ [ onClickNoOp noOpMsg ]) [ elementToHoverOn ])
         |> Popover.right
-        |> Popover.content [] [ text popoverText ]
+        |> Popover.content [] [ Html.text popoverText ]
         |> Popover.view popoverState
 
 

@@ -6,7 +6,7 @@ import Bootstrap.Form.Fieldset as Fieldset
 import Bootstrap.Form.Radio as Radio
 import Bootstrap.Utilities.Spacing as Spacing
 import Data.TargetPortfolioSize as TargetPortfolioSize exposing (TargetPortfolioSize(..))
-import Html exposing (Html, text)
+import Html exposing (Html)
 import Html.Events exposing (onSubmit)
 import Types exposing (Msg(..))
 import Util
@@ -29,7 +29,7 @@ form targetPortfolioSize =
     in
     Fieldset.config
         |> Fieldset.asGroup
-        |> Fieldset.legend [] [ text "Cílová zůstatková částka" ]
+        |> Fieldset.legend [] [ Html.text "Cílová zůstatková částka" ]
         |> Fieldset.children
             [ Form.formInline [ onSubmit NoOp ]
                 [ Radio.radio
@@ -48,7 +48,7 @@ form targetPortfolioSize =
                     ]
                     "maximálně"
                 , numericInput TargetPortfolioSizeChanged isBounded value
-                , text "Kč."
+                , Html.text "Kč."
                 ]
             , validationErrors
             ]

@@ -16,7 +16,7 @@ import Bootstrap.Form.Radio as Radio
 import Data.Filter.Conditions.Rating as Rating exposing (Rating, showInterest, showInterestPercent)
 import Data.Validate as Validate
 import DomId exposing (DomId)
-import Html exposing (Html, text)
+import Html exposing (Html)
 import Html.Events exposing (onSubmit)
 import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as Encode exposing (Value)
@@ -186,7 +186,7 @@ form (InterestCondition interest) =
         , Form.formInline [ onSubmit InterestNoOp ]
             [ interestRadio (interestEnum == BTW) (SetBetween Rating.AAAAA Rating.D) "je\u{00A0}" "interest2"
             , Tuple.first dropdowns.between
-            , text "\u{00A0}až\u{00A0}"
+            , Html.text "\u{00A0}až\u{00A0}"
             , Tuple.second dropdowns.between
             , unit
             ]
@@ -200,7 +200,7 @@ form (InterestCondition interest) =
 
 unit : Html msg
 unit =
-    text "\u{00A0}% p.a."
+    Html.text "\u{00A0}% p.a."
 
 
 ratingDropdown : Bool -> DefaultOptionConfig Rating -> (Rating -> InterestMsg) -> Html InterestMsg

@@ -8,7 +8,7 @@ import Bootstrap.Form.Radio as Radio
 import Bootstrap.Utilities.Spacing as Spacing
 import Data.ExitConfig as ExitConfig exposing (ExitConfig(..))
 import Data.Tooltip as Tooltip
-import Html exposing (Html, div, text)
+import Html exposing (Html)
 import Html.Attributes exposing (size)
 import Html.Events exposing (onSubmit)
 import Time exposing (Posix)
@@ -38,7 +38,7 @@ form exitConfig generatedOn tooltipStates =
     in
     Fieldset.config
         |> Fieldset.asGroup
-        |> Fieldset.legend [] [ text "Opuštění Zonky" ]
+        |> Fieldset.legend [] [ Html.text "Opuštění Zonky" ]
         |> Fieldset.children
             [ Radio.radio
                 [ Radio.id "exit1"
@@ -68,7 +68,7 @@ form exitConfig generatedOn tooltipStates =
                 leaveConfigSubform exitEnum exitDate selloffDate tooltipStates
 
               else
-                text ""
+                Html.text ""
             , validationErrors
             ]
         |> Fieldset.view
@@ -90,7 +90,7 @@ dateToString =
 
 leaveConfigSubform : ExitConfigEnum -> String -> String -> Tooltip.States -> Html Msg
 leaveConfigSubform exitEnum exitDate selloffDate tooltipStates =
-    div [ Spacing.mx5 ]
+    Html.div [ Spacing.mx5 ]
         [ Form.formInline [ onSubmit NoOp ]
             [ Radio.radio
                 [ Radio.id "ex3"

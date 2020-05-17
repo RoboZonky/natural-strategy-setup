@@ -6,7 +6,7 @@ import Bootstrap.Form.Textarea as Textarea
 import Bootstrap.Grid as Grid
 import Bootstrap.Grid.Col as Col
 import Data.Strategy as Strategy exposing (StrategyConfiguration)
-import Html exposing (text)
+import Html
 import Html.Attributes exposing (download, href, readonly, style)
 import Time exposing (Posix)
 import Types exposing (BaseUrl)
@@ -58,7 +58,7 @@ view baseUrl generatedOn strategyConfig =
                         , download "robozonky-strategy.cfg"
                         ]
                     ]
-                    [ text "Stáhni konfigurační soubor" ]
+                    [ Html.text "Stáhni konfigurační soubor" ]
                 ]
             ]
         ]

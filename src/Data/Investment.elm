@@ -29,7 +29,7 @@ import Bootstrap.Grid.Col as Col
 import Bootstrap.Utilities.Spacing as Spacing
 import Data.Filter.Conditions.Rating as Rating exposing (Rating, ratingDictToList)
 import Dict.Any exposing (AnyDict)
-import Html exposing (Html, a, b, div, span, strong, text)
+import Html exposing (Html)
 import Html.Attributes as Attr exposing (class, href, style)
 import Html.Events as Events exposing (onSubmit)
 import Json.Decode as Decode exposing (Decoder)
@@ -208,7 +208,7 @@ form config buyingEnabled invDefault invOverrides =
     Accordion.card
         { id = config.accordionId
         , options = []
-        , header = Accordion.headerH4 [] <| Accordion.toggle [] [ text config.accordionHeader ]
+        , header = Accordion.headerH4 [] <| Accordion.toggle [] [ Html.text config.accordionHeader ]
         , blocks =
             if buyingEnabled then
                 [ Accordion.block [ CardBlock.attrs [ class "tab-with-sliders" ] ]
@@ -226,17 +226,17 @@ defaultInvestmentForm : Config msg -> Size -> CardBlock.Item msg
 defaultInvestmentForm config invDefault =
     CardBlock.custom <|
         Form.formInline [ onSubmit config.noOp ]
-            [ span [ Spacing.mr2 ] [ text config.defaultLabel ]
+            [ Html.span [ Spacing.mr2 ] [ Html.text config.defaultLabel ]
             , Html.map config.onDefaultInvestmentChange <| sliderView invDefault
-            , span [ Spacing.ml2 ] [ Html.text <| toCzkString invDefault ]
+            , Html.span [ Spacing.ml2 ] [ Html.text <| toCzkString invDefault ]
             ]
 
 
 investmentOverridesForm : Config msg -> Size -> InvestmentsPerRating -> CardBlock.Item msg
 investmentOverridesForm config invDefault invOverrides =
     CardBlock.custom <|
-        div []
-            [ text config.overrideLabel
+        Html.div []
+            [ Html.text config.overrideLabel
             , Grid.row []
                 [ Grid.col [ Col.xs6 ] [ investmentOverridesSliders config invOverrides ]
                 , Grid.col [ Col.xs6 ] [ warningWhenSizeExceeds5K invDefault invOverrides ]
@@ -248,29 +248,30 @@ warningWhenSizeExceeds5K : Size -> InvestmentsPerRating -> Html a
 warningWhenSizeExceeds5K invDefault invOverrides =
     if anyInvestmentExceeds5k invDefault invOverrides then
         Alert.simpleDanger []
-            [ strong [] [ text "Upozornění. " ]
-            , text "Maximální výše investice na Zonky se řídí"
-            , a [ href "https://zonky.cz/downloads/Zonky_Parametry_castek_pro_investovani.pdf" ] [ text " následujícími pravidly" ]
-            , text ". Nastavíte-li částku vyšší, robot bude investovat pouze maximální povolenou částku."
+            [ Html.strong [] [ Html.text "Upozornění. " ]
+            , Html.text "Maximální výše investice na Zonky se řídí"
+            , Html.a [ href "https://zonky.cz/downloads/Zonky_Parametry_castek_pro_investovani.pdf" ]
+                [ Html.text " následujícími pravidly" ]
+            , Html.text ". Nastavíte-li částku vyšší, robot bude investovat pouze maximální povolenou částku."
             ]
 
     else
-        text ""
+        Html.text ""
 
 
 investmentOverridesSliders : Config msg -> InvestmentsPerRating -> Html msg
 investmentOverridesSliders config invOverrides =
     ratingDictToList invOverrides
         |> List.map (investmentSlider config)
-        |> div []
+        |> Html.div []
 
 
 investmentSlider : Config msg -> ( Rating, Size ) -> Html msg
 investmentSlider config ( rating, invSize ) =
     Form.formInline [ onSubmit config.noOp ]
-        [ b [ style "width" "105px" ] [ text <| Rating.showInterestPercent rating ]
+        [ Html.b [ style "width" "105px" ] [ Html.text <| Rating.showInterestPercent rating ]
         , Html.map (config.onInvestmentChange rating) <| sliderView invSize
-        , span [ Spacing.ml2 ] [ Html.text <| toCzkString invSize ]
+        , Html.span [ Spacing.ml2 ] [ Html.text <| toCzkString invSize ]
         ]
 
 

@@ -36,7 +36,7 @@ module Data.Filter exposing
 import Bootstrap.Badge as Badge
 import Data.Filter.Conditions as Conditions exposing (Condition, Conditions)
 import Data.Validate as Validate
-import Html exposing (Html, span, text)
+import Html exposing (Html)
 import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as Encode exposing (Value)
 import List.Extra as List
@@ -517,10 +517,10 @@ renderConditionListWithExplicitConjunction =
 
 andConnective : Html a
 andConnective =
-    span []
-        [ text " "
-        , Badge.pillInfo [] [ text "a zároveň" ]
-        , text " "
+    Html.span []
+        [ Html.text " "
+        , Badge.pillInfo [] [ Html.text "a zároveň" ]
+        , Html.text " "
         ]
 
 

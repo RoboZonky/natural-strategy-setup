@@ -9,7 +9,7 @@ import Data.Filter.Conditions.Rating as Rating exposing (ratingDictToList)
 import Data.Portfolio as Portfolio exposing (Portfolio(..), allPortfolios)
 import Data.PortfolioStructure as PortfolioStructure exposing (PortfolioStructure)
 import Data.Tooltip as Tooltip
-import Html exposing (Html, div, text)
+import Html exposing (Html)
 import Html.Attributes exposing (class, selected, style, value)
 import Html.Events exposing (onSubmit)
 import Percentage
@@ -28,14 +28,14 @@ form portfolio portfolioStructure accordionState tooltipStates =
         { id = cardId
         , options = [ markOpenedAccordionCard cardId accordionState ]
         , header =
-            Accordion.headerH4 [] (Accordion.toggle [] [ text "Struktura portfolia" ])
+            Accordion.headerH4 [] (Accordion.toggle [] [ Html.text "Struktura portfolia" ])
                 |> Accordion.appendHeader [ Tooltip.popoverTip Tooltip.portfolioStructureTip tooltipStates ]
         , blocks =
             [ Accordion.block []
                 [ CardBlock.custom <|
-                    div [ class "tab-with-sliders" ]
+                    Html.div [ class "tab-with-sliders" ]
                         [ defaultPortfolioForm portfolio
-                        , Html.p [] [ text "Požadovaný podíl investovaný do půjček podle rizikových kategorií můžete upravit pomocí posuvníků" ]
+                        , Html.p [] [ Html.text "Požadovaný podíl investovaný do půjček podle rizikových kategorií můžete upravit pomocí posuvníků" ]
                         , slidersView portfolioStructure
                         , sumSummaryView portfolioStructure
                         ]
@@ -47,7 +47,7 @@ form portfolio portfolioStructure accordionState tooltipStates =
 defaultPortfolioForm : Portfolio -> Html Msg
 defaultPortfolioForm currentPortfolio =
     Form.formInline [ onSubmit NoOp ]
-        [ text "Robot má udržovat ", defaultPortfolioSelect currentPortfolio, text " portfolio." ]
+        [ Html.text "Robot má udržovat ", defaultPortfolioSelect currentPortfolio, Html.text " portfolio." ]
 
 
 defaultPortfolioSelect : Portfolio -> Html Msg
@@ -58,7 +58,7 @@ defaultPortfolioSelect currentPortfolio =
                 (\portfolio ->
                     Select.item
                         [ value (Portfolio.toString portfolio), selected (portfolio == currentPortfolio) ]
-                        [ text (Portfolio.toUiLabel portfolio) ]
+                        [ Html.text (Portfolio.toUiLabel portfolio) ]
                 )
                 allPortfolios
     in
@@ -83,13 +83,13 @@ sumSummaryView portfolioStructure =
 
             else if sumOfPercentages > 100 then
                 Html.p [ style "color" "orange" ]
-                    [ text "Součet podílů přesahuje 100%, což není nutně problém, ale může vést k nepředvídatelné struktuře portfolia." ]
+                    [ Html.text "Součet podílů přesahuje 100%, což není nutně problém, ale může vést k nepředvídatelné struktuře portfolia." ]
 
             else
                 Html.div [ style "height" "24px" ] []
     in
     Html.p []
-        [ text "Součet podílů je "
+        [ Html.text "Součet podílů je "
         , Html.b [] [ Html.text <| String.fromInt (PortfolioStructure.percentageSum portfolioStructure) ++ " %" ]
         , warnings
         ]
@@ -100,9 +100,9 @@ slidersView portfolioStructure =
     let
         ratingSlider ( rating, percentage ) =
             Form.formInline [ onSubmit NoOp, class (Rating.toColorClass rating) ]
-                [ Html.b [ style "width" "105px" ] [ text <| Rating.showInterestPercent rating ]
+                [ Html.b [ style "width" "105px" ] [ Html.text <| Rating.showInterestPercent rating ]
                 , Html.map (PortfolioPercentageChanged rating) <| Percentage.view percentage
-                , Html.b [ Spacing.mx2 ] [ text <| PortfolioStructure.renderPercentage percentage ++ " %" ]
+                , Html.b [ Spacing.mx2 ] [ Html.text <| PortfolioStructure.renderPercentage percentage ++ " %" ]
                 ]
     in
     ratingDictToList portfolioStructure

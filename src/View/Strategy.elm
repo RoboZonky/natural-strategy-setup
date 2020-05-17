@@ -7,7 +7,7 @@ import Data.Filter as Filter
 import Data.Investment as Investment
 import Data.Strategy exposing (GeneralSettings, StrategyConfiguration)
 import Data.Tooltip as Tooltip
-import Html exposing (Html, text)
+import Html exposing (Html)
 import Time exposing (Posix)
 import Types exposing (Msg(..))
 import View.BuyingConfig as BuyingConfig
@@ -107,7 +107,7 @@ generalSettingsCard settings accordionState tooltipStates generatedOn =
     Accordion.card
         { id = cardId
         , options = [ markOpenedAccordionCard cardId accordionState ]
-        , header = Accordion.headerH4 [] <| Accordion.toggle [] [ text "Obecná nastavení" ]
+        , header = Accordion.headerH4 [] <| Accordion.toggle [] [ Html.text "Obecná nastavení" ]
         , blocks =
             [ Accordion.block []
                 [ TargetPortfolioSize.form settings.targetPortfolioSize
