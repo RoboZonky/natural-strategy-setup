@@ -1,7 +1,7 @@
 module View.Filter.CreationModal exposing
     ( Config
-    , CreationModalMsg(..)
     , Model
+    , Msg(..)
     , init
     , update
     , view
@@ -26,7 +26,7 @@ import View.Tooltip as Tooltip
 
 
 type alias Config msg =
-    { msg : CreationModalMsg -> msg
+    { msg : Msg -> msg
     , tooltipConfig : Tooltip.Config msg
     }
 
@@ -43,11 +43,7 @@ type alias Model =
     }
 
 
-
--- TODO rename to Msg
-
-
-type CreationModalMsg
+type Msg
     = TogglePositiveNegativeSubForm
     | OpenCreationModal FilterComplexity (List FilteredItem)
     | PositiveConditionsChange Conditions.Msg
@@ -71,7 +67,7 @@ init =
     }
 
 
-update : CreationModalMsg -> Model -> ( Model, Maybe MarketplaceFilter )
+update : Msg -> Model -> ( Model, Maybe MarketplaceFilter )
 update msg model =
     let
         newModel =
@@ -87,7 +83,7 @@ update msg model =
 
 {-| Inner modal messages that don't produce Filter to be added to the main app's model
 -}
-updateHelp : CreationModalMsg -> Model -> Model
+updateHelp : Msg -> Model -> Model
 updateHelp msg model =
     case msg of
         OpenCreationModal filterComplexity allowedFilteredItems ->
@@ -214,7 +210,7 @@ view config { editedFilter, openCloseState, editingPositiveSubform, allowedFilte
         |> Modal.view openCloseState
 
 
-askForConfirmationOfRemoval : FilteredItem -> List ConditionType -> List ConditionType -> Html CreationModalMsg
+askForConfirmationOfRemoval : FilteredItem -> List ConditionType -> List ConditionType -> Html Msg
 askForConfirmationOfRemoval filteredItem conditionsToBeRemoved conditionsToBeRemovedFromException =
     Html.div []
         [ Html.text <|
@@ -229,7 +225,7 @@ askForConfirmationOfRemoval filteredItem conditionsToBeRemoved conditionsToBeRem
 
 {-| Simple filters don't allow exception definition
 -}
-exceptionButtonWhenFilterComplex : FilterComplexity -> Bool -> Html CreationModalMsg
+exceptionButtonWhenFilterComplex : FilterComplexity -> Bool -> Html Msg
 exceptionButtonWhenFilterComplex filterComplexity editingPositiveSubform =
     let
         exceptionButtonText =
@@ -251,7 +247,7 @@ exceptionButtonWhenFilterComplex filterComplexity editingPositiveSubform =
                 [ Html.text exceptionButtonText ]
 
 
-marketplaceFilterEditor : MarketplaceFilter -> FilterComplexity -> Bool -> List FilteredItem -> Html CreationModalMsg
+marketplaceFilterEditor : MarketplaceFilter -> FilterComplexity -> Bool -> List FilteredItem -> Html Msg
 marketplaceFilterEditor mf filterComplexity editingPositiveSubform allowedFilteredItems =
     let
         validationErrors =
@@ -288,7 +284,7 @@ marketplaceFilterEditor mf filterComplexity editingPositiveSubform allowedFilter
         ]
 
 
-filteredItemRadios : List FilteredItem -> FilteredItem -> Html CreationModalMsg
+filteredItemRadios : List FilteredItem -> FilteredItem -> Html Msg
 filteredItemRadios allowedFilteredItems currentFilteredItem =
     case allowedFilteredItems of
         [] ->
@@ -310,7 +306,7 @@ filteredItemRadios allowedFilteredItems currentFilteredItem =
                 )
 
 
-filteredItemRadio : FilteredItem -> Int -> FilteredItem -> Html CreationModalMsg
+filteredItemRadio : FilteredItem -> Int -> FilteredItem -> Html Msg
 filteredItemRadio currentFilteredItem index filteredItem =
     Radio.radio
         [ Radio.id <| "filteredItem" ++ String.fromInt index

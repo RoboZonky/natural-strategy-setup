@@ -25,7 +25,7 @@ import Util
 import Version
 import View.Alert as Alert exposing (AlertData(..))
 import View.ConfigPreview as ConfigPreview
-import View.Filter.CreationModal as FilterCreationModal exposing (CreationModalMsg(..))
+import View.Filter.CreationModal as FilterCreationModal
 import View.Filter.DeletionModal as FilterDeletionModal
 import View.Strategy as Strategy
 import View.Tooltip as Tooltip
@@ -104,7 +104,7 @@ type Msg
     | TogglePrimaryMarket Bool
     | ToggleSecondaryMarket Bool
     | AccordionMsg Accordion.State
-    | CreationModalMsg CreationModalMsg
+    | CreationModalMsg FilterCreationModal.Msg
     | TooltipMsg TipId Popover.State
     | SetDateTime Posix
     | DismissAlert
@@ -356,7 +356,6 @@ strategyConfig =
     , defaultSecondaryPurchaseChanged = DefaultSecondaryPurchaseChanged
     , primaryInvestmentChanged = PrimaryInvestmentChanged
     , secondaryPurchaseChanged = SecondaryPurchaseChanged
-    , noOp = NoOp
     , filterDeletionModalConfig =
         { setBuyingConfig = SetBuyingConfig
         , setSellingConfig = SetSellingConfig
@@ -368,23 +367,21 @@ strategyConfig =
     , portfolioStructureConfig =
         { portfolioPercentageChanged = PortfolioPercentageChanged
         , portfolioChanged = PortfolioChanged
-        , noOp = NoOp
-
-        -- TODO where is modal config used?
         , tooltipConfig = tooltipConfig
+        , noOp = NoOp
         }
     , buyingConfigConfig =
         { tooltipConfig = tooltipConfig
         , removeBuyFilter = RemoveBuyFilter
         , togglePrimaryMarket = TogglePrimaryMarket
         , toggleSecondaryMarket = ToggleSecondaryMarket
-        , openCreationModal = \complexity filters -> CreationModalMsg <| OpenCreationModal complexity filters
+        , openCreationModal = \complexity filters -> CreationModalMsg <| FilterCreationModal.OpenCreationModal complexity filters
         }
     , sellingConfigConfig =
         { tooltipConfig = tooltipConfig
         , sellingConfigChanged = SellingConfigChanged
         , removeSellFilter = RemoveSellFilter
-        , openCreationModal = \complexity filters -> CreationModalMsg <| OpenCreationModal complexity filters
+        , openCreationModal = \complexity filters -> CreationModalMsg <| FilterCreationModal.OpenCreationModal complexity filters
         , noOp = NoOp
         }
     , targetPortfolioSizeConfig =
@@ -397,6 +394,7 @@ strategyConfig =
         , tooltipConfig = tooltipConfig
         , noOp = NoOp
         }
+    , noOp = NoOp
     }
 
 
