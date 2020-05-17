@@ -10,10 +10,9 @@ import Data.Filter as Filter exposing (FilteredItem(..), MarketplaceFilter)
 import Html exposing (Html)
 import Html.Attributes exposing (class)
 import Html.Events exposing (onClick)
-import Types exposing (Msg)
 
 
-filterListView : (Int -> Msg) -> List MarketplaceFilter -> Html Msg
+filterListView : (Int -> msg) -> List MarketplaceFilter -> Html msg
 filterListView removeFilterByIndexMsg filters =
     case filters of
         [] ->
@@ -25,7 +24,7 @@ filterListView removeFilterByIndexMsg filters =
                 |> Html.div [ Spacing.p2 ]
 
 
-viewFilter : (Int -> Msg) -> Int -> MarketplaceFilter -> Html Msg
+viewFilter : (Int -> msg) -> Int -> MarketplaceFilter -> Html msg
 viewFilter removeFilterByIndexMsg index mf =
     let
         removeButton =

@@ -66,10 +66,27 @@ conditionTypesThatApplyTo : FilteredItem -> List ConditionType
 conditionTypesThatApplyTo filteredItem =
     let
         commonForAll =
-            [ Amount, Interest, Purpose, Income, Story, Region, Remaining_Term_Months, Insurance, Loan_Annuity, Revenue_Rate ]
+            [ Amount
+            , Interest
+            , Purpose
+            , Income
+            , Story
+            , Region
+            , Remaining_Term_Months
+            , Insurance
+            , Loan_Annuity
+            , Revenue_Rate
+            ]
 
         commonForParticipations =
-            [ Term_Percent, Elapsed_Term_Months, Elapsed_Term_Percent, Remaining_Amount, Health, Original_Term_Months, Relative_Sale_Discount ]
+            [ Term_Percent
+            , Elapsed_Term_Months
+            , Elapsed_Term_Percent
+            , Remaining_Amount
+            , Health
+            , Original_Term_Months
+            , Relative_Sale_Discount
+            ]
     in
     commonForAll
         ++ (case filteredItem of

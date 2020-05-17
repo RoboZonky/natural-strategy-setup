@@ -1,4 +1,7 @@
-module View.Tooltip exposing (popoverTip, popoverTipForModal)
+module View.Tooltip exposing
+    ( Config
+    , popoverTip
+    )
 
 import Bootstrap.Popover as Popover
 import Bootstrap.Utilities.Spacing as Spacing
@@ -7,7 +10,6 @@ import Html exposing (Html)
 import Html.Attributes exposing (class, style)
 import Html.Events exposing (stopPropagationOn)
 import Json.Decode
-import Types exposing (CreationModalMsg(..), Msg(..))
 
 
 icon : Html a
@@ -21,14 +23,15 @@ icon =
         []
 
 
-popoverTip : TipId -> Tooltip.States -> Html Msg
-popoverTip =
-    popover TooltipMsg NoOp icon
+type alias Config msg =
+    { tooltipMsg : TipId -> Popover.State -> msg
+    , noOp : msg
+    }
 
 
-popoverTipForModal : TipId -> Tooltip.States -> Html CreationModalMsg
-popoverTipForModal =
-    popover ModalTooltipMsg ModalNoOp icon
+popoverTip : Config msg -> TipId -> Tooltip.States -> Html msg
+popoverTip { tooltipMsg, noOp } =
+    popover tooltipMsg noOp icon
 
 
 {-| Tip in a rectangle that is hidden by default and is displayed by hovering mouse over elementToHoverOn

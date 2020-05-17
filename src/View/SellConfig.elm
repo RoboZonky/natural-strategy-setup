@@ -1,4 +1,4 @@
-module View.SellConfig exposing (form)
+module View.SellConfig exposing (Config, form)
 
 import Bootstrap.Accordion as Accordion
 import Bootstrap.Button as Button
@@ -9,7 +9,6 @@ import Data.Filter exposing (FilteredItem(..), SellingConfiguration(..), validat
 import Data.Filter.Complexity exposing (FilterComplexity(..), complexityButtonLabel)
 import Data.Tooltip as Tooltip
 import Html exposing (Html)
-import Types exposing (CreationModalMsg(..), Msg(..))
 import Util
 import Version exposing (filtersHowToLink)
 import View.CardHeightWorkaround exposing (markOpenedAccordionCard)
@@ -17,8 +16,17 @@ import View.Filter exposing (filterListView)
 import View.Tooltip as Tooltip
 
 
-form : SellingConfiguration -> Accordion.State -> Tooltip.States -> Accordion.Card Msg
-form sellingConfiguration accordionState tooltipStates =
+type alias Config msg =
+    { tooltipConfig : Tooltip.Config msg
+    , sellingConfigChanged : SellingConfiguration -> msg
+    , removeSellFilter : Int -> msg
+    , openCreationModal : FilterComplexity -> List FilteredItem -> msg
+    , noOp : msg
+    }
+
+
+form : Config msg -> SellingConfiguration -> Accordion.State -> Tooltip.States -> Accordion.Card msg
+form config sellingConfiguration accordionState tooltipStates =
     let
         cardId =
             "sellingConfigCard"
@@ -28,35 +36,35 @@ form sellingConfiguration accordionState tooltipStates =
         , options = [ markOpenedAccordionCard cardId accordionState ]
         , header =
             Accordion.headerH4 [] (Accordion.toggle [] [ Html.text "Pravidla prodeje" ])
-                |> Accordion.appendHeader [ Tooltip.popoverTip Tooltip.sellFilterListTip tooltipStates ]
+                |> Accordion.appendHeader [ Tooltip.popoverTip config.tooltipConfig Tooltip.sellFilterListTip tooltipStates ]
         , blocks =
-            [ Accordion.block [] [ viewSellingConfiguration sellingConfiguration ] ]
+            [ Accordion.block [] [ viewSellingConfiguration config sellingConfiguration ] ]
         }
 
 
-viewSellingConfiguration : SellingConfiguration -> CardBlock.Item Msg
-viewSellingConfiguration sellingConfiguration =
+viewSellingConfiguration : Config msg -> SellingConfiguration -> CardBlock.Item msg
+viewSellingConfiguration config sellingConfiguration =
     CardBlock.custom <|
         Html.div []
             [ Radio.radio
                 [ Radio.id "sc1"
                 , radioName
                 , Radio.checked (toEnum sellingConfiguration == SNothing)
-                , Radio.onClick (SellingConfigChanged SellNothing)
+                , Radio.onClick (config.sellingConfigChanged SellNothing)
                 ]
                 "Zakázat prodej participací"
             , Radio.radio
                 [ Radio.id "sc2"
                 , radioName
                 , Radio.checked (toEnum sellingConfiguration == SWithoutCharge)
-                , Radio.onClick (SellingConfigChanged SellWithoutCharge)
+                , Radio.onClick (config.sellingConfigChanged SellWithoutCharge)
                 ]
                 "Prodávat všechny participace bez poplatku, které odpovídají filtrům tržiště"
             , Radio.radio
                 [ Radio.id "sc3"
                 , radioName
                 , Radio.checked (toEnum sellingConfiguration == SWithoutChargeAndDiscount)
-                , Radio.onClick (SellingConfigChanged SellWithoutChargeAndDiscount)
+                , Radio.onClick (config.sellingConfigChanged SellWithoutChargeAndDiscount)
                 ]
                 "Prodávat všechny participace bez poplatku a slevy, které odpovídají filtrům tržiště."
             , Radio.radio
@@ -67,13 +75,13 @@ viewSellingConfiguration sellingConfiguration =
                     case sellingConfiguration of
                         SellSomething _ ->
                             -- Avoid filter deletion confirmation modal when user accidentally selects this radio when already selected
-                            NoOp
+                            config.noOp
 
                         _ ->
-                            SellingConfigChanged (SellSomething [])
+                            config.sellingConfigChanged (SellSomething [])
                 ]
                 "Prodávat participace splňující pravidla"
-            , filterListControls sellingConfiguration
+            , filterListControls config sellingConfiguration
             ]
 
 
@@ -82,13 +90,13 @@ radioName =
     Radio.name "sellconfig"
 
 
-filterListControls : SellingConfiguration -> Html Msg
-filterListControls sellingConfiguration =
+filterListControls : Config msg -> SellingConfiguration -> Html msg
+filterListControls config sellingConfiguration =
     case sellingConfiguration of
         SellSomething filters ->
             Html.div []
-                [ filterListView RemoveSellFilter filters
-                , filterCreationButtons
+                [ filterListView config.removeSellFilter filters
+                , filterCreationButtons config
                 , Util.viewErrors <| validateSellingConfiguration sellingConfiguration
                 ]
 
@@ -102,20 +110,20 @@ filterListControls sellingConfiguration =
             Html.text ""
 
 
-filterCreationButtons : Html Msg
-filterCreationButtons =
+filterCreationButtons : Config msg -> Html msg
+filterCreationButtons config =
     Html.div []
-        [ filterCreationButton Simple Button.primary
-        , filterCreationButton Complex Button.outlineSecondary
+        [ filterCreationButton config Simple Button.primary
+        , filterCreationButton config Complex Button.outlineSecondary
         , filtersHowToLink
         ]
 
 
-filterCreationButton : FilterComplexity -> Button.Option Msg -> Html Msg
-filterCreationButton filterComplexity buttonType =
+filterCreationButton : Config msg -> FilterComplexity -> Button.Option msg -> Html msg
+filterCreationButton config filterComplexity buttonType =
     Button.button
         [ buttonType
-        , Button.onClick <| CreationModalMsg <| OpenCreationModal filterComplexity [ Participation_To_Sell ]
+        , Button.onClick <| config.openCreationModal filterComplexity [ Participation_To_Sell ]
         , Button.attrs [ Spacing.mx1 ]
         , Button.small
         ]

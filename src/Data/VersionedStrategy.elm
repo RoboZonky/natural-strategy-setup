@@ -8,9 +8,8 @@ import Data.Migration.Strategy.V3 as V3
 import Data.Migration.Strategy.V4 as V4
 import Data.Migration.Strategy.V5 as V5
 import Data.Migration.Strategy.V6 as V6
-import Data.Strategy as V6
+import Data.Strategy as V6 exposing (UrlHash)
 import Json.Decode as Decode
-import Types exposing (UrlHash)
 
 
 type VersionedStrategy

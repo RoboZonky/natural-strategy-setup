@@ -1,4 +1,11 @@
-module View.Filter.CreationModal exposing (Model, init, update, view)
+module View.Filter.CreationModal exposing
+    ( Config
+    , CreationModalMsg(..)
+    , Model
+    , init
+    , update
+    , view
+    )
 
 import Bootstrap.Button as Button
 import Bootstrap.Form as Form
@@ -14,9 +21,14 @@ import Data.Tooltip as Tooltip
 import Html exposing (Html)
 import Html.Attributes exposing (style)
 import Html.Events exposing (onSubmit)
-import Types exposing (CreationModalMsg(..))
 import View.Filter.Conditions as Conditions
 import View.Tooltip as Tooltip
+
+
+type alias Config msg =
+    { msg : CreationModalMsg -> msg
+    , tooltipConfig : Tooltip.Config msg
+    }
 
 
 type alias Model =
@@ -29,6 +41,23 @@ type alias Model =
     -- Switching FilteredItem might require removing conditions that users enabled that don't apply to the target FilteredItem
     , confirmRemoval : Maybe ( FilteredItem, List ConditionType, List ConditionType )
     }
+
+
+
+-- TODO rename to Msg
+
+
+type CreationModalMsg
+    = TogglePositiveNegativeSubForm
+    | OpenCreationModal FilterComplexity (List FilteredItem)
+    | PositiveConditionsChange Conditions.Msg
+    | NegativeConditionsChange Conditions.Msg
+    | SetFilteredItem FilteredItem
+    | ConfirmConditionsRemoval
+    | CancelConditionsRemoval
+    | SaveFilter
+    | CloseModal
+    | ModalNoOp
 
 
 init : Model
@@ -110,7 +139,7 @@ updateHelp msg model =
         CancelConditionsRemoval ->
             { model | confirmRemoval = Nothing }
 
-        TogglePositiveNegativeSubform ->
+        TogglePositiveNegativeSubForm ->
             { model | editingPositiveSubform = not model.editingPositiveSubform }
 
         PositiveConditionsChange condMsg ->
@@ -125,16 +154,12 @@ updateHelp msg model =
         CloseModal ->
             { model | openCloseState = Modal.hidden }
 
-        ModalTooltipMsg _ _ ->
-            {- This case is handled at the level of Main's update -}
-            model
-
         ModalNoOp ->
             model
 
 
-view : Model -> Tooltip.States -> Html CreationModalMsg
-view { editedFilter, openCloseState, editingPositiveSubform, allowedFilteredItems, filterComplexity, confirmRemoval } tooltipStates =
+view : Config msg -> Model -> Tooltip.States -> Html msg
+view config { editedFilter, openCloseState, editingPositiveSubform, allowedFilteredItems, filterComplexity, confirmRemoval } tooltipStates =
     let
         ( modalTitle, tooltipKey ) =
             case editedFilter.whatToFilter of
@@ -178,14 +203,14 @@ view { editedFilter, openCloseState, editingPositiveSubform, allowedFilteredItem
                       ]
                     )
     in
-    Modal.config CloseModal
+    Modal.config (config.msg CloseModal)
         |> Modal.large
         |> Modal.h5 []
             [ Html.text modalTitle
-            , Tooltip.popoverTipForModal tooltipKey tooltipStates
+            , Tooltip.popoverTip config.tooltipConfig tooltipKey tooltipStates
             ]
-        |> Modal.body [] [ modalBody ]
-        |> Modal.footer [] modalFooter
+        |> Modal.body [] [ Html.map config.msg modalBody ]
+        |> (Modal.footer [] <| List.map (Html.map config.msg) modalFooter)
         |> Modal.view openCloseState
 
 
@@ -221,7 +246,7 @@ exceptionButtonWhenFilterComplex filterComplexity editingPositiveSubform =
         Complex ->
             Button.button
                 [ Button.secondary
-                , Button.onClick TogglePositiveNegativeSubform
+                , Button.onClick TogglePositiveNegativeSubForm
                 ]
                 [ Html.text exceptionButtonText ]
 

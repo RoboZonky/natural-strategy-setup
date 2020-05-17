@@ -2,52 +2,33 @@ module Main exposing (main)
 
 import Bootstrap.Accordion as Accordion
 import Bootstrap.Grid as Grid
+import Bootstrap.Popover as Popover
 import Browser exposing (UrlRequest(..))
 import Browser.Navigation exposing (Key)
-import Data.Filter as Filters exposing (FilteredItem(..))
-import Data.Portfolio
-import Data.Strategy as Strategy exposing (StrategyConfiguration)
+import Data.ExitConfig as ExitConfig
+import Data.Filter as Filters exposing (BuyingConfiguration, FilteredItem(..), SellingConfiguration)
+import Data.Filter.Conditions.Rating exposing (Rating)
+import Data.Investment as Investment
+import Data.Portfolio exposing (Portfolio)
+import Data.ReservationSetting exposing (ReservationSetting)
+import Data.Strategy as Strategy exposing (BaseUrl, StrategyConfiguration)
 import Data.TargetPortfolioSize as TargetPortfolioSize exposing (TargetPortfolioSize(..))
-import Data.Tooltip as Tooltip
+import Data.Tooltip as Tooltip exposing (TipId)
 import Data.VersionedStrategy as VersionedStrategy
 import Html exposing (Html)
 import Html.Attributes exposing (class, href, style, target)
+import Percentage
 import Task
 import Time exposing (Posix)
-import Types exposing (BaseUrl, CreationModalMsg(..), Msg(..))
 import Url exposing (Url)
 import Util
 import Version
 import View.Alert as Alert exposing (AlertData(..))
 import View.ConfigPreview as ConfigPreview
-import View.Filter.CreationModal as FilterCreationModal
+import View.Filter.CreationModal as FilterCreationModal exposing (CreationModalMsg(..))
 import View.Filter.DeletionModal as FilterDeletionModal
 import View.Strategy as Strategy
-
-
-type alias Model =
-    { strategyConfig : StrategyConfiguration
-    , accordionState : Accordion.State
-    , filterCreationState : FilterCreationModal.Model
-    , filterDeletionState : FilterDeletionModal.Model
-    , tooltipStates : Tooltip.States
-    , generatedOn : Posix
-    , baseUrl : BaseUrl
-    , alert : AlertData
-    }
-
-
-initialModel : Url -> StrategyConfiguration -> AlertData -> Model
-initialModel url strategyConfig initialAlert =
-    { strategyConfig = strategyConfig
-    , accordionState = Accordion.initialState
-    , filterCreationState = FilterCreationModal.init
-    , filterDeletionState = FilterDeletionModal.init
-    , tooltipStates = Tooltip.initialStates
-    , generatedOn = Time.millisToPosix 0
-    , baseUrl = Url.toString url
-    , alert = initialAlert
-    }
+import View.Tooltip as Tooltip
 
 
 main : Program () Model Msg
@@ -60,6 +41,31 @@ main =
         , onUrlChange = always NoOp
         , onUrlRequest = LoadUrl
         }
+
+
+type alias Model =
+    { strategyConfiguration : StrategyConfiguration
+    , accordionState : Accordion.State
+    , filterCreationState : FilterCreationModal.Model
+    , filterDeletionState : FilterDeletionModal.Model
+    , tooltipStates : Tooltip.States
+    , generatedOn : Posix
+    , baseUrl : BaseUrl
+    , alert : AlertData
+    }
+
+
+initialModel : Url -> StrategyConfiguration -> AlertData -> Model
+initialModel url strategyConfiguration initialAlert =
+    { strategyConfiguration = strategyConfiguration
+    , accordionState = Accordion.initialState
+    , filterCreationState = FilterCreationModal.init
+    , filterDeletionState = FilterDeletionModal.init
+    , tooltipStates = Tooltip.initialStates
+    , generatedOn = Time.millisToPosix 0
+    , baseUrl = Url.toString url
+    , alert = initialAlert
+    }
 
 
 init : () -> Url -> Key -> ( Model, Cmd Msg )
@@ -80,9 +86,35 @@ init () url key =
     )
 
 
+type Msg
+    = PortfolioChanged Portfolio
+    | ExitConfigChanged ExitConfig.ExitConfig
+    | TargetPortfolioSizeChanged String
+    | PortfolioPercentageChanged Rating Percentage.Msg
+    | DefaultPrimaryInvestmentChanged Investment.Msg
+    | DefaultSecondaryPurchaseChanged Investment.Msg
+    | PrimaryInvestmentChanged Rating Investment.Msg
+    | SecondaryPurchaseChanged Rating Investment.Msg
+    | ReservationSettingChanged ReservationSetting
+    | RemoveBuyFilter Int
+    | RemoveSellFilter Int
+    | SellingConfigChanged SellingConfiguration
+    | SetSellingConfig SellingConfiguration
+    | SetBuyingConfig BuyingConfiguration
+    | TogglePrimaryMarket Bool
+    | ToggleSecondaryMarket Bool
+    | AccordionMsg Accordion.State
+    | CreationModalMsg CreationModalMsg
+    | TooltipMsg TipId Popover.State
+    | SetDateTime Posix
+    | DismissAlert
+    | LoadUrl Browser.UrlRequest
+    | NoOp
+
+
 updateStrategy : (StrategyConfiguration -> StrategyConfiguration) -> Model -> Model
 updateStrategy strategyUpdater model =
-    { model | strategyConfig = strategyUpdater model.strategyConfig }
+    { model | strategyConfiguration = strategyUpdater model.strategyConfiguration }
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -153,9 +185,6 @@ updateHelper msg model =
         TooltipMsg tipId tooltipState ->
             { model | tooltipStates = Tooltip.update tipId tooltipState model.tooltipStates }
 
-        CreationModalMsg (ModalTooltipMsg tipId tooltipState) ->
-            { model | tooltipStates = Tooltip.update tipId tooltipState model.tooltipStates }
-
         CreationModalMsg modalMsg ->
             let
                 ( newFilterCreationState, maybeNewFilter ) =
@@ -182,8 +211,8 @@ updateHelper msg model =
             { newModel
                 | filterDeletionState =
                     FilterDeletionModal.confirmSellFiltersDeletion
-                        model.strategyConfig.sellingConfig
-                        newModel.strategyConfig.sellingConfig
+                        model.strategyConfiguration.sellingConfig
+                        newModel.strategyConfiguration.sellingConfig
             }
 
         SetBuyingConfig buyingConfig ->
@@ -236,8 +265,8 @@ askForBuyFilterDeletionConfirmation oldModel newModel =
     { newModel
         | filterDeletionState =
             FilterDeletionModal.confirmBuyFiltersDeletion
-                oldModel.strategyConfig.buyingConfig
-                newModel.strategyConfig.buyingConfig
+                oldModel.strategyConfiguration.buyingConfig
+                newModel.strategyConfiguration.buyingConfig
     }
 
 
@@ -261,13 +290,19 @@ viewDocument model =
 
 
 view : Model -> Html Msg
-view { strategyConfig, accordionState, filterCreationState, filterDeletionState, tooltipStates, generatedOn, baseUrl, alert } =
+view { strategyConfiguration, accordionState, filterCreationState, filterDeletionState, tooltipStates, generatedOn, baseUrl, alert } =
     Grid.containerFluid []
         [ Html.h1 [] [ Html.text "Konfigurace strategie" ]
-        , Alert.view alert
+        , Alert.view DismissAlert alert
         , Grid.row []
-            [ Strategy.form strategyConfig accordionState filterCreationState filterDeletionState tooltipStates generatedOn
-            , ConfigPreview.view baseUrl generatedOn strategyConfig
+            [ Strategy.form strategyConfig
+                strategyConfiguration
+                accordionState
+                filterCreationState
+                filterDeletionState
+                tooltipStates
+                generatedOn
+            , ConfigPreview.view baseUrl generatedOn strategyConfiguration
             ]
         , infoFooter
         ]
@@ -312,3 +347,61 @@ loadStrategyFromUrl url =
                     ( Strategy.defaultStrategyConfiguration
                     , ErrorAlert ("Při pokusu obnovit strategii z URL " ++ Url.toString url ++ "\n\n došlo k chybě: " ++ e)
                     )
+
+
+strategyConfig : Strategy.Config Msg
+strategyConfig =
+    { accordionMsg = AccordionMsg
+    , defaultPrimaryInvestmentChanged = DefaultPrimaryInvestmentChanged
+    , defaultSecondaryPurchaseChanged = DefaultSecondaryPurchaseChanged
+    , primaryInvestmentChanged = PrimaryInvestmentChanged
+    , secondaryPurchaseChanged = SecondaryPurchaseChanged
+    , noOp = NoOp
+    , filterDeletionModalConfig =
+        { setBuyingConfig = SetBuyingConfig
+        , setSellingConfig = SetSellingConfig
+        }
+    , filterCreationModalConfig =
+        { msg = CreationModalMsg
+        , tooltipConfig = tooltipConfig
+        }
+    , portfolioStructureConfig =
+        { portfolioPercentageChanged = PortfolioPercentageChanged
+        , portfolioChanged = PortfolioChanged
+        , noOp = NoOp
+
+        -- TODO where is modal config used?
+        , tooltipConfig = tooltipConfig
+        }
+    , buyingConfigConfig =
+        { tooltipConfig = tooltipConfig
+        , removeBuyFilter = RemoveBuyFilter
+        , togglePrimaryMarket = TogglePrimaryMarket
+        , toggleSecondaryMarket = ToggleSecondaryMarket
+        , openCreationModal = \complexity filters -> CreationModalMsg <| OpenCreationModal complexity filters
+        }
+    , sellingConfigConfig =
+        { tooltipConfig = tooltipConfig
+        , sellingConfigChanged = SellingConfigChanged
+        , removeSellFilter = RemoveSellFilter
+        , openCreationModal = \complexity filters -> CreationModalMsg <| OpenCreationModal complexity filters
+        , noOp = NoOp
+        }
+    , targetPortfolioSizeConfig =
+        { targetPortfolioSizeChanged = TargetPortfolioSizeChanged
+        , noOp = NoOp
+        }
+    , reservationSettingChanged = ReservationSettingChanged
+    , exitConfigConfig =
+        { exitConfigChanged = ExitConfigChanged
+        , tooltipConfig = tooltipConfig
+        , noOp = NoOp
+        }
+    }
+
+
+tooltipConfig : Tooltip.Config Msg
+tooltipConfig =
+    { tooltipMsg = TooltipMsg
+    , noOp = NoOp
+    }

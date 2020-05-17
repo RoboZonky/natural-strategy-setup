@@ -1,6 +1,8 @@
 module Data.Strategy exposing
-    ( GeneralSettings
+    ( BaseUrl
+    , GeneralSettings
     , StrategyConfiguration
+    , UrlHash
     , addBuyFilter
     , addSellFilter
     , defaultStrategyConfiguration
@@ -41,7 +43,6 @@ import Json.Encode as Encode exposing (Value)
 import List.Extra
 import Percentage
 import Time exposing (Posix)
-import Types exposing (BaseUrl, UrlHash)
 import Util
 import Version
 
@@ -376,6 +377,14 @@ strategyDecoder =
                     (Decode.field "k" Filters.decodeBuyingConfiguration)
                     (Decode.field "l" Filters.decodeSellingConfiguration)
             )
+
+
+type alias BaseUrl =
+    String
+
+
+type alias UrlHash =
+    String
 
 
 strategyToUrlHash : StrategyConfiguration -> UrlHash

@@ -5,11 +5,10 @@ import Bootstrap.Button as Button
 import Bootstrap.Form.Textarea as Textarea
 import Bootstrap.Grid as Grid
 import Bootstrap.Grid.Col as Col
-import Data.Strategy as Strategy exposing (StrategyConfiguration)
+import Data.Strategy as Strategy exposing (BaseUrl, StrategyConfiguration)
 import Html
 import Html.Attributes exposing (download, href, readonly, style)
 import Time exposing (Posix)
-import Types exposing (BaseUrl)
 
 
 view : BaseUrl -> Posix -> StrategyConfiguration -> Grid.Column a

@@ -1,4 +1,4 @@
-module View.ExitConfig exposing (form)
+module View.ExitConfig exposing (Config, form)
 
 import Bootstrap.Card.Block as CardBlock
 import Bootstrap.Form as Form
@@ -13,14 +13,20 @@ import Html.Attributes exposing (size)
 import Html.Events exposing (onSubmit)
 import Time exposing (Posix)
 import Time.Extra as TE
-import Types exposing (Msg(..))
 import Util
 import Version
 import View.Tooltip as Tooltip
 
 
-form : ExitConfig -> Posix -> Tooltip.States -> CardBlock.Item Msg
-form exitConfig generatedOn tooltipStates =
+type alias Config msg =
+    { exitConfigChanged : ExitConfig -> msg
+    , tooltipConfig : Tooltip.Config msg
+    , noOp : msg
+    }
+
+
+form : Config msg -> ExitConfig -> Posix -> Tooltip.States -> CardBlock.Item msg
+form config exitConfig generatedOn tooltipStates =
     let
         validationErrors =
             Util.viewErrors <| ExitConfig.validate exitConfig
@@ -44,28 +50,28 @@ form exitConfig generatedOn tooltipStates =
                 [ Radio.id "exit1"
                 , Radio.checked (exitEnum == Dont)
                 , Radio.name "exitConfig"
-                , Radio.onClick (ExitConfigChanged DontExit)
+                , Radio.onClick (config.exitConfigChanged DontExit)
                 ]
                 "Neopouštět Zonky"
-            , Form.formInline [ onSubmit NoOp ]
+            , Form.formInline [ onSubmit config.noOp ]
                 [ Radio.radio
                     [ Radio.id "exit2"
                     , Radio.checked (exitEnum /= Dont)
                     , Radio.name "exitConfig"
-                    , Radio.onClick <| ExitConfigChanged <| ExitBy <| dateToString <| lastDayOfNextYear generatedOn
+                    , Radio.onClick <| config.exitConfigChanged <| ExitBy <| dateToString <| lastDayOfNextYear generatedOn
                     ]
                     "Opustit Zonky k "
                 , Input.text
                     [ Input.small
                     , Input.disabled (exitEnum == Dont)
                     , Input.value exitDate
-                    , Input.onInput (changeExitDate exitConfig)
+                    , Input.onInput (config.exitConfigChanged << changeExitDate exitConfig)
                     , Input.attrs [ Spacing.mx1, size 10 ]
                     ]
-                , Tooltip.popoverTip Tooltip.exitDateTip tooltipStates
+                , Tooltip.popoverTip config.tooltipConfig Tooltip.exitDateTip tooltipStates
                 ]
             , if exitEnum /= Dont then
-                leaveConfigSubform exitEnum exitDate selloffDate tooltipStates
+                leaveConfigSubForm config exitEnum exitDate selloffDate tooltipStates
 
               else
                 Html.text ""
@@ -88,32 +94,32 @@ dateToString =
     Version.formatDate
 
 
-leaveConfigSubform : ExitConfigEnum -> String -> String -> Tooltip.States -> Html Msg
-leaveConfigSubform exitEnum exitDate selloffDate tooltipStates =
+leaveConfigSubForm : Config msg -> ExitConfigEnum -> String -> String -> Tooltip.States -> Html msg
+leaveConfigSubForm config exitEnum exitDate selloffDate tooltipStates =
     Html.div [ Spacing.mx5 ]
-        [ Form.formInline [ onSubmit NoOp ]
+        [ Form.formInline [ onSubmit config.noOp ]
             [ Radio.radio
                 [ Radio.id "ex3"
                 , Radio.checked (exitEnum == By)
                 , Radio.name "selloffRadio"
-                , Radio.onClick (ExitConfigChanged (ExitBy exitDate))
+                , Radio.onClick <| config.exitConfigChanged <| ExitBy exitDate
                 ]
                 ("Výprodej zahájit tři měsíce před datem opuštění " ++ parenthesizeNonempty (threeMonthsBeforeExitDate exitDate))
-            , Tooltip.popoverTip Tooltip.sellofDateTip tooltipStates
+            , Tooltip.popoverTip config.tooltipConfig Tooltip.sellofDateTip tooltipStates
             ]
-        , Form.formInline [ onSubmit NoOp ]
+        , Form.formInline [ onSubmit config.noOp ]
             [ Radio.radio
                 [ Radio.id "ex4"
                 , Radio.checked (exitEnum == WithSelloff)
                 , Radio.name "selloffRadio"
-                , Radio.onClick <| ExitConfigChanged <| ExitByWithSelloff exitDate <| threeMonthsBeforeExitDate exitDate
+                , Radio.onClick <| config.exitConfigChanged <| ExitByWithSelloff exitDate <| threeMonthsBeforeExitDate exitDate
                 ]
                 "Výprodej zahájit k"
             , Input.text
                 [ Input.small
                 , Input.disabled (exitEnum /= WithSelloff)
                 , Input.value selloffDate
-                , Input.onInput (ExitConfigChanged << ExitByWithSelloff exitDate)
+                , Input.onInput (config.exitConfigChanged << ExitByWithSelloff exitDate)
                 , Input.attrs [ Spacing.mx1, size 10 ]
                 ]
             ]
@@ -142,15 +148,14 @@ type ExitConfigEnum
     | WithSelloff
 
 
-changeExitDate : ExitConfig -> String -> Msg
+changeExitDate : ExitConfig -> String -> ExitConfig
 changeExitDate exitConfig newExitDate =
-    ExitConfigChanged <|
-        case exitConfig of
-            ExitBy _ ->
-                ExitBy newExitDate
+    case exitConfig of
+        ExitBy _ ->
+            ExitBy newExitDate
 
-            ExitByWithSelloff _ selloff ->
-                ExitByWithSelloff newExitDate selloff
+        ExitByWithSelloff _ selloff ->
+            ExitByWithSelloff newExitDate selloff
 
-            DontExit ->
-                DontExit
+        DontExit ->
+            DontExit

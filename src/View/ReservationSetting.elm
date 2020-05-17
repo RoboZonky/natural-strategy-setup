@@ -7,17 +7,16 @@ import Data.ReservationSetting as ReservationSetting exposing (ReservationSettin
 import DomId exposing (DomId)
 import Html exposing (Html)
 import Html.Attributes exposing (class, href, target)
-import Types exposing (Msg(..))
 
 
-form : ReservationSetting -> CardBlock.Item Msg
-form reservationSetting =
+form : (ReservationSetting -> msg) -> ReservationSetting -> CardBlock.Item msg
+form onChange reservationSetting =
     Fieldset.config
         |> Fieldset.asGroup
         |> Fieldset.legend [] [ Html.text "Rezervační systém ", helpLink ]
         |> Fieldset.children
-            [ reservationRadio "reservationIgnore" Ignore reservationSetting
-            , reservationRadio "reservationAcceptMatching" AcceptMatching reservationSetting
+            [ reservationRadio onChange "reservationIgnore" Ignore reservationSetting
+            , reservationRadio onChange "reservationAcceptMatching" AcceptMatching reservationSetting
             ]
         |> Fieldset.view
         |> CardBlock.custom
@@ -33,13 +32,13 @@ helpLink =
         [ Html.text "Nápověda" ]
 
 
-reservationRadio : DomId -> ReservationSetting -> ReservationSetting -> Html Msg
-reservationRadio domId thisRadioSetting currentReservationSetting =
+reservationRadio : (ReservationSetting -> msg) -> DomId -> ReservationSetting -> ReservationSetting -> Html msg
+reservationRadio onChange domId thisRadioSetting currentReservationSetting =
     Radio.radio
         [ Radio.id domId
         , Radio.checked (currentReservationSetting == thisRadioSetting)
         , Radio.name "reservationSystem"
-        , Radio.onClick (ReservationSettingChanged thisRadioSetting)
+        , Radio.onClick (onChange thisRadioSetting)
         ]
         (toRadioLabel thisRadioSetting)
 

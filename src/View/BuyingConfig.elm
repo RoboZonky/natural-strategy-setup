@@ -1,4 +1,4 @@
-module View.BuyingConfig exposing (form)
+module View.BuyingConfig exposing (Config, form)
 
 import Bootstrap.Accordion as Accordion
 import Bootstrap.Button as Button
@@ -10,15 +10,23 @@ import Data.Filter.Complexity exposing (FilterComplexity(..), complexityButtonLa
 import Data.Tooltip as Tooltip
 import DomId exposing (DomId)
 import Html exposing (Html)
-import Types exposing (CreationModalMsg(..), Msg(..))
 import Version exposing (filtersHowToLink)
 import View.CardHeightWorkaround exposing (markOpenedAccordionCard)
 import View.Filter exposing (filterListView)
 import View.Tooltip as Tooltip
 
 
-form : BuyingConfiguration -> Accordion.State -> Tooltip.States -> Accordion.Card Msg
-form buyingConfiguration accordionState tooltipStates =
+type alias Config msg =
+    { tooltipConfig : Tooltip.Config msg
+    , removeBuyFilter : Int -> msg
+    , togglePrimaryMarket : Bool -> msg
+    , toggleSecondaryMarket : Bool -> msg
+    , openCreationModal : FilterComplexity -> List FilteredItem -> msg
+    }
+
+
+form : Config msg -> BuyingConfiguration -> Accordion.State -> Tooltip.States -> Accordion.Card msg
+form config buyingConfiguration accordionState tooltipStates =
     let
         cardId =
             "buyingConfigCard"
@@ -28,14 +36,14 @@ form buyingConfiguration accordionState tooltipStates =
         , options = [ markOpenedAccordionCard cardId accordionState ]
         , header =
             Accordion.headerH4 [] (Accordion.toggle [] [ Html.text "Pravidla nákupu" ])
-                |> Accordion.appendHeader [ Tooltip.popoverTip Tooltip.buyFilterListTip tooltipStates ]
+                |> Accordion.appendHeader [ Tooltip.popoverTip config.tooltipConfig Tooltip.buyFilterListTip tooltipStates ]
         , blocks =
-            [ Accordion.block [] [ viewBuyingConfiguration buyingConfiguration ] ]
+            [ Accordion.block [] [ viewBuyingConfiguration config buyingConfiguration ] ]
         }
 
 
-viewBuyingConfiguration : BuyingConfiguration -> CardBlock.Item Msg
-viewBuyingConfiguration buyingConfiguration =
+viewBuyingConfiguration : Config msg -> BuyingConfiguration -> CardBlock.Item msg
+viewBuyingConfiguration config buyingConfiguration =
     let
         enablement =
             Filter.getMarketplaceEnablement buyingConfiguration
@@ -43,31 +51,31 @@ viewBuyingConfiguration buyingConfiguration =
         additionalControls =
             case buyingConfiguration of
                 Filter.InvestSomething _ filters ->
-                    [ filterListView RemoveBuyFilter filters
-                    , filterCreationButtons enablement
+                    [ filterListView config.removeBuyFilter filters
+                    , filterCreationButtons config enablement
                     ]
 
                 Filter.InvestEverything ->
-                    [ filterCreationButtons enablement ]
+                    [ filterCreationButtons config enablement ]
 
                 Filter.InvestNothing ->
                     []
     in
     CardBlock.custom <|
         Html.div [] <|
-            primarySecondaryEnablementCheckboxes enablement
+            primarySecondaryEnablementCheckboxes config enablement
                 :: additionalControls
 
 
-primarySecondaryEnablementCheckboxes : MarketplaceEnablement -> Html Msg
-primarySecondaryEnablementCheckboxes enablement =
+primarySecondaryEnablementCheckboxes : Config msg -> MarketplaceEnablement -> Html msg
+primarySecondaryEnablementCheckboxes config enablement =
     Html.div []
-        [ marketplaceEnablementCheckbox TogglePrimaryMarket (not enablement.primaryEnabled) "me1" "Ignorovat všechny půjčky."
-        , marketplaceEnablementCheckbox ToggleSecondaryMarket (not enablement.secondaryEnabled) "me2" "Ignorovat všechny participace."
+        [ marketplaceEnablementCheckbox config.togglePrimaryMarket (not enablement.primaryEnabled) "me1" "Ignorovat všechny půjčky."
+        , marketplaceEnablementCheckbox config.toggleSecondaryMarket (not enablement.secondaryEnabled) "me2" "Ignorovat všechny participace."
         ]
 
 
-marketplaceEnablementCheckbox : (Bool -> Msg) -> Bool -> DomId -> String -> Html Msg
+marketplaceEnablementCheckbox : (Bool -> msg) -> Bool -> DomId -> String -> Html msg
 marketplaceEnablementCheckbox tag isChecked domId label =
     Checkbox.checkbox
         [ Checkbox.id domId
@@ -77,25 +85,25 @@ marketplaceEnablementCheckbox tag isChecked domId label =
         label
 
 
-filterCreationButtons : MarketplaceEnablement -> Html Msg
-filterCreationButtons marketplaceEnablement =
+filterCreationButtons : Config msg -> MarketplaceEnablement -> Html msg
+filterCreationButtons config marketplaceEnablement =
     let
         allowedFilteredItems =
             Filter.getAllowedFilterItems marketplaceEnablement
     in
     Html.div []
-        [ filterCreationButton allowedFilteredItems Simple Button.primary
-        , filterCreationButton allowedFilteredItems Complex Button.outlineSecondary
+        [ filterCreationButton config allowedFilteredItems Simple Button.primary
+        , filterCreationButton config allowedFilteredItems Complex Button.outlineSecondary
         , filtersHowToLink
         ]
 
 
-filterCreationButton : List FilteredItem -> FilterComplexity -> Button.Option Msg -> Html Msg
-filterCreationButton allowedFilteredItems filterComplexity buttonType =
+filterCreationButton : Config msg -> List FilteredItem -> FilterComplexity -> Button.Option msg -> Html msg
+filterCreationButton config allowedFilteredItems filterComplexity buttonType =
     Button.button
         [ buttonType
         , Button.small
-        , Button.onClick <| CreationModalMsg <| OpenCreationModal filterComplexity allowedFilteredItems
+        , Button.onClick <| config.openCreationModal filterComplexity allowedFilteredItems
         , Button.attrs [ Spacing.mx1 ]
         ]
         [ Html.text <| complexityButtonLabel filterComplexity ]

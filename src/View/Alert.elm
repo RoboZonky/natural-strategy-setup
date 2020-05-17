@@ -1,10 +1,12 @@
-module View.Alert exposing (AlertData(..), view)
+module View.Alert exposing
+    ( AlertData(..)
+    , view
+    )
 
 import Bootstrap.Alert
 import Html exposing (Html)
 import Html.Attributes exposing (class, href, target, type_)
 import Html.Events exposing (onClick)
-import Types exposing (Msg(..))
 import Url.Builder exposing (crossOrigin, string)
 
 
@@ -15,25 +17,25 @@ type AlertData
     | NoAlert
 
 
-view : AlertData -> Html Msg
-view maybeAlert =
+view : msg -> AlertData -> Html msg
+view dismissAlert maybeAlert =
     case maybeAlert of
         SuccessAlert successText ->
             Bootstrap.Alert.simpleSuccess []
                 [ Html.text successText
-                , closeAlertButton
+                , closeAlertButton dismissAlert
                 ]
 
         ErrorAlert error ->
             Bootstrap.Alert.simpleDanger []
                 [ Html.text "Pokus o načtení strategie z URL se nezdařil. Prosím nahlašte chybu na stránce projektu kliknutím na tento "
                 , Html.a [ href (openIssueUrl error) ] [ Html.text "odkaz" ]
-                , closeAlertButton
+                , closeAlertButton dismissAlert
                 ]
 
         WarningAlert warnings ->
             Bootstrap.Alert.simpleWarning []
-                [ closeAlertButton
+                [ closeAlertButton dismissAlert
                 , Html.div [] [ Html.text <| "Upozornění: Strategii se podařilo obnovit z URL jen částečně." ]
                 , Html.div []
                     [ Html.text "Došlo k několika zpětně nekompatibilním změnám ve formátu strategie (viz "
@@ -52,10 +54,10 @@ view maybeAlert =
             Html.text ""
 
 
-closeAlertButton : Html Msg
-closeAlertButton =
+closeAlertButton : msg -> Html msg
+closeAlertButton dismissAlert =
     Html.button
-        [ type_ "button", class "close", onClick DismissAlert ]
+        [ type_ "button", class "close", onClick dismissAlert ]
         [ Html.span [] [ Html.text "×" ] ]
 
 

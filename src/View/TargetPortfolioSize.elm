@@ -1,4 +1,7 @@
-module View.TargetPortfolioSize exposing (form)
+module View.TargetPortfolioSize exposing
+    ( Config
+    , form
+    )
 
 import Bootstrap.Card.Block as CardBlock
 import Bootstrap.Form as Form
@@ -8,13 +11,18 @@ import Bootstrap.Utilities.Spacing as Spacing
 import Data.TargetPortfolioSize as TargetPortfolioSize exposing (TargetPortfolioSize(..))
 import Html exposing (Html)
 import Html.Events exposing (onSubmit)
-import Types exposing (Msg(..))
 import Util
 import View.NumericInput
 
 
-form : TargetPortfolioSize -> CardBlock.Item Msg
-form targetPortfolioSize =
+type alias Config msg =
+    { targetPortfolioSizeChanged : String -> msg
+    , noOp : msg
+    }
+
+
+form : Config msg -> TargetPortfolioSize -> CardBlock.Item msg
+form config targetPortfolioSize =
     let
         ( isBounded, value ) =
             case targetPortfolioSize of
@@ -31,23 +39,23 @@ form targetPortfolioSize =
         |> Fieldset.asGroup
         |> Fieldset.legend [] [ Html.text "Cílová zůstatková částka" ]
         |> Fieldset.children
-            [ Form.formInline [ onSubmit NoOp ]
+            [ Form.formInline [ onSubmit config.noOp ]
                 [ Radio.radio
                     [ Radio.id "tps1"
                     , Radio.checked (not isBounded)
                     , Radio.name "portfolioSize"
-                    , Radio.onClick (TargetPortfolioSizeChanged "undefined")
+                    , Radio.onClick (config.targetPortfolioSizeChanged "undefined")
                     ]
                     "neomezená"
                 , Radio.radio
                     [ Radio.id "tps2"
                     , Radio.checked isBounded
                     , Radio.name "portfolioSize"
-                    , Radio.onClick (TargetPortfolioSizeChanged defaultSize)
+                    , Radio.onClick (config.targetPortfolioSizeChanged defaultSize)
                     , Radio.attrs [ Spacing.mx1 ]
                     ]
                     "maximálně"
-                , numericInput TargetPortfolioSizeChanged isBounded value
+                , numericInput config.targetPortfolioSizeChanged isBounded value
                 , Html.text "Kč."
                 ]
             , validationErrors
@@ -56,7 +64,7 @@ form targetPortfolioSize =
         |> CardBlock.custom
 
 
-numericInput : (String -> Msg) -> Bool -> String -> Html Msg
+numericInput : (String -> msg) -> Bool -> String -> Html msg
 numericInput =
     View.NumericInput.numericInput 0 100000000
 
