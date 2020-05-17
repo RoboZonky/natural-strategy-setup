@@ -222,17 +222,22 @@ getFiltersRemovedByBuyingConfigurationChange old new =
 
 getFiltersRemovedBySellingConfigurationChange : SellingConfiguration -> SellingConfiguration -> List MarketplaceFilter
 getFiltersRemovedBySellingConfigurationChange old new =
-    case ( old, new ) of
-        ( SellSomething oldFilters, SellSomething newFilters ) ->
-            List.filter
-                (\oldFilter -> List.notMember oldFilter newFilters)
-                oldFilters
+    case old of
+        SellSomething oldFilters ->
+            case new of
+                SellSomething newFilters ->
+                    List.filter
+                        (\oldFilter -> List.notMember oldFilter newFilters)
+                        oldFilters
 
-        ( SellSomething oldFilters, SellNothing ) ->
-            oldFilters
+                SellNothing ->
+                    oldFilters
 
-        ( SellSomething oldFilters, SellWithoutCharge ) ->
-            oldFilters
+                SellWithoutCharge ->
+                    oldFilters
+
+                SellWithoutChargeAndDiscount ->
+                    oldFilters
 
         _ ->
             []
