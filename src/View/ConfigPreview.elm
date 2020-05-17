@@ -40,7 +40,11 @@ view baseUrl generatedOn strategyConfig =
                 [ Textarea.textarea
                     [ Textarea.rows <| previewTextRowCount + extraRowsForStrategyUrl
                     , Textarea.value previewText
-                    , Textarea.attrs [ readonly True, style "width" "100%" ]
+                    , Textarea.attrs
+                        [ readonly True
+                        , style "width" "100%"
+                        , style "height" "80vh"
+                        ]
                     ]
                 ]
             ]

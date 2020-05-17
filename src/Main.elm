@@ -275,7 +275,10 @@ view { strategyConfig, accordionState, filterCreationState, filterDeletionState,
 
 infoFooter : Html Msg
 infoFooter =
-    footer [ class "text-center mt-2", style "color" "gray" ]
+    footer
+        [ class "fixed-bottom text-center py-3 container"
+        , style "color" "gray"
+        ]
         [ text "Autor "
         , a
             [ href "http://janhrcek.cz", target "_blank" ]
