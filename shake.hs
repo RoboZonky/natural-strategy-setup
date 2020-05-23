@@ -61,7 +61,7 @@ main = shakeArgs options $ do
     deploy "/home/jhrcek/Devel/github.com/jhrcek/jhrcek.github.io/natural-strategy-setup"
 
   phony "deploy-prod" $ do
-    deploy "/home/jhrcek/Devel/github.com/RoboZonky/robozonky.github.io/konfigurace-strategie"
+    deploy "/home/jhrcek/Devel/github.com/jhrcek/robozonky.github.io/konfigurace-strategie"
 
   phony "clean" $ do
     cmd_ "rm" ["-rf", "elm-stuff", elmDist]
