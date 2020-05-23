@@ -5,7 +5,7 @@ import Bootstrap.Grid.Col as Col
 import Bootstrap.Grid.Row as Row
 import Data.Filter exposing (FilteredItem(..))
 import Data.Filter.Complexity exposing (FilterComplexity(..))
-import Data.Filter.Conditions as C exposing (Condition(..), ConditionType(..), Conditions, processCondition)
+import Data.Filter.Conditions as Conditions exposing (Condition(..), ConditionType(..), Conditions, processCondition)
 import Data.Filter.Conditions.Amount as Amount exposing (Amount(..), AmountCondition(..), AmountMsg)
 import Data.Filter.Conditions.CurrentDaysPastDue as CurrentDaysPastDue exposing (CurrentDaysPastDueMsg)
 import Data.Filter.Conditions.DaysSinceLastPastDue as DaysSinceLastPastDue exposing (DaysSinceLastPastDueMsg)
@@ -31,7 +31,7 @@ import Data.Filter.Conditions.TermPercent as TermPercent exposing (TermPercent(.
 import Html exposing (Html)
 import Html.Attributes exposing (class)
 import Html.Events exposing (onClick)
-import View.EnumSelect as Select exposing (DefaultOptionConfig(..))
+import View.EnumSelect as Select
 
 
 
@@ -50,7 +50,7 @@ form : FilterComplexity -> FilteredItem -> Model -> Html Msg
 form filterComplexity filteredItem conditions =
     let
         enabledConditions =
-            C.getEnabledConditions conditions
+            Conditions.getEnabledConditions conditions
 
         dropDownWhenFilterComplexOrConditionsEmpty =
             if {- Simple rules can only have one condition -} filterComplexity == Complex || List.isEmpty enabledConditions then
@@ -119,24 +119,29 @@ conditionEnablementDropDown filteredItem conditions =
             conditionTypesThatApplyTo filteredItem
 
         conditionsThatCanBeEnabled =
-            List.filter (\c -> List.member c validConditions) <| C.getDisabledConditionTypes conditions
+            List.filter (\c -> List.member c validConditions) <| Conditions.getDisabledConditionTypes conditions
 
         addCondition conditionType =
-            AddCondition <| C.getDefaultCondition conditionType
+            AddCondition <| Conditions.getDefaultCondition conditionType
 
         getLabel : ConditionType -> String
         getLabel =
             getVisibleLabel filteredItem
+
+        groupAndLabel : ConditionType -> ( String, String )
+        groupAndLabel ct =
+            ( Conditions.getCategory ct, getLabel ct )
     in
     if List.isEmpty conditionsThatCanBeEnabled then
         Html.text ""
 
     else
-        Select.from
-            { enumValues = List.sortBy getLabel conditionsThatCanBeEnabled
+        Select.fromGrouped
+            { enumValues = List.sortBy groupAndLabel conditionsThatCanBeEnabled
             , valuePickedMessage = addCondition
-            , showVisibleLabel = getLabel
-            , defaultOption = DummyOption "-- Přidat podmínku --"
+            , optionLabel = getLabel
+            , groupLabel = Conditions.getCategory
+            , dummyOption = "-- Přidat podmínku --"
             , enabled = True
             }
 
@@ -319,73 +324,73 @@ update : Msg -> Model -> Model
 update msg =
     case msg of
         AmountMsg m ->
-            C.updateAmount m
+            Conditions.updateAmount m
 
         CurrentDaysPastDueMsg m ->
-            C.updateCurrentDaysPastDueMsg m
+            Conditions.updateCurrentDaysPastDueMsg m
 
         DaysSinceLastPastDueMsg m ->
-            C.updateDaysSinceLastPastDue m
+            Conditions.updateDaysSinceLastPastDue m
 
         ElapsedTermMonthsMsg m ->
-            C.updateElapsedTermMonths m
+            Conditions.updateElapsedTermMonths m
 
         ElapsedTermPercentMsg m ->
-            C.updateElapsedTermPercent m
+            Conditions.updateElapsedTermPercent m
 
         HealthMsg m ->
-            C.updateHealth m
+            Conditions.updateHealth m
 
         IncomeMsg m ->
-            C.updateIncome m
+            Conditions.updateIncome m
 
         InsuranceConditionChanged c ->
-            C.setInsuranceCondition c
+            Conditions.setInsuranceCondition c
 
         InterestMsg m ->
-            C.updateInterest m
+            Conditions.updateInterest m
 
         OriginalTermMonthsMsg m ->
-            C.updateOriginalTermMonths m
+            Conditions.updateOriginalTermMonths m
 
         LoanAnnuityMsg m ->
-            C.updateLoanAnnuity m
+            Conditions.updateLoanAnnuity m
 
         LongestDaysPastDueMsg m ->
-            C.updateLongestDaysPastDue m
+            Conditions.updateLongestDaysPastDue m
 
         PurposeMsg m ->
-            C.updatePurpose m
+            Conditions.updatePurpose m
 
         RegionMsg m ->
-            C.updateRegion m
+            Conditions.updateRegion m
 
         RelativeProfitMsg m ->
-            C.updateRelativeProfit m
+            Conditions.updateRelativeProfit m
 
         RelativeSaleDiscountMsg m ->
-            C.updateRelativeSaleDiscount m
+            Conditions.updateRelativeSaleDiscount m
 
         RemainingAmountMsg m ->
-            C.updateRemainingAmount m
+            Conditions.updateRemainingAmount m
 
         RevenueRateMsg m ->
-            C.updateRevenueRate m
+            Conditions.updateRevenueRate m
 
         SaleFeeConditionChanged c ->
-            C.setSaleFeeCondition c
+            Conditions.setSaleFeeCondition c
 
         StoryConditionChanged c ->
-            C.setStoryCondition c
+            Conditions.setStoryCondition c
 
         TermMonthsMsg m ->
-            C.updateTermMonths m
+            Conditions.updateTermMonths m
 
         TermPercentMsg m ->
-            C.updateTermPercent m
+            Conditions.updateTermPercent m
 
         AddCondition c ->
-            C.addCondition c
+            Conditions.addCondition c
 
         RemoveCondition ct ->
-            C.removeCondition ct
+            Conditions.removeCondition ct

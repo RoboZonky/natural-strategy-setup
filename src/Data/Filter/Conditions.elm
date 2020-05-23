@@ -8,6 +8,7 @@ module Data.Filter.Conditions exposing
     , conditionsValidationErrors
     , emptyConditions
     , encodeConditions
+    , getCategory
     , getDefaultCondition
     , getDisabledConditionTypes
     , getEnabledConditionTypes
@@ -703,6 +704,76 @@ getDefaultCondition conditionType =
 
         Term_Percent ->
             Condition_Term_Percent TermPercent.defaultCondition
+
+
+getCategory : ConditionType -> String
+getCategory conditionType =
+    case conditionType of
+        Amount ->
+            "Parametry půjčky"
+
+        Current_Days_Past_Due ->
+            "Život participace"
+
+        Days_Since_Last_Past_Due ->
+            "Život participace"
+
+        Elapsed_Term_Months ->
+            "Život participace"
+
+        Elapsed_Term_Percent ->
+            "Život participace"
+
+        Health ->
+            "Život participace"
+
+        Income ->
+            "Klient"
+
+        Insurance ->
+            "Parametry půjčky"
+
+        Interest ->
+            "Parametry půjčky"
+
+        Original_Term_Months ->
+            "Parametry půjčky"
+
+        Loan_Annuity ->
+            "Parametry půjčky"
+
+        Longest_Days_Past_Due ->
+            "Život participace"
+
+        Purpose ->
+            "Parametry půjčky"
+
+        Region ->
+            "Klient"
+
+        Relative_Profit ->
+            "Výnos a ztráta"
+
+        Relative_Sale_Discount ->
+            "Výnos a ztráta"
+
+        Remaining_Amount ->
+            "Život participace"
+
+        Remaining_Term_Months ->
+            "Život participace"
+
+        Revenue_Rate ->
+            "Výnos a ztráta"
+
+        Sale_Fee ->
+            "Výnos a ztráta"
+
+        Story ->
+            "Parametry půjčky"
+
+        Term_Percent ->
+            "Život participace"
 
 
 
