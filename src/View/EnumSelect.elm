@@ -6,7 +6,7 @@ module View.EnumSelect exposing
 
 import Dict
 import Html exposing (Html)
-import Html.Attributes exposing (class, disabled, selected, value)
+import Html.Attributes exposing (class, disabled, hidden, selected, value)
 import Html.Events exposing (stopPropagationOn, targetValue)
 import Html.Keyed as Keyed
 import Json.Decode as Decode exposing (Decoder)
@@ -73,9 +73,7 @@ from { enumValues, valuePickedMessage, optionLabel, defaultOption, enabled } =
                 Nothing ->
                     (::)
                         ( "dummyInformativeOption"
-                        , Html.option
-                            [ selected True ]
-                            [ Html.text "" ]
+                        , dummyOption ""
                         )
 
                 Just _ ->
@@ -91,8 +89,8 @@ from { enumValues, valuePickedMessage, optionLabel, defaultOption, enabled } =
         )
 
 
-fromGrouped : Config enum msg { dummyOption : String, groupLabel : enum -> String } -> Html msg
-fromGrouped { enumValues, valuePickedMessage, optionLabel, dummyOption, enabled, groupLabel } =
+fromGrouped : Config enum msg { dummyLabel : String, groupLabel : enum -> String } -> Html msg
+fromGrouped { enumValues, valuePickedMessage, optionLabel, dummyLabel, enabled, groupLabel } =
     let
         stringToEnum : String -> Maybe enum
         stringToEnum =
@@ -120,7 +118,7 @@ fromGrouped { enumValues, valuePickedMessage, optionLabel, dummyOption, enabled,
 
         options : List (Html msg)
         options =
-            Html.option [ selected True ] [ Html.text dummyOption ]
+            dummyOption dummyLabel
                 :: List.map
                     (\( ( ix, e ), rest ) ->
                         Html.optgroup [ Html.Attributes.attribute "label" (groupLabel e) ] <|
@@ -140,6 +138,12 @@ fromGrouped { enumValues, valuePickedMessage, optionLabel, dummyOption, enabled,
         , disabled (not enabled)
         ]
         options
+
+
+dummyOption : String -> Html msg
+dummyOption text =
+    Html.option [ selected True, disabled True, hidden True ]
+        [ Html.text text ]
 
 
 {-| Given list of enum values create a lookup function

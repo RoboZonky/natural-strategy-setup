@@ -141,7 +141,7 @@ conditionEnablementDropDown filteredItem conditions =
             , valuePickedMessage = addCondition
             , optionLabel = getLabel
             , groupLabel = Conditions.getCategory
-            , dummyOption = "-- Přidat podmínku --"
+            , dummyLabel = "-- Přidat podmínku --"
             , enabled = True
             }
 
