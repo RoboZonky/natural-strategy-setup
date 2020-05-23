@@ -71,12 +71,12 @@ validationErrors (AmountCondition a) =
 
 positive : Int -> List String
 positive =
-    Validate.notNegative "Výše úvěru"
+    Validate.notNegative "Výše půjčky"
 
 
 minNotGtMax : Int -> Int -> List String
 minNotGtMax =
-    Validate.minNotGtMax "Výše úvěru"
+    Validate.minNotGtMax "Výše půjčky"
 
 
 type AmountMsg

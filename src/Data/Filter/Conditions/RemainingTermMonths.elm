@@ -71,12 +71,12 @@ validationErrors (RemainingTermMonthsCondition t) =
 
 validateInRange : Int -> Int -> Int -> List String
 validateInRange =
-    Validate.intInRange "Zbývající délka úvěru v měsících"
+    Validate.intInRange "Zbývající délka půjčky v měsících"
 
 
 minNotGtMax : Int -> Int -> List String
 minNotGtMax =
-    Validate.minNotGtMax "Zbývající délka úvěru v měsících"
+    Validate.minNotGtMax "Zbývající délka půjčky v měsících"
 
 
 type RemainingTermMonthsMsg
