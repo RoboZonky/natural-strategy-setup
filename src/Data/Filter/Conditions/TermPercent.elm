@@ -71,12 +71,12 @@ validationErrors (TermPercentCondition t) =
 
 validateInRange : Int -> Int -> Int -> List String
 validateInRange =
-    Validate.intInRange "Délka úvěru v procentech"
+    Validate.intInRange "Délka půjčky v procentech"
 
 
 minNotGtMax : Int -> Int -> List String
 minNotGtMax =
-    Validate.minNotGtMax "Délka úvěru v procentech"
+    Validate.minNotGtMax "Délka půjčky v procentech"
 
 
 type TermPercentMsg

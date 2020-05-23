@@ -71,12 +71,12 @@ validationErrors (OriginalTermMonthsCondition t) =
 
 validateInRange : Int -> Int -> Int -> List String
 validateInRange =
-    Validate.intInRange "Původní délka úvěru v měsících"
+    Validate.intInRange "Původní délka půjčky v měsících"
 
 
 minNotGtMax : Int -> Int -> List String
 minNotGtMax =
-    Validate.minNotGtMax "Původní délka úvěru v měsících"
+    Validate.minNotGtMax "Původní délka půjčky v měsících"
 
 
 type OriginalTermMonthsMsg

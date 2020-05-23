@@ -211,7 +211,7 @@ getVisibleLabel filteredItem conditionType =
             "Úrok"
 
         Original_Term_Months ->
-            "Původní délka úvěru"
+            "Původní délka půjčky"
 
         Loan_Annuity ->
             "Měsíční splátka"
@@ -220,7 +220,7 @@ getVisibleLabel filteredItem conditionType =
             "Nejdelší doba po splatnosti (ve dnech)"
 
         Purpose ->
-            "Účel úvěru"
+            "Účel půjčky"
 
         Region ->
             "Kraj klienta"
@@ -254,20 +254,20 @@ termConditionLabel : FilteredItem -> String -> String
 termConditionLabel filteredItem unitStr =
     case filteredItem of
         Loan ->
-            "Délka úvěru " ++ unitStr
+            "Délka půjčky " ++ unitStr
 
         _ ->
-            "Zbývající délka úvěru " ++ unitStr
+            "Zbývající délka půjčky " ++ unitStr
 
 
 amountConditionLabel : FilteredItem -> String
 amountConditionLabel filteredItem =
     case filteredItem of
         Loan ->
-            "Výše úvěru"
+            "Výše půjčky"
 
         _ ->
-            "Původní výše úvěru"
+            "Původní výše půjčky"
 
 
 closeableWrapper : FilteredItem -> ConditionType -> Html Msg -> Html Msg

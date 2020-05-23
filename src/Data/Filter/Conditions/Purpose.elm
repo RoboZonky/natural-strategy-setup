@@ -98,7 +98,7 @@ renderPurposeList =
 
 validationErrors : PurposeCondition -> List String
 validationErrors (PurposeList rlist) =
-    Validate.isNotEmpty "Účel úvěru" rlist
+    Validate.isNotEmpty "Účel půjčky" rlist
 
 
 type PurposeMsg
