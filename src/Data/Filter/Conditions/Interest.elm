@@ -21,7 +21,7 @@ import Html.Events exposing (onSubmit)
 import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as Encode exposing (Value)
 import List.Extra
-import View.EnumSelect as EnumSelect exposing (DefaultOptionConfig(..))
+import View.EnumSelect as Select
 
 
 type Interest
@@ -156,21 +156,21 @@ form (InterestCondition interest) =
         dropDowns =
             case interest of
                 Exactly x ->
-                    { defaultDropDowns | exactly = ratingDropDown True (DefaultOption x) SetExactly }
+                    { defaultDropDowns | exactly = ratingDropDown True (Just x) SetExactly }
 
                 LessThan x ->
-                    { defaultDropDowns | lessThan = ratingDropDownWithValues allRatingsExceptSmallest True (DefaultOption x) SetLessThan }
+                    { defaultDropDowns | lessThan = ratingDropDownWithValues allRatingsExceptSmallest True (Just x) SetLessThan }
 
                 Between mi ma ->
                     { defaultDropDowns
                         | between =
-                            ( ratingDropDown True (DefaultOption mi) (\mi1 -> SetBetween mi1 ma)
-                            , ratingDropDown True (DefaultOption ma) (\ma1 -> SetBetween mi ma1)
+                            ( ratingDropDown True (Just mi) (\mi1 -> SetBetween mi1 ma)
+                            , ratingDropDown True (Just ma) (\ma1 -> SetBetween mi ma1)
                             )
                     }
 
                 MoreThan x ->
-                    { defaultDropDowns | moreThan = ratingDropDownWithValues allRatingsExceptLargest True (DefaultOption x) SetMoreThan }
+                    { defaultDropDowns | moreThan = ratingDropDownWithValues allRatingsExceptLargest True (Just x) SetMoreThan }
     in
     Html.div []
         [ Form.formInline [ onSubmit InterestNoOp ]
@@ -203,17 +203,17 @@ unit =
     Html.text "\u{00A0}% p.a."
 
 
-ratingDropDown : Bool -> DefaultOptionConfig Rating -> (Rating -> InterestMsg) -> Html InterestMsg
+ratingDropDown : Bool -> Maybe Rating -> (Rating -> InterestMsg) -> Html InterestMsg
 ratingDropDown =
     ratingDropDownWithValues Rating.allRatings
 
 
-ratingDropDownWithValues : List Rating -> Bool -> DefaultOptionConfig Rating -> (Rating -> InterestMsg) -> Html InterestMsg
+ratingDropDownWithValues : List Rating -> Bool -> Maybe Rating -> (Rating -> InterestMsg) -> Html InterestMsg
 ratingDropDownWithValues ratings enabled defaultOption toMsg =
-    EnumSelect.from
+    Select.from
         { enumValues = ratings
         , valuePickedMessage = toMsg
-        , showVisibleLabel = Rating.showInterest
+        , optionLabel = Rating.showInterest
         , defaultOption = defaultOption
         , enabled = enabled
         }
@@ -235,7 +235,7 @@ allRatingsExceptSmallest =
 
 disabledDropDown : Html InterestMsg
 disabledDropDown =
-    ratingDropDown False (DummyOption "") (always InterestNoOp)
+    ratingDropDown False Nothing (always InterestNoOp)
 
 
 interestRadio : Bool -> InterestMsg -> String -> DomId -> Html InterestMsg

@@ -1,7 +1,7 @@
 module View.EnumSelect exposing
     ( Config
-    , DefaultOptionConfig(..)
     , from
+    , fromGrouped
     )
 
 import Dict
@@ -10,54 +10,26 @@ import Html.Attributes exposing (class, disabled, selected, value)
 import Html.Events exposing (stopPropagationOn, targetValue)
 import Html.Keyed as Keyed
 import Json.Decode as Decode exposing (Decoder)
+import List.Extra as List
 
 
-type alias Config enum msg =
-    { -- List of enum values to pick from
-      enumValues : List enum
+type alias Config enum msg r =
+    { r
+        | -- List of enum values to pick from
+          enumValues : List enum
 
-    -- Message to be fired when valid option picked
-    , valuePickedMessage : enum -> msg
+        -- Message to be fired when valid option picked
+        , valuePickedMessage : enum -> msg
 
-    --| How to display the value in the dropDown
-    , showVisibleLabel : enum -> String
-    , defaultOption : DefaultOptionConfig enum
-    , enabled : Bool
+        --| How to display the value in the dropDown
+        , optionLabel : enum -> String
+        , enabled : Bool
     }
 
 
-type DefaultOptionConfig enum
-    = DummyOption String --| Text for dummy option informing user to pick something (like "-- select fruit --")
-    | DefaultOption enum
-
-
-from : Config enum msg -> Html msg
-from { enumValues, valuePickedMessage, showVisibleLabel, defaultOption, enabled } =
+from : Config enum msg { defaultOption : Maybe enum } -> Html msg
+from { enumValues, valuePickedMessage, optionLabel, defaultOption, enabled } =
     let
-        toOption : Int -> enum -> ( String, Html msg )
-        toOption index enum =
-            let
-                key =
-                    String.fromInt index
-            in
-            ( key
-            , Html.option
-                [ value key ]
-                [ Html.text (showVisibleLabel enum) ]
-            )
-
-        toOptionWithDefault : enum -> Int -> enum -> ( String, Html msg )
-        toOptionWithDefault defaultVal index enum =
-            let
-                key =
-                    String.fromInt index
-            in
-            ( key
-            , Html.option
-                [ value key, selected (enum == defaultVal) ]
-                [ Html.text (showVisibleLabel enum) ]
-            )
-
         stringToEnum : String -> Maybe enum
         stringToEnum =
             makeStringToEnum enumValues
@@ -76,30 +48,98 @@ from { enumValues, valuePickedMessage, showVisibleLabel, defaultOption, enabled 
                                 Decode.fail <| "Failed to decode enum value from " ++ str
                     )
 
-        options : List ( String, Html msg )
-        options =
-            case defaultOption of
-                DummyOption info ->
-                    dummyOption info :: List.indexedMap toOption enumValues
+        toOptionWithDefault : Int -> enum -> ( String, Html msg )
+        toOptionWithDefault index enum =
+            let
+                key =
+                    String.fromInt index
+            in
+            ( key
+            , Html.option
+                (value key
+                    :: (case defaultOption of
+                            Just def ->
+                                [ selected (enum == def) ]
 
-                DefaultOption defaultVal ->
-                    List.indexedMap (toOptionWithDefault defaultVal) enumValues
+                            Nothing ->
+                                []
+                       )
+                )
+                [ Html.text (optionLabel enum) ]
+            )
+
+        addDummyOptionWhenNoDefault =
+            case defaultOption of
+                Nothing ->
+                    (::)
+                        ( "dummyInformativeOption"
+                        , Html.option
+                            [ selected True ]
+                            [ Html.text "" ]
+                        )
+
+                Just _ ->
+                    identity
     in
     Keyed.node "select"
         [ stopPropagationOn "input" enumDecoder
         , class "form-control"
         , disabled (not enabled)
         ]
+        (addDummyOptionWhenNoDefault <|
+            List.indexedMap toOptionWithDefault enumValues
+        )
+
+
+fromGrouped : Config enum msg { dummyOption : String, groupLabel : enum -> String } -> Html msg
+fromGrouped { enumValues, valuePickedMessage, optionLabel, dummyOption, enabled, groupLabel } =
+    let
+        stringToEnum : String -> Maybe enum
+        stringToEnum =
+            makeStringToEnum enumValues
+
+        groupedOptions : List ( ( Int, enum ), List ( Int, enum ) )
+        groupedOptions =
+            enumValues
+                |> List.indexedMap Tuple.pair
+                |> List.groupWhile (\( _, e1 ) ( _, e2 ) -> groupLabel e1 == groupLabel e2)
+
+        -- Html.Event.onInput modified to only emit event when enum value is successfully decoded from the targetValue string
+        enumDecoder : Decoder ( msg, Bool )
+        enumDecoder =
+            targetValue
+                |> Decode.andThen
+                    (\str ->
+                        case stringToEnum str of
+                            Just enumVal ->
+                                Decode.succeed ( valuePickedMessage enumVal, True )
+
+                            Nothing ->
+                                Decode.fail <| "Failed to decode enum value from " ++ str
+                    )
+
+        options : List (Html msg)
+        options =
+            Html.option [ selected True ] [ Html.text dummyOption ]
+                :: List.map
+                    (\( ( ix, e ), rest ) ->
+                        Html.optgroup [ Html.Attributes.attribute "label" (groupLabel e) ] <|
+                            List.map
+                                (\( index, enum ) ->
+                                    Html.option
+                                        [ value (String.fromInt index) ]
+                                        [ Html.text (optionLabel enum) ]
+                                )
+                                (( ix, e ) :: rest)
+                    )
+                    groupedOptions
+    in
+    Html.select
+        [ stopPropagationOn "input" enumDecoder
+        , class "form-control"
+        , disabled (not enabled)
+        ]
         options
-
-
-dummyOption : String -> ( String, Html msg )
-dummyOption info =
-    ( "dummyInformativeOption"
-    , Html.option
-        [ selected True ]
-        [ Html.text info ]
-    )
 
 
 {-| Given list of enum values create a lookup function
