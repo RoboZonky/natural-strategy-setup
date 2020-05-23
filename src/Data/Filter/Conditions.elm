@@ -710,70 +710,70 @@ getCategory : ConditionType -> String
 getCategory conditionType =
     case conditionType of
         Amount ->
-            "Parametry půjčky"
+            "Půjčka"
 
         Current_Days_Past_Due ->
-            "Život participace"
+            "Splácení"
 
         Days_Since_Last_Past_Due ->
-            "Život participace"
+            "Splácení"
 
         Elapsed_Term_Months ->
-            "Život participace"
+            "Splácení"
 
         Elapsed_Term_Percent ->
-            "Život participace"
+            "Splácení"
 
         Health ->
-            "Život participace"
+            "Splácení"
 
         Income ->
             "Klient"
 
         Insurance ->
-            "Parametry půjčky"
+            "Půjčka"
 
         Interest ->
-            "Parametry půjčky"
+            "Půjčka"
 
         Original_Term_Months ->
-            "Parametry půjčky"
+            "Půjčka"
 
         Loan_Annuity ->
-            "Parametry půjčky"
+            "Půjčka"
 
         Longest_Days_Past_Due ->
-            "Život participace"
+            "Splácení"
 
         Purpose ->
-            "Parametry půjčky"
+            "Půjčka"
 
         Region ->
             "Klient"
 
         Relative_Profit ->
-            "Výnos a ztráta"
+            "Výnos"
 
         Relative_Sale_Discount ->
-            "Výnos a ztráta"
+            "Výnos"
 
         Remaining_Amount ->
-            "Život participace"
+            "Splácení"
 
         Remaining_Term_Months ->
-            "Život participace"
+            "Splácení"
 
         Revenue_Rate ->
-            "Výnos a ztráta"
+            "Výnos"
 
         Sale_Fee ->
-            "Výnos a ztráta"
+            "Výnos"
 
         Story ->
-            "Parametry půjčky"
+            "Půjčka"
 
         Term_Percent ->
-            "Život participace"
+            "Splácení"
 
 
 
