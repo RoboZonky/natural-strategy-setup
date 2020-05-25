@@ -1,5 +1,16 @@
 # Změny formátu strategie
 
+## RoboZonky 6.0.0
+
+Přibyly tři nové podmínky
+
+| Podmínka            | Poznámka | Lze použít při tvorbě pravidel pro .. |
+| ------------------- | -------- | ------------------------------------- |
+| Aktuální doba po splatnosti | Ve dnech |  Nákup/prodej participací |
+| Doba od posledního dne po splatnosti | Ve dnech  | Nákup/prodej participací|
+| Nejdelší doba po splatnosti | Ve dnech | Nákup/prodej participací|
+
+
 ## RoboZonky 5.7.0
 
 Došlo k zásadní změně v sekci `Výše investice`
