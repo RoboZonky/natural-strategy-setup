@@ -29,7 +29,7 @@ mvn clean install -DskipTests -Dgpg.skip=true
 You also need `warp` (web server) binary which is used to serve the app for selenium tests.
 
 ```bash
-stack install wai-app-static --resolver lts-15.13
+stack install wai-app-static --resolver lts-16.3
 ```
 
 After you have `elm-test` and `warp` binaries installed and robozonky artifacts built in your m2 repo you can run all tests using:
