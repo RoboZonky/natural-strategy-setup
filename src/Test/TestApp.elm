@@ -71,7 +71,7 @@ view seed =
             , Html.button [ onClick NextSeed, id "nextSeedButton" ] [ Html.text "Next Seed" ]
             ]
         , Html.div []
-            [ Html.text <| "Strategy validation errors: "
+            [ Html.text "Strategy validation errors: "
             , Html.span [ id "validationErrors" ]
                 [ Html.text <| Util.stringListToString <| Strategy.validateStrategyConfiguration randomStrategyConfig ]
             ]

@@ -36,7 +36,7 @@ view dismissAlert maybeAlert =
         WarningAlert warnings ->
             Bootstrap.Alert.simpleWarning []
                 [ closeAlertButton dismissAlert
-                , Html.div [] [ Html.text <| "Upozornění: Strategii se podařilo obnovit z URL jen částečně." ]
+                , Html.div [] [ Html.text "Upozornění: Strategii se podařilo obnovit z URL jen částečně." ]
                 , Html.div []
                     [ Html.text "Došlo k několika zpětně nekompatibilním změnám ve formátu strategie (viz "
                     , Html.a

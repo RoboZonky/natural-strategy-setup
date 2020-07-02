@@ -85,7 +85,7 @@ type Msg
 
 
 update : Msg -> Size -> Size
-update msg (Size _) =
+update msg _ =
     case msg of
         SetValue newValue ->
             Size newValue

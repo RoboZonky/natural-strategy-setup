@@ -50,7 +50,7 @@ testData =
 
 validHashData : Test
 validHashData =
-    describe "Strategy.strategyFromUrlHash - valid inputs" <|
+    describe "Strategy.strategyFromUrlHash - valid inputs"
         [ test "Default strategy" <|
             \() ->
                 VersionedStrategy.loadStrategy "Njt7ImgiOnsiYSI6MCwiYiI6WyIwIl0sImMiOlsxXSwiZCI6MjAwLCJkMSI6MjAwLCJnMSI6MX0sImoiOlsyMDAsMjAwLDIwMCwyMDAsMjAwLDIwMCwyMDAsMjAwLDIwMCwyMDAsMjAwXSwiajEiOlsyMDAsMjAwLDIwMCwyMDAsMjAwLDIwMCwyMDAsMjAwLDIwMCwyMDAsMjAwXSwiayI6eyJvIjowfSwibCI6eyJtIjowfX0="

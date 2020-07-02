@@ -47,7 +47,7 @@ toInt =
 
 
 update : Msg -> Percentage -> Percentage
-update msg (Percentage _) =
+update msg _ =
     case msg of
         SetValue newValue ->
             Percentage (Basics.toFloat newValue)

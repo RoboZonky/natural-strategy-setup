@@ -230,7 +230,7 @@ renderStrategyConfiguration baseUrl generatedOn ({ generalSettings, portfolioStr
     Util.joinNonemptyLines <|
         List.filterMap identity
             [ Just <| Version.strategyComment generatedOn
-            , Just <| Version.robozonkyVersionStatement
+            , Just Version.robozonkyVersionStatement
             , Just <| renderGeneralSettings buyingConfig generalSettings
             , Just <| PortfolioStructure.renderPortfolioStructure generalSettings.portfolio portfolioStructure
             , if Filters.isBuyingOnPrimaryEnabled buyingConfig then
@@ -253,7 +253,7 @@ renderGeneralSettings : BuyingConfiguration -> GeneralSettings -> String
 renderGeneralSettings buyingConfig generalSettings =
     Util.joinNonemptyLines <|
         List.filterMap identity
-            [ Just <| "- Obecná nastavení"
+            [ Just "- Obecná nastavení"
             , Just <| Portfolio.render generalSettings.portfolio
             , Just <| ReservationSetting.render generalSettings.reservationSetting
             , if Filters.isBuyingOnPrimaryEnabled buyingConfig then

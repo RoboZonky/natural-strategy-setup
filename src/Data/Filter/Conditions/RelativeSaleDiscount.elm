@@ -292,10 +292,10 @@ relativeSaleDiscountDecoder =
                         Decode.succeed <| MoreThan y
 
                     [ 4 ] ->
-                        Decode.succeed <| WithDiscount
+                        Decode.succeed WithDiscount
 
                     [ 5 ] ->
-                        Decode.succeed <| WithoutDiscount
+                        Decode.succeed WithoutDiscount
 
                     _ ->
                         Decode.fail <| "Unable to decode RelativeSaleDiscount from " ++ Util.intListToString ints
