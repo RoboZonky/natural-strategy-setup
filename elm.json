@@ -20,7 +20,7 @@
             "justinmimbs/time-extra": "1.1.0",
             "rundis/elm-bootstrap": "5.2.0",
             "ryannhg/date-format": "2.3.0",
-            "stephenreddek/elm-range-slider": "3.0.0",
+            "stephenreddek/elm-range-slider": "3.0.1",
             "truqu/elm-base64": "2.0.4",
             "turboMaCk/any-dict": "2.3.0"
         },
