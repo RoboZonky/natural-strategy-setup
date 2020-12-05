@@ -20,12 +20,11 @@
             "justinmimbs/time-extra": "1.1.0",
             "rundis/elm-bootstrap": "5.2.0",
             "ryannhg/date-format": "2.3.0",
-            "stephenreddek/elm-range-slider": "3.0.1",
+            "stephenreddek/elm-range-slider": "3.0.2",
             "truqu/elm-base64": "2.0.4",
-            "turboMaCk/any-dict": "2.3.0"
+            "turboMaCk/any-dict": "2.4.0"
         },
         "indirect": {
-            "Skinney/murmur3": "2.0.8",
             "avh4/elm-color": "1.0.0",
             "elm/parser": "1.1.0",
             "elm/regex": "1.0.0",
@@ -33,7 +32,7 @@
             "justinmimbs/date": "3.2.1",
             "myrho/elm-round": "1.0.4",
             "owanturist/elm-union-find": "1.0.0",
-            "rtfeldman/elm-css": "15.1.0",
+            "rtfeldman/elm-css": "16.1.0",
             "rtfeldman/elm-hex": "1.0.0",
             "rtfeldman/elm-iso8601-date-strings": "1.1.3"
         }
