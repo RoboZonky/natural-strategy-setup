@@ -35,6 +35,7 @@ type Region
     | MORAVSKOSLEZSKY
     | USTECKY
     | ZLINSKY
+    | SLOVENSKO
 
 
 allRegions : List Region
@@ -53,6 +54,7 @@ allRegions =
     , MORAVSKOSLEZSKY
     , USTECKY
     , ZLINSKY
+    , SLOVENSKO
     ]
 
 
@@ -100,6 +102,9 @@ regionToString r =
 
         ZLINSKY ->
             "Zlínský"
+
+        SLOVENSKO ->
+            "Slovensko"
 
 
 type RegionCondition
