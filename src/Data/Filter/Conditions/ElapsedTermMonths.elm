@@ -13,6 +13,7 @@ module Data.Filter.Conditions.ElapsedTermMonths exposing
 
 import Bootstrap.Form as Form
 import Bootstrap.Form.Radio as Radio
+import Data.Filter.Constants exposing (maxTermMonths, minTermMonths)
 import Data.Validate as Validate
 import DomId exposing (DomId)
 import Html exposing (Html)
@@ -60,13 +61,13 @@ validationErrors : ElapsedTermMonthsCondition -> List String
 validationErrors (ElapsedTermMonthsCondition t) =
     case t of
         LessThan x ->
-            validateInRange 1 121 x
+            validateInRange (minTermMonths + 1) (maxTermMonths + 1) x
 
         Between x y ->
-            validateInRange 0 120 x ++ validateInRange 0 120 y ++ minNotGtMax x y
+            validateInRange minTermMonths maxTermMonths x ++ validateInRange minTermMonths maxTermMonths y ++ minNotGtMax x y
 
         MoreThan x ->
-            validateInRange 0 119 x
+            validateInRange minTermMonths (maxTermMonths - 1) x
 
 
 validateInRange : Int -> Int -> Int -> List String
