@@ -60,13 +60,13 @@ validationErrors : ElapsedTermMonthsCondition -> List String
 validationErrors (ElapsedTermMonthsCondition t) =
     case t of
         LessThan x ->
-            validateInRange 1 85 x
+            validateInRange 1 121 x
 
         Between x y ->
-            validateInRange 0 84 x ++ validateInRange 0 84 y ++ minNotGtMax x y
+            validateInRange 0 120 x ++ validateInRange 0 120 y ++ minNotGtMax x y
 
         MoreThan x ->
-            validateInRange 0 83 x
+            validateInRange 0 119 x
 
 
 validateInRange : Int -> Int -> Int -> List String
