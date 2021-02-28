@@ -39,7 +39,7 @@ strategyComment today =
 
 robozonkyVersionStatement : String
 robozonkyVersionStatement =
-    "Tato strategie vyžaduje RoboZonky ve verzi 6.2.0 nebo pozdější."
+    "Tato strategie vyžaduje RoboZonky ve verzi 6.3.3 nebo pozdější."
 
 
 formatDate : Posix -> String
