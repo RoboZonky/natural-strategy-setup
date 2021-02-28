@@ -279,7 +279,7 @@ termMonthsConditionGen =
             0
 
         maxTermMonths =
-            84
+            120
     in
     Random.choices (Random.map RemainingTermMonths.LessThan (Random.int minTermMonths maxTermMonths))
         [ randomRangeGen minTermMonths maxTermMonths
@@ -341,7 +341,7 @@ elapsedTermMonthsConditionGen =
             0
 
         maxTermMonths =
-            84
+            120
     in
     Random.choices (Random.map ElapsedTermMonths.LessThan (Random.int minTermMonths maxTermMonths))
         [ randomRangeGen minTermMonths maxTermMonths
@@ -358,7 +358,7 @@ originalTermMonthsConditionGen =
             0
 
         maxTermMonths =
-            84
+            120
     in
     Random.choices (Random.map OriginalTermMonths.LessThan (Random.int minTermMonths maxTermMonths))
         [ randomRangeGen minTermMonths maxTermMonths
