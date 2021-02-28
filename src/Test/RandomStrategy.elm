@@ -27,7 +27,7 @@ import Data.Filter.Conditions.RevenueRate as RevenueRate exposing (RevenueRateCo
 import Data.Filter.Conditions.SaleFee exposing (SaleFee(..), SaleFeeCondition(..))
 import Data.Filter.Conditions.Story exposing (Story(..), StoryCondition(..))
 import Data.Filter.Conditions.TermPercent as TermPercent exposing (TermPercentCondition(..))
-import Data.Filter.Constants as Constants
+import Data.Filter.Constants as Constants exposing (maxTermMonths, minTermMonths)
 import Data.Investment as Investment exposing (InvestmentsPerRating)
 import Data.Portfolio exposing (Portfolio(..))
 import Data.PortfolioStructure as PortfolioStructure exposing (PortfolioStructure)
@@ -274,13 +274,6 @@ relativeProfitConditionGen =
 
 termMonthsConditionGen : Generator RemainingTermMonthsCondition
 termMonthsConditionGen =
-    let
-        minTermMonths =
-            0
-
-        maxTermMonths =
-            120
-    in
     Random.choices (Random.map RemainingTermMonths.LessThan (Random.int minTermMonths maxTermMonths))
         [ randomRangeGen minTermMonths maxTermMonths
             |> Random.map (\( mi, mx ) -> RemainingTermMonths.Between mi mx)
@@ -336,13 +329,6 @@ termPercentConditionGen =
 
 elapsedTermMonthsConditionGen : Generator ElapsedTermMonthsCondition
 elapsedTermMonthsConditionGen =
-    let
-        minTermMonths =
-            0
-
-        maxTermMonths =
-            120
-    in
     Random.choices (Random.map ElapsedTermMonths.LessThan (Random.int minTermMonths maxTermMonths))
         [ randomRangeGen minTermMonths maxTermMonths
             |> Random.map (\( mi, mx ) -> ElapsedTermMonths.Between mi mx)
@@ -353,13 +339,6 @@ elapsedTermMonthsConditionGen =
 
 originalTermMonthsConditionGen : Generator OriginalTermMonthsCondition
 originalTermMonthsConditionGen =
-    let
-        minTermMonths =
-            0
-
-        maxTermMonths =
-            120
-    in
     Random.choices (Random.map OriginalTermMonths.LessThan (Random.int minTermMonths maxTermMonths))
         [ randomRangeGen minTermMonths maxTermMonths
             |> Random.map (\( mi, mx ) -> OriginalTermMonths.Between mi mx)
