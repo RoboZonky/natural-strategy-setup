@@ -1,4 +1,9 @@
-module Data.Filter.Constants exposing (maxDaysDue, maxTermMonths, minTermMonths)
+module Data.Filter.Constants exposing
+    ( maxDaysDue
+    , maxLoanAmount
+    , maxTermMonths
+    , minTermMonths
+    )
 
 {-| Maximum 10 years, plus an estimated 1 year of possible delinquency on top.
 -}
@@ -17,3 +22,10 @@ minTermMonths =
 maxTermMonths : Int
 maxTermMonths =
     120
+
+
+{-| 900 k czk
+-}
+maxLoanAmount : Int
+maxLoanAmount =
+    900000

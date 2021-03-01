@@ -13,6 +13,7 @@ module Data.Filter.Conditions.LoanAnnuity exposing
 
 import Bootstrap.Form as Form
 import Bootstrap.Form.Radio as Radio
+import Data.Filter.Constants exposing (maxLoanAmount)
 import Data.Validate as Validate
 import DomId exposing (DomId)
 import Html exposing (Html)
@@ -60,18 +61,18 @@ validationErrors : LoanAnnuityCondition -> List String
 validationErrors (LoanAnnuityCondition a) =
     case a of
         LessThan x ->
-            positive x
+            validAnnuity x
 
         Between x y ->
-            positive x ++ positive y ++ minNotGtMax x y
+            validAnnuity x ++ validAnnuity y ++ minNotGtMax x y
 
         MoreThan x ->
-            positive x
+            validAnnuity x
 
 
-positive : Int -> List String
-positive =
-    Validate.notNegative "Měsíční splátka"
+validAnnuity : Int -> List String
+validAnnuity =
+    Validate.intInRange "Měsíční splátka" 0 maxLoanAmount
 
 
 minNotGtMax : Int -> Int -> List String
@@ -162,7 +163,7 @@ unit =
 
 numericInput : (String -> LoanAnnuityMsg) -> Bool -> String -> Html LoanAnnuityMsg
 numericInput =
-    View.NumericInput.numericInput 0 1000000
+    View.NumericInput.numericInput 0 maxLoanAmount
 
 
 loanAnnuityRadio : Bool -> LoanAnnuityMsg -> String -> DomId -> Html LoanAnnuityMsg

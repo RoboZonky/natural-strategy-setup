@@ -13,6 +13,7 @@ module Data.Filter.Conditions.RemainingAmount exposing
 
 import Bootstrap.Form as Form
 import Bootstrap.Form.Radio as Radio
+import Data.Filter.Constants exposing (maxLoanAmount)
 import Data.Validate as Validate
 import DomId exposing (DomId)
 import Html exposing (Html)
@@ -60,18 +61,18 @@ validationErrors : RemainingAmountCondition -> List String
 validationErrors (RemainingAmountCondition a) =
     case a of
         LessThan x ->
-            positive x
+            validAmount x
 
         Between x y ->
-            positive x ++ positive y ++ minNotGtMax x y
+            validAmount x ++ validAmount y ++ minNotGtMax x y
 
         MoreThan x ->
-            positive x
+            validAmount x
 
 
-positive : Int -> List String
-positive =
-    Validate.notNegative "Zbývající jistina"
+validAmount : Int -> List String
+validAmount =
+    Validate.intInRange "Zbývající jistina" 0 maxLoanAmount
 
 
 minNotGtMax : Int -> Int -> List String
@@ -175,7 +176,7 @@ unit =
 
 numericInput : (String -> RemainingAmountMsg) -> Bool -> String -> Html RemainingAmountMsg
 numericInput =
-    View.NumericInput.numericInput 0 1000000
+    View.NumericInput.numericInput 0 maxLoanAmount
 
 
 remainingAmountRadio : Bool -> RemainingAmountMsg -> String -> DomId -> Html RemainingAmountMsg

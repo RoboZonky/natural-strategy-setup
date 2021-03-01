@@ -27,7 +27,7 @@ import Data.Filter.Conditions.RevenueRate as RevenueRate exposing (RevenueRateCo
 import Data.Filter.Conditions.SaleFee exposing (SaleFee(..), SaleFeeCondition(..))
 import Data.Filter.Conditions.Story exposing (Story(..), StoryCondition(..))
 import Data.Filter.Conditions.TermPercent as TermPercent exposing (TermPercentCondition(..))
-import Data.Filter.Constants as Constants exposing (maxTermMonths, minTermMonths)
+import Data.Filter.Constants as Constants exposing (maxLoanAmount, maxTermMonths, minTermMonths)
 import Data.Investment as Investment exposing (InvestmentsPerRating)
 import Data.Portfolio exposing (Portfolio(..))
 import Data.PortfolioStructure as PortfolioStructure exposing (PortfolioStructure)
@@ -284,13 +284,9 @@ termMonthsConditionGen =
 
 loanAnnuityConditionGen : Generator LoanAnnuityCondition
 loanAnnuityConditionGen =
-    let
-        maxAmount =
-            1000000
-    in
-    Random.choices (Random.map LoanAnnuity.LessThan (Random.int 0 maxAmount))
-        [ randomRangeGen 0 maxAmount |> Random.map (\( mi, mx ) -> LoanAnnuity.Between mi mx)
-        , Random.map LoanAnnuity.MoreThan (Random.int 0 maxAmount)
+    Random.choices (Random.map LoanAnnuity.LessThan (Random.int 0 maxLoanAmount))
+        [ randomRangeGen 0 maxLoanAmount |> Random.map (\( mi, mx ) -> LoanAnnuity.Between mi mx)
+        , Random.map LoanAnnuity.MoreThan (Random.int 0 maxLoanAmount)
         ]
         |> Random.map LoanAnnuityCondition
 
@@ -431,26 +427,18 @@ longestDaysPastDueConditionGen =
 
 amountConditionGen : Generator AmountCondition
 amountConditionGen =
-    let
-        maxAmount =
-            1000000
-    in
-    Random.choices (Random.map Amount.LessThan (Random.int 0 maxAmount))
-        [ randomRangeGen 0 maxAmount |> Random.map (\( mi, mx ) -> Amount.Between mi mx)
-        , Random.map Amount.MoreThan (Random.int 0 maxAmount)
+    Random.choices (Random.map Amount.LessThan (Random.int 0 maxLoanAmount))
+        [ randomRangeGen 0 maxLoanAmount |> Random.map (\( mi, mx ) -> Amount.Between mi mx)
+        , Random.map Amount.MoreThan (Random.int 0 maxLoanAmount)
         ]
         |> Random.map AmountCondition
 
 
 remainingAmountConditionGen : Generator RemainingAmountCondition
 remainingAmountConditionGen =
-    let
-        maxRemainingAmount =
-            1000000
-    in
-    Random.choices (Random.map RemainingAmount.LessThan (Random.int 0 maxRemainingAmount))
-        [ randomRangeGen 0 maxRemainingAmount |> Random.map (\( mi, mx ) -> RemainingAmount.Between mi mx)
-        , Random.map RemainingAmount.MoreThan (Random.int 0 maxRemainingAmount)
+    Random.choices (Random.map RemainingAmount.LessThan (Random.int 0 maxLoanAmount))
+        [ randomRangeGen 0 maxLoanAmount |> Random.map (\( mi, mx ) -> RemainingAmount.Between mi mx)
+        , Random.map RemainingAmount.MoreThan (Random.int 0 maxLoanAmount)
         ]
         |> Random.map RemainingAmountCondition
 

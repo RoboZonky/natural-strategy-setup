@@ -13,6 +13,7 @@ module Data.Filter.Conditions.Amount exposing
 
 import Bootstrap.Form as Form
 import Bootstrap.Form.Radio as Radio
+import Data.Filter.Constants exposing (maxLoanAmount)
 import Data.Validate as Validate
 import DomId exposing (DomId)
 import Html exposing (Html)
@@ -60,18 +61,18 @@ validationErrors : AmountCondition -> List String
 validationErrors (AmountCondition a) =
     case a of
         LessThan x ->
-            positive x
+            validAmount x
 
         Between x y ->
-            positive x ++ positive y ++ minNotGtMax x y
+            validAmount x ++ validAmount y ++ minNotGtMax x y
 
         MoreThan x ->
-            positive x
+            validAmount x
 
 
-positive : Int -> List String
-positive =
-    Validate.notNegative "Výše půjčky"
+validAmount : Int -> List String
+validAmount =
+    Validate.intInRange "Výše půjčky" 0 maxLoanAmount
 
 
 minNotGtMax : Int -> Int -> List String
@@ -175,7 +176,7 @@ unit =
 
 numericInput : (String -> AmountMsg) -> Bool -> String -> Html AmountMsg
 numericInput =
-    View.NumericInput.numericInput 0 10000000
+    View.NumericInput.numericInput 0 maxLoanAmount
 
 
 amountRadio : Bool -> AmountMsg -> String -> DomId -> Html AmountMsg
