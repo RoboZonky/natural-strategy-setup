@@ -5,7 +5,7 @@ import Bootstrap.Button as Button
 import Bootstrap.Card.Block as CardBlock
 import Bootstrap.Form.Checkbox as Checkbox
 import Bootstrap.Utilities.Spacing as Spacing
-import Data.Filter as Filter exposing (BuyingConfiguration, FilteredItem(..), MarketplaceEnablement)
+import Data.Filter as Filter exposing (BuyingConfiguration, FilteredItem, MarketplaceEnablement)
 import Data.Filter.Complexity exposing (FilterComplexity(..), complexityButtonLabel)
 import Data.Tooltip as Tooltip
 import DomId exposing (DomId)

@@ -31,7 +31,7 @@ module Data.Strategy exposing
 import Base64
 import Data.ExitConfig as ExitConfig exposing (ExitConfig)
 import Data.Filter as Filters exposing (BuyingConfiguration, MarketplaceFilter, SellingConfiguration)
-import Data.Filter.Conditions.Rating exposing (Rating(..))
+import Data.Filter.Conditions.Rating exposing (Rating)
 import Data.Investment as Investment exposing (InvestmentsPerRating)
 import Data.Portfolio as Portfolio exposing (Portfolio(..))
 import Data.PortfolioStructure as PortfolioStructure exposing (PortfolioStructure)

@@ -1,6 +1,6 @@
 module Data.SharedJsonStuff exposing (ratingToSliderDictDecoder)
 
-import Data.Filter.Conditions.Rating as Rating exposing (Rating(..))
+import Data.Filter.Conditions.Rating as Rating exposing (Rating)
 import Dict.Any exposing (AnyDict)
 import Json.Decode as Decode exposing (Decoder)
 import RangeSlider exposing (RangeSlider)

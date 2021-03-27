@@ -6,7 +6,7 @@ import Bootstrap.Card.Block as CardBlock
 import Bootstrap.Grid as Grid
 import Bootstrap.Grid.Col as Col
 import Bootstrap.Utilities.Spacing as Spacing
-import Data.Filter as Filter exposing (FilteredItem(..), MarketplaceFilter)
+import Data.Filter as Filter exposing (MarketplaceFilter)
 import Html exposing (Html)
 import Html.Attributes exposing (class)
 import Html.Events exposing (onClick)

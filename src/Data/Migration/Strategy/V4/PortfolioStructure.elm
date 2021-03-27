@@ -5,7 +5,7 @@ module Data.Migration.Strategy.V4.PortfolioStructure exposing
     , toIntRange
     )
 
-import Data.Filter.Conditions.Rating as Rating exposing (Rating(..))
+import Data.Filter.Conditions.Rating as Rating exposing (Rating)
 import Data.Portfolio exposing (Portfolio(..))
 import Data.PortfolioStructure as PortfolioStructure
 import Data.SharedJsonStuff

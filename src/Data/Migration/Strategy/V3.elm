@@ -14,7 +14,7 @@ import Data.Migration.Strategy.V2 as V2
 import Data.Migration.Strategy.V2.Confirmation as Confirmation
 import Data.Migration.Strategy.V4.PortfolioStructure as PortfolioStructure exposing (PortfolioShares)
 import Data.Migration.Strategy.V5.InvestmentShare as InvestmentShare exposing (InvestmentShare)
-import Data.Portfolio as Portfolio exposing (Portfolio(..))
+import Data.Portfolio as Portfolio exposing (Portfolio)
 import Data.ReservationSetting as ReservationSetting exposing (ReservationSetting)
 import Data.TargetPortfolioSize as TargetPortfolioSize exposing (TargetPortfolioSize)
 import Json.Decode as Decode exposing (Decoder)

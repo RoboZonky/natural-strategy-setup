@@ -14,7 +14,7 @@ import Data.Filter.Conditions.ElapsedTermPercent as ElapsedTermPercent
 import Data.Filter.Conditions.Income as Income
 import Data.Filter.Conditions.Insurance as Insurance
 import Data.Filter.Conditions.Purpose as Purpose
-import Data.Filter.Conditions.Rating as Rating exposing (Rating(..), RatingCondition(..))
+import Data.Filter.Conditions.Rating as Rating exposing (RatingCondition)
 import Data.Filter.Conditions.Region as Region
 import Data.Filter.Conditions.RemainingAmount as RemainingAmount
 import Data.Filter.Conditions.RemainingTermMonths as RemainingTermMonths
@@ -24,7 +24,7 @@ import Data.Migration.Strategy.V1.Investment as Investment exposing (Investments
 import Data.Migration.Strategy.V1.TargetBalance as TargetBalance exposing (TargetBalance)
 import Data.Migration.Strategy.V4.PortfolioStructure as PortfolioStructure exposing (PortfolioShares)
 import Data.Migration.Strategy.V5.InvestmentShare as InvestmentShare exposing (InvestmentShare)
-import Data.Portfolio as Portfolio exposing (Portfolio(..))
+import Data.Portfolio as Portfolio exposing (Portfolio)
 import Data.TargetPortfolioSize as TargetPortfolioSize exposing (TargetPortfolioSize)
 import Json.Decode as Decode exposing (Decoder)
 import Json.Decode.Extra exposing (andMap, optionalField)

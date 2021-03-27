@@ -9,7 +9,7 @@ import Bootstrap.Form as Form
 import Bootstrap.Form.Select as Select
 import Bootstrap.Utilities.Spacing as Spacing
 import Data.Filter.Conditions.Rating as Rating exposing (Rating, ratingDictToList)
-import Data.Portfolio as Portfolio exposing (Portfolio(..), allPortfolios)
+import Data.Portfolio as Portfolio exposing (Portfolio, allPortfolios)
 import Data.PortfolioStructure as PortfolioStructure exposing (PortfolioStructure)
 import Data.Tooltip as Tooltip
 import Html exposing (Html)

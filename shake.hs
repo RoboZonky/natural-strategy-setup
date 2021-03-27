@@ -1,6 +1,6 @@
 #!/usr/bin/env stack
 {- stack script
-   --resolver lts-17.4
+   --resolver lts-17.7
    --package process
    --package shake
 -}
