@@ -4,13 +4,12 @@ module Data.Migration.Strategy.V2.Confirmation exposing
     , defaultSettings
     )
 
-import Data.Filter.Conditions.Interest as Interest exposing (InterestCondition(..))
 import Json.Decode as Decode exposing (Decoder)
 
 
 type ConfirmationSettings
     = NoConfirmation
-    | Confirm InterestCondition
+    | Confirm
 
 
 defaultSettings : ConfirmationSettings
@@ -28,7 +27,7 @@ decoder =
                         Decode.succeed NoConfirmation
 
                     1 ->
-                        Decode.map Confirm <| Decode.field "b" Interest.conditionDecoder
+                        Decode.succeed Confirm
 
                     other ->
                         Decode.fail <| "Failed to decode ConfirmationSettings. Was expecting 0 or 1, but got " ++ String.fromInt other

@@ -229,22 +229,16 @@ fromHash h =
 
 
 type RatingCondition
-    = RatingList (List Rating)
+    = RatingList
 
 
 
 -- JSON
 
 
-ratingDecoder : Decoder Rating
-ratingDecoder =
-    Util.enumDecoder "Rating" allRatings
-
-
 conditionDecoder : Decoder RatingCondition
 conditionDecoder =
-    Decode.map RatingList <|
-        Decode.list ratingDecoder
+    Decode.succeed RatingList
 
 
 
@@ -253,4 +247,4 @@ conditionDecoder =
 
 defaultCondition : RatingCondition
 defaultCondition =
-    RatingList []
+    RatingList

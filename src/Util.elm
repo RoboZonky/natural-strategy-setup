@@ -17,7 +17,7 @@ module Util exposing
     )
 
 import FormatNumber
-import FormatNumber.Locales exposing (Locale)
+import FormatNumber.Locales exposing (Decimals(..), Locale)
 import Html exposing (Html)
 import Html.Attributes exposing (style)
 import Json.Decode as Decode exposing (Decoder)
@@ -129,7 +129,7 @@ formatPercentage =
 
 czechLocale : Locale
 czechLocale =
-    { decimals = 2
+    { decimals = Exact 2
     , thousandSeparator = ""
     , decimalSeparator = ","
     , negativePrefix = "−"
